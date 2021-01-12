@@ -1,0 +1,5 @@
+/.idea
+/venv
+/nwgg-panel.egg-info/
+/build/
+/dist/
