@@ -19,8 +19,14 @@ def send_message(i3, e):
 
 def main():
     i3 = Connection()
-    i3.on(Event.WINDOW_FOCUS, send_message)
+
     i3.on(Event.WORKSPACE_FOCUS, send_message)
+    i3.on(Event.WINDOW_FOCUS, send_message)
+    i3.on(Event.WINDOW_TITLE, send_message)
+    i3.on(Event.WINDOW_CLOSE, send_message)
+    i3.on(Event.WINDOW_NEW, send_message)
+    i3.on(Event.BINDING, send_message)
+
     i3.main()
 
 

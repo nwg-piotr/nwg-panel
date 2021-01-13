@@ -6,7 +6,7 @@ import json
 import common
 
 
-def get_config_dir(data_dir):
+def get_config_dir():
     # Determine config dir path, create if not found, then create sub-dirs
     xdg_config_home = os.getenv('XDG_CONFIG_HOME')
     config_home = xdg_config_home if xdg_config_home else os.path.join(os.getenv("HOME"), ".config")
@@ -16,13 +16,13 @@ def get_config_dir(data_dir):
         os.mkdir(config_dir)
 
     # Icon folders to store user-defined icon replacements
-    icon_folder = os.path.join(data_dir, "icons_light")
+    icon_folder = os.path.join(config_dir, "icons_light")
     if not os.path.isdir(icon_folder):
         print("Creating '{}'".format(icon_folder))
         os.mkdir(icon_folder)
 
-    icon_folder = os.path.join(data_dir, "icons_dark")
-    if not os.path.isdir(os.path.join(data_dir, "icons_dark")):
+    icon_folder = os.path.join(config_dir, "icons_dark")
+    if not os.path.isdir(os.path.join(icon_folder)):
         print("Creating '{}'".format(icon_folder))
         os.mkdir(icon_folder)
 
@@ -53,11 +53,47 @@ def save_string(string, file):
 
 
 def check_tree(i3):
-    tree = i3.get_tree()
-    focused = tree.find_focused()
+    common.tree = i3.get_tree()
+    focused = common.tree.find_focused()
     common.test_label.set_text("{}".format(focused.workspace().name))
     """for item in tree:
         if item.type == "output" and not item.name.startswith("__"):
             print(item.name, item.rect.width)
             for ws in item.descendants():
                 print(ws.num, ws.name)"""
+
+
+def sample_config():
+    config = []
+    panel = {}
+    panel["output"] = "eDP-1"
+    panel["layer"] = "top"
+    panel["position"] = "bottom"
+    panel["margin-top"] = 0
+    panel["margin-bottom"] = 0
+    panel["padding-horizontal"] = 0
+    panel["padding-vertical"] = 0
+    panel["spacing"] = 0
+    panel["modules-left"] = ["workspaces"]
+    panel["modules-center"] = []
+    panel["modules-right"] = []
+    panel["workspaces"] = {"max_length": 30, "show-icon": True, "show-split": True, "rename": True}
+
+    config.append(panel)
+
+    """panel = {}
+    panel["output"] = "eDP-1"
+    panel["layer"] = "top"
+    panel["position"] = "bottom"
+    panel["margin-top"] = 0
+    panel["margin-bottom"] = 0
+    panel["padding-horizontal"] = 0
+    panel["padding-vertical"] = 0
+    panel["modules-left"] = ["workspaces"]
+    panel["modules-center"] = []
+    panel["modules-right"] = []
+    panel["workspaces"] = {"max_length": 30, "show-icon": True, "rename": True}
+
+    config.append(panel)"""
+
+    return config

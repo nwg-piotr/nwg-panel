@@ -30,7 +30,7 @@ socket = context.socket(zmq.REP)
 socket.bind("tcp://*:5555")
 
 
-def i3ipc_reply():
+def listener_reply():
     message = socket.recv()
     print("Received request: %s" % message)
 
@@ -42,21 +42,34 @@ def i3ipc_reply():
 
 
 def main():
+    common.config_dir = get_config_dir()
+    config_file = os.path.join(common.config_dir, "config")
+    config = sample_config()
+    save_json(config, config_file)
 
     window = Gtk.Window()
-    common.test_label = Gtk.Label(label='GTK Layer Shell with Python!')
-    window.add(common.test_label)
+    Gtk.Widget.set_size_request(window, 1920, 20)
+    print(window.get_size())
+
+    vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+    hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    vbox.pack_start(hbox, True, True, 2)
+    b = Gtk.Button(label="Test")
+    hbox.pack_start(b, False, False, 10)
+    common.test_label = Gtk.Label(label='         GTK Layer Shell with Python!              ')
+    hbox.pack_start(common.test_label, False, False, 0)
+    window.add(vbox)
 
     GtkLayerShell.init_for_window(window)
     GtkLayerShell.auto_exclusive_zone_enable(window)
-    GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, 0)
-    GtkLayerShell.set_margin(window, GtkLayerShell.Edge.BOTTOM, 0)
-    GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.BOTTOM, 1)
+    GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, 2)
+    GtkLayerShell.set_margin(window, GtkLayerShell.Edge.BOTTOM, 2)
+    GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.TOP, 1)
 
     window.show_all()
     window.connect('destroy', Gtk.main_quit)
 
-    GLib.timeout_add(50, i3ipc_reply)
+    GLib.timeout_add(50, listener_reply)
     Gtk.main()
 
 
