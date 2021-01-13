@@ -18,9 +18,11 @@ except ValueError:
                        'For example you might need to run:\n\n' +
                        'GI_TYPELIB_PATH=build/src LD_LIBRARY_PATH=build/src python3 ' + ' '.join(sys.argv))
 
-from gi.repository import Gtk, GtkLayerShell, GLib
+from gi.repository import Gtk, GtkLayerShell, GLib, Gdk
 
 from i3ipc import Connection
+
+from modules.workspaces import SwayWorkspaces
 
 
 i3 = Connection()
@@ -42,6 +44,15 @@ def listener_reply():
 
 
 def main():
+    
+    """display = Gdk.Display().get_default()
+    for d in range(display.get_n_monitors()):
+        monitor = display.get_monitor(d)
+        geometry = monitor.get_geometry()
+        print(monitor.get_display().get_name(), geometry.x, geometry.y, geometry.width, geometry.height)"""
+    
+    sws = SwayWorkspaces(spacing=10)
+
     common.config_dir = get_config_dir()
     config_file = os.path.join(common.config_dir, "config")
     config = sample_config()
@@ -49,7 +60,6 @@ def main():
 
     window = Gtk.Window()
     Gtk.Widget.set_size_request(window, 1920, 20)
-    print(window.get_size())
 
     vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
     hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)

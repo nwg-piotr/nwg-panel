@@ -5,6 +5,8 @@ import json
 
 import common
 
+from i3ipc import Connection
+
 
 def get_config_dir():
     # Determine config dir path, create if not found, then create sub-dirs
@@ -52,6 +54,11 @@ def save_string(string, file):
         print("Error writing file '{}'".format(file))
 
 
+def list_outputs():
+    i3 = Connection()
+    tree = i3.get_tree()
+
+
 def check_tree(i3):
     common.tree = i3.get_tree()
     focused = common.tree.find_focused()
@@ -77,7 +84,7 @@ def sample_config():
     panel["modules-left"] = ["workspaces"]
     panel["modules-center"] = []
     panel["modules-right"] = []
-    panel["workspaces"] = {"max_length": 30, "show-icon": True, "show-split": True, "rename": True}
+    panel["workspaces"] = {"show-app-icon": True, "show-split": True, "show-app-name": True, "name-max-len": 30}
 
     config.append(panel)
 
