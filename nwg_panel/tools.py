@@ -6,6 +6,9 @@ import json
 import common
 
 from i3ipc import Connection
+import gi
+gi.require_version('GdkPixbuf', '2.0')
+from gi.repository import GdkPixbuf
 
 
 def get_config_dir():

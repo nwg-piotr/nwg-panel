@@ -50,8 +50,6 @@ def main():
         monitor = display.get_monitor(d)
         geometry = monitor.get_geometry()
         print(monitor.get_display().get_name(), geometry.x, geometry.y, geometry.width, geometry.height)"""
-    
-    sws = SwayWorkspaces(spacing=10)
 
     common.config_dir = get_config_dir()
     config_file = os.path.join(common.config_dir, "config")
@@ -64,10 +62,14 @@ def main():
     vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
     hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     vbox.pack_start(hbox, True, True, 2)
-    b = Gtk.Button(label="Test")
+
+    sws = SwayWorkspaces(display_name="eDP-1", spacing=16)
+    hbox.pack_start(sws, False, False, 6)
+
+    """b = Gtk.Button(label="Test")
     hbox.pack_start(b, False, False, 10)
     common.test_label = Gtk.Label(label='         GTK Layer Shell with Python!              ')
-    hbox.pack_start(common.test_label, False, False, 0)
+    hbox.pack_start(common.test_label, False, False, 0)"""
     window.add(vbox)
 
     GtkLayerShell.init_for_window(window)
