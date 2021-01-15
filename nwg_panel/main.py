@@ -36,7 +36,8 @@ def listener_reply():
     message = socket.recv()
     print("Received request: %s" % message)
 
-    check_tree(i3)
+    #check_tree(i3)
+    common.test_widget.refresh()
 
     #  Send reply back to client
     socket.send(b"World")
@@ -63,13 +64,9 @@ def main():
     hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     vbox.pack_start(hbox, True, True, 2)
 
-    sws = SwayWorkspaces(display_name="eDP-1", spacing=16)
-    hbox.pack_start(sws, False, False, 6)
+    common.test_widget = SwayWorkspaces(display_name="eDP-1", spacing=16)
+    hbox.pack_start(common.test_widget, False, False, 6)
 
-    """b = Gtk.Button(label="Test")
-    hbox.pack_start(b, False, False, 10)
-    common.test_label = Gtk.Label(label='         GTK Layer Shell with Python!              ')
-    hbox.pack_start(common.test_label, False, False, 0)"""
     window.add(vbox)
 
     GtkLayerShell.init_for_window(window)

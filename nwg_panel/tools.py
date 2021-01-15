@@ -65,12 +65,7 @@ def list_outputs():
 def check_tree(i3):
     common.tree = i3.get_tree()
     focused = common.tree.find_focused()
-    common.test_label.set_text("{}".format(focused.workspace().name))
-    """for item in tree:
-        if item.type == "output" and not item.name.startswith("__"):
-            print(item.name, item.rect.width)
-            for ws in item.descendants():
-                print(ws.num, ws.name)"""
+    common.test_widget.refresh()
 
 
 def sample_config():
