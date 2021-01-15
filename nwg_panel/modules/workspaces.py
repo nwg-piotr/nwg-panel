@@ -134,6 +134,9 @@ class WindowBox(Gtk.EventBox):
         self.get_style_context().set_state(Gtk.StateFlags.NORMAL)
 
     def on_click(self, widget, event):
-        cmd = "[con_id=\"{}\"] focus".format(self.con.id)
+        if event.button == 3:
+            cmd = "[con_id=\"{}\"] kill".format(self.con.id)
+        else:
+            cmd = "[con_id=\"{}\"] focus".format(self.con.id)
         print(cmd)
         nwg_panel.common.i3.command(cmd)
