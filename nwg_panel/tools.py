@@ -5,7 +5,6 @@ import json
 
 import common
 
-from i3ipc import Connection
 import gi
 gi.require_version('GdkPixbuf', '2.0')
 from gi.repository import GdkPixbuf
@@ -55,17 +54,6 @@ def save_string(string, file):
         file.close()
     except:
         print("Error writing file '{}'".format(file))
-
-
-def list_outputs():
-    i3 = Connection()
-    tree = i3.get_tree()
-
-
-def check_tree(i3):
-    common.tree = i3.get_tree()
-    focused = common.tree.find_focused()
-    common.test_widget.refresh()
 
 
 def sample_config():

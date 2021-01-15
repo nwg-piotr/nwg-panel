@@ -2,24 +2,21 @@
 
 from gi.repository import Gtk
 
-from i3ipc import Connection
-
 from nwg_panel.tools import save_json
 
-import os
+import nwg_panel.common
 
 
 class SwayWorkspaces(Gtk.Box):
     def __init__(self, display_name="", spacing=0):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=spacing)
-        self.i3 = Connection()
         self.display_name = display_name
         self.displays_tree = self.list_tree()
         
         self.build_box()
 
     def list_tree(self):
-        i3_tree = self.i3.get_tree()
+        nwg_panel.common.i3_tree = nwg_panel.common.i3.get_tree()
         """
         display -> workspace -> window -> app_id
                                        -> parent_layout
@@ -32,11 +29,11 @@ class SwayWorkspaces(Gtk.Box):
         """
         displays_tree = []
         if self.display_name:
-            for item in i3_tree:
+            for item in nwg_panel.common.i3_tree:
                 if item.type == "output" and item.name == self.display_name:
                     displays_tree.append(item)
         else:
-            for item in i3_tree:
+            for item in nwg_panel.common.i3_tree:
                 if item.type == "output" and not item.name.startswith("__"):
                     displays_tree.append(item)
                     
@@ -68,42 +65,58 @@ class SwayWorkspaces(Gtk.Box):
                     self.show_all()
                     
     def refresh(self):
-        for item in self.get_children():
-            item.destroy()
-        self.build_box()
+        if nwg_panel.common.i3.get_tree().ipc_data != nwg_panel.common.old_ipc_data:
+            for item in self.get_children():
+                item.destroy()
+            self.build_box()
+
+            nwg_panel.common.old_ipc_data = nwg_panel.common.i3.get_tree().ipc_data
 
 
 class WorkspaceBox(Gtk.Box):
     def __init__(self, con):
         self.con = con
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        btn = Gtk.Button.new_with_label("{}".format(con.num))
+        if con.focused:
+            btn = Gtk.Button.new_with_label("- {} -".format(con.num))
+        else:
+            btn = Gtk.Button.new_with_label("{}".format(con.num))
         btn.connect("clicked", self.on_click)
         self.pack_start(btn, False, False, 0)
         
     def on_click(self, button):
-        print("Clicked!")
-        self.con.command("focus")
+        print("Clicked!", self.con.type, self.con.num)
+        nwg_panel.common.i3.command("{} number {} focus".format(self.con.type, self.con.num))
 
 
-class WindowBox(Gtk.Box):
+class WindowBox(Gtk.EventBox):
     # con, icon: str, parent_layout: str, name: str, focused: bool
     def __init__(self, con):
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        Gtk.EventBox.__init__(self)
+        self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        self.add(self.box)
         self.con = con
         self.pid = con.pid
+        
+        self.old_name = ""
 
         if con.focused:
-            self.set_property("name", "window-box-focused")
+            self.box.set_property("name", "window-box-focused")
+        else:
+            self.box.set_property("name", "window-box")
+
+        self.connect('enter-notify-event', self.on_enter_notify_event)
+        self.connect('leave-notify-event', self.on_leave_notify_event)
+        self.connect('button-press-event', self.on_click)
 
         if con.app_id:
             image = Gtk.Image.new_from_icon_name(con.app_id, Gtk.IconSize.MENU)
-            self.pack_start(image, False, False, 0)
+            self.box.pack_start(image, False, False, 0)
 
         if con.name:
             name = con.name[:12] if len(con.name) > 12 else con.name
             label = Gtk.Label(name)
-            self.pack_start(label, False, False, 4)
+            self.box.pack_start(label, False, False, 4)
 
         if con.parent.layout:
             if con.parent.layout == "splith":
@@ -112,4 +125,15 @@ class WindowBox(Gtk.Box):
                 image = Gtk.Image.new_from_icon_name("go-down", Gtk.IconSize.MENU)
             else:
                 image = Gtk.Image.new_from_icon_name("window-new", Gtk.IconSize.MENU)
-            self.pack_start(image, False, False, 0)
+            self.box.pack_start(image, False, False, 0)
+
+    def on_enter_notify_event(self, widget, event):
+        self.get_style_context().set_state(Gtk.StateFlags.SELECTED)
+        
+    def on_leave_notify_event(self, widget, event):
+        self.get_style_context().set_state(Gtk.StateFlags.NORMAL)
+
+    def on_click(self, widget, event):
+        cmd = "[con_id=\"{}\"] focus".format(self.con.id)
+        print(cmd)
+        nwg_panel.common.i3.command(cmd)

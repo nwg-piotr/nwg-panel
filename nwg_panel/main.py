@@ -20,12 +20,9 @@ except ValueError:
 
 from gi.repository import Gtk, GtkLayerShell, GLib, Gdk
 
-from i3ipc import Connection
+# from i3ipc import Connection
 
 from modules.workspaces import SwayWorkspaces
-
-
-i3 = Connection()
 
 context = zmq.Context()
 socket = context.socket(zmq.REP)
@@ -33,18 +30,19 @@ socket.bind("tcp://*:5555")
 
 
 def listener_reply():
-    message = socket.recv()
-    print("Received request: %s" % message)
+    #message = socket.recv()
+    #print("Received request: %s" % message)
 
     #check_tree(i3)
     common.test_widget.refresh()
 
     #  Send reply back to client
-    socket.send(b"World")
+    #socket.send(b"World")
     return True
 
 
 def main():
+    #common.i3 = Connection()
     
     """display = Gdk.Display().get_default()
     for d in range(display.get_n_monitors()):
@@ -56,6 +54,15 @@ def main():
     config_file = os.path.join(common.config_dir, "config")
     config = sample_config()
     save_json(config, config_file)
+
+    screen = Gdk.Screen.get_default()
+    provider = Gtk.CssProvider()
+    style_context = Gtk.StyleContext()
+    style_context.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+    try:
+        provider.load_from_path(os.path.join(common.config_dir, "style.css"))
+    except Exception as e:
+        print(e)
 
     window = Gtk.Window()
     Gtk.Widget.set_size_request(window, 1920, 20)
@@ -78,7 +85,7 @@ def main():
     window.show_all()
     window.connect('destroy', Gtk.main_quit)
 
-    GLib.timeout_add(50, listener_reply)
+    GLib.timeout_add(100, listener_reply)
     Gtk.main()
 
 
