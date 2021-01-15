@@ -12,8 +12,8 @@ class SwayWorkspaces(Gtk.Box):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=spacing)
         self.display_name = display_name
         self.displays_tree = self.list_tree()
-        
         self.build_box()
+        self.ipc_data = {}
 
     def list_tree(self):
         nwg_panel.common.i3_tree = nwg_panel.common.i3.get_tree()
@@ -65,22 +65,19 @@ class SwayWorkspaces(Gtk.Box):
                     self.show_all()
                     
     def refresh(self):
-        if nwg_panel.common.i3.get_tree().ipc_data != nwg_panel.common.old_ipc_data:
+        if nwg_panel.common.i3.get_tree().ipc_data != self.ipc_data:
             for item in self.get_children():
                 item.destroy()
             self.build_box()
 
-            nwg_panel.common.old_ipc_data = nwg_panel.common.i3.get_tree().ipc_data
+            self.ipc_data = nwg_panel.common.i3.get_tree().ipc_data
 
 
 class WorkspaceBox(Gtk.Box):
     def __init__(self, con):
         self.con = con
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        if con.focused:
-            btn = Gtk.Button.new_with_label("- {} -".format(con.num))
-        else:
-            btn = Gtk.Button.new_with_label("{}".format(con.num))
+        btn = Gtk.Button.new_with_label("{}".format(con.num))
         btn.connect("clicked", self.on_click)
         self.pack_start(btn, False, False, 0)
         
@@ -99,6 +96,7 @@ class WindowBox(Gtk.EventBox):
         self.pid = con.pid
         
         self.old_name = ""
+        self.set_tooltip_text("⭠ focus | kill ⭢")
 
         if con.focused:
             self.box.set_property("name", "window-box-focused")

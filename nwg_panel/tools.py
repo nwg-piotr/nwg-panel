@@ -3,11 +3,12 @@
 import os
 import json
 
-import common
+from types import SimpleNamespace
 
 import gi
 gi.require_version('GdkPixbuf', '2.0')
-from gi.repository import GdkPixbuf
+
+from types import SimpleNamespace
 
 
 def get_config_dir():
@@ -74,8 +75,8 @@ def sample_config():
 
     config.append(panel)
 
-    """panel = {}
-    panel["output"] = "eDP-1"
+    panel = {}
+    panel["output"] = "HDMI-A-1"
     panel["layer"] = "top"
     panel["position"] = "bottom"
     panel["margin-top"] = 0
@@ -87,6 +88,6 @@ def sample_config():
     panel["modules-right"] = []
     panel["workspaces"] = {"max_length": 30, "show-icon": True, "rename": True}
 
-    config.append(panel)"""
+    config.append(panel)
 
     return config

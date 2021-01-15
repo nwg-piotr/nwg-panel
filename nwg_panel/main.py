@@ -30,18 +30,15 @@ socket.bind("tcp://*:5555")
 
 
 def listener_reply():
-    #message = socket.recv()
-    #print("Received request: %s" % message)
+    #common.test_widget.refresh()
+    for item in common.panels_list:
+        item.refresh()
 
-    #check_tree(i3)
-    common.test_widget.refresh()
-
-    #  Send reply back to client
-    #socket.send(b"World")
     return True
 
 
 def main():
+    
     #common.i3 = Connection()
     
     """display = Gdk.Display().get_default()
@@ -52,8 +49,8 @@ def main():
 
     common.config_dir = get_config_dir()
     config_file = os.path.join(common.config_dir, "config")
-    config = sample_config()
-    save_json(config, config_file)
+
+    panels = load_json(config_file)
 
     screen = Gdk.Screen.get_default()
     provider = Gtk.CssProvider()
@@ -64,26 +61,32 @@ def main():
     except Exception as e:
         print(e)
 
-    window = Gtk.Window()
-    Gtk.Widget.set_size_request(window, 1920, 20)
+    for panel in panels:
+        print(panel["output"])
+        common.i3.command("focus output {}".format(panel["output"]))
+        window = Gtk.Window()
+        Gtk.Widget.set_size_request(window, 1920, 20)
 
-    vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-    hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    vbox.pack_start(hbox, True, True, 2)
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        vbox.pack_start(hbox, True, True, 2)
 
-    common.test_widget = SwayWorkspaces(display_name="eDP-1", spacing=16)
-    hbox.pack_start(common.test_widget, False, False, 6)
+        panel = SwayWorkspaces(display_name="{}".format(panel["output"]), spacing=16)
+        common.panels_list.append(panel)
+        print(panel)
+        
+        hbox.pack_start(panel, False, False, 6)
 
-    window.add(vbox)
+        window.add(vbox)
 
-    GtkLayerShell.init_for_window(window)
-    GtkLayerShell.auto_exclusive_zone_enable(window)
-    GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, 2)
-    GtkLayerShell.set_margin(window, GtkLayerShell.Edge.BOTTOM, 2)
-    GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.BOTTOM, 1)
+        GtkLayerShell.init_for_window(window)
+        GtkLayerShell.auto_exclusive_zone_enable(window)
+        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, 2)
+        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.BOTTOM, 2)
+        GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.BOTTOM, 1)
 
-    window.show_all()
-    window.connect('destroy', Gtk.main_quit)
+        window.show_all()
+        window.connect('destroy', Gtk.main_quit)
 
     GLib.timeout_add(100, listener_reply)
     Gtk.main()
