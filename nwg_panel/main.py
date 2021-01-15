@@ -22,7 +22,7 @@ from gi.repository import Gtk, GtkLayerShell, GLib, Gdk
 
 # from i3ipc import Connection
 
-from modules.workspaces import SwayWorkspaces
+from modules.sway_taskbar import SwayTaskbar
 
 context = zmq.Context()
 socket = context.socket(zmq.REP)
@@ -30,22 +30,22 @@ socket.bind("tcp://*:5555")
 
 
 def listener_reply():
-    #common.test_widget.refresh()
     for item in common.panels_list:
         item.refresh()
 
     return True
 
 
+def instantiate_content(panel, container, content_list):
+    for item in content_list:
+        if item == "sway-taskbar":
+            taskbar = SwayTaskbar(panel["sway-taskbar"], display_name="{}".format(panel["output"]), spacing=16)
+            common.panels_list.append(taskbar)
+
+            container.pack_start(taskbar, False, False, 6)
+
+
 def main():
-    
-    #common.i3 = Connection()
-    
-    """display = Gdk.Display().get_default()
-    for d in range(display.get_n_monitors()):
-        monitor = display.get_monitor(d)
-        geometry = monitor.get_geometry()
-        print(monitor.get_display().get_name(), geometry.x, geometry.y, geometry.width, geometry.height)"""
 
     common.config_dir = get_config_dir()
     config_file = os.path.join(common.config_dir, "config")
@@ -62,7 +62,6 @@ def main():
         print(e)
 
     for panel in panels:
-        print(panel["output"])
         common.i3.command("focus output {}".format(panel["output"]))
         window = Gtk.Window()
         Gtk.Widget.set_size_request(window, 1920, 20)
@@ -71,11 +70,25 @@ def main():
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         vbox.pack_start(hbox, True, True, 2)
 
-        panel = SwayWorkspaces(display_name="{}".format(panel["output"]), spacing=16)
-        common.panels_list.append(panel)
-        print(panel)
+        inner_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        hbox.pack_start(inner_box, True, True, 0)
         
-        hbox.pack_start(panel, False, False, 6)
+        left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        inner_box.pack_start(left_box, True, True, 0)
+        instantiate_content(panel, left_box, panel["modules-left"])
+
+        center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        inner_box.pack_start(center_box, True, True, 0)
+        instantiate_content(panel, center_box, panel["modules-center"])
+
+        right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        inner_box.pack_end(right_box, True, True, 0)
+        instantiate_content(panel, right_box, panel["modules-right"])
+
+        """taskbar = SwayTaskbar(display_name="{}".format(panel["output"]), spacing=16)
+        common.panels_list.append(taskbar)
+        
+        hbox.pack_start(taskbar, False, False, 6)"""
 
         window.add(vbox)
 

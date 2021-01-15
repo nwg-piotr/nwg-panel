@@ -68,10 +68,10 @@ def sample_config():
     panel["padding-horizontal"] = 0
     panel["padding-vertical"] = 0
     panel["spacing"] = 0
-    panel["modules-left"] = ["workspaces"]
+    panel["modules-left"] = ["taskbar"]
     panel["modules-center"] = []
     panel["modules-right"] = []
-    panel["workspaces"] = {"show-app-icon": True, "show-split": True, "show-app-name": True, "name-max-len": 30}
+    panel["taskbar"] = {"show-app-icon": True, "show-split": True, "show-app-name": True, "name-max-len": 30}
 
     config.append(panel)
 
@@ -83,10 +83,10 @@ def sample_config():
     panel["margin-bottom"] = 0
     panel["padding-horizontal"] = 0
     panel["padding-vertical"] = 0
-    panel["modules-left"] = ["workspaces"]
+    panel["modules-left"] = ["taskbar"]
     panel["modules-center"] = []
     panel["modules-right"] = []
-    panel["workspaces"] = {"max_length": 30, "show-icon": True, "rename": True}
+    panel["taskbar"] = {"max_length": 30, "show-icon": True, "rename": True}
 
     config.append(panel)
 

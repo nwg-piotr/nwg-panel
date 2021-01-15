@@ -7,8 +7,9 @@ from nwg_panel.tools import save_json
 import nwg_panel.common
 
 
-class SwayWorkspaces(Gtk.Box):
-    def __init__(self, display_name="", spacing=0):
+class SwayTaskbar(Gtk.Box):
+    def __init__(self, settings, display_name="", spacing=0):
+        print(settings)
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=spacing)
         self.display_name = display_name
         self.displays_tree = self.list_tree()
@@ -46,18 +47,18 @@ class SwayWorkspaces(Gtk.Box):
         self.displays_tree = self.list_tree()
 
         for display in self.displays_tree:
-            print(display.type.upper(), display.name, display.rect.x, display.rect.y, display.rect.width,
-                  display.rect.height)
+            """print(display.type.upper(), display.name, display.rect.x, display.rect.y, display.rect.width,
+                  display.rect.height)"""
             for desc in display.descendants():
                 if desc.type == "workspace":
-                    print("  ", desc.type.upper(), desc.num)
+                    """print("  ", desc.type.upper(), desc.num)"""
                     ws_box = WorkspaceBox(desc)
 
                     for con in desc.descendants():
                         if con.name or con.app_id:
-                            print("    {} | name: {} layout: {} | app_id: {} | pid: {} | focused: {}"
+                            """print("    {} | name: {} layout: {} | app_id: {} | pid: {} | focused: {}"
                                   .format(con.type.upper(), con.name, con.parent.layout, con.app_id, con.pid,
-                                          con.focused))
+                                          con.focused))"""
                             win_box = WindowBox(con)
                             ws_box.pack_start(win_box, False, False, 3)
                             
@@ -82,7 +83,6 @@ class WorkspaceBox(Gtk.Box):
         self.pack_start(btn, False, False, 0)
         
     def on_click(self, button):
-        print("Clicked!", self.con.type, self.con.num)
         nwg_panel.common.i3.command("{} number {} focus".format(self.con.type, self.con.num))
 
 
@@ -136,5 +136,4 @@ class WindowBox(Gtk.EventBox):
             cmd = "[con_id=\"{}\"] kill".format(self.con.id)
         else:
             cmd = "[con_id=\"{}\"] focus".format(self.con.id)
-        print(cmd)
         nwg_panel.common.i3.command(cmd)
