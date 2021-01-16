@@ -2,13 +2,17 @@
 
 from gi.repository import Gtk
 
+import sys
+sys.path.append('../')
+
 import nwg_panel.common
+from nwg_panel.tools import check_key
 
 
 class SwayTaskbar(Gtk.Box):
     def __init__(self, settings, display_name=""):
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL,
-                         spacing=settings["workspace-spacing"] if settings["workspace-spacing"] else 0)
+        check_key(settings, "workspaces-spacing", 0)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=settings["workspaces-spacing"])
         self.settings = settings
         self.display_name = display_name
         self.displays_tree = self.list_tree()
@@ -61,7 +65,7 @@ class SwayTaskbar(Gtk.Box):
                             win_box = WindowBox(con, self.settings)
                             ws_box.pack_start(win_box, False, False, 0)
                             
-                    self.pack_start(ws_box, False, False, 0)
+                    self.pack_start(ws_box, False, False, 6)
                     self.show_all()
                     
     def refresh(self):
@@ -77,7 +81,9 @@ class WorkspaceBox(Gtk.Box):
     def __init__(self, con, settings):
         self.con = con
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        if settings["ws-as-button"]:
+
+        check_key(settings, "workspace-buttons", False)
+        if settings["workspace-buttons"]:
             widget = Gtk.Button.new_with_label("{}".format(con.num))
             widget.connect("clicked", self.on_click)
         else:
@@ -101,9 +107,9 @@ class WindowBox(Gtk.EventBox):
         self.old_name = ""
 
         if con.focused:
-            self.box.set_property("name", "window-box-focused")
+            self.box.set_property("name", "task-box-focused")
         else:
-            self.box.set_property("name", "window-box")
+            self.box.set_property("name", "task-box")
 
         self.connect('enter-notify-event', self.on_enter_notify_event)
         self.connect('leave-notify-event', self.on_leave_notify_event)
@@ -116,6 +122,7 @@ class WindowBox(Gtk.EventBox):
             # TODO support for apps w/o app_id needed here
 
         if con.name:
+            check_key(settings, "name-max-len", 10)
             name = con.name[:settings["name-max-len"]] if len(con.name) > settings["name-max-len"] else con.name
             label = Gtk.Label(name)
             self.box.pack_start(label, False, False, 0)

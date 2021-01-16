@@ -56,42 +56,6 @@ def save_string(string, file):
         print("Error writing file '{}'".format(file))
 
 
-def sample_config():
-    config = []
-    panel = {}
-    panel["output"] = "eDP-1"
-    panel["layer"] = "top"
-    panel["position"] = "bottom"
-    panel["margin-top"] = 0
-    panel["margin-bottom"] = 0
-    panel["padding-horizontal"] = 0
-    panel["padding-vertical"] = 0
-    panel["spacing"] = 0
-    panel["modules-left"] = ["taskbar"]
-    panel["modules-center"] = []
-    panel["modules-right"] = []
-    panel["taskbar"] = {"show-app-icon": True, "show-split": True, "show-app-name": True, "name-max-len": 30}
-
-    config.append(panel)
-
-    panel = {}
-    panel["output"] = "HDMI-A-1"
-    panel["layer"] = "top"
-    panel["position"] = "bottom"
-    panel["margin-top"] = 0
-    panel["margin-bottom"] = 0
-    panel["padding-horizontal"] = 0
-    panel["padding-vertical"] = 0
-    panel["modules-left"] = ["taskbar"]
-    panel["modules-center"] = []
-    panel["modules-right"] = []
-    panel["taskbar"] = {"max_length": 30, "show-icon": True, "rename": True}
-
-    config.append(panel)
-
-    return config
-
-
 def list_outputs():
     outputs = {}
     for item in common.i3.get_tree():
@@ -101,3 +65,8 @@ def list_outputs():
                                   "width": item.rect.width,
                                   "height": item.rect.height}
     return outputs
+
+
+def check_key(dictionary, key, default_value):
+    if key not in dictionary:
+        dictionary[key] = default_value

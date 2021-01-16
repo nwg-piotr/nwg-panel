@@ -1,9 +1,7 @@
 #!/usr/bin/python3
 
 import sys
-import zmq
 
-import common
 from tools import *
 
 import gi
@@ -24,10 +22,6 @@ from gi.repository import Gtk, GtkLayerShell, GLib, Gdk
 
 from modules.sway_taskbar import SwayTaskbar
 
-context = zmq.Context()
-socket = context.socket(zmq.REP)
-socket.bind("tcp://*:5555")
-
 
 def listener_reply():
     for item in common.panels_list:
@@ -39,7 +33,11 @@ def listener_reply():
 def instantiate_content(panel, container, content_list):
     for item in content_list:
         if item == "sway-taskbar":
-            taskbar = SwayTaskbar(panel["sway-taskbar"], display_name="{}".format(panel["output"]))
+            check_key(panel["sway-taskbar"], "all-outputs", False)
+            if panel["sway-taskbar"]["all-outputs"]:
+                taskbar = SwayTaskbar(panel["sway-taskbar"])
+            else:
+                taskbar = SwayTaskbar(panel["sway-taskbar"], display_name="{}".format(panel["output"]))
             common.panels_list.append(taskbar)
 
             container.pack_start(taskbar, False, False, 0)
@@ -66,14 +64,11 @@ def main():
     for panel in panels:
         common.i3.command("focus output {}".format(panel["output"]))
         window = Gtk.Window()
-        try:
-            w = panel["width"] if panel["width"] == int(panel["width"]) else 0
-        except KeyError:
-            w = common.outputs[panel["output"]]["width"]
-        try:
-            h = panel["height"]
-        except KeyError:
-            h = 0
+        check_key(panel, "width", common.outputs[panel["output"]]["width"])
+        w = panel["width"]
+        check_key(panel, "height", 0)
+        h = panel["height"]
+
         Gtk.Widget.set_size_request(window, w, h)
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -98,10 +93,26 @@ def main():
         window.add(vbox)
 
         GtkLayerShell.init_for_window(window)
+
         GtkLayerShell.auto_exclusive_zone_enable(window)
-        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, 0)
-        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.BOTTOM, 0)
-        GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.BOTTOM, 1)
+        
+        check_key(panel, "layer", "top")
+        if panel["layer"] == "top":
+            GtkLayerShell.set_layer(window, GtkLayerShell.Layer.TOP)
+        else:
+            GtkLayerShell.set_layer(window, GtkLayerShell.Layer.BOTTOM)
+        
+        check_key(panel, "margin-top", 0)
+        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, panel["margin-top"])
+
+        check_key(panel, "margin-bottom", 0)
+        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.BOTTOM, panel["margin-bottom"])
+
+        check_key(panel, "position", "top")
+        if panel["position"] == "top":
+            GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.TOP, 1)
+        else:
+            GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.BOTTOM, 1)
 
         window.show_all()
         window.connect('destroy', Gtk.main_quit)
