@@ -2,22 +2,21 @@
 
 from gi.repository import Gtk
 
-from nwg_panel.tools import save_json
-
 import nwg_panel.common
 
 
 class SwayTaskbar(Gtk.Box):
-    def __init__(self, settings, display_name="", spacing=0):
-        print(settings)
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=spacing)
+    def __init__(self, settings, display_name=""):
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL,
+                         spacing=settings["workspace-spacing"] if settings["workspace-spacing"] else 0)
+        self.settings = settings
         self.display_name = display_name
         self.displays_tree = self.list_tree()
         self.build_box()
         self.ipc_data = {}
 
     def list_tree(self):
-        nwg_panel.common.i3_tree = nwg_panel.common.i3.get_tree()
+        i3_tree = nwg_panel.common.i3.get_tree()
         """
         display -> workspace -> window -> app_id
                                        -> parent_layout
@@ -30,11 +29,11 @@ class SwayTaskbar(Gtk.Box):
         """
         displays_tree = []
         if self.display_name:
-            for item in nwg_panel.common.i3_tree:
+            for item in i3_tree:
                 if item.type == "output" and item.name == self.display_name:
                     displays_tree.append(item)
         else:
-            for item in nwg_panel.common.i3_tree:
+            for item in i3_tree:
                 if item.type == "output" and not item.name.startswith("__"):
                     displays_tree.append(item)
                     
@@ -52,15 +51,15 @@ class SwayTaskbar(Gtk.Box):
             for desc in display.descendants():
                 if desc.type == "workspace":
                     """print("  ", desc.type.upper(), desc.num)"""
-                    ws_box = WorkspaceBox(desc)
+                    ws_box = WorkspaceBox(desc, self.settings)
 
                     for con in desc.descendants():
                         if con.name or con.app_id:
                             """print("    {} | name: {} layout: {} | app_id: {} | pid: {} | focused: {}"
                                   .format(con.type.upper(), con.name, con.parent.layout, con.app_id, con.pid,
                                           con.focused))"""
-                            win_box = WindowBox(con)
-                            ws_box.pack_start(win_box, False, False, 3)
+                            win_box = WindowBox(con, self.settings)
+                            ws_box.pack_start(win_box, False, False, 0)
                             
                     self.pack_start(ws_box, False, False, 0)
                     self.show_all()
@@ -75,28 +74,31 @@ class SwayTaskbar(Gtk.Box):
 
 
 class WorkspaceBox(Gtk.Box):
-    def __init__(self, con):
+    def __init__(self, con, settings):
         self.con = con
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        btn = Gtk.Button.new_with_label("{}".format(con.num))
-        btn.connect("clicked", self.on_click)
-        self.pack_start(btn, False, False, 0)
+        if settings["ws-as-button"]:
+            widget = Gtk.Button.new_with_label("{}".format(con.num))
+            widget.connect("clicked", self.on_click)
+        else:
+            widget = Gtk.Label("{}:".format(con.num))
+
+        self.pack_start(widget, False, False, 0)
         
     def on_click(self, button):
         nwg_panel.common.i3.command("{} number {} focus".format(self.con.type, self.con.num))
 
 
 class WindowBox(Gtk.EventBox):
-    # con, icon: str, parent_layout: str, name: str, focused: bool
-    def __init__(self, con):
+    def __init__(self, con, settings):
         Gtk.EventBox.__init__(self)
-        self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,
+                           spacing=settings["task-spacing"] if settings["task-spacing"] else 0)
         self.add(self.box)
         self.con = con
         self.pid = con.pid
         
         self.old_name = ""
-        self.set_tooltip_text("⭠ focus | kill ⭢")
 
         if con.focused:
             self.box.set_property("name", "window-box-focused")
@@ -107,16 +109,18 @@ class WindowBox(Gtk.EventBox):
         self.connect('leave-notify-event', self.on_leave_notify_event)
         self.connect('button-press-event', self.on_click)
 
-        if con.app_id:
-            image = Gtk.Image.new_from_icon_name(con.app_id, Gtk.IconSize.MENU)
-            self.box.pack_start(image, False, False, 0)
+        if settings["show-app-icon"]:
+            if con.app_id:
+                image = Gtk.Image.new_from_icon_name(con.app_id, Gtk.IconSize.MENU)
+                self.box.pack_start(image, False, False, 4)
+            # TODO support for apps w/o app_id needed here
 
         if con.name:
-            name = con.name[:12] if len(con.name) > 12 else con.name
+            name = con.name[:settings["name-max-len"]] if len(con.name) > settings["name-max-len"] else con.name
             label = Gtk.Label(name)
-            self.box.pack_start(label, False, False, 4)
+            self.box.pack_start(label, False, False, 0)
 
-        if con.parent.layout:
+        if settings["show-split"] and con.parent.layout:
             if con.parent.layout == "splith":
                 image = Gtk.Image.new_from_icon_name("go-next", Gtk.IconSize.MENU)
             elif con.parent.layout == "splitv":

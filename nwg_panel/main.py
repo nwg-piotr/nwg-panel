@@ -39,16 +39,18 @@ def listener_reply():
 def instantiate_content(panel, container, content_list):
     for item in content_list:
         if item == "sway-taskbar":
-            taskbar = SwayTaskbar(panel["sway-taskbar"], display_name="{}".format(panel["output"]), spacing=16)
+            taskbar = SwayTaskbar(panel["sway-taskbar"], display_name="{}".format(panel["output"]))
             common.panels_list.append(taskbar)
 
-            container.pack_start(taskbar, False, False, 6)
+            container.pack_start(taskbar, False, False, 0)
 
 
 def main():
 
     common.config_dir = get_config_dir()
     config_file = os.path.join(common.config_dir, "config")
+    
+    common.outputs = list_outputs()
 
     panels = load_json(config_file)
 
@@ -64,38 +66,41 @@ def main():
     for panel in panels:
         common.i3.command("focus output {}".format(panel["output"]))
         window = Gtk.Window()
-        Gtk.Widget.set_size_request(window, 1920, 20)
+        try:
+            w = panel["width"] if panel["width"] == int(panel["width"]) else 0
+        except KeyError:
+            w = common.outputs[panel["output"]]["width"]
+        try:
+            h = panel["height"]
+        except KeyError:
+            h = 0
+        Gtk.Widget.set_size_request(window, w, h)
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        vbox.pack_start(hbox, True, True, 2)
+        vbox.pack_start(hbox, True, True, panel["padding-vertical"])
 
         inner_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        hbox.pack_start(inner_box, True, True, 0)
+        hbox.pack_start(inner_box, True, True, panel["padding-horizontal"])
         
         left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        inner_box.pack_start(left_box, True, True, 0)
+        inner_box.pack_start(left_box, False, False, 0)
         instantiate_content(panel, left_box, panel["modules-left"])
 
         center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        inner_box.pack_start(center_box, True, True, 0)
+        inner_box.pack_start(center_box, True, False, 0)
         instantiate_content(panel, center_box, panel["modules-center"])
 
         right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        inner_box.pack_end(right_box, True, True, 0)
+        inner_box.pack_end(right_box, False, False, 0)
         instantiate_content(panel, right_box, panel["modules-right"])
-
-        """taskbar = SwayTaskbar(display_name="{}".format(panel["output"]), spacing=16)
-        common.panels_list.append(taskbar)
-        
-        hbox.pack_start(taskbar, False, False, 6)"""
 
         window.add(vbox)
 
         GtkLayerShell.init_for_window(window)
         GtkLayerShell.auto_exclusive_zone_enable(window)
-        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, 2)
-        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.BOTTOM, 2)
+        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, 0)
+        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.BOTTOM, 0)
         GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.BOTTOM, 1)
 
         window.show_all()

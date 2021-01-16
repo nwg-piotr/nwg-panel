@@ -3,12 +3,11 @@
 import os
 import json
 
-from types import SimpleNamespace
-
 import gi
+
 gi.require_version('GdkPixbuf', '2.0')
 
-from types import SimpleNamespace
+import common
 
 
 def get_config_dir():
@@ -91,3 +90,14 @@ def sample_config():
     config.append(panel)
 
     return config
+
+
+def list_outputs():
+    outputs = {}
+    for item in common.i3.get_tree():
+        if item.type == "output" and not item.name.startswith("__"):
+            outputs[item.name] = {"x": item.rect.x,
+                                  "y": item.rect.y,
+                                  "width": item.rect.width,
+                                  "height": item.rect.height}
+    return outputs
