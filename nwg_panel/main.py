@@ -19,6 +19,7 @@ from gi.repository import Gtk, GtkLayerShell, GLib, Gdk
 from tools import *
 from modules.sway_taskbar import SwayTaskbar
 from modules.sway_workspaces import SwayWorkspaces
+from modules.custom_button import CustomButton
 
 
 def listener_reply():
@@ -46,6 +47,14 @@ def instantiate_content(panel, container, content_list):
                 container.pack_start(workspaces, False, False, 0)
             else:
                 print("'sway-workspaces' not defined in this panel instance")
+                
+        if "button-" in item:
+            if item in panel:
+                print(item, "in panel")
+                button = CustomButton(panel[item])
+                container.pack_start(button, False, False, 0)
+            else:
+                print("'{}' not defined in this panel instance".format(item))
 
 
 def main():
@@ -87,15 +96,16 @@ def main():
         inner_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         hbox.pack_start(inner_box, True, True, panel["padding-horizontal"])
 
-        left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        check_key(panel, "spacing", 6)
+        left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
         inner_box.pack_start(left_box, False, False, 0)
         instantiate_content(panel, left_box, panel["modules-left"])
 
-        center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
         inner_box.pack_start(center_box, True, False, 0)
         instantiate_content(panel, center_box, panel["modules-center"])
 
-        right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
         inner_box.pack_end(right_box, False, False, 0)
         instantiate_content(panel, right_box, panel["modules-right"])
 
