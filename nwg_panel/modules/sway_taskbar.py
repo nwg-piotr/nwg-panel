@@ -119,7 +119,6 @@ class WindowBox(Gtk.EventBox):
             name = con.app_id if con.app_id else con.window_class
 
             icon_from_desktop = get_icon(name)
-            print(icon_from_desktop)
             if icon_from_desktop:
                 if "/" not in icon_from_desktop and not icon_from_desktop.endswith(".svg") and not icon_from_desktop.endswith(".png"):
                     image = Gtk.Image.new_from_icon_name(icon_from_desktop, Gtk.IconSize.MENU)
@@ -138,14 +137,19 @@ class WindowBox(Gtk.EventBox):
             label = Gtk.Label(name)
             self.box.pack_start(label, False, False, 0)
 
-        if settings["show-split"] and con.parent.layout:
+        if settings["show-layout"] and con.parent.layout:
             if con.parent.layout == "splith":
                 image = Gtk.Image.new_from_icon_name("go-next", Gtk.IconSize.MENU)
             elif con.parent.layout == "splitv":
                 image = Gtk.Image.new_from_icon_name("go-down", Gtk.IconSize.MENU)
+            elif con.parent.layout == "tabbed":
+                image = Gtk.Image.new_from_icon_name("view-dual", Gtk.IconSize.MENU)
+            elif con.parent.layout == "stacked":
+                image = Gtk.Image.new_from_icon_name("view-paged", Gtk.IconSize.MENU)
             else:
                 image = Gtk.Image.new_from_icon_name("window-new", Gtk.IconSize.MENU)
-            self.box.pack_start(image, False, False, 0)
+            
+            self.box.pack_start(image, False, False, 4)
 
     def on_enter_notify_event(self, widget, event):
         self.get_style_context().set_state(Gtk.StateFlags.SELECTED)
