@@ -1,10 +1,8 @@
 #!/usr/bin/python3
 
 import sys
-
-from tools import *
-
 import gi
+
 gi.require_version('Gtk', '3.0')
 try:
     gi.require_version('GtkLayerShell', '0.1')
@@ -18,9 +16,9 @@ except ValueError:
 
 from gi.repository import Gtk, GtkLayerShell, GLib, Gdk
 
-# from i3ipc import Connection
-
+from tools import *
 from modules.sway_taskbar import SwayTaskbar
+from modules.sway_workspaces import SwayWorkspaces
 
 
 def listener_reply():
@@ -41,14 +39,22 @@ def instantiate_content(panel, container, content_list):
             common.panels_list.append(taskbar)
 
             container.pack_start(taskbar, False, False, 0)
+            
+        if item == "sway-workspaces":
+            if "sway-workspaces" in panel:
+                workspaces = SwayWorkspaces(panel["sway-workspaces"])
+                container.pack_start(workspaces, False, False, 0)
+            else:
+                print("'sway-workspaces' not defined in this panel instance")
 
 
 def main():
-
     common.config_dir = get_config_dir()
     config_file = os.path.join(common.config_dir, "config")
-    
+
     common.outputs = list_outputs()
+
+    # list_gdk_screens()
 
     panels = load_json(config_file)
 
@@ -61,7 +67,10 @@ def main():
     except Exception as e:
         print(e)
 
+    output_to_focus = None
+
     for panel in panels:
+
         common.i3.command("focus output {}".format(panel["output"]))
         window = Gtk.Window()
         check_key(panel, "width", common.outputs[panel["output"]]["width"])
@@ -77,7 +86,7 @@ def main():
 
         inner_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         hbox.pack_start(inner_box, True, True, panel["padding-horizontal"])
-        
+
         left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         inner_box.pack_start(left_box, False, False, 0)
         instantiate_content(panel, left_box, panel["modules-left"])
@@ -95,13 +104,13 @@ def main():
         GtkLayerShell.init_for_window(window)
 
         GtkLayerShell.auto_exclusive_zone_enable(window)
-        
+
         check_key(panel, "layer", "top")
         if panel["layer"] == "top":
             GtkLayerShell.set_layer(window, GtkLayerShell.Layer.TOP)
         else:
             GtkLayerShell.set_layer(window, GtkLayerShell.Layer.BOTTOM)
-        
+
         check_key(panel, "margin-top", 0)
         GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, panel["margin-top"])
 
@@ -112,10 +121,25 @@ def main():
         if panel["position"] == "top":
             GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.TOP, 1)
         else:
+
             GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.BOTTOM, 1)
 
         window.show_all()
         window.connect('destroy', Gtk.main_quit)
+
+        """
+        As we displace panels by focusing outputs, we always end up in the last output focused on start.
+        Let's add the optional "focus" key to the panel placed on the primary output. Whatever non-empty value allowed.
+        """
+        try:
+            if panel["focus"]:
+                common.i3.command("focus output {}".format(panel["output"]))
+                output_to_focus = panel["output"]
+        except KeyError:
+            pass
+
+    if output_to_focus:
+        common.i3.command("focus output {}".format(output_to_focus))
 
     GLib.timeout_add(100, listener_reply)
     Gtk.main()

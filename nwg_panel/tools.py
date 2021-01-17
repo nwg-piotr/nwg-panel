@@ -6,6 +6,10 @@ import json
 import gi
 
 gi.require_version('GdkPixbuf', '2.0')
+gi.require_version('Gtk', '3.0')
+gi.require_version('Gdk', '3.0')
+
+from gi.repository import Gdk
 
 import common
 
@@ -68,5 +72,7 @@ def list_outputs():
 
 
 def check_key(dictionary, key, default_value):
+    # adds a key w/ default value if missing from the dictionary
     if key not in dictionary:
         dictionary[key] = default_value
+        print('Key missing, using default: "{}": {}'.format(key, default_value))
