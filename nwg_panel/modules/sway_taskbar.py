@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-from gi.repository import Gtk
+from gi.repository import Gtk, GdkPixbuf
 
 import sys
 sys.path.append('../')
 
 import nwg_panel.common
-from nwg_panel.tools import check_key
+from nwg_panel.tools import check_key, get_icon, create_pixbuf
 
 
 class SwayTaskbar(Gtk.Box):
@@ -116,10 +116,21 @@ class WindowBox(Gtk.EventBox):
         self.connect('button-press-event', self.on_click)
 
         if settings["show-app-icon"]:
-            if con.app_id:
-                image = Gtk.Image.new_from_icon_name(con.app_id, Gtk.IconSize.MENU)
+            name = con.app_id if con.app_id else con.window_class
+
+            icon_from_desktop = get_icon(name)
+            print(icon_from_desktop)
+            if icon_from_desktop:
+                if "/" not in icon_from_desktop and not icon_from_desktop.endswith(".svg") and not icon_from_desktop.endswith(".png"):
+                    image = Gtk.Image.new_from_icon_name(icon_from_desktop, Gtk.IconSize.MENU)
+                else:
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop, 16, 16)
+                    image = Gtk.Image.new_from_pixbuf(pixbuf)
+
                 self.box.pack_start(image, False, False, 4)
-            # TODO support for apps w/o app_id needed here
+            else:
+                image = Gtk.Image.new_from_icon_name(name, Gtk.IconSize.MENU)
+                self.box.pack_start(image, False, False, 4)
 
         if con.name:
             check_key(settings, "name-max-len", 10)

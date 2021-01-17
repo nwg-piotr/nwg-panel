@@ -20,6 +20,7 @@ from tools import *
 from modules.sway_taskbar import SwayTaskbar
 from modules.sway_workspaces import SwayWorkspaces
 from modules.custom_button import CustomButton
+from modules.executor import Executor
 
 
 def listener_reply():
@@ -50,20 +51,25 @@ def instantiate_content(panel, container, content_list):
                 
         if "button-" in item:
             if item in panel:
-                print(item, "in panel")
                 button = CustomButton(panel[item])
                 container.pack_start(button, False, False, 0)
+            else:
+                print("'{}' not defined in this panel instance".format(item))
+                
+        if "executor-" in item:
+            if item in panel:
+                executor = Executor(panel[item])
             else:
                 print("'{}' not defined in this panel instance".format(item))
 
 
 def main():
+    common.app_dirs = get_app_dirs()
+
     common.config_dir = get_config_dir()
     config_file = os.path.join(common.config_dir, "config")
 
     common.outputs = list_outputs()
-
-    # list_gdk_screens()
 
     panels = load_json(config_file)
 

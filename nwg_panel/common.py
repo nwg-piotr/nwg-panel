@@ -7,4 +7,5 @@ i3 = Connection()
 outputs = {}
 panels_list = []
 config_dir = ""
-
+app_dirs = []
+icons_path = None
