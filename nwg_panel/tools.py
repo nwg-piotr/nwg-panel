@@ -117,38 +117,3 @@ def check_key(dictionary, key, default_value):
     if key not in dictionary:
         dictionary[key] = default_value
         print('Key missing, using default: "{}": {}'.format(key, default_value))
-
-
-def create_pixbuf(icon, size):
-    # full path given
-    if icon.startswith('/'):
-        if common.icons_path:
-            icon = os.path.join(common.icons_path, icon)
-        try:
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon, size, size)
-        except:
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join(common.dirname, 'icons_light/icon-missing.svg'),
-                                                            size, size)
-    # just name given
-    else:
-        # In case someone wrote 'name.svg' instead of just 'name' in the "icons" dictionary (config_dir/config.json)
-        if icon.endswith(".svg"):
-            icon = "".join(icon.split(".")[:-1])
-        if common.icons_path:
-            icon_svg = os.path.join(common.icons_path, (icon + ".svg"))
-            try:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_svg, size, size)
-            except:
-                try:
-                    # if a custom icon of such name does not exist, let's try using a GTK icon
-                    pixbuf = common.icon_theme.load_icon(icon, size, Gtk.IconLookupFlags.FORCE_SIZE)
-                except:
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                        os.path.join(common.dirname, 'icons_light/icon-missing.svg'), size, size)
-        else:
-            try:
-                pixbuf = common.icon_theme.load_icon(icon, size, Gtk.IconLookupFlags.FORCE_SIZE)
-            except:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('icons_light/icon-missing.svg', size, size)
-
-    return pixbuf

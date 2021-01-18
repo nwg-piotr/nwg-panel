@@ -59,6 +59,7 @@ def instantiate_content(panel, container, content_list):
         if "executor-" in item:
             if item in panel:
                 executor = Executor(panel[item])
+                container.pack_start(executor, False, False, 0)
             else:
                 print("'{}' not defined in this panel instance".format(item))
 
@@ -157,7 +158,8 @@ def main():
     if output_to_focus:
         common.i3.command("focus output {}".format(output_to_focus))
 
-    GLib.timeout_add(100, listener_reply)
+    #GLib.timeout_add(100, listener_reply)
+    Gdk.threads_add_timeout(GLib.PRIORITY_HIGH, 100, listener_reply)
     Gtk.main()
 
 

@@ -6,7 +6,7 @@ import sys
 sys.path.append('../')
 
 import nwg_panel.common
-from nwg_panel.tools import check_key, get_icon, create_pixbuf
+from nwg_panel.tools import check_key, get_icon
 
 
 class SwayTaskbar(Gtk.Box):
@@ -65,7 +65,7 @@ class SwayTaskbar(Gtk.Box):
                             win_box = WindowBox(con, self.settings)
                             ws_box.pack_start(win_box, False, False, 0)
                             
-                    self.pack_start(ws_box, False, False, 6)
+                    self.pack_start(ws_box, False, False, 0)
                     self.show_all()
                     
     def refresh(self):
@@ -80,7 +80,7 @@ class SwayTaskbar(Gtk.Box):
 class WorkspaceBox(Gtk.Box):
     def __init__(self, con, settings):
         self.con = con
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
 
         check_key(settings, "workspace-buttons", False)
         if settings["workspace-buttons"]:
@@ -89,7 +89,7 @@ class WorkspaceBox(Gtk.Box):
         else:
             widget = Gtk.Label("{}:".format(con.num))
 
-        self.pack_start(widget, False, False, 0)
+        self.pack_start(widget, False, False, 4)
         
     def on_click(self, button):
         nwg_panel.common.i3.command("{} number {} focus".format(self.con.type, self.con.num))

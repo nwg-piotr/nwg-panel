@@ -9,3 +9,5 @@ panels_list = []
 config_dir = ""
 app_dirs = []
 icons_path = None
+executors_output = {}
+test = None
