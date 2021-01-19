@@ -14,6 +14,17 @@ from gi.repository import Gtk, GdkPixbuf
 import common
 
 
+def temp_dir():
+    if os.getenv("TMPDIR"):
+        return os.getenv("TMPDIR")
+    elif os.getenv("TEMP"):
+        return os.getenv("TEMP")
+    elif os.getenv("TMP"):
+        return os.getenv("TMP")
+    
+    return "/tmp"
+        
+    
 def get_app_dirs():
     desktop_dirs = []
     
@@ -99,6 +110,15 @@ def load_json(path):
 def save_json(src_dict, path):
     with open(path, 'w') as f:
         json.dump(src_dict, f, indent=2)
+        
+        
+def save_string(string, file):
+    try:
+        file = open(file, "wt")
+        file.write(string)
+        file.close()
+    except:
+        print("Error writing file '{}'".format(file))
 
 
 def list_outputs():

@@ -65,6 +65,8 @@ def instantiate_content(panel, container, content_list):
 
 
 def main():
+    save_string(str(os.getpid()), os.path.join(temp_dir(), "nwg-panel.pid"))
+    
     common.app_dirs = get_app_dirs()
 
     common.config_dir = get_config_dir()
@@ -159,7 +161,7 @@ def main():
         common.i3.command("focus output {}".format(output_to_focus))
 
     #GLib.timeout_add(100, listener_reply)
-    Gdk.threads_add_timeout(GLib.PRIORITY_HIGH, 100, listener_reply)
+    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 100, listener_reply)
     Gtk.main()
 
 
