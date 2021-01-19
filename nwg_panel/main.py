@@ -24,7 +24,7 @@ from modules.executor import Executor
 
 
 def listener_reply():
-    for item in common.panels_list:
+    for item in common.taskbars_list:
         item.refresh()
 
     return True
@@ -39,30 +39,30 @@ def instantiate_content(panel, container, content_list):
                     taskbar = SwayTaskbar(panel["sway-taskbar"])
                 else:
                     taskbar = SwayTaskbar(panel["sway-taskbar"], display_name="{}".format(panel["output"]))
-                common.panels_list.append(taskbar)
+                common.taskbars_list.append(taskbar)
     
-                container.pack_start(taskbar, False, False, 0)
+                container.pack_start(taskbar, True, False, 0)
             else:
                 print("'sway-taskbar' not defined in this panel instance")
             
         if item == "sway-workspaces":
             if "sway-workspaces" in panel:
                 workspaces = SwayWorkspaces(panel["sway-workspaces"])
-                container.pack_start(workspaces, False, False, 0)
+                container.pack_start(workspaces, True, False, 0)
             else:
                 print("'sway-workspaces' not defined in this panel instance")
                 
         if "button-" in item:
             if item in panel:
                 button = CustomButton(panel[item])
-                container.pack_start(button, False, False, 0)
+                container.pack_start(button, True, False, 0)
             else:
                 print("'{}' not defined in this panel instance".format(item))
                 
         if "executor-" in item:
             if item in panel:
                 executor = Executor(panel[item])
-                container.pack_start(executor, False, False, 0)
+                container.pack_start(executor, True, False, 0)
             else:
                 print("'{}' not defined in this panel instance".format(item))
 
@@ -98,9 +98,6 @@ def main():
         w = panel["width"]
         check_key(panel, "height", 0)
         h = panel["height"]
-        
-        third_part = int(w / 3)
-        print(third_part)
 
         Gtk.Widget.set_size_request(window, w, h)
 
@@ -113,17 +110,16 @@ def main():
 
         check_key(panel, "spacing", 6)
         left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
-        Gtk.Widget.set_size_request(left_box, third_part, h)
         inner_box.pack_start(left_box, False, False, 0)
         instantiate_content(panel, left_box, panel["modules-left"])
 
         center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
-        Gtk.Widget.set_size_request(center_box, third_part, h)
         inner_box.pack_start(center_box, True, True, 0)
+
         instantiate_content(panel, center_box, panel["modules-center"])
 
         right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
-        Gtk.Widget.set_size_request(right_box, third_part, h)
+        #Gtk.Widget.set_size_request(right_box, third_part, h)
         inner_box.pack_end(right_box, False, False, 0)
         instantiate_content(panel, right_box, panel["modules-right"])
 
