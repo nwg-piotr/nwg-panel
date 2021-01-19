@@ -54,8 +54,7 @@ class SwayTaskbar(Gtk.Box):
                   display.rect.height)"""
             for desc in display.descendants():
                 if desc.type == "workspace":
-                    """print("  ", desc.type.upper(), desc.num)"""
-                    ws_box = WorkspaceBox(desc, self.settings)
+                    self.ws_box = WorkspaceBox(desc, self.settings)
 
                     for con in desc.descendants():
                         if con.name or con.app_id:
@@ -63,10 +62,9 @@ class SwayTaskbar(Gtk.Box):
                                   .format(con.type.upper(), con.name, con.parent.layout, con.app_id, con.pid,
                                           con.focused))"""
                             win_box = WindowBox(con, self.settings)
-                            ws_box.pack_start(win_box, False, False, 0)
-                            
-                    self.pack_start(ws_box, False, False, 0)
-                    self.show_all()
+                            self.ws_box.pack_start(win_box, False, False, 0)
+                    self.pack_start(self.ws_box, False, False, 0)
+        self.show_all()
                     
     def refresh(self):
         if nwg_panel.common.i3.get_tree().ipc_data != self.ipc_data:

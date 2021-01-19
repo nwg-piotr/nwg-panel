@@ -70,12 +70,15 @@ class Executor(Gtk.EventBox):
                 self.icon_path = lines[0]
 
             self.label.set_text(lines[1])
-        else:
+        elif len(lines) == 1:
             if self.image.get_visible():
                 self.image.hide()
 
             if self.label.get_text() != lines[0]:
                 self.label.set_text(lines[0])
+                
+        else:
+            print("Couldnt refresh executor")
 
     def build_box(self):
         self.box.pack_start(self.image, False, False, 4)

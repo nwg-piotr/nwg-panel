@@ -33,14 +33,17 @@ def listener_reply():
 def instantiate_content(panel, container, content_list):
     for item in content_list:
         if item == "sway-taskbar":
-            check_key(panel["sway-taskbar"], "all-outputs", False)
-            if panel["sway-taskbar"]["all-outputs"]:
-                taskbar = SwayTaskbar(panel["sway-taskbar"])
+            if "sway-taskbar" in panel:
+                check_key(panel["sway-taskbar"], "all-outputs", False)
+                if panel["sway-taskbar"]["all-outputs"]:
+                    taskbar = SwayTaskbar(panel["sway-taskbar"])
+                else:
+                    taskbar = SwayTaskbar(panel["sway-taskbar"], display_name="{}".format(panel["output"]))
+                common.panels_list.append(taskbar)
+    
+                container.pack_start(taskbar, False, False, 0)
             else:
-                taskbar = SwayTaskbar(panel["sway-taskbar"], display_name="{}".format(panel["output"]))
-            common.panels_list.append(taskbar)
-
-            container.pack_start(taskbar, False, False, 0)
+                print("'sway-taskbar' not defined in this panel instance")
             
         if item == "sway-workspaces":
             if "sway-workspaces" in panel:
@@ -95,6 +98,9 @@ def main():
         w = panel["width"]
         check_key(panel, "height", 0)
         h = panel["height"]
+        
+        third_part = int(w / 3)
+        print(third_part)
 
         Gtk.Widget.set_size_request(window, w, h)
 
@@ -107,14 +113,17 @@ def main():
 
         check_key(panel, "spacing", 6)
         left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
+        Gtk.Widget.set_size_request(left_box, third_part, h)
         inner_box.pack_start(left_box, False, False, 0)
         instantiate_content(panel, left_box, panel["modules-left"])
 
         center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
-        inner_box.pack_start(center_box, True, False, 0)
+        Gtk.Widget.set_size_request(center_box, third_part, h)
+        inner_box.pack_start(center_box, True, True, 0)
         instantiate_content(panel, center_box, panel["modules-center"])
 
         right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
+        Gtk.Widget.set_size_request(right_box, third_part, h)
         inner_box.pack_end(right_box, False, False, 0)
         instantiate_content(panel, right_box, panel["modules-right"])
 
@@ -161,7 +170,7 @@ def main():
         common.i3.command("focus output {}".format(output_to_focus))
 
     #GLib.timeout_add(100, listener_reply)
-    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 100, listener_reply)
+    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 50, listener_reply)
     Gtk.main()
 
 
