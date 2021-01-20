@@ -1,0 +1,185 @@
+[
+  {
+    "output": "eDP-1",
+    "layer": "bottom",
+    "position": "bottom",
+    "width": 1920,
+    "height": 30,
+    "margin-top": 0,
+    "margin-bottom": 0,
+    "padding-horizontal": 10,
+    "padding-vertical": 0,
+    "spacing": 4,
+    "focus": true,
+    "modules-left": [
+      "button-grid",
+      "sway-taskbar"
+    ],
+    "modules-center": ["executor-traffic"],
+    "modules-right": [
+      "executor-cpuav",
+      "executor-cpubar",
+      "executor-temp",
+      "executor-memory",
+      "executor-drives",
+      "executor-uptime"
+      
+    ],
+    "sway-taskbar": {
+      "workspace-buttons": false,
+      "show-app-icon": true,
+      "show-layout": true,
+      "show-app-name": true,
+      "name-max-len": 15,
+      "workspaces-spacing": 0,
+      "task-spacing": 0,
+      "all-outputs": false
+    },
+    "sway-workspaces": {
+      "numbers": [3, 4]
+    },
+    "button-grid": {
+      "icon": "open-menu",
+      "command": "nwggrid -p"
+    },
+    "executor-cpubar": {
+      "script": "psuinfo -Cg",
+      "interval": 2
+    },
+    "executor-cpuav": {
+      "script": "psuinfo -Ca",
+      "interval": 2
+    },
+    "executor-temp": {
+      "script": "psuinfo -It",
+      "interval": 5
+    },
+    "executor-memory": {
+      "script": "psuinfo -IM",
+      "interval": 5
+    },
+    "executor-drives": {
+      "script": "psuinfo -IN",
+      "interval": 15
+    },
+    "executor-uptime": {
+      "script": "psuinfo -Iu",
+      "interval": 60
+    },
+    "executor-traffic": {
+      "script": "psuinfo -Ik",
+      "interval": 3
+    }
+  },
+  {
+    "output": "DP-1",
+    "layer": "top",
+    "position": "bottom",
+    "width": 1920,
+    "height": 30,
+    "margin-top": 0,
+    "margin-bottom": 0,
+    "padding-horizontal": 4,
+    "padding-vertical": 0,
+    "spacing": 200,
+    "modules-left": [
+      "sway-taskbar"
+    ],
+    "modules-center": [],
+    "modules-right": [],
+    "sway-taskbar": {
+      "workspace-buttons": false,
+      "show-app-icon": true,
+      "show-layout": true,
+      "show-app-name": true,
+      "name-max-len": 20,
+      "workspaces-spacing": 0,
+      "task-spacing": 0,
+      "all-outputs": false
+    },
+    "sway-workspaces": {
+      "numbers": [1, 2]
+    }
+  },
+  {
+    "output": "HDMI-A-1",
+    "layer": "top",
+    "position": "bottom",
+    "width": 1920,
+    "height": 30,
+    "margin-top": 0,
+    "margin-bottom": 0,
+    "padding-horizontal": 4,
+    "padding-vertical": 0,
+    "spacing": 200,
+    "modules-left": [
+      "sway-taskbar"
+    ],
+    "modules-center": [],
+    "modules-right": [],
+    "sway-taskbar": {
+      "workspace-buttons": false,
+      "show-app-icon": true,
+      "show-layout": true,
+      "show-app-name": true,
+      "name-max-len": 20,
+      "workspaces-spacing": 0,
+      "task-spacing": 0,
+      "all-outputs": false
+    }
+  },
+  {
+    "output": "eDP-1",
+    "layer": "bottom",
+    "position": "top",
+    "width": 1920,
+    "height": 30,
+    "margin-top": 0,
+    "margin-bottom": 0,
+    "padding-horizontal": 10,
+    "padding-vertical": 0,
+    "spacing": 10,
+    "modules-left": [
+      "executor-weather"
+    ],
+    "modules-center": [
+      
+    ],
+    "modules-right": [
+      "clock",
+      "executor-brightness",
+      "executor-volume",
+      "executor-battery"],
+    "sway-taskbar": {
+      "workspace-buttons": false,
+      "show-app-icon": true,
+      "show-layout": true,
+      "show-app-name": true,
+      "name-max-len": 20,
+      "workspaces-spacing": 0,
+      "task-spacing": 0,
+      "all-outputs": false
+    },
+    "clock": {
+      "format": "%A, %d. %B %H:%M:%S",
+      "interval": 1
+    },
+    "executor-brightness": {
+      "script": "t2ec --lbrightness",
+      "interval": 1
+    },
+    "executor-volume": {
+      "script": "t2ec --volume",
+      "interval": 1
+    },
+    "executor-battery": {
+      "script": "t2ec --battery -l",
+      "interval": 30
+    },
+    "executor-weather": {
+      "script": "/home/piotr/PycharmProjects/swayinfo/weather.py -IdtS",
+      "interval": 1800,
+      "css-name": "weather"
+    }
+  }
+]

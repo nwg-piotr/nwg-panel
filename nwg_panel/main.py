@@ -21,6 +21,7 @@ from modules.sway_taskbar import SwayTaskbar
 from modules.sway_workspaces import SwayWorkspaces
 from modules.custom_button import CustomButton
 from modules.executor import Executor
+from modules.clock import Clock
 
 
 def listener_reply():
@@ -65,6 +66,15 @@ def instantiate_content(panel, container, content_list):
                 container.pack_start(executor, True, False, 0)
             else:
                 print("'{}' not defined in this panel instance".format(item))
+                
+        if item == "clock":
+            if item in panel:
+                clock = Clock(panel[item])
+                container.pack_start(clock, True, False, 0)
+            else:
+                clock = Clock({})
+                container.pack_start(clock, True, False, 0)
+                #print("'{}' not defined in this panel instance".format(item))
 
 
 def main():

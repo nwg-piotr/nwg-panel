@@ -3,9 +3,7 @@
 from gi.repository import GLib
 
 import subprocess
-
 import threading
-
 
 from nwg_panel.tools import check_key
 

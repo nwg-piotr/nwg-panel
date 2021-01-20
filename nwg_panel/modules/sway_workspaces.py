@@ -2,9 +2,6 @@
 
 from gi.repository import Gtk
 
-import sys
-sys.path.append('../')
-
 import nwg_panel.common
 from nwg_panel.tools import check_key
 
