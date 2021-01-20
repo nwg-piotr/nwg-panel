@@ -32,6 +32,8 @@ def listener_reply():
 
 
 def instantiate_content(panel, container, content_list):
+    check_key(panel, "items-padding", 0)
+
     for item in content_list:
         if item == "sway-taskbar":
             if "sway-taskbar" in panel:
@@ -42,39 +44,38 @@ def instantiate_content(panel, container, content_list):
                     taskbar = SwayTaskbar(panel["sway-taskbar"], display_name="{}".format(panel["output"]))
                 common.taskbars_list.append(taskbar)
     
-                container.pack_start(taskbar, True, False, 0)
+                container.pack_start(taskbar, True, False, panel["items-padding"])
             else:
                 print("'sway-taskbar' not defined in this panel instance")
             
         if item == "sway-workspaces":
             if "sway-workspaces" in panel:
                 workspaces = SwayWorkspaces(panel["sway-workspaces"])
-                container.pack_start(workspaces, True, False, 0)
+                container.pack_start(workspaces, True, False, panel["items-padding"])
             else:
                 print("'sway-workspaces' not defined in this panel instance")
                 
         if "button-" in item:
             if item in panel:
                 button = CustomButton(panel[item])
-                container.pack_start(button, True, False, 0)
+                container.pack_start(button, True, False, panel["items-padding"])
             else:
                 print("'{}' not defined in this panel instance".format(item))
                 
         if "executor-" in item:
             if item in panel:
                 executor = Executor(panel[item])
-                container.pack_start(executor, True, False, 0)
+                container.pack_start(executor, True, False, panel["items-padding"])
             else:
                 print("'{}' not defined in this panel instance".format(item))
                 
         if item == "clock":
             if item in panel:
                 clock = Clock(panel[item])
-                container.pack_start(clock, True, False, 0)
+                container.pack_start(clock, True, False, panel["items-padding"])
             else:
                 clock = Clock({})
-                container.pack_start(clock, True, False, 0)
-                #print("'{}' not defined in this panel instance".format(item))
+                container.pack_start(clock, True, False, panel["items-padding"])
 
 
 def main():
@@ -174,6 +175,10 @@ def main():
 
     if output_to_focus:
         common.i3.command("focus output {}".format(output_to_focus))
+        
+    if common.key_missing:
+        print("Saving amended config")
+        save_json(panels, os.path.join(common.config_dir, "config_amended"))
 
     #GLib.timeout_add(100, listener_reply)
     Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 50, listener_reply)

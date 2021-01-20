@@ -137,3 +137,4 @@ def check_key(dictionary, key, default_value):
     if key not in dictionary:
         dictionary[key] = default_value
         print('Key missing, using default: "{}": {}'.format(key, default_value))
+        common.key_missing = True
