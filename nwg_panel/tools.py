@@ -2,6 +2,7 @@
 
 import os
 import json
+import subprocess
 
 import gi
 
@@ -9,9 +10,12 @@ gi.require_version('GdkPixbuf', '2.0')
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
-from gi.repository import Gtk, GdkPixbuf
-
 import common
+
+try:
+    from pyalsa import alsamixer
+except:
+    pass
 
 
 def temp_dir():
@@ -136,5 +140,128 @@ def check_key(dictionary, key, default_value):
     # adds a key w/ default value if missing from the dictionary
     if key not in dictionary:
         dictionary[key] = default_value
-        print('Key missing, using default: "{}": {}'.format(key, default_value))
+        # print('Key missing, using default: "{}": {}'.format(key, default_value))
         common.key_missing = True
+
+
+def cmd2string(cmd):
+    try:
+        return subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
+    except subprocess.CalledProcessError:
+        return ""
+
+
+def is_command(cmd):
+    cmd = cmd.split()[0]  # strip arguments
+    cmd = "command -v {}".format(cmd)
+    try:
+        is_cmd = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
+        if is_cmd:
+            return True
+
+    except subprocess.CalledProcessError:
+        return False
+
+
+def get_volume():
+    vol = None
+    switch = False
+    if common.pyalsa:
+        mixer = alsamixer.Mixer()
+        mixer.attach()
+        mixer.load()
+
+        element = alsamixer.Element(mixer, "Master")
+        max_vol = element.get_volume_range()[1]
+        vol = int(round(element.get_volume() * 100 / max_vol, 0))
+        switch = element.get_switch()
+        del mixer
+    else:
+        result = cmd2string(common.commands["set_volume_alt"])
+        if result:
+            lines = result.splitlines()
+            for line in lines:
+                if "Front Left:" in line:
+                    try:
+                        vol = int(line.split()[4][1:-2])
+                    except:
+                        pass
+                    switch = "on" in line.split()[5]
+                    break
+
+    return vol, switch
+
+
+def set_volume(percent):
+    if common.pyalsa:
+        mixer = alsamixer.Mixer()
+        mixer.attach()
+        mixer.load()
+
+        element = alsamixer.Element(mixer, "Master")
+        max_vol = element.get_volume_range()[1]
+        element.set_volume_all(int(percent * max_vol / 100))
+        del mixer
+    else:
+        cmd = "{} {}% /dev/null 2>&1".format(common.commands["set_volume_alt"], percent)
+        subprocess.call(cmd, shell=True)
+
+
+def get_brightness():
+    brightness = None
+    output = cmd2string(common.commands["get_brightness"])
+    try:
+        brightness = int(round(float(output), 0))
+    except:
+        pass
+
+    return brightness
+
+
+def set_brightness(value):
+    subprocess.call("{} {}".format(common.commands["set_brightness"], value), shell=True)
+
+
+def get_battery():
+    if common.upower:
+        cmd = common.commands["get_battery"]
+    elif common.acpi:
+        cmd = common.commands["get_battery_alt"]
+    else:
+        return None, None
+
+    msg = ""
+    perc_val = 0
+    if cmd.split()[0] == "upower":
+        bat = []
+        try:
+            bat = cmd2string(cmd).splitlines()
+        except:
+            pass
+        state, time, percentage = "", "", ""
+        for line in bat:
+            line = line.strip()
+            if "time to empty" in line:
+                line = line.replace("time to empty", "time_to_empty")
+            parts = line.split()
+
+            if "percentage:" in parts[0]:
+                percentage = parts[1]
+                perc_val = int(percentage.split("%")[0])
+            if "state:" in parts[0]:
+                state = parts[1]
+            if "time_to_empty:" in parts[0]:
+                time = " ".join(parts[1:])
+        msg = "{} {} {}".format(percentage, state, time)
+    elif cmd.split()[0] == "acpi":
+        bat = ""
+        try:
+            bat = cmd2string(cmd).splitlines()[0]
+        except:
+            pass
+        if bat:
+            parts = bat.split()
+            msg = " ".join(parts[2:])
+            perc_val = int(parts[3].split("%")[0])
+
+    return msg, perc_val

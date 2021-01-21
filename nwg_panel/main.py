@@ -22,7 +22,14 @@ from modules.sway_workspaces import SwayWorkspaces
 from modules.custom_button import CustomButton
 from modules.executor import Executor
 from modules.clock import Clock
-from modules.control_center import ControlCenter
+from modules.controls import Controls
+
+try:
+    from pyalsa import alsamixer
+    common.pyalsa = True
+    print("Found pylsa module")
+except:
+    print("pylsa module not found")
 
 
 def listener_reply():
@@ -78,9 +85,9 @@ def instantiate_content(panel, container, content_list):
                 clock = Clock({})
                 container.pack_start(clock, False, False, panel["items-padding"])
 
-        if "control-center" in item:
+        if "controls" in item:
             if item in panel:
-                cc = ControlCenter(panel[item])
+                cc = Controls(panel[item])
                 container.pack_start(cc, False, False, panel["items-padding"])
             else:
                 print("'{}' not defined in this panel instance".format(item))
@@ -90,6 +97,13 @@ def main():
     save_string(str(os.getpid()), os.path.join(temp_dir(), "nwg-panel.pid"))
     
     common.app_dirs = get_app_dirs()
+
+    common.upower = is_command("upower")
+    common.acpi = is_command("acpi")
+
+    print(get_volume())
+    print(get_brightness())
+    print(get_battery())
 
     common.config_dir = get_config_dir()
     config_file = os.path.join(common.config_dir, "config")

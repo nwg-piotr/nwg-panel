@@ -10,3 +10,23 @@ config_dir = ""
 app_dirs = []
 
 key_missing = False
+
+pyalsa = False
+upower = False
+acpi = False
+
+commands = {
+    "get_battery": "upower -i $(upower -e | grep BAT) | grep --color=never -E 'state|to\\\\ full|to\\\\ empty|percentage'",
+    "get_battery_alt": "acpi",
+    "get_bt_name": "bluetoothctl show | awk '/Name/{print $2}'",
+    "get_bt_status": "bluetoothctl show | awk '/Powered/{print $2}'",
+    "get_brightness": "light -G",
+    "get_host": "uname -n",
+    "get_ssid": "iwgetid -r",
+    "get_user": "echo $USER",
+    "get_volume_alt": "amixer sget Master",
+    "set_brightness": "light -S",
+    "set_volume_alt": "amixer sset Master",
+    "systemctl": "systemctl",
+    "playerctl": "playerctl"
+  }

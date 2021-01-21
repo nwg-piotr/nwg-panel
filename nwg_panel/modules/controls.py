@@ -10,7 +10,7 @@ sys.path.append('../')
 from nwg_panel.tools import check_key
 
 
-class ControlCenter(Gtk.Button):
+class Controls(Gtk.Button):
     def __init__(self, settings):
         Gtk.Button.__init__(self)
         self.settings = settings
