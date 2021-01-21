@@ -20,7 +20,12 @@ class CustomButton(Gtk.Button):
         self.set_image(image)
 
         check_key(settings, "command", "")
-        self.connect("clicked", self.on_click, settings["command"])
+        if settings["command"]:
+            self.connect("clicked", self.on_click, settings["command"])
+
+        check_key(settings, "css-name", "")
+        if settings["css-name"]:
+            self.set_property("name", settings["css-name"])
 
         self.show()
 

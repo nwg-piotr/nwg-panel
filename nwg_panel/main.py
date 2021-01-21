@@ -22,6 +22,7 @@ from modules.sway_workspaces import SwayWorkspaces
 from modules.custom_button import CustomButton
 from modules.executor import Executor
 from modules.clock import Clock
+from modules.control_center import ControlCenter
 
 
 def listener_reply():
@@ -76,6 +77,13 @@ def instantiate_content(panel, container, content_list):
             else:
                 clock = Clock({})
                 container.pack_start(clock, False, False, panel["items-padding"])
+
+        if "control-center" in item:
+            if item in panel:
+                cc = ControlCenter(panel[item])
+                container.pack_start(cc, False, False, panel["items-padding"])
+            else:
+                print("'{}' not defined in this panel instance".format(item))
 
 
 def main():
