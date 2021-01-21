@@ -44,38 +44,38 @@ def instantiate_content(panel, container, content_list):
                     taskbar = SwayTaskbar(panel["sway-taskbar"], display_name="{}".format(panel["output"]))
                 common.taskbars_list.append(taskbar)
     
-                container.pack_start(taskbar, True, False, panel["items-padding"])
+                container.pack_start(taskbar, False, False, panel["items-padding"])
             else:
                 print("'sway-taskbar' not defined in this panel instance")
             
         if item == "sway-workspaces":
             if "sway-workspaces" in panel:
                 workspaces = SwayWorkspaces(panel["sway-workspaces"])
-                container.pack_start(workspaces, True, False, panel["items-padding"])
+                container.pack_start(workspaces, False, False, panel["items-padding"])
             else:
                 print("'sway-workspaces' not defined in this panel instance")
                 
         if "button-" in item:
             if item in panel:
                 button = CustomButton(panel[item])
-                container.pack_start(button, True, False, panel["items-padding"])
+                container.pack_start(button, False, False, panel["items-padding"])
             else:
                 print("'{}' not defined in this panel instance".format(item))
                 
         if "executor-" in item:
             if item in panel:
                 executor = Executor(panel[item])
-                container.pack_start(executor, True, False, panel["items-padding"])
+                container.pack_start(executor, False, False, panel["items-padding"])
             else:
                 print("'{}' not defined in this panel instance".format(item))
                 
         if item == "clock":
             if item in panel:
                 clock = Clock(panel[item])
-                container.pack_start(clock, True, False, panel["items-padding"])
+                container.pack_start(clock, False, False, panel["items-padding"])
             else:
                 clock = Clock({})
-                container.pack_start(clock, True, False, panel["items-padding"])
+                container.pack_start(clock, False, False, panel["items-padding"])
 
 
 def main():
@@ -102,7 +102,7 @@ def main():
     output_to_focus = None
 
     for panel in panels:
-
+        check_key(panel, "spacing", 6)
         common.i3.command("focus output {}".format(panel["output"]))
         window = Gtk.Window()
         check_key(panel, "width", common.outputs[panel["output"]]["width"])
@@ -117,21 +117,22 @@ def main():
         vbox.pack_start(hbox, True, True, panel["padding-vertical"])
 
         inner_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        inner_box.set_homogeneous(True)
         hbox.pack_start(inner_box, True, True, panel["padding-horizontal"])
 
-        check_key(panel, "spacing", 6)
         left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
-        inner_box.pack_start(left_box, False, False, 0)
+        inner_box.pack_start(left_box, True, True, 0)
         instantiate_content(panel, left_box, panel["modules-left"])
 
         center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
-        inner_box.pack_start(center_box, True, True, 0)
-
+        inner_box.pack_start(center_box, True, False, 0)
         instantiate_content(panel, center_box, panel["modules-center"])
 
         right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
-        #Gtk.Widget.set_size_request(right_box, third_part, h)
-        inner_box.pack_end(right_box, False, False, 0)
+        # The guy who invented `pack_start(child, expand, fill, padding)` will burn in hell!
+        helper_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        helper_box.pack_end(right_box, False, False, 0)
+        inner_box.pack_start(helper_box, False, True, 0)
         instantiate_content(panel, right_box, panel["modules-right"])
 
         window.add(vbox)
