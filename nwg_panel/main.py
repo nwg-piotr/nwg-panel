@@ -103,8 +103,12 @@ def main():
 
     for panel in panels:
         check_key(panel, "spacing", 6)
+        check_key(panel, "homogeneous", False)
+        check_key(panel, "css-name", "")
         common.i3.command("focus output {}".format(panel["output"]))
         window = Gtk.Window()
+        if panel["css-name"]:
+            window.set_property("name", panel["css-name"])
         check_key(panel, "width", common.outputs[panel["output"]]["width"])
         w = panel["width"]
         check_key(panel, "height", 0)
@@ -117,11 +121,12 @@ def main():
         vbox.pack_start(hbox, True, True, panel["padding-vertical"])
 
         inner_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        inner_box.set_homogeneous(True)
+        if panel["homogeneous"]:
+            inner_box.set_homogeneous(True)
         hbox.pack_start(inner_box, True, True, panel["padding-horizontal"])
 
         left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
-        inner_box.pack_start(left_box, True, True, 0)
+        inner_box.pack_start(left_box, False, True, 0)
         instantiate_content(panel, left_box, panel["modules-left"])
 
         center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
@@ -129,7 +134,7 @@ def main():
         instantiate_content(panel, center_box, panel["modules-center"])
 
         right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
-        # The guy who invented `pack_start(child, expand, fill, padding)` will burn in hell!
+        # Damn on the guy who invented `pack_start(child, expand, fill, padding)`!
         helper_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         helper_box.pack_end(right_box, False, False, 0)
         inner_box.pack_start(helper_box, False, True, 0)
