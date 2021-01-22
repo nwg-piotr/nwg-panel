@@ -195,9 +195,6 @@ class PopupWindow(Gtk.Window):
         v_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         h_box.pack_start(v_box, True, True, 30)
 
-        """inner_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        v_box.pack_start(inner_box, True, True, 10)"""
-
         GtkLayerShell.set_layer(self, GtkLayerShell.Layer.TOP)
 
         GtkLayerShell.set_margin(self, GtkLayerShell.Edge.TOP, 6)
