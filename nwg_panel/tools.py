@@ -192,7 +192,8 @@ def get_volume():
     return vol, switch
 
 
-def set_volume(percent):
+def set_volume(slider):
+    percent = slider.get_value()
     if common.pyalsa:
         mixer = alsamixer.Mixer()
         mixer.attach()

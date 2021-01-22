@@ -85,12 +85,12 @@ def instantiate_content(panel, container, content_list):
                 clock = Clock({})
                 container.pack_start(clock, False, False, panel["items-padding"])
 
-        if "controls" in item:
+        """if "controls" in item:
             if item in panel:
                 cc = Controls(panel[item])
                 container.pack_start(cc, False, False, panel["items-padding"])
             else:
-                print("'{}' not defined in this panel instance".format(item))
+                print("'{}' not defined in this panel instance".format(item))"""
 
 
 def main():
@@ -153,7 +153,7 @@ def main():
         left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
         inner_box.pack_start(left_box, False, True, 0)
         if panel["controls"] and panel["controls-settings"]["alignment"] == "left":
-            cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"])
+            cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"], int(w/6))
             left_box.pack_start(cc, False, False, 0)
         instantiate_content(panel, left_box, panel["modules-left"])
 
@@ -169,7 +169,7 @@ def main():
         
         instantiate_content(panel, right_box, panel["modules-right"])
         if panel["controls"] and panel["controls-settings"]["alignment"] == "right":
-            cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"])
+            cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"], int(w/6))
             helper_box.pack_end(cc, False, False, 0)
 
         window.add(vbox)
