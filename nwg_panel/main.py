@@ -27,9 +27,8 @@ from modules.controls import Controls
 try:
     from pyalsa import alsamixer
     common.pyalsa = True
-    print("Found pylsa module")
 except:
-    print("pylsa module not found")
+    print("pylsa module not found, will try amixer")
 
 
 def listener_reply():
@@ -41,6 +40,7 @@ def listener_reply():
 
 def instantiate_content(panel, container, content_list):
     check_key(panel, "items-padding", 0)
+    check_key(panel, "icons", "light")
 
     for item in content_list:
         if item == "sway-taskbar":
@@ -100,10 +100,6 @@ def main():
 
     common.upower = is_command("upower")
     common.acpi = is_command("acpi")
-
-    print(get_volume())
-    print(get_brightness())
-    print(get_battery())
 
     common.config_dir = get_config_dir()
     config_file = os.path.join(common.config_dir, "config")
