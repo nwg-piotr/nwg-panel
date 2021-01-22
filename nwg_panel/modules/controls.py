@@ -271,3 +271,4 @@ class PopupWindow(Gtk.Window):
         print("CLOSE")
         self.hide()
         
+        return True
