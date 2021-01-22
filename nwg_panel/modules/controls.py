@@ -17,6 +17,8 @@ class Controls(Gtk.EventBox):
         self.settings = settings
         Gtk.EventBox.__init__(self)
 
+        check_key(settings, "show-values", True)
+
         self.bri_icon_name = "wtf"
         self.bri_image = Gtk.Image.new_from_icon_name(self.bri_icon_name, Gtk.IconSize.MENU)
         self.bri_label = Gtk.Label("0%") if settings["show-values"] else None
@@ -39,7 +41,6 @@ class Controls(Gtk.EventBox):
         
         self.popup_window = PopupWindow()
 
-        check_key(settings, "show-values", True)
         check_key(settings, "interval", 1)
         check_key(settings, "icon-size", 16)
         check_key(settings, "css-name", "controls-label")
