@@ -121,12 +121,7 @@ class Controls(Gtk.EventBox):
         return True
 
     def update_brightness(self, value):
-        if value > 70:
-            icon_name = "display-brightness-high-symbolic"
-        elif value > 30:
-            icon_name = "display-brightness-medium-symbolic"
-        else:
-            icon_name = "display-brightness-low-symbolic"
+        icon_name = bri_icon_name(value)
 
         if icon_name != self.bri_icon_name:
             self.update_image(self.bri_image, icon_name)
@@ -198,17 +193,6 @@ class Controls(Gtk.EventBox):
         self.get_style_context().set_state(Gtk.StateFlags.NORMAL)
 
 
-class BrightnessSlider(Gtk.Box):
-    def __init__(self):
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
-
-        value = get_brightness()
-        scale.set_value(value)
-        scale.connect("value-changed", set_brightness)
-        self.pack_start(scale, True, True, 5)
-
-
 class PopupWindow(Gtk.Window):
     def __init__(self, position, alignment, components):
         Gtk.Window.__init__(self, type_hint=Gdk.WindowTypeHint.NORMAL)
@@ -243,12 +227,22 @@ class PopupWindow(Gtk.Window):
             GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.TOP, True)
 
         if "brightness" in components:
-            test = Gtk.Label("test")
-            inner_box.pack_start(test, False, False, 0)
+            self.bri_icon_name = "wtf"
+            self.bri_image = Gtk.Image.new_from_icon_name(self.bri_icon_name, Gtk.IconSize.MENU)
+            inner_box.pack_start(self.bri_image, False, False, 0)
 
-            slider = BrightnessSlider()
-            inner_box.pack_start(slider, True, True, 5)
+            scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
+            value = get_brightness()
+            scale.set_value(value)
+            scale.connect("value-changed", self.set_bri)
 
+            inner_box.pack_start(scale, True, True, 5)
+
+    def set_bri(self, slider):
+        set_brightness(slider)
+        icon_name = bri_icon_name(int(slider.get_value()))
+        print(icon_name)
+    
     def close_win(self, w, e):
         self.hide()
         
@@ -258,3 +252,13 @@ class PopupWindow(Gtk.Window):
         if e.type == Gdk.EventType.KEY_RELEASE and e.keyval == Gdk.KEY_Escape:
             self.close_win(w, e)
         return e
+
+
+def bri_icon_name(value):
+    icon_name = "display-brightness-low-symbolic"
+    if value > 70:
+        icon_name = "display-brightness-high-symbolic"
+    elif value > 30:
+        icon_name = "display-brightness-medium-symbolic"
+    
+    return icon_name
