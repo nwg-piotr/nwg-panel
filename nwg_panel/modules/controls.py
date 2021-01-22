@@ -5,9 +5,10 @@ import threading
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
-from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
+gi.require_version('GtkLayerShell', '0.1')
+from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, GtkLayerShell
 
-from nwg_panel.tools import check_key, get_brightness, get_volume, get_battery
+from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, get_battery
 from nwg_panel.common import icons_path
 
 
@@ -19,6 +20,7 @@ class Controls(Gtk.EventBox):
         self.bri_icon_name = "wtf"
         self.bri_image = Gtk.Image.new_from_icon_name(self.bri_icon_name, Gtk.IconSize.MENU)
         self.bri_label = Gtk.Label("0%") if settings["show-values"] else None
+        self.bri_slider = None
 
         self.vol_icon_name = "wtf"
         self.vol_image = Gtk.Image.new_from_icon_name(self.vol_icon_name, Gtk.IconSize.MENU)
@@ -30,6 +32,12 @@ class Controls(Gtk.EventBox):
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
+        
+        """self.menu = Gtk.Menu()
+        Gtk.Widget.set_size_request(self.menu, 300, 100)
+        self.build_menu()"""
+        
+        self.popup_window = PopupWindow()
 
         check_key(settings, "show-values", True)
         check_key(settings, "interval", 1)
@@ -59,19 +67,21 @@ class Controls(Gtk.EventBox):
                 box.pack_start(self.bri_image, False, False, 4)
                 if self.bri_label:
                     self.bri_label.set_property("name", self.settings["css-name"])
-                    box.pack_start(self.bri_label, False, False, 2)
+                    box.pack_start(self.bri_label, False, False, 0)
+
+                self.bri_slider = BrightnessSlider()
 
             if item == "volume":
                 box.pack_start(self.vol_image, False, False, 4)
                 if self.vol_label:
                     self.vol_label.set_property("name", self.settings["css-name"])
-                    box.pack_start(self.vol_label, False, False, 2)
+                    box.pack_start(self.vol_label, False, False, 0)
 
             if item == "battery":
                 box.pack_start(self.bat_image, False, False, 4)
                 if self.bat_label:
                     self.bat_label.set_property("name", self.settings["css-name"])
-                    box.pack_start(self.bat_label, False, False, 2)
+                    box.pack_start(self.bat_label, False, False, 0)
 
     def get_output(self):
         if "brightness" in self.settings["components"]:
@@ -179,18 +189,85 @@ class Controls(Gtk.EventBox):
 
     def on_button_press(self, w, event):
         print("CC clicked")
-        menu = Gtk.Menu()
-        item = Gtk.MenuItem.new_with_label("gtk-layer-shell")
-        menu.append(item)
-        item = Gtk.MenuItem.new_with_label("is a very fucking awesome")
-        menu.append(item)
-        item = Gtk.MenuItem.new_with_label("thing!")
-        menu.append(item)
-        menu.show_all()
-        menu.popup_at_widget(self, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, None)
+        #self.menu.popup_at_widget(self, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, None)
+        self.popup_window.show_all()
 
     def on_enter_notify_event(self, widget, event):
         self.get_style_context().set_state(Gtk.StateFlags.SELECTED)
 
     def on_leave_notify_event(self, widget, event):
         self.get_style_context().set_state(Gtk.StateFlags.NORMAL)
+        
+    def build_menu(self):
+        self.menu.set_reserve_toggle_size(False)
+        item = Gtk.MenuItem()
+
+        item.set_property("name", "slider")
+        item.add(self.bri_slider)
+        self.menu.append(item)
+        print(item.get_sensitive(), ".......")
+
+        self.menu.connect("hide", self.on_menu_hidden)
+        self.menu.show_all()
+    
+    def on_menu_hidden(self, menu):
+        print("Hidden")
+
+
+class BrightnessSlider(Gtk.Box):
+    def __init__(self):
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        test = Gtk.Label("test")
+        self.pack_start(test, False, False, 0)
+        scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
+        scale.connect("value-changed", set_brightness, scale.get_value())
+        value = get_brightness()
+        scale.set_value(value)
+        self.pack_start(scale, True, True, 5)
+
+
+class PopupWindow(Gtk.Window):
+    def __init__(self):
+        Gtk.Window.__init__(self, type_hint=Gdk.WindowTypeHint.NORMAL)
+        GtkLayerShell.init_for_window(self)
+        self.set_property("name", "primary-top")
+
+        #self.add_events(Gdk.EventMask.PROXIMITY_OUT_MASK)
+        self.connect("proximity-out-event", self.close_win)
+        self.connect("button-press-event", self.close_win)
+        self.connect("key-press-event", self.close_win)
+        
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        Gtk.Widget.set_size_request(vbox, 300, 100)
+        self.add(vbox)
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        vbox.pack_start(hbox, True, True, 10)
+
+        inner_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        hbox.pack_start(inner_box, True, True, 10)
+
+        # GtkLayerShell.auto_exclusive_zone_enable(self)
+
+        GtkLayerShell.set_layer(self, GtkLayerShell.Layer.TOP)
+
+        GtkLayerShell.set_margin(self, GtkLayerShell.Edge.TOP, 0)
+        GtkLayerShell.set_keyboard_interactivity(self, True)
+
+        GtkLayerShell.set_margin(self, GtkLayerShell.Edge.RIGHT, 6)   # panel padding
+        GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.RIGHT, 10)
+        GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.TOP, True)  # panel height
+        label = Gtk.Label("test 123     22222")
+        self.add(label)
+
+        test = Gtk.Label("test")
+        inner_box.pack_start(test, False, False, 0)
+        scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
+        scale.connect("value-changed", set_brightness, scale.get_value())
+        value = get_brightness()
+        scale.set_value(value)
+        inner_box.pack_start(scale, True, True, 5)
+
+    def close_win(self, w, e):
+        print("CLOSE")
+        self.hide()
+        
