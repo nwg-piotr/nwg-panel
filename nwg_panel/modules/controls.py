@@ -15,6 +15,8 @@ from nwg_panel.common import icons_path
 class Controls(Gtk.EventBox):
     def __init__(self, settings, position, alignment):
         self.settings = settings
+        self.position = position
+        self.alignment = alignment
         Gtk.EventBox.__init__(self)
 
         check_key(settings, "show-values", True)
@@ -35,12 +37,12 @@ class Controls(Gtk.EventBox):
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
 
-        self.popup_window = PopupWindow(position, alignment)
-
         check_key(settings, "interval", 1)
         check_key(settings, "icon-size", 16)
         check_key(settings, "css-name", "controls-label")
         check_key(settings, "components", ["brightness", "volume", "battery"])
+
+        self.popup_window = PopupWindow(position, alignment, settings["components"])
 
         self.connect('button-press-event', self.on_button_press)
         self.connect('enter-notify-event', self.on_enter_notify_event)
@@ -208,7 +210,7 @@ class BrightnessSlider(Gtk.Box):
 
 
 class PopupWindow(Gtk.Window):
-    def __init__(self, position, alignment):
+    def __init__(self, position, alignment, components):
         Gtk.Window.__init__(self, type_hint=Gdk.WindowTypeHint.NORMAL)
         GtkLayerShell.init_for_window(self)
         self.set_property("name", "primary-top")
@@ -240,11 +242,12 @@ class PopupWindow(Gtk.Window):
         else:
             GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.TOP, True)
 
-        test = Gtk.Label("test")
-        inner_box.pack_start(test, False, False, 0)
+        if "brightness" in components:
+            test = Gtk.Label("test")
+            inner_box.pack_start(test, False, False, 0)
 
-        slider = BrightnessSlider()
-        inner_box.pack_start(slider, True, True, 5)
+            slider = BrightnessSlider()
+            inner_box.pack_start(slider, True, True, 5)
 
     def close_win(self, w, e):
         self.hide()
