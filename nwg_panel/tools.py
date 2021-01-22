@@ -218,7 +218,8 @@ def get_brightness():
     return brightness
 
 
-def set_brightness(value):
+def set_brightness(slider):
+    value = slider.get_value()
     subprocess.call("{} {}".format(common.commands["set_brightness"], value), shell=True)
 
 

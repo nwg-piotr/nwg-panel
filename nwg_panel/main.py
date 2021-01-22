@@ -132,6 +132,13 @@ def main():
         check_key(panel, "height", 0)
         h = panel["height"]
 
+        check_key(panel, "controls", False)
+        check_key(panel, "controls-settings", {})
+
+        controls_settings = panel["controls-settings"]
+        check_key(controls_settings, "alignment", "right")
+        check_key(controls_settings, "show-values", False)
+
         Gtk.Widget.set_size_request(window, w, h)
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -145,6 +152,9 @@ def main():
 
         left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
         inner_box.pack_start(left_box, False, True, 0)
+        if panel["controls"] and panel["controls-settings"]["alignment"] == "left":
+            cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"])
+            left_box.pack_start(cc, False, False, 0)
         instantiate_content(panel, left_box, panel["modules-left"])
 
         center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
@@ -154,9 +164,13 @@ def main():
         right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
         # Damn on the guy who invented `pack_start(child, expand, fill, padding)`!
         helper_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        helper_box.pack_end(right_box, False, False, 0)
+        helper_box.pack_start(right_box, False, False, 0)
         inner_box.pack_start(helper_box, False, True, 0)
+        
         instantiate_content(panel, right_box, panel["modules-right"])
+        if panel["controls"] and panel["controls-settings"]["alignment"] == "right":
+            cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"])
+            helper_box.pack_end(cc, False, False, 0)
 
         window.add(vbox)
 
@@ -171,16 +185,15 @@ def main():
             GtkLayerShell.set_layer(window, GtkLayerShell.Layer.BOTTOM)
 
         check_key(panel, "margin-top", 0)
-        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, panel["margin-top"])
+        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, 0)
 
         check_key(panel, "margin-bottom", 0)
-        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.BOTTOM, panel["margin-bottom"])
+        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.BOTTOM, 0)
 
         check_key(panel, "position", "top")
         if panel["position"] == "top":
             GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.TOP, 1)
         else:
-
             GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.BOTTOM, 1)
 
         window.show_all()
