@@ -36,6 +36,8 @@ class Controls(Gtk.EventBox):
         self.bat_image = Gtk.Image.new_from_icon_name(self.bat_icon_name, Gtk.IconSize.MENU)
         self.bat_label = Gtk.Label("0%") if settings["show-values"] else None
 
+        self.pan_image = Gtk.Image.new_from_icon_name("pan-down", Gtk.IconSize.MENU)
+
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
 
@@ -67,20 +69,19 @@ class Controls(Gtk.EventBox):
             if item == "brightness":
                 box.pack_start(self.bri_image, False, False, 4)
                 if self.bri_label:
-                    self.bri_label.set_property("name", self.settings["css-name"])
                     box.pack_start(self.bri_label, False, False, 0)
 
             if item == "volume":
                 box.pack_start(self.vol_image, False, False, 4)
                 if self.vol_label:
-                    self.vol_label.set_property("name", self.settings["css-name"])
                     box.pack_start(self.vol_label, False, False, 0)
 
             if item == "battery":
                 box.pack_start(self.bat_image, False, False, 4)
                 if self.bat_label:
-                    self.bat_label.set_property("name", self.settings["css-name"])
                     box.pack_start(self.bat_label, False, False, 0)
+        
+        box.pack_start(self.pan_image, False, False, 4)
 
     def get_output(self):
         if "brightness" in self.settings["components"]:
@@ -197,11 +198,13 @@ class PopupWindow(Gtk.Window):
 
         GtkLayerShell.set_layer(self, GtkLayerShell.Layer.TOP)
 
-        GtkLayerShell.set_margin(self, GtkLayerShell.Edge.TOP, 6)
-        GtkLayerShell.set_margin(self, GtkLayerShell.Edge.BOTTOM, 6)
         # GtkLayerShell.set_keyboard_interactivity(self, True)
 
-        GtkLayerShell.set_margin(self, GtkLayerShell.Edge.RIGHT, 0)   # panel padding
+        GtkLayerShell.set_margin(self, GtkLayerShell.Edge.TOP, 6)
+        GtkLayerShell.set_margin(self, GtkLayerShell.Edge.BOTTOM, 6)
+        GtkLayerShell.set_margin(self, GtkLayerShell.Edge.RIGHT, 6)
+        GtkLayerShell.set_margin(self, GtkLayerShell.Edge.LEFT, 6)
+
         if settings["alignment"] == "left":
             GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.LEFT, True)
         else:
