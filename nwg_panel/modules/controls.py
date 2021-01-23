@@ -201,6 +201,8 @@ class PopupWindow(Gtk.Window):
         check_key(settings, "css-name", "controls-window")
         self.set_property("name", settings["css-name"])
         self.icon_size = settings["icon-size"]
+        
+        self.settings = settings
 
         # self.connect('button-release-event', self.close_win)
 
@@ -353,6 +355,31 @@ class PopupWindow(Gtk.Window):
 
             event_box.add(inner_vbox)
 
+        Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
+
+    def refresh(self):
+        if "net" in self.settings["components"]:
+            ip_addr = get_interface(self.settings["net-interface"])
+            icon_name = "network-wired-symbolic" if ip_addr else "network-wired-disconnected-symbolic"
+
+            if icon_name != self.net_icon_name:
+                update_image(self.net_image, icon_name, self.icon_size)
+                self.net_icon_name = icon_name
+
+            self.net_label.set_text("{}: {}".format(self.settings["net-interface"], ip_addr))
+
+        if "battery" in self.settings["components"]:
+            msg, level = get_battery()
+            icon_name = bat_icon_name(level)
+
+            if icon_name != self.bat_icon_name:
+                update_image(self.bat_image, icon_name, self.icon_size)
+                self.bat_icon_name = icon_name
+
+            self.bat_label.set_text(msg)
+
+        return True
+    
     def on_enter_notify_event(self, widget, event):
         widget.get_style_context().set_state(Gtk.StateFlags.SELECTED)
 
