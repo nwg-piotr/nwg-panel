@@ -3,6 +3,8 @@
 from i3ipc import Connection
 
 i3 = Connection()
+ipc_data = None
+controls_list = []
 
 outputs = {}
 taskbars_list = []

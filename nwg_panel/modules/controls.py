@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import threading
+import subprocess
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -8,7 +9,8 @@ gi.require_version('Gdk', '3.0')
 gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, GtkLayerShell
 
-from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery
+from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery, \
+    get_interface
 from nwg_panel.common import icons_path
 
 
@@ -21,6 +23,10 @@ class Controls(Gtk.EventBox):
 
         check_key(settings, "show-values", True)
         check_key(settings, "icon-size", 16)
+
+        self.net_icon_name = "wtf"
+        self.net_image = Gtk.Image.new_from_icon_name(self.net_icon_name, Gtk.IconSize.MENU)
+        self.net_label = Gtk.Label("?") if settings["show-values"] else None
 
         self.bri_icon_name = "wtf"
         self.bri_image = Gtk.Image.new_from_icon_name(self.bri_icon_name, Gtk.IconSize.MENU)
@@ -44,7 +50,8 @@ class Controls(Gtk.EventBox):
         check_key(settings, "interval", 1)
         check_key(settings, "icon-size", 16)
         check_key(settings, "css-name", "controls-label")
-        check_key(settings, "components", ["brightness", "volume", "battery"])
+        check_key(settings, "components", ["net", "brightness", "volume", "battery"])
+        check_key(settings, "net-interface", "")
 
         self.popup_window = PopupWindow(position, settings, width)
 
@@ -66,6 +73,11 @@ class Controls(Gtk.EventBox):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.box.pack_start(box, False, False, 6)
         for item in self.settings["components"]:
+            if item == "net":
+                box.pack_start(self.net_image, False, False, 4)
+                if self.net_label:
+                    box.pack_start(self.net_label, False, False, 0)
+
             if item == "brightness":
                 box.pack_start(self.bri_image, False, False, 4)
                 if self.bri_label:
@@ -84,6 +96,10 @@ class Controls(Gtk.EventBox):
         box.pack_start(self.pan_image, False, False, 4)
 
     def get_output(self):
+        if "net" in self.settings["components"] and self.settings["net-interface"]:
+            ip = get_interface(self.settings["net-interface"])
+            GLib.idle_add(self.update_net, ip)
+
         if "brightness" in self.settings["components"]:
             try:
                 value = get_brightness()
@@ -123,6 +139,15 @@ class Controls(Gtk.EventBox):
         thread.start()
         return True
 
+    def update_net(self, ip):
+        icon_name = "network-wired-symbolic" if ip else "network-wired-disconnected-symbolic"
+        if icon_name != self.net_icon_name:
+            update_image(self.net_image, icon_name, self.icon_size)
+            self.net_icon_name = icon_name
+            
+        if self.net_label:
+            self.net_label.set_text("{}".format(self.settings["net-interface"]))
+    
     def update_brightness(self, value):
         icon_name = bri_icon_name(value)
 
@@ -134,14 +159,7 @@ class Controls(Gtk.EventBox):
             self.bri_label.set_text("{}%".format(value))
             
     def update_battery(self, value):
-        if value > 95:
-            icon_name = "battery-full-symbolic"
-        elif value > 50:
-            icon_name = "battery-good-symbolic"
-        elif value > 20:
-            icon_name = "battery-low-symbolic"
-        else:
-            icon_name = "battery-empty-symbolic"
+        icon_name = bat_icon_name(value)
             
         if icon_name != self.bat_icon_name:
             update_image(self.bat_image, icon_name, self.icon_size)
@@ -184,22 +202,20 @@ class PopupWindow(Gtk.Window):
         self.set_property("name", settings["css-name"])
         self.icon_size = settings["icon-size"]
 
-        self.connect("button-press-event", self.close_win)
-        #self.connect("key-release-event", self.handle_keyboard)
-        
-        outer_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        h_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        outer_box.pack_start(h_box, True, True, 20)
-        Gtk.Widget.set_size_request(h_box, width, 10)
+        # self.connect('button-release-event', self.close_win)
 
-        self.add(outer_box)
+        outer_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.add(outer_vbox)
+
+        outer_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        Gtk.Widget.set_size_request(outer_hbox, width, 10)
+        outer_vbox.pack_start(outer_hbox, True, True, 20)
+
         v_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        h_box.pack_start(v_box, True, True, 30)
+        outer_hbox.pack_start(v_box, True, True, 30)
 
         GtkLayerShell.set_layer(self, GtkLayerShell.Layer.TOP)
-
         # GtkLayerShell.set_keyboard_interactivity(self, True)
-
         GtkLayerShell.set_margin(self, GtkLayerShell.Edge.TOP, 6)
         GtkLayerShell.set_margin(self, GtkLayerShell.Edge.BOTTOM, 6)
         GtkLayerShell.set_margin(self, GtkLayerShell.Edge.RIGHT, 6)
@@ -213,11 +229,14 @@ class PopupWindow(Gtk.Window):
             GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.BOTTOM, True)
         else:
             GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.TOP, True)
+        
+        check_key(settings, "commands", {"battery": "", "net": ""})
 
+        add_sep = False
         if "brightness" in settings["components"]:
-            inner_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-            v_box.pack_start(inner_box, False, False, 0)
-
+            inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            v_box.pack_start(inner_hbox, False, False, 0)
+            
             self.bri_icon_name = "wtf"
             self.bri_image = Gtk.Image.new_from_icon_name(self.bri_icon_name, Gtk.IconSize.MENU)
 
@@ -226,18 +245,19 @@ class PopupWindow(Gtk.Window):
                 update_image(self.bri_image, icon_name, self.icon_size)
                 self.bri_icon_name = icon_name
 
-            inner_box.pack_start(self.bri_image, False, False, 0)
+            inner_hbox.pack_start(self.bri_image, False, False, 0)
 
             scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
             value = get_brightness()
             scale.set_value(value)
             scale.connect("value-changed", self.set_bri)
 
-            inner_box.pack_start(scale, True, True, 5)
+            inner_hbox.pack_start(scale, True, True, 5)
+            add_sep = True
             
         if "volume" in settings["components"]:
-            inner_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-            v_box.pack_start(inner_box, False, False, 10)
+            inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            v_box.pack_start(inner_hbox, False, False, 10)
 
             self.vol_icon_name = "wtf"
             self.vol_image = Gtk.Image.new_from_icon_name(self.vol_icon_name, Gtk.IconSize.MENU)
@@ -249,14 +269,95 @@ class PopupWindow(Gtk.Window):
                 update_image(self.vol_image, icon_name, self.icon_size)
                 self.vol_icon_name = icon_name
 
-            inner_box.pack_start(self.vol_image, False, False, 0)
+            inner_hbox.pack_start(self.vol_image, False, False, 0)
 
             scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
             value, switch = get_volume()
             scale.set_value(value)
             scale.connect("value-changed", self.set_vol)
 
-            inner_box.pack_start(scale, True, True, 5)
+            inner_hbox.pack_start(scale, True, True, 5)
+            add_sep = True
+            
+        if add_sep:
+            sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+            v_box.pack_start(sep, True, True, 10)
+
+        if "net" in settings["components"]:
+            event_box = Gtk.EventBox()
+            if "net" in settings["commands"] and settings["commands"]["net"]:
+                event_box.connect("enter_notify_event", self.on_enter_notify_event)
+                event_box.connect("leave_notify_event", self.on_leave_notify_event)
+
+                event_box.connect('button-press-event', self.launch, settings["commands"]["net"])
+
+            inner_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+            inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            inner_vbox.pack_start(inner_hbox, True, True, 4)
+            v_box.pack_start(event_box, False, True, 10)
+
+            self.net_icon_name = "wtf"
+            self.net_image = Gtk.Image.new_from_icon_name(self.net_icon_name, Gtk.IconSize.MENU)
+
+            ip_addr = get_interface(settings["net-interface"])
+            icon_name = "network-wired-symbolic" if ip_addr else "network-wired-disconnected-symbolic"
+
+            if icon_name != self.net_icon_name:
+                update_image(self.net_image, icon_name, self.icon_size)
+                self.net_icon_name = icon_name
+
+            inner_hbox.pack_start(self.net_image, False, False, 4)
+
+            self.net_label = Gtk.Label(ip_addr)
+            inner_hbox.pack_start(self.net_label, False, True, 0)
+
+            if "net" in settings["commands"] and settings["commands"]["net"]:
+                img = Gtk.Image()
+                update_image(img, "pan-end-symbolic", self.icon_size)
+                inner_hbox.pack_end(img, False, True, 4)
+
+            event_box.add(inner_vbox)
+
+        if "battery" in settings["components"]:
+            event_box = Gtk.EventBox()
+            if "battery" in settings["commands"] and settings["commands"]["battery"]:
+                event_box.connect("enter_notify_event", self.on_enter_notify_event)
+                event_box.connect("leave_notify_event", self.on_leave_notify_event)
+
+                event_box.connect('button-press-event', self.launch, settings["commands"]["battery"])
+        
+            inner_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+            inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            inner_vbox.pack_start(inner_hbox, True, True, 4)
+            v_box.pack_start(event_box, False, True, 10)
+
+            self.bat_icon_name = "wtf"
+            self.bat_image = Gtk.Image.new_from_icon_name(self.bat_icon_name, Gtk.IconSize.MENU)
+
+            msg, level = get_battery()
+            icon_name = bat_icon_name(level)
+
+            if icon_name != self.bat_icon_name:
+                update_image(self.bat_image, icon_name, self.icon_size)
+                self.bat_icon_name = icon_name
+
+            inner_hbox.pack_start(self.bat_image, False, False, 4)
+            
+            self.bat_label = Gtk.Label(msg)
+            inner_hbox.pack_start(self.bat_label, False, True, 0)
+            
+            if "battery" in settings["commands"] and settings["commands"]["battery"]:
+                img = Gtk.Image()
+                update_image(img, "pan-end-symbolic", self.icon_size)
+                inner_hbox.pack_end(img, False, True, 4)
+
+            event_box.add(inner_vbox)
+
+    def on_enter_notify_event(self, widget, event):
+        widget.get_style_context().set_state(Gtk.StateFlags.SELECTED)
+
+    def on_leave_notify_event(self, widget, event):
+        widget.get_style_context().set_state(Gtk.StateFlags.NORMAL)
 
     def set_bri(self, slider):
         set_brightness(slider)
@@ -275,13 +376,16 @@ class PopupWindow(Gtk.Window):
     
     def close_win(self, w, e):
         self.hide()
-        
-        return True
     
     def handle_keyboard(self, w, e):
         if e.type == Gdk.EventType.KEY_RELEASE and e.keyval == Gdk.KEY_Escape:
             self.close_win(w, e)
         return e
+
+    def launch(self, w, e, cmd):
+        print("Executing '{}'".format(cmd))
+        subprocess.Popen('exec {}'.format(cmd), shell=True)
+        self.hide()
 
 
 def bri_icon_name(value):
@@ -290,7 +394,7 @@ def bri_icon_name(value):
         icon_name = "display-brightness-high-symbolic"
     elif value > 30:
         icon_name = "display-brightness-medium-symbolic"
-    
+
     return icon_name
 
 
@@ -306,6 +410,18 @@ def vol_icon_name(value, switch):
                 icon_name = "audio-volume-low-symbolic"
         else:
             icon_name = "audio-volume-muted-symbolic"
+
+    return icon_name
+
+
+def bat_icon_name(value):
+    icon_name = "battery-empty-symbolic"
+    if value > 95:
+        icon_name = "battery-full-symbolic"
+    elif value > 50:
+        icon_name = "battery-good-symbolic"
+    elif value > 20:
+        icon_name = "battery-low-symbolic"
 
     return icon_name
 

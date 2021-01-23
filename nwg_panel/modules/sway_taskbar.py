@@ -67,12 +67,9 @@ class SwayTaskbar(Gtk.Box):
         self.show_all()
                     
     def refresh(self):
-        if nwg_panel.common.i3.get_tree().ipc_data != self.ipc_data:
-            for item in self.get_children():
-                item.destroy()
-            self.build_box()
-
-            self.ipc_data = nwg_panel.common.i3.get_tree().ipc_data
+        for item in self.get_children():
+            item.destroy()
+        self.build_box()
 
 
 class WorkspaceBox(Gtk.Box):

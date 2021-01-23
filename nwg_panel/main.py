@@ -31,9 +31,17 @@ except:
     print("pylsa module not found, will try amixer")
 
 
-def listener_reply():
-    for item in common.taskbars_list:
-        item.refresh()
+def check_tree():
+    # Do if tree changed
+    tree = common.i3.get_tree()
+    if tree.ipc_data != common.ipc_data:
+        for item in common.taskbars_list:
+            item.refresh()
+        for item in common.controls_list:
+            if item.popup_window.get_visible():
+                item.popup_window.hide()
+
+    common.ipc_data = common.i3.get_tree().ipc_data
 
     return True
 
@@ -84,13 +92,6 @@ def instantiate_content(panel, container, content_list):
             else:
                 clock = Clock({})
                 container.pack_start(clock, False, False, panel["items-padding"])
-
-        """if "controls" in item:
-            if item in panel:
-                cc = Controls(panel[item])
-                container.pack_start(cc, False, False, panel["items-padding"])
-            else:
-                print("'{}' not defined in this panel instance".format(item))"""
 
 
 def main():
@@ -154,6 +155,7 @@ def main():
         inner_box.pack_start(left_box, False, True, 0)
         if panel["controls"] and panel["controls-settings"]["alignment"] == "left":
             cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"], int(w/6))
+            common.controls_list.append(cc)
             left_box.pack_start(cc, False, False, 0)
         instantiate_content(panel, left_box, panel["modules-left"])
 
@@ -170,6 +172,7 @@ def main():
         instantiate_content(panel, right_box, panel["modules-right"])
         if panel["controls"] and panel["controls-settings"]["alignment"] == "right":
             cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"], int(w/6))
+            common.controls_list.append(cc)
             helper_box.pack_end(cc, False, False, 0)
 
         window.add(vbox)
@@ -218,7 +221,7 @@ def main():
         save_json(panels, os.path.join(common.config_dir, "config_amended"))
 
     #GLib.timeout_add(100, listener_reply)
-    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 50, listener_reply)
+    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 50, check_tree)
     Gtk.main()
 
 

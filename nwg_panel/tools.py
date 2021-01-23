@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import json
 import subprocess
+import netifaces
 
 import gi
 
@@ -108,7 +110,7 @@ def load_json(path):
             return json.load(f)
     except Exception as e:
         print(e)
-        return {}
+        sys.exit(1)
 
 
 def save_json(src_dict, path):
@@ -267,3 +269,19 @@ def get_battery():
             perc_val = int(parts[3].split("%")[0])
 
     return msg, perc_val
+
+
+def list_interfaces():
+    try:
+        return netifaces.interfaces()
+    except:
+        return []
+
+
+def get_interface(name):
+    addrs = netifaces.ifaddresses(name)
+    try:
+        list = addrs[netifaces.AF_INET]
+        return list[0]["addr"]
+    except:
+        return None
