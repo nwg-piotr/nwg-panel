@@ -308,7 +308,7 @@ class PopupWindow(Gtk.Window):
 
             inner_hbox.pack_start(self.net_image, False, False, 4)
 
-            self.net_label = Gtk.Label(ip_addr)
+            self.net_label = Gtk.Label("{}: {}".format(settings["net-interface"], ip_addr))
             inner_hbox.pack_start(self.net_label, False, True, 0)
 
             if "net" in settings["commands"] and settings["commands"]["net"]:
