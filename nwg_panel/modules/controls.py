@@ -392,11 +392,23 @@ class PopupWindow(Gtk.Window):
                 e_box.connect("enter-notify-event", self.on_enter_notify_event)
                 e_box.connect("leave-notify-event", self.on_leave_notify_event)
 
+                menu = Gtk.Menu()
+                Gtk.Widget.set_size_request(menu, width, 10)
+                menu.set_property("name", "controls-menu")
                 for item in template["items"]:
-                    print(item["name"], item["cmd"])
+                    i = Gtk.MenuItem.new_with_label(item["name"])
+                    i.connect("activate", self.launch_from_menu, item["cmd"])
+                    menu.append(i)
+                
+                menu.show_all()
+
+                e_box.connect('button-press-event', self.open_menu, menu, inner_hbox)
 
         Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
 
+    def open_menu(self, widget, event, menu, at_widget):
+        menu.popup_at_widget(at_widget, Gdk.Gravity.NORTH, Gdk.Gravity.NORTH, None)
+    
     def custom_item(self, name, icon, cmd):
         eb = Gtk.EventBox()
 
@@ -479,6 +491,11 @@ class PopupWindow(Gtk.Window):
 
     def launch(self, w, e, cmd):
         print("Executing '{}'".format(cmd))
+        subprocess.Popen('exec {}'.format(cmd), shell=True)
+        self.hide()
+
+    def launch_from_menu(self, w, cmd):
+        print("From menu '{}'".format(cmd))
         subprocess.Popen('exec {}'.format(cmd), shell=True)
         self.hide()
 
