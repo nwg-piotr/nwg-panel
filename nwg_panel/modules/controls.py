@@ -214,7 +214,7 @@ class PopupWindow(Gtk.Window):
         outer_vbox.pack_start(outer_hbox, True, True, 20)
 
         v_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        outer_hbox.pack_start(v_box, True, True, 30)
+        outer_hbox.pack_start(v_box, True, True, 20)
 
         GtkLayerShell.set_layer(self, GtkLayerShell.Layer.TOP)
         # GtkLayerShell.set_keyboard_interactivity(self, True)
@@ -247,7 +247,7 @@ class PopupWindow(Gtk.Window):
                 update_image(self.bri_image, icon_name, self.icon_size)
                 self.bri_icon_name = icon_name
 
-            inner_hbox.pack_start(self.bri_image, False, False, 0)
+            inner_hbox.pack_start(self.bri_image, False, False, 6)
 
             scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
             value = get_brightness()
@@ -271,7 +271,7 @@ class PopupWindow(Gtk.Window):
                 update_image(self.vol_image, icon_name, self.icon_size)
                 self.vol_icon_name = icon_name
 
-            inner_hbox.pack_start(self.vol_image, False, False, 0)
+            inner_hbox.pack_start(self.vol_image, False, False, 6)
 
             scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
             value, switch = get_volume()
@@ -295,8 +295,8 @@ class PopupWindow(Gtk.Window):
 
             inner_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-            inner_vbox.pack_start(inner_hbox, True, True, 4)
-            v_box.pack_start(event_box, False, True, 10)
+            inner_vbox.pack_start(inner_hbox, True, True, 6)
+            v_box.pack_start(event_box, True, True, 10)
 
             self.net_icon_name = "wtf"
             self.net_image = Gtk.Image.new_from_icon_name(self.net_icon_name, Gtk.IconSize.MENU)
@@ -308,10 +308,10 @@ class PopupWindow(Gtk.Window):
                 update_image(self.net_image, icon_name, self.icon_size)
                 self.net_icon_name = icon_name
 
-            inner_hbox.pack_start(self.net_image, False, False, 4)
+            inner_hbox.pack_start(self.net_image, False, False, 6)
 
             self.net_label = Gtk.Label("{}: {}".format(settings["net-interface"], ip_addr))
-            inner_hbox.pack_start(self.net_label, False, True, 0)
+            inner_hbox.pack_start(self.net_label, False, True, 6)
 
             if "net" in settings["commands"] and settings["commands"]["net"]:
                 img = Gtk.Image()
@@ -330,8 +330,8 @@ class PopupWindow(Gtk.Window):
         
             inner_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-            inner_vbox.pack_start(inner_hbox, True, True, 4)
-            v_box.pack_start(event_box, False, True, 10)
+            inner_vbox.pack_start(inner_hbox, True, True, 6)
+            v_box.pack_start(event_box, True, True, 10)
 
             self.bat_icon_name = "wtf"
             self.bat_image = Gtk.Image.new_from_icon_name(self.bat_icon_name, Gtk.IconSize.MENU)
@@ -343,10 +343,10 @@ class PopupWindow(Gtk.Window):
                 update_image(self.bat_image, icon_name, self.icon_size)
                 self.bat_icon_name = icon_name
 
-            inner_hbox.pack_start(self.bat_image, False, False, 4)
+            inner_hbox.pack_start(self.bat_image, False, False, 6)
             
             self.bat_label = Gtk.Label(msg)
-            inner_hbox.pack_start(self.bat_label, False, True, 0)
+            inner_hbox.pack_start(self.bat_label, False, True, 6)
             
             if "battery" in settings["commands"] and settings["commands"]["battery"]:
                 img = Gtk.Image()
@@ -366,6 +366,8 @@ class PopupWindow(Gtk.Window):
                 update_image(self.net_image, icon_name, self.icon_size)
                 self.net_icon_name = icon_name
 
+            if not ip_addr:
+                ip_addr = "disconnected"
             self.net_label.set_text("{}: {}".format(self.settings["net-interface"], ip_addr))
 
         if "battery" in self.settings["components"]:
