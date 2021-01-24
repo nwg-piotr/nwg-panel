@@ -352,12 +352,48 @@ class PopupWindow(Gtk.Window):
                 inner_hbox.pack_end(img, False, True, 4)
 
             event_box.add(inner_vbox)
-            
+
         check_key(settings, "custom-items", [])
         if settings["custom-items"]:
             for item in settings["custom-items"]:
                 c_item = self.custom_item(item["name"], item["icon"], item["cmd"])
                 v_box.pack_start(c_item, True, True, 6)
+
+        check_key(settings, "menu", {})
+        if settings["menu"]:
+            template = settings["menu"]
+            
+            sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+            v_box.pack_start(sep, True, True, 10)
+
+            e_box = Gtk.EventBox()
+            box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+            e_box.add(box)
+            inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            box.pack_start(inner_hbox, True, True, 6)
+            v_box.pack_start(e_box, True, True, 6)
+
+            img = Gtk.Image()
+            update_image(img, template["icon"], self.icon_size)
+            inner_hbox.pack_start(img, False, False, 6)
+
+            check_key(template, "name", "Menu name")
+            label = Gtk.Label(template["name"])
+            inner_hbox.pack_start(label, False, False, 6)
+
+            v_box.pack_start(box, False, False, 10)
+            
+            check_key(template, "items", [])
+            if template["items"]:
+                img = Gtk.Image()
+                update_image(img, "pan-end-symbolic", self.icon_size)
+                inner_hbox.pack_end(img, False, True, 0)
+
+                e_box.connect("enter-notify-event", self.on_enter_notify_event)
+                e_box.connect("leave-notify-event", self.on_leave_notify_event)
+
+                for item in template["items"]:
+                    print(item["name"], item["cmd"])
 
         Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
 
