@@ -204,8 +204,6 @@ class PopupWindow(Gtk.Window):
         
         self.settings = settings
 
-        # self.connect('button-release-event', self.close_win)
-
         outer_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.add(outer_vbox)
 
@@ -259,7 +257,7 @@ class PopupWindow(Gtk.Window):
             
         if "volume" in settings["components"]:
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-            v_box.pack_start(inner_hbox, False, False, 10)
+            v_box.pack_start(inner_hbox, False, False, 6)
 
             self.vol_icon_name = "wtf"
             self.vol_image = Gtk.Image.new_from_icon_name(self.vol_icon_name, Gtk.IconSize.MENU)
@@ -331,7 +329,7 @@ class PopupWindow(Gtk.Window):
             inner_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             inner_vbox.pack_start(inner_hbox, True, True, 6)
-            v_box.pack_start(event_box, True, True, 10)
+            v_box.pack_start(event_box, True, True, 6)
 
             self.bat_icon_name = "wtf"
             self.bat_image = Gtk.Image.new_from_icon_name(self.bat_icon_name, Gtk.IconSize.MENU)
@@ -354,9 +352,42 @@ class PopupWindow(Gtk.Window):
                 inner_hbox.pack_end(img, False, True, 4)
 
             event_box.add(inner_vbox)
+            
+        check_key(settings, "custom-items", [])
+        if settings["custom-items"]:
+            for item in settings["custom-items"]:
+                print(item)
+                c_item = self.custom_item(item["name"], item["icon"], item["cmd"])
+                v_box.pack_start(c_item, True, True, 6)
 
         Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
 
+    def custom_item(self, name, icon, cmd):
+        eb = Gtk.EventBox()
+
+        v_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        h_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        v_box.pack_start(h_box, False, False, 6)
+        eb.add(v_box)
+
+        image = Gtk.Image()
+        update_image(image, icon, self.icon_size)
+        h_box.pack_start(image, False, True, 6)
+
+        label = Gtk.Label(name)
+        h_box.pack_start(label, False, True, 4)
+
+        if cmd:
+            eb.connect("enter_notify_event", self.on_enter_notify_event)
+            eb.connect("leave_notify_event", self.on_leave_notify_event)
+            eb.connect('button-press-event', self.launch, cmd)
+    
+            img = Gtk.Image()
+            update_image(img, "pan-end-symbolic", self.icon_size)
+            h_box.pack_end(img, False, True, 4)
+        
+        return eb
+    
     def refresh(self):
         if "net" in self.settings["components"]:
             ip_addr = get_interface(self.settings["net-interface"])
@@ -456,6 +487,7 @@ def bat_icon_name(value):
 
 
 def update_image(image, icon_name, icon_size):
+    icon_theme = Gtk.IconTheme.get_default()
     if icons_path:
         path = "{}/{}.svg".format(icons_path, icon_name)
         try:
@@ -463,6 +495,10 @@ def update_image(image, icon_name, icon_size):
                 path, icon_size, icon_size)
             image.set_from_pixbuf(pixbuf)
         except Exception as e:
-            print("update_image :: failed setting image from {}: {}".format(path, e))
+            try:
+                pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+                image.set_from_pixbuf(pixbuf)
+            except:
+                print("update_image :: failed setting image from {}: {}".format(path, e))
     else:
-        image.set_from_icon_name(icon_name, icon_size)
+        image.set_from_icon_name(icon_name, Gtk.IconSize.MENU)
