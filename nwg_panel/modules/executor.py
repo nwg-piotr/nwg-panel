@@ -39,9 +39,9 @@ class Executor(Gtk.EventBox):
         check_key(settings, "on-scroll-down", "")
 
         if settings["css-name"]:
-            self.set_property("name", settings["css-name"])
+            self.label.set_property("name", settings["css-name"])
         else:
-            self.set_property("name", "executor-label")
+            self.label.set_property("name", "executor-label")
 
         if settings["tooltip-text"]:
             self.set_tooltip_text(settings["tooltip-text"])

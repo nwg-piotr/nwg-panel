@@ -24,19 +24,36 @@ class Clock(Gtk.EventBox):
         self.add(self.box)
         self.label = Gtk.Label("")
 
-        # We won't warn about these keys missing, so they need to be mentioned id README
+        check_key(settings, "css-name", "clock")
+        check_key(settings, "tooltip-text", "")
+        check_key(settings, "on-left-click", "")
+        check_key(settings, "on-right-click", "")
+        check_key(settings, "on-middle-click", "")
+        check_key(settings, "on-scroll-up", "")
+        check_key(settings, "on-scroll-down", "")
+
+        check_key(settings, "interval", 1)
+
         if "css-name" in settings:
             self.label.set_property("name", settings["css-name"])
-        else:
-            self.label.set_property("name", "clock")
+
+        print("print", settings["css-name"])
             
         if "format" not in settings:
             self.settings["format"] = "%a, %d. %b  %H:%M:%S"
 
+        if settings["on-left-click"] or settings["on-right-click"] or settings["on-middle-click"] or settings[
+                "on-scroll-up"] or settings["on-scroll-down"]:
+            self.connect('button-press-event', self.on_button_press)
+            self.add_events(Gdk.EventMask.SCROLL_MASK)
+            self.connect('scroll-event', self.on_scroll)
+
+            self.connect('enter-notify-event', self.on_enter_notify_event)
+            self.connect('leave-notify-event', self.on_leave_notify_event)
+
         self.build_box()
         self.refresh()
 
-        check_key(settings, "interval", 1)
         if settings["interval"] > 0:
             Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
 
@@ -60,6 +77,31 @@ class Clock(Gtk.EventBox):
         return True
 
     def build_box(self):
-        self.box.pack_start(self.label, False, False, 0)
+        self.box.pack_start(self.label, False, False, 4)
         self.label.show()
 
+    def on_enter_notify_event(self, widget, event):
+        self.get_style_context().set_state(Gtk.StateFlags.SELECTED)
+
+    def on_leave_notify_event(self, widget, event):
+        self.get_style_context().set_state(Gtk.StateFlags.NORMAL)
+
+    def on_button_press(self, widget, event):
+        if event.button == 3 and self.settings["on-left-click"]:
+            self.launch(self.settings["on-left-click"])
+        elif event.button == 2 and self.settings["on-middle-click"]:
+            self.launch(self.settings["on-middle-click"])
+        elif event.button == 1 and self.settings["on-right-click"]:
+            self.launch(self.settings["on-right-click"])
+
+    def on_scroll(self, widget, event):
+        if event.direction == Gdk.ScrollDirection.UP and self.settings["on-scroll-up"]:
+            self.launch(self.settings["on-scroll-up"])
+        elif event.direction == Gdk.ScrollDirection.DOWN and self.settings["on-scroll-up"]:
+            self.launch(self.settings["on-scroll-up"])
+        else:
+            print("No command assigned")
+
+    def launch(self, cmd):
+        print("Executing '{}'".format(cmd))
+        subprocess.Popen('exec {}'.format(cmd), shell=True)
