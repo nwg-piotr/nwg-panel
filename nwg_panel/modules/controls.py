@@ -409,9 +409,9 @@ class PopupWindow(Gtk.Window):
 
     def open_menu(self, widget, event, menu, at_widget, position):
         if position == "top":
-            menu.popup_at_widget(at_widget, Gdk.Gravity.NORTH, Gdk.Gravity.NORTH, None)
+            menu.popup_at_widget(at_widget, Gdk.Gravity.CENTER, Gdk.Gravity.NORTH, None)
         else:
-            menu.popup_at_widget(at_widget, Gdk.Gravity.SOUTH, Gdk.Gravity.SOUTH, None)
+            menu.popup_at_widget(at_widget, Gdk.Gravity.CENTER, Gdk.Gravity.SOUTH, None)
     
     def custom_item(self, name, icon, cmd):
         eb = Gtk.EventBox()

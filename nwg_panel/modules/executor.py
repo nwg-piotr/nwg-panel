@@ -109,14 +109,12 @@ class Executor(Gtk.EventBox):
         self.get_style_context().set_state(Gtk.StateFlags.NORMAL)
 
     def on_button_press(self, widget, event):
-        if event.button == 1 and self.settings["on-left-click"]:
+        if event.button == 3 and self.settings["on-left-click"]:
             self.launch(self.settings["on-left-click"])
         elif event.button == 2 and self.settings["on-middle-click"]:
             self.launch(self.settings["on-middle-click"])
-        elif event.button == 3 and self.settings["on-right-click"]:
+        elif event.button == 1 and self.settings["on-right-click"]:
             self.launch(self.settings["on-right-click"])
-        else:
-            print("No command assigned")
 
     def on_scroll(self, widget, event):
         if event.direction == Gdk.ScrollDirection.UP and self.settings["on-scroll-up"]:
