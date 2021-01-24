@@ -203,6 +203,7 @@ class PopupWindow(Gtk.Window):
         self.icon_size = settings["icon-size"]
         
         self.settings = settings
+        self.position = position
 
         outer_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.add(outer_vbox)
@@ -393,7 +394,7 @@ class PopupWindow(Gtk.Window):
                 e_box.connect("leave-notify-event", self.on_leave_notify_event)
 
                 menu = Gtk.Menu()
-                Gtk.Widget.set_size_request(menu, width, 10)
+                Gtk.Widget.set_size_request(menu, int(width * 0.9), 10)
                 menu.set_property("name", "controls-menu")
                 for item in template["items"]:
                     i = Gtk.MenuItem.new_with_label(item["name"])
@@ -402,12 +403,15 @@ class PopupWindow(Gtk.Window):
                 
                 menu.show_all()
 
-                e_box.connect('button-press-event', self.open_menu, menu, inner_hbox)
+                e_box.connect('button-press-event', self.open_menu, menu, inner_hbox, self.position)
 
         Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
 
-    def open_menu(self, widget, event, menu, at_widget):
-        menu.popup_at_widget(at_widget, Gdk.Gravity.NORTH, Gdk.Gravity.NORTH, None)
+    def open_menu(self, widget, event, menu, at_widget, position):
+        if position == "top":
+            menu.popup_at_widget(at_widget, Gdk.Gravity.NORTH, Gdk.Gravity.NORTH, None)
+        else:
+            menu.popup_at_widget(at_widget, Gdk.Gravity.SOUTH, Gdk.Gravity.SOUTH, None)
     
     def custom_item(self, name, icon, cmd):
         eb = Gtk.EventBox()
