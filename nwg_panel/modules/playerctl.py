@@ -28,6 +28,7 @@ class Playerctl(Gtk.EventBox):
         self.icon_path = None
         self.play_pause_btn = Gtk.Button()
         self.status = ""
+        self.retries = 2    # to avoid hiding the module on forward / backward btn when playing from the browser
 
         check_key(settings, "interval", 0)
         check_key(settings, "css-name", "")
@@ -50,6 +51,7 @@ class Playerctl(Gtk.EventBox):
 
     def update_widget(self, status, metadata):
         if status in ["Playing", "Paused"]:
+            self.retries = 2
             if not self.get_visible():
                 self.show()
             
@@ -63,7 +65,10 @@ class Playerctl(Gtk.EventBox):
             self.label.set_text(metadata)
         else:
             if self.get_visible():
-                self.hide()
+                if self.retries == 0:
+                    self.hide()
+                else:
+                    self.retries -= 1
 
         return False
 
@@ -112,8 +117,6 @@ class Playerctl(Gtk.EventBox):
         else:
             self.box.pack_start(self.label, False, False, 2)
             self.box.pack_start(button_box, False, False, 10)
-        
-        self.show_all()
 
     def launch(self, button, cmd):
         subprocess.Popen('exec {}'.format(cmd), shell=True)

@@ -174,14 +174,14 @@ def main():
         right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
         # Damn on the guy who invented `pack_start(child, expand, fill, padding)`!
         helper_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        helper_box.pack_start(right_box, False, False, 0)
+        helper_box.pack_end(right_box, False, False, 0)
         inner_box.pack_start(helper_box, False, True, 0)
-        
         instantiate_content(panel, right_box, panel["modules-right"])
+
         if panel["controls"] and panel["controls-settings"]["alignment"] == "right":
             cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"], int(w/6))
             common.controls_list.append(cc)
-            helper_box.pack_end(cc, False, False, 0)
+            right_box.pack_end(cc, False, False, 0)
 
         window.add(vbox)
 

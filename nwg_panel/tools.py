@@ -293,7 +293,7 @@ def player_status():
     status = "install playerctl"
     if is_command("playerctl"):
         try:
-            status = cmd2string("playerctl status")
+            status = cmd2string("playerctl status 2>&1")
         except:
             pass
 

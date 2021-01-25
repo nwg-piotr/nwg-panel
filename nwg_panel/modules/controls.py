@@ -380,8 +380,6 @@ class PopupWindow(Gtk.Window):
             check_key(template, "name", "Menu name")
             label = Gtk.Label(template["name"])
             inner_hbox.pack_start(label, False, False, 6)
-
-            v_box.pack_start(box, False, False, 10)
             
             check_key(template, "items", [])
             if template["items"]:
