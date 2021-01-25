@@ -23,6 +23,7 @@ from modules.custom_button import CustomButton
 from modules.executor import Executor
 from modules.clock import Clock
 from modules.controls import Controls
+from modules.playerctl import Playerctl
 
 try:
     from pyalsa import alsamixer
@@ -92,6 +93,13 @@ def instantiate_content(panel, container, content_list):
             else:
                 clock = Clock({})
                 container.pack_start(clock, False, False, panel["items-padding"])
+                
+        if item == "playerctl":
+            if item in panel:
+                playerctl = Playerctl(panel[item])
+                container.pack_start(playerctl, False, False, panel["items-padding"])
+            else:
+                print("'{}' not defined in this panel instance".format(item))
 
 
 def main():

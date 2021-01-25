@@ -12,6 +12,8 @@ gi.require_version('GdkPixbuf', '2.0')
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
+from gi.repository import Gtk, GdkPixbuf
+
 import common
 
 try:
@@ -285,3 +287,42 @@ def get_interface(name):
         return list[0]["addr"]
     except:
         return None
+
+
+def player_status():
+    status = "install playerctl"
+    if is_command("playerctl"):
+        try:
+            status = cmd2string("playerctl status")
+        except:
+            pass
+
+    return status
+
+
+def player_metadata():
+    data = ""
+    try:
+        data = cmd2string("playerctl metadata --format '{{artist}} - {{title}}'")
+    except:
+        pass
+
+    return data
+
+
+def update_image(image, icon_name, icon_size):
+    icon_theme = Gtk.IconTheme.get_default()
+    if common.icons_path:
+        path = "{}/{}.svg".format(common.icons_path, icon_name)
+        try:
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                path, icon_size, icon_size)
+            image.set_from_pixbuf(pixbuf)
+        except Exception as e:
+            try:
+                pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+                image.set_from_pixbuf(pixbuf)
+            except:
+                print("update_image :: failed setting image from {}: {}".format(path, e))
+    else:
+        image.set_from_icon_name(icon_name, Gtk.IconSize.MENU)

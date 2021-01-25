@@ -10,8 +10,7 @@ gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, GtkLayerShell
 
 from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery, \
-    get_interface
-from nwg_panel.common import icons_path
+    get_interface, update_image
 
 
 class Controls(Gtk.EventBox):
@@ -540,21 +539,3 @@ def bat_icon_name(value):
         icon_name = "battery-low-symbolic"
 
     return icon_name
-
-
-def update_image(image, icon_name, icon_size):
-    icon_theme = Gtk.IconTheme.get_default()
-    if icons_path:
-        path = "{}/{}.svg".format(icons_path, icon_name)
-        try:
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                path, icon_size, icon_size)
-            image.set_from_pixbuf(pixbuf)
-        except Exception as e:
-            try:
-                pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
-                image.set_from_pixbuf(pixbuf)
-            except:
-                print("update_image :: failed setting image from {}: {}".format(path, e))
-    else:
-        image.set_from_icon_name(icon_name, Gtk.IconSize.MENU)
