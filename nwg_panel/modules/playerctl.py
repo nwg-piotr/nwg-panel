@@ -116,5 +116,4 @@ class Playerctl(Gtk.EventBox):
         self.show_all()
 
     def launch(self, button, cmd):
-        print("Executing '{}'".format(cmd))
         subprocess.Popen('exec {}'.format(cmd), shell=True)
