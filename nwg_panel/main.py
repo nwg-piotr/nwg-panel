@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import sys
+import signal
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -30,6 +31,11 @@ try:
     common.dependencies["pyalsa"] = True
 except:
     print("pylsa module not found, will try amixer")
+
+
+def signal_handler(sig, frame):
+    print("SIGINT received, terminating")
+    Gtk.main_quit()
 
 
 def check_tree():
@@ -103,7 +109,16 @@ def instantiate_content(panel, container, content_list):
 
 
 def main():
-    save_string(str(os.getpid()), os.path.join(temp_dir(), "nwg-panel.pid"))
+    pid_file = os.path.join(temp_dir(), "nwg-panel.pid")
+    if os.path.isfile(pid_file):
+        try:
+            pid = int(load_text_file(pid_file))
+            print("Running instace found, killing {}".format(pid))
+            os.kill(pid, signal.SIGINT)
+        except:
+            pass
+        
+    save_string(str(os.getpid()), pid_file)
     
     common.app_dirs = get_app_dirs()
 
@@ -230,6 +245,10 @@ def main():
 
     #GLib.timeout_add(100, listener_reply)
     Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 150, check_tree)
+
+    signal.signal(signal.SIGINT, signal_handler)
+    #signal.pause()
+
     Gtk.main()
 
 
