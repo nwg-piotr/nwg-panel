@@ -63,9 +63,27 @@ class Executor(Gtk.EventBox):
 
     def update_widget(self, output):
         if len(output) == 1:
-            if self.image.get_visible():
-                self.image.hide()
-            self.label.set_text(output[0].strip())
+            if output[0].endswith(".svg") or output[0].endswith(".png"):
+                new_path = output[0].strip()
+                if new_path != self.icon_path:
+                    try:
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                            new_path, self.settings["icon-size"], self.settings["icon-size"])
+                        self.image.set_from_pixbuf(pixbuf)
+                        self.icon_path = new_path
+                    except:
+                        print("Failed setting image from {}".format(output[0].strip()))
+                    if not self.image.get_visible():
+                        self.image.show()
+                    if self.label.get_visible():
+                        self.label.hide()
+            else:
+                if self.image.get_visible():
+                    self.image.hide()
+                self.label.set_text(output[0].strip())
+                if not self.label.get_visible():
+                    self.label.show()
+                
         elif len(output) == 2:
             new_path = output[0].strip()
             if new_path != self.icon_path:
@@ -100,7 +118,6 @@ class Executor(Gtk.EventBox):
     def build_box(self):
         self.box.pack_start(self.image, False, False, 2)
         self.box.pack_start(self.label, False, False, 2)
-        self.label.show()
 
     def on_enter_notify_event(self, widget, event):
         self.get_style_context().set_state(Gtk.StateFlags.SELECTED)
@@ -109,11 +126,11 @@ class Executor(Gtk.EventBox):
         self.get_style_context().set_state(Gtk.StateFlags.NORMAL)
 
     def on_button_press(self, widget, event):
-        if event.button == 3 and self.settings["on-left-click"]:
+        if event.button == 1 and self.settings["on-left-click"]:
             self.launch(self.settings["on-left-click"])
         elif event.button == 2 and self.settings["on-middle-click"]:
             self.launch(self.settings["on-middle-click"])
-        elif event.button == 1 and self.settings["on-right-click"]:
+        elif event.button == 3 and self.settings["on-right-click"]:
             self.launch(self.settings["on-right-click"])
 
     def on_scroll(self, widget, event):
