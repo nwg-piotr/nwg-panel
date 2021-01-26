@@ -9,18 +9,16 @@ icons_path = "/home/piotr/.config/nwg-panel/icons_light"
 def main():
     arch, aur = check_updates()
     if arch and aur:
-        print("{}/arch-notification.svg".format(icons_path))
+        print("{}/arch-linux.svg".format(icons_path))
         print("{}/{}".format(arch, aur))
     elif arch:
-        print("{}/arch-notification.svg".format(icons_path))
+        print("{}/arch-linux.svg".format(icons_path))
         print("{}".format(arch))
     elif aur:
-        print("{}/arch-notification.svg".format(icons_path))
-        print("{}".format(aur))
-    else:
         print("{}/arch-linux.svg".format(icons_path))
-    
-    
+        print("{}".format(aur))
+
+
 def check_updates():
     arch, aur = 0, 0
     try:

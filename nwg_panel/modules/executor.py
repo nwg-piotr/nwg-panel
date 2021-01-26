@@ -20,7 +20,6 @@ class Executor(Gtk.EventBox):
         self.settings = settings
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        self.box.set_property("name", "task-box")
         self.add(self.box)
         self.image = Gtk.Image.new_from_icon_name("wtf", Gtk.IconSize.MENU)
         self.label = Gtk.Label("")
@@ -62,8 +61,30 @@ class Executor(Gtk.EventBox):
             Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
 
     def update_widget(self, output):
-        if len(output) == 1:
-            if output[0].endswith(".svg") or output[0].endswith(".png"):
+        if output:
+            if len(output) == 1:
+                if output[0].endswith(".svg") or output[0].endswith(".png"):
+                    new_path = output[0].strip()
+                    if new_path != self.icon_path:
+                        try:
+                            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                                new_path, self.settings["icon-size"], self.settings["icon-size"])
+                            self.image.set_from_pixbuf(pixbuf)
+                            self.icon_path = new_path
+                        except:
+                            print("Failed setting image from {}".format(output[0].strip()))
+                        if not self.image.get_visible():
+                            self.image.show()
+                        if self.label.get_visible():
+                            self.label.hide()
+                else:
+                    if self.image.get_visible():
+                        self.image.hide()
+                    self.label.set_text(output[0].strip())
+                    if not self.label.get_visible():
+                        self.label.show()
+                    
+            elif len(output) == 2:
                 new_path = output[0].strip()
                 if new_path != self.icon_path:
                     try:
@@ -75,29 +96,13 @@ class Executor(Gtk.EventBox):
                         print("Failed setting image from {}".format(output[0].strip()))
                     if not self.image.get_visible():
                         self.image.show()
-                    if self.label.get_visible():
-                        self.label.hide()
-            else:
-                if self.image.get_visible():
-                    self.image.hide()
-                self.label.set_text(output[0].strip())
-                if not self.label.get_visible():
-                    self.label.show()
-                
-        elif len(output) == 2:
-            new_path = output[0].strip()
-            if new_path != self.icon_path:
-                try:
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                        new_path, self.settings["icon-size"], self.settings["icon-size"])
-                    self.image.set_from_pixbuf(pixbuf)
-                    self.icon_path = new_path
-                except:
-                    print("Failed setting image from {}".format(output[0].strip()))
-                if not self.image.get_visible():
-                    self.image.show()
-
-            self.label.set_text(output[1].strip())
+    
+                self.label.set_text(output[1].strip())
+        else:
+            if self.image.get_visible():
+                self.image.hide()
+            if self.label.get_visible():
+                self.label.hide()
 
         return False
 
