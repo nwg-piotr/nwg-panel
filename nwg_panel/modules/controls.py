@@ -12,6 +12,14 @@ from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, GtkLayerShell
 from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery, \
     get_interface, update_image
 
+from nwg_panel.common import dependencies
+
+try:
+    import netifaces
+    dependencies["netifaces"] = True
+except ModuleNotFoundError:
+    pass
+
 
 class Controls(Gtk.EventBox):
     def __init__(self, settings, position, alignment, width):
@@ -73,9 +81,12 @@ class Controls(Gtk.EventBox):
         self.box.pack_start(box, False, False, 6)
         for item in self.settings["components"]:
             if item == "net":
-                box.pack_start(self.net_image, False, False, 4)
-                if self.net_label:
-                    box.pack_start(self.net_label, False, False, 0)
+                if dependencies["netifaces"]:
+                    box.pack_start(self.net_image, False, False, 4)
+                    if self.net_label:
+                        box.pack_start(self.net_label, False, False, 0)
+                else:
+                    print("'netifaces' python module not found")
 
             if item == "brightness":
                 box.pack_start(self.bri_image, False, False, 4)
@@ -102,7 +113,10 @@ class Controls(Gtk.EventBox):
         if "brightness" in self.settings["components"]:
             try:
                 value = get_brightness()
-                GLib.idle_add(self.update_brightness, value)
+                if value:
+                    GLib.idle_add(self.update_brightness, value)
+                else:
+                    print("Couldn't get brightness, is 'light' installed?")
             except Exception as e:
                 print(e)
                 
@@ -283,7 +297,7 @@ class PopupWindow(Gtk.Window):
             sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
             v_box.pack_start(sep, True, True, 10)
 
-        if "net" in settings["components"]:
+        if "net" in settings["components"] and dependencies["netifaces"]:
             event_box = Gtk.EventBox()
             if "net" in settings["commands"] and settings["commands"]["net"]:
                 event_box.connect("enter_notify_event", self.on_enter_notify_event)
@@ -437,7 +451,7 @@ class PopupWindow(Gtk.Window):
         return eb
     
     def refresh(self):
-        if "net" in self.settings["components"]:
+        if "net" in self.settings["components"] and dependencies["netifaces"]:
             ip_addr = get_interface(self.settings["net-interface"])
             icon_name = "network-wired-symbolic" if ip_addr else "network-wired-disconnected-symbolic"
 

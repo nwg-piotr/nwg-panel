@@ -27,7 +27,7 @@ from modules.playerctl import Playerctl
 
 try:
     from pyalsa import alsamixer
-    common.pyalsa = True
+    common.dependencies["pyalsa"] = True
 except:
     print("pylsa module not found, will try amixer")
 
@@ -107,8 +107,8 @@ def main():
     
     common.app_dirs = get_app_dirs()
 
-    common.upower = is_command("upower")
-    common.acpi = is_command("acpi")
+    common.dependencies["upower"] = is_command("upower")
+    common.dependencies["acpi"] = is_command("acpi")
 
     common.config_dir = get_config_dir()
     config_file = os.path.join(common.config_dir, "config")

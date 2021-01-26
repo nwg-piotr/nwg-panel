@@ -4,7 +4,6 @@ import os
 import sys
 import json
 import subprocess
-import netifaces
 
 import gi
 
@@ -15,6 +14,11 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk, GdkPixbuf
 
 import common
+
+try:
+    import netifaces
+except ModuleNotFoundError:
+    pass
 
 try:
     from pyalsa import alsamixer
@@ -170,7 +174,7 @@ def is_command(cmd):
 def get_volume():
     vol = None
     switch = False
-    if common.pyalsa:
+    if common.dependencies["pyalsa"]:
         mixer = alsamixer.Mixer()
         mixer.attach()
         mixer.load()
@@ -198,7 +202,7 @@ def get_volume():
 
 def set_volume(slider):
     percent = slider.get_value()
-    if common.pyalsa:
+    if common.dependencies["pyalsa"]:
         mixer = alsamixer.Mixer()
         mixer.attach()
         mixer.load()
@@ -213,7 +217,7 @@ def set_volume(slider):
 
 
 def get_brightness():
-    brightness = None
+    brightness = 0
     output = cmd2string(common.commands["get_brightness"])
     try:
         brightness = int(round(float(output), 0))
@@ -225,13 +229,15 @@ def get_brightness():
 
 def set_brightness(slider):
     value = slider.get_value()
-    subprocess.call("{} {}".format(common.commands["set_brightness"], value), shell=True)
+    res = subprocess.call("{} {}".format(common.commands["set_brightness"], value), shell=True)
+    if res != 0:
+        print("Couldn't set brightness, is 'light' installed?")
 
 
 def get_battery():
-    if common.upower:
+    if common.dependencies["upower"]:
         cmd = common.commands["get_battery"]
-    elif common.acpi:
+    elif common.dependencies["acpi"]:
         cmd = common.commands["get_battery_alt"]
     else:
         return None, None
@@ -281,9 +287,10 @@ def list_interfaces():
 
 
 def get_interface(name):
-    addrs = netifaces.ifaddresses(name)
     try:
+        addrs = netifaces.ifaddresses(name)
         list = addrs[netifaces.AF_INET]
+
         return list[0]["addr"]
     except:
         return None

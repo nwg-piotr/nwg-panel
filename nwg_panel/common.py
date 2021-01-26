@@ -13,9 +13,12 @@ app_dirs = []
 
 key_missing = False
 
-pyalsa = False
-upower = False
-acpi = False
+dependencies = {
+    "pyalsa": False,
+    "upower": False,
+    "acpi": False,
+    "netifaces": False,
+}
 
 icons_path = "icons_light"   # "icons_light", "icons_dark" or "" (GTK icons)
 
