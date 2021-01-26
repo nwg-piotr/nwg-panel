@@ -229,7 +229,7 @@ def main():
         save_json(panels, os.path.join(common.config_dir, "config_amended"))
 
     #GLib.timeout_add(100, listener_reply)
-    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 50, check_tree)
+    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 150, check_tree)
     Gtk.main()
 
 
