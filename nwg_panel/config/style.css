@@ -1,10 +1,18 @@
-window {
-    background: #3a3e46
+button {
+    margin: 2px;
 }
 
+#button-grid {
+    background: rgba (255, 255, 255, 0.0);
+    border: 0
+}
 
-button {
-    margin: 2px
+#primary-top {
+    background: #101010
+}
+
+#all-bottom {
+    background: #3b4559
 }
 
 #task-box {
@@ -18,15 +26,32 @@ button {
     padding-right: 4px
 }
 
-#executor-box {
-    padding-left: 4px;
-    padding-right: 4px;
-}
-
 #executor-label {
     font-family: monospace
 }
 
+#controls-window {
+    border-radius: 15px;
+    background: #36364f
+}
+
+#controls-menu {
+    background: #36364f;
+    border: none
+}
+
+#clock {
+    font-family: monospace;
+    font-size: 16px;
+    /*font-weight: bold*/
+}
+
 #weather {
-    font-family: Weather icons
+    font-family: monospace;
+    font-size: 16px;
+    /*font-weight: bold*/
+}
+
+menuitem {
+  padding: 10px
 }

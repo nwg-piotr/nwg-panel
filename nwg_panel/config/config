@@ -10,12 +10,13 @@
     "padding-horizontal": 10,
     "padding-vertical": 0,
     "spacing": 4,
+    "items-padding": 0,
+    "css-name": "all-bottom",
     "focus": true,
     "modules-left": [
-      "button-grid",
       "sway-taskbar"
     ],
-    "modules-center": ["executor-traffic"],
+    "modules-center": [],
     "modules-right": [
       "executor-cpuav",
       "executor-cpubar",
@@ -23,7 +24,7 @@
       "executor-memory",
       "executor-drives",
       "executor-uptime"
-      
+
     ],
     "sway-taskbar": {
       "workspace-buttons": false,
@@ -37,10 +38,6 @@
     },
     "sway-workspaces": {
       "numbers": [3, 4]
-    },
-    "button-grid": {
-      "icon": "open-menu",
-      "command": "nwggrid -p"
     },
     "executor-cpubar": {
       "script": "psuinfo -Cg",
@@ -65,10 +62,6 @@
     "executor-uptime": {
       "script": "psuinfo -Iu",
       "interval": 60
-    },
-    "executor-traffic": {
-      "script": "psuinfo -Ik",
-      "interval": 3
     }
   },
   {
@@ -81,12 +74,13 @@
     "margin-bottom": 0,
     "padding-horizontal": 4,
     "padding-vertical": 0,
-    "spacing": 200,
+    "spacing": 6,
+    "css-name": "all-bottom",
     "modules-left": [
       "sway-taskbar"
     ],
     "modules-center": [],
-    "modules-right": [],
+    "modules-right": ["executor-traffic"],
     "sway-taskbar": {
       "workspace-buttons": false,
       "show-app-icon": true,
@@ -99,6 +93,10 @@
     },
     "sway-workspaces": {
       "numbers": [1, 2]
+    },
+    "executor-traffic": {
+      "script": "psuinfo -Ik",
+      "interval": 3
     }
   },
   {
@@ -111,7 +109,8 @@
     "margin-bottom": 0,
     "padding-horizontal": 4,
     "padding-vertical": 0,
-    "spacing": 200,
+    "spacing": 6,
+    "css-name": "all-bottom",
     "modules-left": [
       "sway-taskbar"
     ],
@@ -134,22 +133,26 @@
     "position": "top",
     "width": 1920,
     "height": 30,
+    "homogeneous": true,
     "margin-top": 0,
     "margin-bottom": 0,
-    "padding-horizontal": 10,
+    "padding-horizontal": 0,
     "padding-vertical": 0,
-    "spacing": 10,
+    "spacing": 4,
+    "controls": true,
+    "items-padding": 0,
+    "css-name": "primary-top",
+    "icons": "light",
     "modules-left": [
-      "executor-weather"
+       "button-grid",
+       "playerctl"
+
     ],
     "modules-center": [
-      
+      "executor-weather",
+      "clock"
     ],
-    "modules-right": [
-      "clock",
-      "executor-brightness",
-      "executor-volume",
-      "executor-battery"],
+    "modules-right": ["executor-github", "executor-arch"],
     "sway-taskbar": {
       "workspace-buttons": false,
       "show-app-icon": true,
@@ -160,26 +163,72 @@
       "task-spacing": 0,
       "all-outputs": false
     },
+    "controls-settings": {
+      "alignment": "right",
+      "components": [
+        "net",
+        "brightness",
+        "volume",
+        "battery"
+      ],
+      "commands": {
+        "battery": "",
+        "net": ""
+      },
+      "custom-items": [
+        { "name": "Wallpapers", "icon": "azote", "cmd": "azote" },
+        { "name": "Look & Feel", "icon": "preferences-desktop-theme", "cmd": "lxappearance" }
+      ],
+      "menu": {
+        "name": "Exit",
+        "icon": "system-shutdown-symbolic",
+        "items": [
+           { "name": "Lock", "cmd": "swaylock -f -c 000000" },
+           { "name": "Logout", "cmd": "swaymsg exit" },
+           { "name": "Reboot", "cmd": "systemctl reboot" },
+           { "name": "Shutdown", "cmd": "systemctl -i poweroff" }
+         ]
+      },
+      "show-values": false,
+      "interval": 1,
+      "icon-size": 16,
+      "css-name": "controls-window",
+      "net-interface": "wlo1"
+    },
+    "button-grid": {
+      "icon": "view-grid",
+      "command": "nwggrid -p",
+      "css-name": "button-grid"
+    },
+    "playerctl": {
+      "interval": 1,
+      "buttons": true,
+      "buttons-position": "left",
+      "chars": 50,
+      "css-name": "button-grid"
+    },
     "clock": {
-      "format": "%A, %d. %B %H:%M:%S",
-      "interval": 1
-    },
-    "executor-brightness": {
-      "script": "t2ec --lbrightness",
-      "interval": 1
-    },
-    "executor-volume": {
-      "script": "t2ec --volume",
-      "interval": 1
-    },
-    "executor-battery": {
-      "script": "t2ec --battery -l",
-      "interval": 30
+      "format": "%a, %d. %b %H:%M:%S",
+      "interval": 1,
+      "on-right-click": "/home/piotr/PycharmProjects/swayinfo/calendar.py"
     },
     "executor-weather": {
-      "script": "/home/piotr/PycharmProjects/swayinfo/weather.py -IdtS",
+      "script": "curl https://wttr.in/?format=1 -s",
       "interval": 1800,
-      "css-name": "weather"
+      "css-name": "weather",
+      "on-right-click": "/home/piotr/PycharmProjects/swayinfo/calendar.py"
+    },
+    "executor-arch": {
+      "script": "/home/piotr/.config/nwg-panel/executors/arch_updates.py",
+      "interval": 900,
+      "icon-size": 16,
+      "on-left-click": "lxterminal -e \"/home/piotr/PycharmProjects/swayinfo/au.sh\" && swaymsg reload"
+    },
+    "executor-github": {
+      "script": "/home/piotr/.config/nwg-panel/executors/github.sh",
+      "interval": 60,
+      "icon-size": 16,
+      "on-left-click": "chromium https://github.com/notifications; swaymsg reload"
     }
   }
 ]
