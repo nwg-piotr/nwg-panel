@@ -22,7 +22,7 @@ def main():
 def check_updates():
     arch, aur = 0, 0
     try:
-        arch = len(subprocess.check_output(["pacman", "-Qqu"]).decode("utf-8").splitlines())
+        arch = len(subprocess.check_output(["checkupdates"]).decode("utf-8").splitlines())
     except:
         pass
     try:
