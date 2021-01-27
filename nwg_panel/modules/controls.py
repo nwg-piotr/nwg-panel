@@ -68,7 +68,8 @@ class Controls(Gtk.EventBox):
 
         self.build_box()
         self.refresh()
-        self.refresh_bat()
+        if "battery" in settings["components"]:
+            self.refresh_bat()
 
         if settings["interval"] > 0:
             Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)

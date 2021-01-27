@@ -44,9 +44,6 @@ def check_tree():
     if tree.ipc_data != common.ipc_data:
         for item in common.taskbars_list:
             item.refresh()
-        """for item in common.controls_list:
-            if item.popup_window.get_visible():
-                item.popup_window.hide()"""
 
     common.ipc_data = common.i3.get_tree().ipc_data
 
@@ -113,8 +110,8 @@ def main():
     if os.path.isfile(pid_file):
         try:
             pid = int(load_text_file(pid_file))
-            print("Running instace found, killing {}".format(pid))
             os.kill(pid, signal.SIGINT)
+            print("Running instance killed: {}".format(pid))
         except:
             pass
         
@@ -178,7 +175,6 @@ def main():
         inner_box.pack_start(left_box, False, True, 0)
         if panel["controls"] and panel["controls-settings"]["alignment"] == "left":
             cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"], int(w/6))
-            common.controls_list.append(cc)
             left_box.pack_start(cc, False, False, 0)
         instantiate_content(panel, left_box, panel["modules-left"])
 
@@ -195,7 +191,6 @@ def main():
 
         if panel["controls"] and panel["controls-settings"]["alignment"] == "right":
             cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"], int(w/6))
-            common.controls_list.append(cc)
             right_box.pack_end(cc, False, False, 0)
 
         window.add(vbox)
