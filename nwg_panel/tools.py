@@ -33,13 +33,13 @@ def temp_dir():
         return os.getenv("TEMP")
     elif os.getenv("TMP"):
         return os.getenv("TMP")
-    
+
     return "/tmp"
-        
-    
+
+
 def get_app_dirs():
     desktop_dirs = []
-    
+
     home = os.getenv("HOME")
     xdg_data_home = os.getenv("XDG_DATA_HOME")
     xdg_data_dirs = os.getenv("XDG_DATA_DIRS") if os.getenv("XDG_DATA_DIRS") else "/usr/local/share/:/usr/share/"
@@ -75,7 +75,7 @@ def get_icon(app_name):
             for line in content.splitlines():
                 if line.startswith("Icon="):
                     return line.split("=")[1]
-    
+
 
 def get_config_dir():
     # Determine config dir path, create if not found, then create sub-dirs
@@ -122,8 +122,8 @@ def load_json(path):
 def save_json(src_dict, path):
     with open(path, 'w') as f:
         json.dump(src_dict, f, indent=2)
-        
-        
+
+
 def save_string(string, file):
     try:
         file = open(file, "wt")
@@ -138,24 +138,52 @@ def list_outputs():
     Get output names and geometry from i3 tree, assign to Gdk.Display monitors.
     :return: {"name": str, "x": int, "y": int, "width": int, "height": int, "monitor": Gkd.Monitor}
     """
-    outputs = {}
-    for item in common.i3.get_tree():
-        if item.type == "output" and not item.name.startswith("__"):
-            outputs[item.name] = {"x": item.rect.x,
-                                  "y": item.rect.y,
-                                  "width": item.rect.width,
-                                  "height": item.rect.height}
-    
+    outputs_dict = {}
+    if common.sway:
+        print("Running on sway")
+        for item in common.i3.get_tree():
+            if item.type == "output" and not item.name.startswith("__"):
+                outputs_dict[item.name] = {"x": item.rect.x,
+                                           "y": item.rect.y,
+                                           "width": item.rect.width,
+                                           "height": item.rect.height}
+    elif os.getenv('WAYLAND_DISPLAY') is not None:
+        print("Running on Wayland, but not sway")
+        if is_command("wlr-randr"):
+            lines = subprocess.check_output("wlr-randr", shell=True).decode("utf-8").strip().splitlines()
+            if lines:
+                name, w, h, x, y = None, None, None, None, None
+                for line in lines:
+                    if not line.startswith(" "):
+                        name = line.split()[0]
+                    elif "current" in line:
+                        w_h = line.split()[0].split('x')
+                        w = int(w_h[0])
+                        h = int(w_h[1])
+                    elif "Position" in line:
+                        x_y = line.split()[1].split(',')
+                        x = int(x_y[0])
+                        y = int(x_y[1])
+                        if name is not None and w is not None and h is not None and x is not None and y is not None:
+                            outputs_dict[name] = {'name': name,
+                                       'x': x,
+                                       'y': y,
+                                       'width': w,
+                                       'height': h}
+        else:
+            print("'wlr-randr' command not found, terminating")
+            sys.exit(1)
+
     display = Gdk.Display.get_default()
     for i in range(display.get_n_monitors()):
         monitor = display.get_monitor(i)
         geometry = monitor.get_geometry()
-        
-        for key in outputs:
-            if int(outputs[key]["x"]) == geometry.x and int(outputs[key]["y"]) == geometry.y:
-                outputs[key]["monitor"] = monitor
-    
-    return outputs
+
+        for key in outputs_dict:
+            if int(outputs_dict[key]["x"]) == geometry.x and int(outputs_dict[key]["y"]) == geometry.y:
+                outputs_dict[key]["monitor"] = monitor
+
+    return outputs_dict
 
 
 def check_key(dictionary, key, default_value):
@@ -352,8 +380,9 @@ def update_image(image, icon_name, icon_size):
 
 
 def bt_on():
-    output = subprocess.check_output("bluetoothctl show | awk '/Powered/{print $2}'", shell=True).decode("utf-8").strip()
-    
+    output = subprocess.check_output("bluetoothctl show | awk '/Powered/{print $2}'", shell=True).decode(
+        "utf-8").strip()
+
     return output == "yes"
 
 

@@ -15,16 +15,22 @@ except ValueError:
                        'For example you might need to run:\n\n' +
                        'GI_TYPELIB_PATH=build/src LD_LIBRARY_PATH=build/src python3 ' + ' '.join(sys.argv))
 
-from gi.repository import Gtk, GtkLayerShell, GLib, Gdk
+from gi.repository import GtkLayerShell, GLib
 
 from tools import *
-from modules.sway_taskbar import SwayTaskbar
-from modules.sway_workspaces import SwayWorkspaces
+
 from modules.custom_button import CustomButton
 from modules.executor import Executor
 from modules.clock import Clock
 from modules.controls import Controls
 from modules.playerctl import Playerctl
+
+common.sway = os.getenv('SWAYSOCK') is not None
+if common.sway:
+    from i3ipc import Connection
+    common.i3 = Connection()
+    from modules.sway_taskbar import SwayTaskbar
+    from modules.sway_workspaces import SwayWorkspaces
 
 try:
     from pyalsa import alsamixer
@@ -57,24 +63,29 @@ def instantiate_content(panel, container, content_list):
     for item in content_list:
         if item == "sway-taskbar":
             if "sway-taskbar" in panel:
-                check_key(panel["sway-taskbar"], "all-outputs", False)
-                if panel["sway-taskbar"]["all-outputs"] or "output" not in panel:
-                    taskbar = SwayTaskbar(panel["sway-taskbar"])
+                if common.sway:
+                    check_key(panel["sway-taskbar"], "all-outputs", False)
+                    if panel["sway-taskbar"]["all-outputs"] or "output" not in panel:
+                        taskbar = SwayTaskbar(panel["sway-taskbar"], common.i3)
+                    else:
+                        taskbar = SwayTaskbar(panel["sway-taskbar"], common.i3, display_name="{}".format(panel["output"]))
+                    common.taskbars_list.append(taskbar)
+        
+                    container.pack_start(taskbar, False, False, panel["items-padding"])
                 else:
-                    taskbar = SwayTaskbar(panel["sway-taskbar"], display_name="{}".format(panel["output"]))
-                common.taskbars_list.append(taskbar)
-    
-                container.pack_start(taskbar, False, False, panel["items-padding"])
+                    print("'sway-taskbar' ignored")
             else:
                 print("'sway-taskbar' not defined in this panel instance")
             
         if item == "sway-workspaces":
-            if "sway-workspaces" in panel:
-                workspaces = SwayWorkspaces(panel["sway-workspaces"])
-                container.pack_start(workspaces, False, False, panel["items-padding"])
+            if common.sway:
+                if "sway-workspaces" in panel:
+                    workspaces = SwayWorkspaces(panel["sway-workspaces"])
+                    container.pack_start(workspaces, False, False, panel["items-padding"])
+                else:
+                    print("'sway-workspaces' not defined in this panel instance")
             else:
-                print("'sway-workspaces' not defined in this panel instance")
-                
+                print("'sway-workspaces' ignored")
         if "button-" in item:
             if item in panel:
                 button = CustomButton(panel[item])
@@ -242,7 +253,8 @@ def main():
         save_json(panels, os.path.join(common.config_dir, "config_amended"))
 
     #GLib.timeout_add(100, listener_reply)
-    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 150, check_tree)
+    if common.sway:
+        Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 150, check_tree)
 
     signal.signal(signal.SIGINT, signal_handler)
 

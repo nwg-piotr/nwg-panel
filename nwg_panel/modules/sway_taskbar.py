@@ -2,25 +2,22 @@
 
 from gi.repository import Gtk, GdkPixbuf
 
-import sys
-sys.path.append('../')
-
-import nwg_panel.common
 from nwg_panel.tools import check_key, get_icon
 
 
 class SwayTaskbar(Gtk.Box):
-    def __init__(self, settings, display_name=""):
+    def __init__(self, settings, i3, display_name=""):
         check_key(settings, "workspaces-spacing", 0)
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=settings["workspaces-spacing"])
         self.settings = settings
         self.display_name = display_name
+        self.i3 = i3
         self.displays_tree = self.list_tree()
         self.build_box()
         self.ipc_data = {}
 
     def list_tree(self):
-        i3_tree = nwg_panel.common.i3.get_tree()
+        i3_tree = self.i3.get_tree()
         """
         display -> workspace -> window -> app_id
                                        -> parent_layout
