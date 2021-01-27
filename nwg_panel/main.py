@@ -148,7 +148,15 @@ def main():
         window = Gtk.Window()
         if panel["css-name"]:
             window.set_property("name", panel["css-name"])
-        check_key(panel, "width", common.outputs[panel["output"]]["width"])
+
+        # If not full screen width demanded explicit, let's leave 6 pixel of margin on both sides on multi-headed
+        # setups. Otherwise moving the pointer between displays over the panels remains undetected,
+        # and the Controls window may appear on the previous output.
+        if len(common.outputs) > 1:
+            check_key(panel, "width", common.outputs[panel["output"]]["width"] - 12)
+        else:
+            check_key(panel, "width", common.outputs[panel["output"]]["width"])
+
         w = panel["width"]
         check_key(panel, "height", 0)
         h = panel["height"]

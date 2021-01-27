@@ -32,6 +32,7 @@ class Controls(Gtk.EventBox):
         check_key(settings, "icon-size", 16)
         check_key(settings, "interval", 1)
         check_key(settings, "icon-size", 16)
+        check_key(settings, "hover-opens", True)
         check_key(settings, "css-name", "controls-label")
         check_key(settings, "components", ["net", "brightness", "volume", "battery"])
         check_key(settings, "net-interface", "")
@@ -221,7 +222,11 @@ class Controls(Gtk.EventBox):
         return False
 
     def on_enter_notify_event(self, widget, event):
-        self.get_style_context().set_state(Gtk.StateFlags.SELECTED)
+        if self.settings["hover-opens"]:
+            if not self.popup_window.get_visible():
+                self.popup_window.show_all()
+        else:
+            self.get_style_context().set_state(Gtk.StateFlags.SELECTED)
         return True
 
     def on_leave_notify_event(self, widget, event):
