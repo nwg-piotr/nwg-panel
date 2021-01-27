@@ -217,6 +217,7 @@ class Controls(Gtk.EventBox):
     def on_button_press(self, w, event):
         if not self.popup_window.get_visible():
             self.popup_window.show_all()
+            self.popup_window.menu_box.hide()
         else:
             self.popup_window.hide()
         return False
@@ -225,6 +226,7 @@ class Controls(Gtk.EventBox):
         if self.settings["hover-opens"]:
             if not self.popup_window.get_visible():
                 self.popup_window.show_all()
+                self.popup_window.menu_box.hide()
         else:
             self.get_style_context().set_state(Gtk.StateFlags.SELECTED)
         return True
@@ -473,26 +475,26 @@ class PopupWindow(Gtk.Window):
                 e_box.connect("enter-notify-event", self.on_enter_notify_event)
                 e_box.connect("leave-notify-event", self.on_leave_notify_event)
 
-                self.menu = Gtk.Menu()
-                self.menu.connect("deactivate", self.on_menu_hidden)
-                Gtk.Widget.set_size_request(self.menu, int(width * 0.9), 10)
-                self.menu.set_property("name", "controls-menu")
+                self.menu_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+                v_box.pack_start(self.menu_box, False, False, 0)
                 for item in template["items"]:
-                    i = Gtk.MenuItem.new_with_label(item["name"])
-                    i.connect("activate", self.launch_from_menu, item["cmd"])
-                    self.menu.append(i)
-                
-                self.menu.show_all()
+                    eb = Gtk.EventBox()
+                    vb = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+                    hb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+                    vb.pack_start(hb, False, False, 6)
+                    i = Gtk.Label(item["name"])
+                    hb.pack_start(i, False, False, self.icon_size + 18)
+                    eb.add(vb)
+                    eb.connect("enter_notify_event", self.on_enter_notify_event)
+                    eb.connect("leave_notify_event", self.on_leave_notify_event)
+                    eb.connect("button-press-event", self.launch, item["cmd"])
+                    self.menu_box.pack_start(eb, False, False, 0)
 
-                e_box.connect('button-press-event', self.open_menu, self.menu, inner_hbox, self.position)
+                e_box.connect('button-press-event', self.switch_menu_box)
 
         Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
 
     def on_window_exit(self, w, e):
-        if not self.menu.get_visible():
-            self.hide()
-            
-    def on_menu_hidden(self, w):
         self.hide()
     
     def open_menu(self, widget, event, menu, at_widget, position):
@@ -500,6 +502,12 @@ class PopupWindow(Gtk.Window):
             menu.popup_at_widget(at_widget, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, None)
         else:
             menu.popup_at_widget(at_widget, Gdk.Gravity.CENTER, Gdk.Gravity.SOUTH, None)
+            
+    def switch_menu_box(self, widget, event):
+        if self.menu_box.get_visible():
+            self.menu_box.hide()
+        else:
+            self.menu_box.show_all()
     
     def custom_item(self, name, icon, cmd):
         eb = Gtk.EventBox()

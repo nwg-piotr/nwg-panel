@@ -11,7 +11,7 @@ gi.require_version('GdkPixbuf', '2.0')
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
-from gi.repository import Gtk, GdkPixbuf
+from gi.repository import Gtk, Gdk, GdkPixbuf
 
 import common
 
@@ -134,6 +134,10 @@ def save_string(string, file):
 
 
 def list_outputs():
+    """
+    Get output names and geometry from i3 tree, assign to Gdk.Display monitors.
+    :return: {"name": str, "x": int, "y": int, "width": int, "height": int, "monitor": Gkd.Monitor}
+    """
     outputs = {}
     for item in common.i3.get_tree():
         if item.type == "output" and not item.name.startswith("__"):
@@ -141,6 +145,16 @@ def list_outputs():
                                   "y": item.rect.y,
                                   "width": item.rect.width,
                                   "height": item.rect.height}
+    
+    display = Gdk.Display.get_default()
+    for i in range(display.get_n_monitors()):
+        monitor = display.get_monitor(i)
+        geometry = monitor.get_geometry()
+        
+        for key in outputs:
+            if int(outputs[key]["x"]) == geometry.x and int(outputs[key]["y"]) == geometry.y:
+                outputs[key]["monitor"] = monitor
+    
     return outputs
 
 

@@ -58,7 +58,7 @@ def instantiate_content(panel, container, content_list):
         if item == "sway-taskbar":
             if "sway-taskbar" in panel:
                 check_key(panel["sway-taskbar"], "all-outputs", False)
-                if panel["sway-taskbar"]["all-outputs"]:
+                if panel["sway-taskbar"]["all-outputs"] or "output" not in panel:
                     taskbar = SwayTaskbar(panel["sway-taskbar"])
                 else:
                     taskbar = SwayTaskbar(panel["sway-taskbar"], display_name="{}".format(panel["output"]))
@@ -106,6 +106,7 @@ def instantiate_content(panel, container, content_list):
 
 
 def main():
+    # Try and kill already running instance if any
     pid_file = os.path.join(temp_dir(), "nwg-panel.pid")
     if os.path.isfile(pid_file):
         try:
@@ -138,13 +139,10 @@ def main():
     except Exception as e:
         print(e)
 
-    output_to_focus = None
-
     for panel in panels:
         check_key(panel, "spacing", 6)
         check_key(panel, "homogeneous", False)
         check_key(panel, "css-name", "")
-        common.i3.command("focus output {}".format(panel["output"]))
         window = Gtk.Window()
         if panel["css-name"]:
             window.set_property("name", panel["css-name"])
@@ -152,11 +150,10 @@ def main():
         # If not full screen width demanded explicit, let's leave 6 pixel of margin on both sides on multi-headed
         # setups. Otherwise moving the pointer between displays over the panels remains undetected,
         # and the Controls window may appear on the previous output.
-        if len(common.outputs) > 1:
-            check_key(panel, "width", common.outputs[panel["output"]]["width"] - 12)
-        else:
-            check_key(panel, "width", common.outputs[panel["output"]]["width"])
+        if "output" in panel and "width" not in panel:
+            panel["width"] = common.outputs[panel["output"]]["width"] - 12
 
+        check_key(panel, "width", 0)
         w = panel["width"]
         check_key(panel, "height", 0)
         h = panel["height"]
@@ -205,6 +202,18 @@ def main():
 
         GtkLayerShell.init_for_window(window)
 
+        monitor = None
+        try:
+            monitor = common.outputs[panel["output"]]["monitor"]
+        except KeyError:
+            pass
+        
+        o = panel["output"] if "output" in panel else "undefined"
+        print("Display: {}, position: {}, layer: {}, width: {}, height: {}".format(o, panel["position"], panel["layer"], panel["width"], panel["height"]))
+
+        if monitor:
+            GtkLayerShell.set_monitor(window, monitor)
+
         GtkLayerShell.auto_exclusive_zone_enable(window)
 
         check_key(panel, "layer", "top")
@@ -214,10 +223,10 @@ def main():
             GtkLayerShell.set_layer(window, GtkLayerShell.Layer.BOTTOM)
 
         check_key(panel, "margin-top", 0)
-        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, 0)
+        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, panel["margin-top"])
 
         check_key(panel, "margin-bottom", 0)
-        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.BOTTOM, 0)
+        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.BOTTOM, panel["margin-bottom"])
 
         check_key(panel, "position", "top")
         if panel["position"] == "top":
@@ -227,20 +236,6 @@ def main():
 
         window.show_all()
         window.connect('destroy', Gtk.main_quit)
-
-        """
-        As we displace panels by focusing outputs, we always end up in the last output focused on start.
-        Let's add the optional "focus" key to the panel placed on the primary output. Whatever non-empty value allowed.
-        """
-        try:
-            if panel["focus"]:
-                common.i3.command("focus output {}".format(panel["output"]))
-                output_to_focus = panel["output"]
-        except KeyError:
-            pass
-
-    if output_to_focus:
-        common.i3.command("focus output {}".format(output_to_focus))
         
     if common.key_missing:
         print("Saving amended config")
@@ -250,7 +245,6 @@ def main():
     Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 150, check_tree)
 
     signal.signal(signal.SIGINT, signal_handler)
-    #signal.pause()
 
     Gtk.main()
 
