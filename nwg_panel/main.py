@@ -44,9 +44,9 @@ def check_tree():
     if tree.ipc_data != common.ipc_data:
         for item in common.taskbars_list:
             item.refresh()
-        for item in common.controls_list:
+        """for item in common.controls_list:
             if item.popup_window.get_visible():
-                item.popup_window.hide()
+                item.popup_window.hide()"""
 
     common.ipc_data = common.i3.get_tree().ipc_data
 

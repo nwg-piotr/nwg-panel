@@ -217,9 +217,14 @@ class PopupWindow(Gtk.Window):
         
         self.settings = settings
         self.position = position
+        
+        eb = Gtk.EventBox()
+        eb.set_above_child(False)
+        self.connect("leave_notify_event", self.on_window_exit)
 
         outer_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        self.add(outer_vbox)
+        eb.add(outer_vbox)
+        self.add(eb)
 
         outer_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         Gtk.Widget.set_size_request(outer_hbox, width, 10)
@@ -404,23 +409,31 @@ class PopupWindow(Gtk.Window):
                 e_box.connect("enter-notify-event", self.on_enter_notify_event)
                 e_box.connect("leave-notify-event", self.on_leave_notify_event)
 
-                menu = Gtk.Menu()
-                Gtk.Widget.set_size_request(menu, int(width * 0.9), 10)
-                menu.set_property("name", "controls-menu")
+                self.menu = Gtk.Menu()
+                self.menu.connect("deactivate", self.on_menu_hidden)
+                Gtk.Widget.set_size_request(self.menu, int(width * 0.9), 10)
+                self.menu.set_property("name", "controls-menu")
                 for item in template["items"]:
                     i = Gtk.MenuItem.new_with_label(item["name"])
                     i.connect("activate", self.launch_from_menu, item["cmd"])
-                    menu.append(i)
+                    self.menu.append(i)
                 
-                menu.show_all()
+                self.menu.show_all()
 
-                e_box.connect('button-press-event', self.open_menu, menu, inner_hbox, self.position)
+                e_box.connect('button-press-event', self.open_menu, self.menu, inner_hbox, self.position)
 
         Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
 
+    def on_window_exit(self, w, e):
+        if not self.menu.get_visible():
+            self.hide()
+            
+    def on_menu_hidden(self, w):
+        self.hide()
+    
     def open_menu(self, widget, event, menu, at_widget, position):
         if position == "top":
-            menu.popup_at_widget(at_widget, Gdk.Gravity.CENTER, Gdk.Gravity.NORTH, None)
+            menu.popup_at_widget(at_widget, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, None)
         else:
             menu.popup_at_widget(at_widget, Gdk.Gravity.CENTER, Gdk.Gravity.SOUTH, None)
     

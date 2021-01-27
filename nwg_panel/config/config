@@ -222,7 +222,7 @@
       "script": "/home/piotr/.config/nwg-panel/executors/arch_updates.py",
       "interval": 900,
       "icon-size": 16,
-      "on-left-click": "lxterminal -e \"/home/piotr/PycharmProjects/swayinfo/au.sh\" && swaymsg reload"
+      "on-left-click": "lxterminal -e \"/home/piotr/PycharmProjects/swayinfo/au.sh; swaymsg reload\""
     },
     "executor-github": {
       "script": "/home/piotr/.config/nwg-panel/executors/github.sh",
