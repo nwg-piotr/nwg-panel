@@ -10,7 +10,7 @@ gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, GtkLayerShell
 
 from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery, \
-    get_interface, update_image
+    get_interface, update_image, bt_service_enabled, bt_on, bt_name
 
 from nwg_panel.common import dependencies
 
@@ -30,6 +30,11 @@ class Controls(Gtk.EventBox):
 
         check_key(settings, "show-values", True)
         check_key(settings, "icon-size", 16)
+        check_key(settings, "interval", 1)
+        check_key(settings, "icon-size", 16)
+        check_key(settings, "css-name", "controls-label")
+        check_key(settings, "components", ["net", "brightness", "volume", "battery"])
+        check_key(settings, "net-interface", "")
 
         self.net_icon_name = "wtf"
         self.net_image = Gtk.Image.new_from_icon_name(self.net_icon_name, Gtk.IconSize.MENU)
@@ -45,6 +50,10 @@ class Controls(Gtk.EventBox):
         self.vol_image = Gtk.Image.new_from_icon_name(self.vol_icon_name, Gtk.IconSize.MENU)
         self.vol_label = Gtk.Label("0%") if settings["show-values"] else None
 
+        self.bt_icon_name = "wtf"
+        self.bt_image = Gtk.Image.new_from_icon_name(self.bt_icon_name, Gtk.IconSize.MENU)
+        self.bt_label = Gtk.Label("?") if settings["show-values"] else None
+
         self.bat_icon_name = "wtf"
         self.bat_image = Gtk.Image.new_from_icon_name(self.bat_icon_name, Gtk.IconSize.MENU)
         self.bat_label = Gtk.Label("0%") if settings["show-values"] else None
@@ -53,12 +62,6 @@ class Controls(Gtk.EventBox):
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
-
-        check_key(settings, "interval", 1)
-        check_key(settings, "icon-size", 16)
-        check_key(settings, "css-name", "controls-label")
-        check_key(settings, "components", ["net", "brightness", "volume", "battery"])
-        check_key(settings, "net-interface", "")
 
         self.popup_window = PopupWindow(position, settings, width)
 
@@ -99,6 +102,11 @@ class Controls(Gtk.EventBox):
                 if self.vol_label:
                     box.pack_start(self.vol_label, False, False, 0)
 
+            if item == "bluetooth" and bt_service_enabled():
+                box.pack_start(self.bt_image, False, False, 4)
+                if self.bt_label:
+                    box.pack_start(self.bt_label, False, False, 0)
+            
             if item == "battery":
                 box.pack_start(self.bat_image, False, False, 4)
                 if self.bat_label:
@@ -110,6 +118,11 @@ class Controls(Gtk.EventBox):
         if "net" in self.settings["components"] and self.settings["net-interface"]:
             ip = get_interface(self.settings["net-interface"])
             GLib.idle_add(self.update_net, ip)
+            
+        if bt_service_enabled() and "bluetooth" in self.settings["components"]:
+            is_on = bt_on()
+            name = bt_name()
+            GLib.idle_add(self.update_bt, is_on, name)
 
         if "brightness" in self.settings["components"]:
             try:
@@ -161,6 +174,14 @@ class Controls(Gtk.EventBox):
             
         if self.net_label:
             self.net_label.set_text("{}".format(self.settings["net-interface"]))
+            
+    def update_bt(self, is_on, name):
+        icon_name = "bluetooth-active-symbolic" if is_on else "bluetooth-disabled-symbolic"
+        if icon_name != self.bt_icon_name:
+            update_image(self.bt_image, icon_name, self.icon_size)
+            
+        if self.bt_label:
+            self.bt_label.set_text(name)
     
     def update_brightness(self, value):
         icon_name = bri_icon_name(value)
@@ -218,6 +239,9 @@ class PopupWindow(Gtk.Window):
         
         self.settings = settings
         self.position = position
+
+        self.bt_icon_name = ""
+        self.bt_image = Gtk.Image()
         
         eb = Gtk.EventBox()
         eb.set_above_child(False)
@@ -338,6 +362,40 @@ class PopupWindow(Gtk.Window):
 
             event_box.add(inner_vbox)
 
+        if bt_service_enabled() and "bluetooth" in settings["components"]:
+            event_box = Gtk.EventBox()
+            if "bluetooth" in settings["commands"] and settings["commands"]["bluetooth"]:
+                event_box.connect("enter_notify_event", self.on_enter_notify_event)
+                event_box.connect("leave_notify_event", self.on_leave_notify_event)
+
+                event_box.connect('button-press-event', self.launch, settings["commands"]["bluetooth"])
+
+            inner_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+            inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            inner_vbox.pack_start(inner_hbox, True, True, 6)
+            v_box.pack_start(event_box, True, True, 6)
+
+            self.bt_icon_name = "wtf"
+            self.bt_image = Gtk.Image.new_from_icon_name(self.bt_icon_name, Gtk.IconSize.MENU)
+
+            icon_name = bt_icon_name(bt_on())
+
+            if icon_name != self.bt_icon_name:
+                update_image(self.bt_image, icon_name, self.icon_size)
+                self.bt_icon_name = icon_name
+
+            inner_hbox.pack_start(self.bt_image, False, False, 6)
+
+            self.bt_label = Gtk.Label(bt_name())
+            inner_hbox.pack_start(self.bt_label, False, True, 6)
+
+            if "bluetooth" in settings["commands"] and settings["commands"]["bluetooth"]:
+                img = Gtk.Image()
+                update_image(img, "pan-end-symbolic", self.icon_size)
+                inner_hbox.pack_end(img, False, True, 4)
+
+            event_box.add(inner_vbox)
+        
         if "battery" in settings["components"]:
             event_box = Gtk.EventBox()
             if "battery" in settings["commands"] and settings["commands"]["battery"]:
@@ -477,6 +535,15 @@ class PopupWindow(Gtk.Window):
                 ip_addr = "disconnected"
             self.net_label.set_text("{}: {}".format(self.settings["net-interface"], ip_addr))
 
+        if bt_service_enabled() and "bluetooth" in self.settings["components"]:
+            icon_name = bt_icon_name(bt_on())
+
+            if icon_name != self.bt_icon_name:
+                update_image(self.bt_image, icon_name, self.icon_size)
+                self.bt_icon_name = icon_name
+
+            self.bat_label.set_text(bt_name())
+        
         if "battery" in self.settings["components"]:
             msg, level = get_battery()
             icon_name = bat_icon_name(level)
@@ -563,5 +630,11 @@ def bat_icon_name(value):
         icon_name = "battery-good-symbolic"
     elif value > 20:
         icon_name = "battery-low-symbolic"
+
+    return icon_name
+
+
+def bt_icon_name(is_on):
+    icon_name = "bluetooth-active-symbolic" if is_on else "bluetooth-disabled-symbolic"
 
     return icon_name

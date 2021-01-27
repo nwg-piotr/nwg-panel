@@ -324,12 +324,47 @@ def update_image(image, icon_name, icon_size):
         try:
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
                 path, icon_size, icon_size)
-            image.set_from_pixbuf(pixbuf)
+            if image:
+                image.set_from_pixbuf(pixbuf)
         except Exception as e:
             try:
                 pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
-                image.set_from_pixbuf(pixbuf)
+                if image:
+                    image.set_from_pixbuf(pixbuf)
             except:
                 print("update_image :: failed setting image from {}: {}".format(path, e))
     else:
         image.set_from_icon_name(icon_name, Gtk.IconSize.MENU)
+
+
+def bt_on():
+    output = subprocess.check_output("bluetoothctl show | awk '/Powered/{print $2}'", shell=True).decode("utf-8").strip()
+    
+    return output == "yes"
+
+
+def bt_name():
+    output = subprocess.check_output("bluetoothctl show | awk '/Name/{print $2}'", shell=True).decode("utf-8").strip()
+
+    return output
+
+
+def bt_service_enabled():
+    result, enabled, active = False, False, False
+    if is_command("systemctl"):
+        try:
+            enabled = subprocess.check_output("systemctl is-enabled bluetooth.service", shell=True).decode(
+                "utf-8").strip() == "enabled"
+        except subprocess.CalledProcessError:
+            # the command above returns the 'disabled` status w/ CalledProcessError, exit status 1
+            pass
+
+        try:
+            active = subprocess.check_output("systemctl is-active bluetooth.service", shell=True).decode(
+                "utf-8").strip() == "active"
+        except subprocess.CalledProcessError:
+            pass
+
+        result = enabled and active
+
+    return result
