@@ -19,7 +19,7 @@ dependencies = {
     "netifaces": False,
 }
 
-icons_path = "icons_light"   # "icons_light", "icons_dark" or "" (GTK icons)
+icons_path = ""   # "icons_light", "icons_dark" or "" (GTK icons)
 
 commands = {
     "get_battery": "upower -i $(upower -e | grep BAT) | grep --color=never -E 'state|to\\\\ full|to\\\\ empty|percentage'",

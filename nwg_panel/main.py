@@ -59,7 +59,11 @@ def check_tree():
 
 def instantiate_content(panel, container, content_list):
     check_key(panel, "items-padding", 0)
-    check_key(panel, "icons", "light")
+    check_key(panel, "icons", "")
+    if panel["icons"] == "light":
+        common.icons_path = "icons_light"
+    elif panel["icons"] == "dark":
+        common.icons_path = "icons_dark"
 
     for item in content_list:
         if item == "sway-taskbar":
@@ -174,10 +178,16 @@ def main():
         if panel["css-name"]:
             window.set_property("name", panel["css-name"])
 
+        if "output" not in panel or not panel["output"]:
+            display = Gdk.Display.get_default()
+            monitor = display.get_monitor(0)
+            for key in common.outputs:
+                if common.outputs[key]["monitor"] == monitor:
+                    panel["output"] = key
         # If not full screen width demanded explicit, let's leave 6 pixel of margin on both sides on multi-headed
         # setups. Otherwise moving the pointer between displays over the panels remains undetected,
         # and the Controls window may appear on the previous output.
-        if "output" in panel and "width" not in panel:
+        if "output" in panel and panel["output"] and "width" not in panel:
             panel["width"] = common.outputs[panel["output"]]["width"] - 12
 
         check_key(panel, "width", 0)

@@ -1,158 +1,27 @@
 [
   {
-    "output": "eDP-1",
-    "layer": "bottom",
-    "position": "bottom",
-    "width": 1920,
-    "height": 30,
-    "margin-top": 0,
-    "margin-bottom": 0,
-    "padding-horizontal": 10,
-    "padding-vertical": 0,
-    "spacing": 4,
-    "items-padding": 0,
-    "css-name": "all-bottom",
-    "focus": true,
-    "modules-left": [
-      "sway-taskbar"
-    ],
-    "modules-center": [],
-    "modules-right": [
-      "executor-cpuav",
-      "executor-cpubar",
-      "executor-temp",
-      "executor-memory",
-      "executor-drives",
-      "executor-uptime"
-
-    ],
-    "sway-taskbar": {
-      "workspace-buttons": false,
-      "show-app-icon": true,
-      "show-layout": true,
-      "show-app-name": true,
-      "name-max-len": 15,
-      "workspaces-spacing": 0,
-      "task-spacing": 0,
-      "all-outputs": false
-    },
-    "sway-workspaces": {
-      "numbers": [3, 4]
-    },
-    "executor-cpubar": {
-      "script": "psuinfo -Cg",
-      "interval": 2
-    },
-    "executor-cpuav": {
-      "script": "psuinfo -Ca",
-      "interval": 2
-    },
-    "executor-temp": {
-      "script": "psuinfo -It",
-      "interval": 5
-    },
-    "executor-memory": {
-      "script": "psuinfo -IM",
-      "interval": 5
-    },
-    "executor-drives": {
-      "script": "psuinfo -IN",
-      "interval": 15
-    },
-    "executor-uptime": {
-      "script": "psuinfo -Iu",
-      "interval": 60
-    }
-  },
-  {
-    "output": "DP-1",
-    "layer": "top",
-    "position": "bottom",
-    "width": 1920,
-    "height": 30,
-    "margin-top": 0,
-    "margin-bottom": 0,
-    "padding-horizontal": 4,
-    "padding-vertical": 0,
-    "spacing": 6,
-    "css-name": "all-bottom",
-    "modules-left": [
-      "sway-taskbar"
-    ],
-    "modules-center": [],
-    "modules-right": ["executor-traffic"],
-    "sway-taskbar": {
-      "workspace-buttons": false,
-      "show-app-icon": true,
-      "show-layout": true,
-      "show-app-name": true,
-      "name-max-len": 20,
-      "workspaces-spacing": 0,
-      "task-spacing": 0,
-      "all-outputs": false
-    },
-    "sway-workspaces": {
-      "numbers": [1, 2]
-    },
-    "executor-traffic": {
-      "script": "psuinfo -Ik",
-      "interval": 3
-    }
-  },
-  {
-    "output": "HDMI-A-1",
-    "layer": "top",
-    "position": "bottom",
-    "width": 1920,
-    "height": 30,
-    "margin-top": 0,
-    "margin-bottom": 0,
-    "padding-horizontal": 4,
-    "padding-vertical": 0,
-    "spacing": 6,
-    "css-name": "all-bottom",
-    "modules-left": [
-      "sway-taskbar"
-    ],
-    "modules-center": [],
-    "modules-right": [],
-    "sway-taskbar": {
-      "workspace-buttons": false,
-      "show-app-icon": true,
-      "show-layout": true,
-      "show-app-name": true,
-      "name-max-len": 20,
-      "workspaces-spacing": 0,
-      "task-spacing": 0,
-      "all-outputs": false
-    }
-  },
-  {
-    "output": "eDP-1",
+    "output": "",
     "layer": "bottom",
     "position": "top",
-    "width": 1920,
     "height": 30,
     "homogeneous": true,
     "margin-top": 0,
     "margin-bottom": 0,
     "padding-horizontal": 0,
     "padding-vertical": 0,
-    "spacing": 4,
-    "controls": true,
+    "spacing": 0,
     "items-padding": 0,
     "css-name": "primary-top",
     "icons": "light",
+    "controls": true,
     "modules-left": [
-       "button-grid",
-       "playerctl"
-
+      "playerctl"
     ],
     "modules-center": [
       "executor-weather",
       "clock"
     ],
-    "modules-right": ["executor-github", "executor-arch"],
+    "modules-right": [],
     "sway-taskbar": {
       "workspace-buttons": false,
       "show-app-icon": true,
@@ -165,70 +34,136 @@
     },
     "controls-settings": {
       "alignment": "right",
+      "show-values": false,
+      "interval": 1,
+      "icon-size": 16,
+      "hover-opens": true,
+      "css-name": "controls-window",
+      "net-interface": "wlo1",
       "components": [
         "net",
         "brightness",
         "volume",
+        "bluetooth",
         "battery"
       ],
       "commands": {
-        "battery": "",
-        "net": ""
+        "net": "",
+        "bluetooth": "",
+        "battery": ""
       },
       "custom-items": [
-        { "name": "Wallpapers", "icon": "azote", "cmd": "azote" },
-        { "name": "Look & Feel", "icon": "preferences-desktop-theme", "cmd": "lxappearance" }
+        {
+          "name": "Wallpapers",
+          "icon": "azote",
+          "cmd": "azote"
+        },
+        {
+          "name": "Look & Feel",
+          "icon": "preferences-desktop-theme",
+          "cmd": "lxappearance"
+        }
       ],
       "menu": {
         "name": "Exit",
         "icon": "system-shutdown-symbolic",
         "items": [
-           { "name": "Lock", "cmd": "swaylock -f -c 000000" },
-           { "name": "Logout", "cmd": "swaymsg exit" },
-           { "name": "Reboot", "cmd": "systemctl reboot" },
-           { "name": "Shutdown", "cmd": "systemctl -i poweroff" }
-         ]
-      },
-      "show-values": false,
-      "interval": 1,
-      "icon-size": 16,
-      "css-name": "controls-window",
-      "net-interface": "wlo1"
-    },
-    "button-grid": {
-      "icon": "view-grid",
-      "command": "nwggrid -p",
-      "css-name": "button-grid"
+          {
+            "name": "Lock",
+            "cmd": "swaylock -f -c 000000"
+          },
+          {
+            "name": "Logout",
+            "cmd": "swaymsg exit"
+          },
+          {
+            "name": "Reboot",
+            "cmd": "systemctl reboot"
+          },
+          {
+            "name": "Shutdown",
+            "cmd": "systemctl -i poweroff"
+          }
+        ]
+      }
     },
     "playerctl": {
       "interval": 1,
-      "buttons": true,
       "buttons-position": "left",
       "chars": 50,
-      "css-name": "button-grid"
+      "label-css-name": "",
+      "button-css-name": "",
+      "icon-size": 16
     },
     "clock": {
       "format": "%a, %d. %b %H:%M:%S",
       "interval": 1,
-      "on-right-click": "/home/piotr/PycharmProjects/swayinfo/calendar.py"
+      "on-left-click": "",
+      "css-name": "clock",
+      "tooltip-text": "",
+      "on-right-click": "",
+      "on-middle-click": "",
+      "on-scroll-up": "",
+      "on-scroll-down": ""
     },
     "executor-weather": {
       "script": "curl https://wttr.in/?format=1 -s",
       "interval": 1800,
       "css-name": "weather",
-      "on-right-click": "/home/piotr/PycharmProjects/swayinfo/calendar.py"
-    },
-    "executor-arch": {
-      "script": "/home/piotr/.config/nwg-panel/executors/arch_updates.py",
-      "interval": 900,
+      "on-right-click": "",
       "icon-size": 16,
-      "on-left-click": "lxterminal -e \"/home/piotr/PycharmProjects/swayinfo/au.sh; swaymsg reload\""
+      "show-icon": false,
+      "tooltip-text": "",
+      "on-left-click": "",
+      "on-middle-click": "",
+      "on-scroll-up": "",
+      "on-scroll-down": ""
+    }
+  },
+  {
+    "output": "",
+    "layer": "bottom",
+    "position": "bottom",
+    "height": 30,
+    "homogeneous": false,
+    "margin-top": 0,
+    "margin-bottom": 0,
+    "padding-horizontal": 6,
+    "padding-vertical": 0,
+    "spacing": 0,
+    "items-padding": 0,
+    "css-name": "",
+    "icons": "light",
+    "controls": false,
+    "modules-left": [
+      "sway-taskbar"
+    ],
+    "modules-center": [],
+    "modules-right": [
+      "executor-uptime"
+    ],
+    "sway-taskbar": {
+      "workspace-buttons": false,
+      "show-app-icon": true,
+      "show-layout": true,
+      "show-app-name": true,
+      "name-max-len": 20,
+      "workspaces-spacing": 0,
+      "task-spacing": 0,
+      "all-outputs": true
     },
-    "executor-github": {
-      "script": "/home/piotr/.config/nwg-panel/executors/github.sh",
+    "executor-uptime": {
+      "script": "uname -sr",
       "interval": 60,
+      "css-name": "",
+      "on-right-click": "",
       "icon-size": 16,
-      "on-left-click": "chromium https://github.com/notifications; swaymsg reload"
+      "show-icon": false,
+      "tooltip-text": "",
+      "on-left-click": "",
+      "on-middle-click": "",
+      "on-scroll-up": "",
+      "on-scroll-down": ""
     }
   }
 ]
