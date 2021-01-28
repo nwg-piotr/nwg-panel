@@ -11,6 +11,7 @@ class SwayTaskbar(Gtk.Box):
         self.position = position
         check_key(settings, "workspaces-spacing", 0)
         check_key(settings, "image-size", 16)
+        check_key(settings, "workspace-menu", [1, 2, 3, 4, 5, 6, 7, 8])
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=settings["workspaces-spacing"])
         self.settings = settings
         self.display_name = display_name
@@ -56,7 +57,7 @@ class SwayTaskbar(Gtk.Box):
 
                     for con in desc.descendants():
                         if con.name or con.app_id:
-                            win_box = WindowBox(con, self.settings, self.position, self.settings["image-size"])
+                            win_box = WindowBox(con, self.settings, self.position)
                             self.ws_box.pack_start(win_box, False, False, 0)
                     self.pack_start(self.ws_box, False, False, 0)
         self.show_all()
@@ -86,8 +87,9 @@ class WorkspaceBox(Gtk.Box):
 
 
 class WindowBox(Gtk.EventBox):
-    def __init__(self, con, settings, position, image_size):
+    def __init__(self, con, settings, position):
         self.position = position
+        self.ws_menu = settings["workspace-menu"]
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,
                            spacing=settings["task-spacing"] if settings["task-spacing"] else 0)
@@ -161,7 +163,7 @@ class WindowBox(Gtk.EventBox):
         cmd = "[con_id=\"{}\"] focus".format(self.con.id)
         nwg_panel.common.i3.command(cmd)
         if event.button == 3:
-            menu = self.context_menu()
+            menu = self.context_menu(self.ws_menu)
             menu.show_all()
             if self.position == "bottom":
                 menu.popup_at_widget(at_widget, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, None)
@@ -178,56 +180,19 @@ class WindowBox(Gtk.EventBox):
             cmd = "[con_id=\"{}\"] layout toggle splith splitv stacking tabbed".format(self.con.id)
             nwg_panel.common.i3.command(cmd)
 
-    def context_menu(self):
+    def context_menu(self, workspaces):
         menu = Gtk.Menu()
-        menu.set_reserve_toggle_size(False)
         
-        b = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        image = Gtk.Image()
-        update_image(image, "view-dual", 16)
-        b.pack_start(image, False, False, 0)
-        label = Gtk.Label("tabbed")
-        b.pack_start(label, False, False, 0)
-        item = Gtk.MenuItem()
-        item.add(b)
-        item.connect("activate", self.execute, "tabbed")
-        menu.append(item)
-
-        b = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        image = Gtk.Image()
-        update_image(image, "view-paged", 16)
-        b.pack_start(image, False, False, 0)
-        label = Gtk.Label("stacking")
-        b.pack_start(label, False, False, 0)
-        item = Gtk.MenuItem()
-        item.add(b)
-        item.connect("activate", self.execute, "stacking")
-        menu.append(item)
-
-        b = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        image = Gtk.Image()
-        update_image(image, "go-down", 16)
-        b.pack_start(image, False, False, 0)
-        label = Gtk.Label("splitv")
-        b.pack_start(label, False, False, 0)
-        item = Gtk.MenuItem()
-        item.add(b)
-        item.connect("activate", self.execute, "splitv")
-        menu.append(item)
-
-        b = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        image = Gtk.Image()
-        update_image(image, "go-next", 16)
-        b.pack_start(image, False, False, 0)
-        label = Gtk.Label("splith")
-        b.pack_start(label, False, False, 0)
-        item = Gtk.MenuItem()
-        item.add(b)
-        item.connect("activate", self.execute, "splith")
-        menu.append(item)
+        for i in workspaces:
+            text = "Workspace {}".format(i)
+            item = Gtk.MenuItem(text)
+            item.connect("activate", self.execute, i)
+            menu.append(item)
         
         return menu
         
-    def execute(self, item, cmd):
-        cmd = "[con_id=\"{}\"] layout {}".format(self.con.id, cmd)
+    def execute(self, item, ws_num):
+        cmd = "[con_id=\"{}\"] move to workspace number {}".format(self.con.id, ws_num)
+        nwg_panel.common.i3.command(cmd)
+        cmd = "[con_id=\"{}\"] focus".format(self.con.id)
         nwg_panel.common.i3.command(cmd)
