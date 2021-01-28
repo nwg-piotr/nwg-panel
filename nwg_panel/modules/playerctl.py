@@ -6,7 +6,6 @@ import subprocess
 import threading
 
 from nwg_panel.tools import check_key, update_image, player_status, player_metadata
-from nwg_panel.common import icons_path
 
 import gi
 
