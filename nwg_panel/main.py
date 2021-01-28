@@ -71,9 +71,10 @@ def instantiate_content(panel, container, content_list):
                 if common.sway:
                     check_key(panel["sway-taskbar"], "all-outputs", False)
                     if panel["sway-taskbar"]["all-outputs"] or "output" not in panel:
-                        taskbar = SwayTaskbar(panel["sway-taskbar"], common.i3)
+                        taskbar = SwayTaskbar(panel["sway-taskbar"], common.i3, panel["position"])
                     else:
-                        taskbar = SwayTaskbar(panel["sway-taskbar"], common.i3, display_name="{}".format(panel["output"]))
+                        taskbar = SwayTaskbar(panel["sway-taskbar"], common.i3, panel["position"],
+                                              display_name="{}".format(panel["output"]))
                     common.taskbars_list.append(taskbar)
         
                     container.pack_start(taskbar, False, False, panel["items-padding"])

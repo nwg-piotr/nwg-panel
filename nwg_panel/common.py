@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
+from i3ipc import Connection
+
 sway = False
 
-i3 = None
+i3 = Connection()
 ipc_data = None
 
 outputs = {}

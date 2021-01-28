@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 
-from gi.repository import Gtk, GdkPixbuf
+from gi.repository import Gtk, Gdk, GdkPixbuf
 
-from nwg_panel.tools import check_key, get_icon
+from nwg_panel.tools import check_key, get_icon, update_image
+import nwg_panel.common
 
 
 class SwayTaskbar(Gtk.Box):
-    def __init__(self, settings, i3, display_name=""):
+    def __init__(self, settings, i3, position, display_name=""):
+        self.position = position
         check_key(settings, "workspaces-spacing", 0)
+        check_key(settings, "image-size", 16)
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=settings["workspaces-spacing"])
         self.settings = settings
         self.display_name = display_name
@@ -47,18 +50,13 @@ class SwayTaskbar(Gtk.Box):
         self.displays_tree = self.list_tree()
 
         for display in self.displays_tree:
-            """print(display.type.upper(), display.name, display.rect.x, display.rect.y, display.rect.width,
-                  display.rect.height)"""
             for desc in display.descendants():
                 if desc.type == "workspace":
                     self.ws_box = WorkspaceBox(desc, self.settings)
 
                     for con in desc.descendants():
                         if con.name or con.app_id:
-                            """print("    {} | name: {} layout: {} | app_id: {} | pid: {} | focused: {}"
-                                  .format(con.type.upper(), con.name, con.parent.layout, con.app_id, con.pid,
-                                          con.focused))"""
-                            win_box = WindowBox(con, self.settings)
+                            win_box = WindowBox(con, self.settings, self.position, self.settings["image-size"])
                             self.ws_box.pack_start(win_box, False, False, 0)
                     self.pack_start(self.ws_box, False, False, 0)
         self.show_all()
@@ -88,7 +86,8 @@ class WorkspaceBox(Gtk.Box):
 
 
 class WindowBox(Gtk.EventBox):
-    def __init__(self, con, settings):
+    def __init__(self, con, settings, position, image_size):
+        self.position = position
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,
                            spacing=settings["task-spacing"] if settings["task-spacing"] else 0)
@@ -105,7 +104,9 @@ class WindowBox(Gtk.EventBox):
 
         self.connect('enter-notify-event', self.on_enter_notify_event)
         self.connect('leave-notify-event', self.on_leave_notify_event)
-        self.connect('button-press-event', self.on_click)
+        self.connect('button-press-event', self.on_click, self.box)
+        self.add_events(Gdk.EventMask.SCROLL_MASK)
+        self.connect('scroll-event', self.on_scroll)
 
         if settings["show-app-icon"]:
             name = con.app_id if con.app_id else con.window_class
@@ -113,14 +114,16 @@ class WindowBox(Gtk.EventBox):
             icon_from_desktop = get_icon(name)
             if icon_from_desktop:
                 if "/" not in icon_from_desktop and not icon_from_desktop.endswith(".svg") and not icon_from_desktop.endswith(".png"):
-                    image = Gtk.Image.new_from_icon_name(icon_from_desktop, Gtk.IconSize.MENU)
+                    image = Gtk.Image()
+                    update_image(image, icon_from_desktop, settings["image-size"])
                 else:
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop, 16, 16)
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop, settings["image-size"], settings["image-size"])
                     image = Gtk.Image.new_from_pixbuf(pixbuf)
 
                 self.box.pack_start(image, False, False, 4)
             else:
-                image = Gtk.Image.new_from_icon_name(name, Gtk.IconSize.MENU)
+                image = Gtk.Image()
+                update_image(image, name, settings["image-size"])
                 self.box.pack_start(image, False, False, 4)
 
         if con.name:
@@ -131,15 +134,20 @@ class WindowBox(Gtk.EventBox):
 
         if settings["show-layout"] and con.parent.layout:
             if con.parent.layout == "splith":
-                image = Gtk.Image.new_from_icon_name("go-next", Gtk.IconSize.MENU)
+                image = Gtk.Image()
+                update_image(image, "go-next", 16)
             elif con.parent.layout == "splitv":
-                image = Gtk.Image.new_from_icon_name("go-down", Gtk.IconSize.MENU)
+                image = Gtk.Image()
+                update_image(image, "go-down", 16)
             elif con.parent.layout == "tabbed":
-                image = Gtk.Image.new_from_icon_name("view-dual", Gtk.IconSize.MENU)
+                image = Gtk.Image()
+                update_image(image, "view-dual", 16)
             elif con.parent.layout == "stacked":
-                image = Gtk.Image.new_from_icon_name("view-paged", Gtk.IconSize.MENU)
+                image = Gtk.Image()
+                update_image(image, "view-paged", 16)
             else:
-                image = Gtk.Image.new_from_icon_name("window-new", Gtk.IconSize.MENU)
+                image = Gtk.Image()
+                update_image(image, "window-new", 16)
             
             self.box.pack_start(image, False, False, 4)
 
@@ -149,9 +157,77 @@ class WindowBox(Gtk.EventBox):
     def on_leave_notify_event(self, widget, event):
         self.get_style_context().set_state(Gtk.StateFlags.NORMAL)
 
-    def on_click(self, widget, event):
+    def on_click(self, widget, event, at_widget):
+        cmd = "[con_id=\"{}\"] focus".format(self.con.id)
+        nwg_panel.common.i3.command(cmd)
         if event.button == 3:
-            cmd = "[con_id=\"{}\"] kill".format(self.con.id)
-        else:
-            cmd = "[con_id=\"{}\"] focus".format(self.con.id)
+            menu = self.context_menu()
+            menu.show_all()
+            if self.position == "bottom":
+                menu.popup_at_widget(at_widget, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, None)
+            else:
+                menu.popup_at_widget(at_widget, Gdk.Gravity.NORTH, Gdk.Gravity.SOUTH, None)
+
+    def on_scroll(self, widget, event):
+        cmd = "[con_id=\"{}\"] focus".format(self.con.id)
+        nwg_panel.common.i3.command(cmd)
+        if event.direction == Gdk.ScrollDirection.UP:
+            cmd = "[con_id=\"{}\"] layout toggle tabbed stacking splitv splith".format(self.con.id)
+            nwg_panel.common.i3.command(cmd)
+        elif event.direction == Gdk.ScrollDirection.DOWN:
+            cmd = "[con_id=\"{}\"] layout toggle splith splitv stacking tabbed".format(self.con.id)
+            nwg_panel.common.i3.command(cmd)
+
+    def context_menu(self):
+        menu = Gtk.Menu()
+        menu.set_reserve_toggle_size(False)
+        
+        b = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        image = Gtk.Image()
+        update_image(image, "view-dual", 16)
+        b.pack_start(image, False, False, 0)
+        label = Gtk.Label("tabbed")
+        b.pack_start(label, False, False, 0)
+        item = Gtk.MenuItem()
+        item.add(b)
+        item.connect("activate", self.execute, "tabbed")
+        menu.append(item)
+
+        b = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        image = Gtk.Image()
+        update_image(image, "view-paged", 16)
+        b.pack_start(image, False, False, 0)
+        label = Gtk.Label("stacking")
+        b.pack_start(label, False, False, 0)
+        item = Gtk.MenuItem()
+        item.add(b)
+        item.connect("activate", self.execute, "stacking")
+        menu.append(item)
+
+        b = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        image = Gtk.Image()
+        update_image(image, "go-down", 16)
+        b.pack_start(image, False, False, 0)
+        label = Gtk.Label("splitv")
+        b.pack_start(label, False, False, 0)
+        item = Gtk.MenuItem()
+        item.add(b)
+        item.connect("activate", self.execute, "splitv")
+        menu.append(item)
+
+        b = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        image = Gtk.Image()
+        update_image(image, "go-next", 16)
+        b.pack_start(image, False, False, 0)
+        label = Gtk.Label("splith")
+        b.pack_start(label, False, False, 0)
+        item = Gtk.MenuItem()
+        item.add(b)
+        item.connect("activate", self.execute, "splith")
+        menu.append(item)
+        
+        return menu
+        
+    def execute(self, item, cmd):
+        cmd = "[con_id=\"{}\"] layout {}".format(self.con.id, cmd)
         nwg_panel.common.i3.command(cmd)
