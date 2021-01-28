@@ -3,6 +3,7 @@
 import sys
 import signal
 import gi
+import argparse
 
 gi.require_version('Gtk', '3.0')
 try:
@@ -117,6 +118,23 @@ def instantiate_content(panel, container, content_list):
 
 
 def main():
+    common.config_dir = get_config_dir()
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c",
+                        "--config",
+                        type=str,
+                        default="config",
+                        help="config filename (in {}/)".format(common.config_dir))
+
+    parser.add_argument("-s",
+                        "--style",
+                        type=str,
+                        default="style.css",
+                        help="css filename (in {}/)".format(common.config_dir))
+
+    args = parser.parse_args()
+
     # Try and kill already running instance if any
     pid_file = os.path.join(temp_dir(), "nwg-panel.pid")
     if os.path.isfile(pid_file):
@@ -126,7 +144,6 @@ def main():
             print("Running instance killed: {}".format(pid))
         except:
             pass
-        
     save_string(str(os.getpid()), pid_file)
     
     common.app_dirs = get_app_dirs()
@@ -134,8 +151,7 @@ def main():
     common.dependencies["upower"] = is_command("upower")
     common.dependencies["acpi"] = is_command("acpi")
 
-    common.config_dir = get_config_dir()
-    config_file = os.path.join(common.config_dir, "config")
+    config_file = os.path.join(common.config_dir, args.config)
 
     common.outputs = list_outputs()
 
@@ -146,7 +162,7 @@ def main():
     style_context = Gtk.StyleContext()
     style_context.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
     try:
-        provider.load_from_path(os.path.join(common.config_dir, "style.css"))
+        provider.load_from_path(os.path.join(common.config_dir, args.style))
     except Exception as e:
         print(e)
 

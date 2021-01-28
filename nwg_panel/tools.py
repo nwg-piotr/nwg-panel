@@ -174,6 +174,8 @@ def list_outputs():
             print("'wlr-randr' command not found, terminating")
             sys.exit(1)
 
+
+
     display = Gdk.Display.get_default()
     for i in range(display.get_n_monitors()):
         monitor = display.get_monitor(i)
