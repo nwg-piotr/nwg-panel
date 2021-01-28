@@ -145,7 +145,7 @@ def main():
         try:
             pid = int(load_text_file(pid_file))
             os.kill(pid, signal.SIGINT)
-            print("Running instance killed: {}".format(pid))
+            print("Running instance killed, PID {}".format(pid))
         except:
             pass
     save_string(str(os.getpid()), pid_file)
