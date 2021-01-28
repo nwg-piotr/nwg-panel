@@ -188,7 +188,10 @@ def main():
         # setups. Otherwise moving the pointer between displays over the panels remains undetected,
         # and the Controls window may appear on the previous output.
         if "output" in panel and panel["output"] and "width" not in panel:
-            panel["width"] = common.outputs[panel["output"]]["width"] - 12
+            if len(common.outputs) > 1:
+                panel["width"] = common.outputs[panel["output"]]["width"] - 12
+            else:
+                panel["width"] = common.outputs[panel["output"]]["width"]
 
         check_key(panel, "width", 0)
         w = panel["width"]
