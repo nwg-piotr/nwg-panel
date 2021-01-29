@@ -11,7 +11,7 @@
    height="16"
    version="1.1"
    id="svg4"
-   sodipodi:docname="pan-end-symbolic.svg"
+   sodipodi:docname="view-dual-symbolic.svg"
    inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07, custom)">
   <metadata
      id="metadata10">
@@ -41,14 +41,14 @@
      id="namedview6"
      showgrid="false"
      inkscape:zoom="39.5625"
-     inkscape:cx="8.2274882"
+     inkscape:cx="2.1232227"
      inkscape:cy="8"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg4" />
   <path
-     style="fill:#444444;fill-opacity:1"
-     d="M 6,13 11,8 6,3 Z"
-     id="path2" />
+     style="fill:#eeeeee;stroke-width:0.714286;fill-opacity:1"
+     d="M 2.2857142,3.0278438 V 13.027844 H 13.714286 V 3.0278438 Z m 1.428571,1.4285714 H 7.2857144 V 11.599272 H 3.7142852 Z m 5.0000007,0 H 12.285714 V 11.599272 H 8.7142859 Z"
+     id="path2-6" />
 </svg>
