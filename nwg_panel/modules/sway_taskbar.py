@@ -19,6 +19,7 @@ class SwayTaskbar(Gtk.Box):
         self.displays_tree = self.list_tree()
         self.build_box()
         self.ipc_data = {}
+        self.ws_box = None
 
     def list_tree(self):
         i3_tree = self.i3.get_tree()
@@ -54,7 +55,6 @@ class SwayTaskbar(Gtk.Box):
             for desc in display.descendants():
                 if desc.type == "workspace":
                     self.ws_box = WorkspaceBox(desc, self.settings)
-
                     for con in desc.descendants():
                         if con.name or con.app_id:
                             win_box = WindowBox(con, self.settings, self.position)
@@ -89,7 +89,7 @@ class WorkspaceBox(Gtk.Box):
 class WindowBox(Gtk.EventBox):
     def __init__(self, con, settings, position):
         self.position = position
-        self.ws_menu = settings["workspace-menu"]
+        self.settings = settings
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,
                            spacing=settings["task-spacing"] if settings["task-spacing"] else 0)
@@ -160,10 +160,11 @@ class WindowBox(Gtk.EventBox):
         self.get_style_context().set_state(Gtk.StateFlags.NORMAL)
 
     def on_click(self, widget, event, at_widget):
-        cmd = "[con_id=\"{}\"] focus".format(self.con.id)
-        nwg_panel.common.i3.command(cmd)
+        if event.button == 1:
+            cmd = "[con_id=\"{}\"] focus".format(self.con.id)
+            nwg_panel.common.i3.command(cmd)
         if event.button == 3:
-            menu = self.context_menu(self.ws_menu)
+            menu = self.context_menu(self.settings["workspace-menu"])
             menu.show_all()
             if self.position == "bottom":
                 menu.popup_at_widget(at_widget, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, None)
@@ -182,17 +183,41 @@ class WindowBox(Gtk.EventBox):
 
     def context_menu(self, workspaces):
         menu = Gtk.Menu()
-        
         for i in workspaces:
-            text = "Workspace {}".format(i)
-            item = Gtk.MenuItem(text)
-            item.connect("activate", self.execute, i)
-            menu.append(item)
+            ws_num = self.con_ws_num(self.con)
+            if i != ws_num:
+                text = "To workspace {}".format(i)
+                item = Gtk.MenuItem(text)
+                item.connect("activate", self.execute, i)
+                menu.append(item)
+            
+        item = Gtk.SeparatorMenuItem()
+        menu.append(item)
+        item = Gtk.MenuItem("Kill")
+        item.connect("activate", self.kill)
+        menu.append(item)
         
         return menu
+    
+    def con_ws_num(self, con):
+        ws_num = 0
+        leave = con
+        parent = con.parent
+        while parent.type != "root":
+            parent = leave.parent
+            leave = parent
+            if leave.type == "workspace":
+                ws_num = leave.num
+        
+        return ws_num
         
     def execute(self, item, ws_num):
         cmd = "[con_id=\"{}\"] move to workspace number {}".format(self.con.id, ws_num)
         nwg_panel.common.i3.command(cmd)
+
         cmd = "[con_id=\"{}\"] focus".format(self.con.id)
+        nwg_panel.common.i3.command(cmd)
+        
+    def kill(self, item):
+        cmd = "[con_id=\"{}\"] kill".format(self.con.id)
         nwg_panel.common.i3.command(cmd)
