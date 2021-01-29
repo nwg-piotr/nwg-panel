@@ -9,6 +9,7 @@ ipc_data = None
 
 outputs = {}
 taskbars_list = []
+controls_list = []
 config_dir = ""
 app_dirs = []
 

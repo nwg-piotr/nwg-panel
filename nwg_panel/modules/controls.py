@@ -37,6 +37,8 @@ class Controls(Gtk.EventBox):
         check_key(settings, "components", ["net", "brightness", "volume", "battery"])
         check_key(settings, "net-interface", "")
 
+        self.icon_size = settings["icon-size"]
+
         self.net_icon_name = "wtf"
         self.net_image = Gtk.Image.new_from_icon_name(self.net_icon_name, Gtk.IconSize.MENU)
         self.net_label = Gtk.Label("?") if settings["show-values"] else None
@@ -45,7 +47,6 @@ class Controls(Gtk.EventBox):
         self.bri_image = Gtk.Image.new_from_icon_name(self.bri_icon_name, Gtk.IconSize.MENU)
         self.bri_label = Gtk.Label("0%") if settings["show-values"] else None
         self.bri_slider = None
-        self.icon_size = settings["icon-size"]
 
         self.vol_icon_name = "wtf"
         self.vol_image = Gtk.Image.new_from_icon_name(self.vol_icon_name, Gtk.IconSize.MENU)
@@ -496,12 +497,6 @@ class PopupWindow(Gtk.Window):
 
     def on_window_exit(self, w, e):
         self.hide()
-    
-    def open_menu(self, widget, event, menu, at_widget, position):
-        if position == "top":
-            menu.popup_at_widget(at_widget, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, None)
-        else:
-            menu.popup_at_widget(at_widget, Gdk.Gravity.CENTER, Gdk.Gravity.SOUTH, None)
             
     def switch_menu_box(self, widget, event):
         if self.menu_box.get_visible():
@@ -536,39 +531,40 @@ class PopupWindow(Gtk.Window):
         return eb
     
     def refresh(self):
-        if "net" in self.settings["components"] and dependencies["netifaces"]:
-            ip_addr = get_interface(self.settings["net-interface"])
-            icon_name = "network-wired-symbolic" if ip_addr else "network-wired-disconnected-symbolic"
+        if self.get_visible():
+            if "net" in self.settings["components"] and dependencies["netifaces"]:
+                ip_addr = get_interface(self.settings["net-interface"])
+                icon_name = "network-wired-symbolic" if ip_addr else "network-wired-disconnected-symbolic"
 
-            if icon_name != self.net_icon_name:
-                update_image(self.net_image, icon_name, self.icon_size)
-                self.net_icon_name = icon_name
+                if icon_name != self.net_icon_name:
+                    update_image(self.net_image, icon_name, self.icon_size)
+                    self.net_icon_name = icon_name
 
-            if not ip_addr:
-                ip_addr = "disconnected"
-            self.net_label.set_text("{}: {}".format(self.settings["net-interface"], ip_addr))
+                if not ip_addr:
+                    ip_addr = "disconnected"
+                self.net_label.set_text("{}: {}".format(self.settings["net-interface"], ip_addr))
 
-        if bt_service_enabled() and "bluetooth" in self.settings["components"]:
-            icon_name = bt_icon_name(bt_on())
+            if bt_service_enabled() and "bluetooth" in self.settings["components"]:
+                icon_name = bt_icon_name(bt_on())
 
-            if icon_name != self.bt_icon_name:
-                update_image(self.bt_image, icon_name, self.icon_size)
-                self.bt_icon_name = icon_name
+                if icon_name != self.bt_icon_name:
+                    update_image(self.bt_image, icon_name, self.icon_size)
+                    self.bt_icon_name = icon_name
 
-            self.bat_label.set_text(bt_name())
-        
-        if "battery" in self.settings["components"]:
-            msg, level = get_battery()
-            icon_name = bat_icon_name(level)
+                self.bat_label.set_text(bt_name())
 
-            if icon_name != self.bat_icon_name:
-                update_image(self.bat_image, icon_name, self.icon_size)
-                self.bat_icon_name = icon_name
+            if "battery" in self.settings["components"]:
+                msg, level = get_battery()
+                icon_name = bat_icon_name(level)
 
-            self.bat_label.set_text(msg)
+                if icon_name != self.bat_icon_name:
+                    update_image(self.bat_image, icon_name, self.icon_size)
+                    self.bat_icon_name = icon_name
+
+                self.bat_label.set_text(msg)
 
         return True
-    
+
     def on_enter_notify_event(self, widget, event):
         widget.get_style_context().set_state(Gtk.StateFlags.SELECTED)
 
@@ -600,11 +596,6 @@ class PopupWindow(Gtk.Window):
 
     def launch(self, w, e, cmd):
         print("Executing '{}'".format(cmd))
-        subprocess.Popen('exec {}'.format(cmd), shell=True)
-        self.hide()
-
-    def launch_from_menu(self, w, cmd):
-        print("From menu '{}'".format(cmd))
         subprocess.Popen('exec {}'.format(cmd), shell=True)
         self.hide()
 

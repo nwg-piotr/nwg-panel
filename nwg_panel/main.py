@@ -25,6 +25,7 @@ from modules.executor import Executor
 from modules.clock import Clock
 from modules.controls import Controls
 from modules.playerctl import Playerctl
+from modules.cpu_avg import CpuAvg
 
 common.sway = os.getenv('SWAYSOCK') is not None
 if common.sway:
@@ -51,6 +52,10 @@ def check_tree():
     if tree.ipc_data != common.ipc_data:
         for item in common.taskbars_list:
             item.refresh()
+            
+        for item in common.controls_list:
+            if item.popup_window.get_visible():
+                item.popup_window.hide()
 
     common.ipc_data = common.i3.get_tree().ipc_data
 
@@ -120,6 +125,10 @@ def instantiate_content(panel, container, content_list):
                 container.pack_start(playerctl, False, False, panel["items-padding"])
             else:
                 print("'{}' not defined in this panel instance".format(item))
+
+        if item == "cpu-avg":
+            cpu_avg = CpuAvg()
+            container.pack_start(cpu_avg, False, False, panel["items-padding"])
 
 
 def main():
@@ -221,6 +230,7 @@ def main():
         inner_box.pack_start(left_box, False, True, 0)
         if panel["controls"] and panel["controls-settings"]["alignment"] == "left":
             cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"], int(w/6))
+            common.controls_list.append(cc)
             left_box.pack_start(cc, False, False, 0)
         instantiate_content(panel, left_box, panel["modules-left"])
 
@@ -237,6 +247,7 @@ def main():
 
         if panel["controls"] and panel["controls-settings"]["alignment"] == "right":
             cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"], int(w/6))
+            common.controls_list.append(cc)
             right_box.pack_end(cc, False, False, 0)
 
         window.add(vbox)
