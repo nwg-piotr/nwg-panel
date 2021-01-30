@@ -39,6 +39,8 @@ try:
     common.dependencies["pyalsa"] = True
 except:
     print("pylsa module not found, will try amixer")
+    
+restart_cmd = ""
 
 
 def signal_handler(sig, frame):
@@ -46,7 +48,18 @@ def signal_handler(sig, frame):
     Gtk.main_quit()
 
 
+def restart():
+    subprocess.Popen(restart_cmd, shell=True)
+
+
 def check_tree():
+    old = len(common.outputs)
+    common.outputs = list_outputs(silent=True)
+    new = len(common.outputs)
+    if old != 0 and old != new:
+        print("Number of outputs changed")
+        restart()
+        
     # Do if tree changed
     tree = common.i3.get_tree()
     if tree.ipc_data != common.ipc_data:
@@ -148,6 +161,8 @@ def main():
                         help="css filename (in {}/)".format(common.config_dir))
 
     args = parser.parse_args()
+    global restart_cmd
+    restart_cmd = "nwg-panel -c {} -s {}".format(args.config, args.style)
 
     # Try and kill already running instance if any
     pid_file = os.path.join(temp_dir(), "nwg-panel.pid")
@@ -181,113 +196,114 @@ def main():
         print(e)
 
     for panel in panels:
-        check_key(panel, "spacing", 6)
-        check_key(panel, "homogeneous", False)
-        check_key(panel, "css-name", "")
-        window = Gtk.Window()
-        if panel["css-name"]:
-            window.set_property("name", panel["css-name"])
+        if panel["output"] in common.outputs:
+            check_key(panel, "spacing", 6)
+            check_key(panel, "homogeneous", False)
+            check_key(panel, "css-name", "")
+            window = Gtk.Window()
+            if panel["css-name"]:
+                window.set_property("name", panel["css-name"])
 
-        if "output" not in panel or not panel["output"]:
-            display = Gdk.Display.get_default()
-            monitor = display.get_monitor(0)
-            for key in common.outputs:
-                if common.outputs[key]["monitor"] == monitor:
-                    panel["output"] = key
-        # If not full screen width demanded explicit, let's leave 6 pixel of margin on both sides on multi-headed
-        # setups. Otherwise moving the pointer between displays over the panels remains undetected,
-        # and the Controls window may appear on the previous output.
-        if "output" in panel and panel["output"] and "width" not in panel:
-            if len(common.outputs) > 1:
-                panel["width"] = common.outputs[panel["output"]]["width"] - 12
+            if "output" not in panel or not panel["output"]:
+                display = Gdk.Display.get_default()
+                monitor = display.get_monitor(0)
+                for key in common.outputs:
+                    if common.outputs[key]["monitor"] == monitor:
+                        panel["output"] = key
+            # If not full screen width demanded explicit, let's leave 6 pixel of margin on both sides on multi-headed
+            # setups. Otherwise moving the pointer between displays over the panels remains undetected,
+            # and the Controls window may appear on the previous output.
+            if "output" in panel and panel["output"] and "width" not in panel:
+                if len(common.outputs) > 1:
+                    panel["width"] = common.outputs[panel["output"]]["width"] - 12
+                else:
+                    panel["width"] = common.outputs[panel["output"]]["width"]
+
+            check_key(panel, "width", 0)
+            w = panel["width"]
+            check_key(panel, "height", 0)
+            h = panel["height"]
+
+            check_key(panel, "controls", False)
+            check_key(panel, "controls-settings", {})
+
+            controls_settings = panel["controls-settings"]
+            check_key(controls_settings, "alignment", "right")
+            check_key(controls_settings, "show-values", False)
+
+            Gtk.Widget.set_size_request(window, w, h)
+
+            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            vbox.pack_start(hbox, True, True, panel["padding-vertical"])
+
+            inner_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            if panel["homogeneous"]:
+                inner_box.set_homogeneous(True)
+            hbox.pack_start(inner_box, True, True, panel["padding-horizontal"])
+
+            left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
+            inner_box.pack_start(left_box, False, True, 0)
+            if panel["controls"] and panel["controls-settings"]["alignment"] == "left":
+                cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"], int(w/6))
+                common.controls_list.append(cc)
+                left_box.pack_start(cc, False, False, 0)
+            instantiate_content(panel, left_box, panel["modules-left"])
+
+            center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
+            inner_box.pack_start(center_box, True, False, 0)
+            instantiate_content(panel, center_box, panel["modules-center"])
+
+            right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
+            # Damn on the guy who invented `pack_start(child, expand, fill, padding)`!
+            helper_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            helper_box.pack_end(right_box, False, False, 0)
+            inner_box.pack_start(helper_box, False, True, 0)
+            instantiate_content(panel, right_box, panel["modules-right"])
+
+            if panel["controls"] and panel["controls-settings"]["alignment"] == "right":
+                cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"], int(w/6))
+                common.controls_list.append(cc)
+                right_box.pack_end(cc, False, False, 0)
+
+            window.add(vbox)
+
+            GtkLayerShell.init_for_window(window)
+
+            monitor = None
+            try:
+                monitor = common.outputs[panel["output"]]["monitor"]
+            except KeyError:
+                pass
+
+            o = panel["output"] if "output" in panel else "undefined"
+            print("Display: {}, position: {}, layer: {}, width: {}, height: {}".format(o, panel["position"], panel["layer"], panel["width"], panel["height"]))
+
+            if monitor:
+                GtkLayerShell.set_monitor(window, monitor)
+
+            GtkLayerShell.auto_exclusive_zone_enable(window)
+
+            check_key(panel, "layer", "top")
+            if panel["layer"] == "top":
+                GtkLayerShell.set_layer(window, GtkLayerShell.Layer.TOP)
             else:
-                panel["width"] = common.outputs[panel["output"]]["width"]
+                GtkLayerShell.set_layer(window, GtkLayerShell.Layer.BOTTOM)
 
-        check_key(panel, "width", 0)
-        w = panel["width"]
-        check_key(panel, "height", 0)
-        h = panel["height"]
+            check_key(panel, "margin-top", 0)
+            GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, panel["margin-top"])
 
-        check_key(panel, "controls", False)
-        check_key(panel, "controls-settings", {})
+            check_key(panel, "margin-bottom", 0)
+            GtkLayerShell.set_margin(window, GtkLayerShell.Edge.BOTTOM, panel["margin-bottom"])
 
-        controls_settings = panel["controls-settings"]
-        check_key(controls_settings, "alignment", "right")
-        check_key(controls_settings, "show-values", False)
+            check_key(panel, "position", "top")
+            if panel["position"] == "top":
+                GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.TOP, 1)
+            else:
+                GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.BOTTOM, 1)
 
-        Gtk.Widget.set_size_request(window, w, h)
-
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        vbox.pack_start(hbox, True, True, panel["padding-vertical"])
-
-        inner_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        if panel["homogeneous"]:
-            inner_box.set_homogeneous(True)
-        hbox.pack_start(inner_box, True, True, panel["padding-horizontal"])
-
-        left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
-        inner_box.pack_start(left_box, False, True, 0)
-        if panel["controls"] and panel["controls-settings"]["alignment"] == "left":
-            cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"], int(w/6))
-            common.controls_list.append(cc)
-            left_box.pack_start(cc, False, False, 0)
-        instantiate_content(panel, left_box, panel["modules-left"])
-
-        center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
-        inner_box.pack_start(center_box, True, False, 0)
-        instantiate_content(panel, center_box, panel["modules-center"])
-
-        right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
-        # Damn on the guy who invented `pack_start(child, expand, fill, padding)`!
-        helper_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        helper_box.pack_end(right_box, False, False, 0)
-        inner_box.pack_start(helper_box, False, True, 0)
-        instantiate_content(panel, right_box, panel["modules-right"])
-
-        if panel["controls"] and panel["controls-settings"]["alignment"] == "right":
-            cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"], int(w/6))
-            common.controls_list.append(cc)
-            right_box.pack_end(cc, False, False, 0)
-
-        window.add(vbox)
-
-        GtkLayerShell.init_for_window(window)
-
-        monitor = None
-        try:
-            monitor = common.outputs[panel["output"]]["monitor"]
-        except KeyError:
-            pass
-        
-        o = panel["output"] if "output" in panel else "undefined"
-        print("Display: {}, position: {}, layer: {}, width: {}, height: {}".format(o, panel["position"], panel["layer"], panel["width"], panel["height"]))
-
-        if monitor:
-            GtkLayerShell.set_monitor(window, monitor)
-
-        GtkLayerShell.auto_exclusive_zone_enable(window)
-
-        check_key(panel, "layer", "top")
-        if panel["layer"] == "top":
-            GtkLayerShell.set_layer(window, GtkLayerShell.Layer.TOP)
-        else:
-            GtkLayerShell.set_layer(window, GtkLayerShell.Layer.BOTTOM)
-
-        check_key(panel, "margin-top", 0)
-        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, panel["margin-top"])
-
-        check_key(panel, "margin-bottom", 0)
-        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.BOTTOM, panel["margin-bottom"])
-
-        check_key(panel, "position", "top")
-        if panel["position"] == "top":
-            GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.TOP, 1)
-        else:
-            GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.BOTTOM, 1)
-
-        window.show_all()
-        window.connect('destroy', Gtk.main_quit)
+            window.show_all()
+            #window.connect('destroy', Gtk.main_quit)
         
     if common.key_missing:
         print("Saving amended config")

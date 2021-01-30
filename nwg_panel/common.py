@@ -8,6 +8,7 @@ i3 = Connection()
 ipc_data = None
 
 outputs = {}
+windows_list = []
 taskbars_list = []
 controls_list = []
 config_dir = ""

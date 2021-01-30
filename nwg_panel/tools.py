@@ -133,14 +133,15 @@ def save_string(string, file):
         print("Error writing file '{}'".format(file))
 
 
-def list_outputs():
+def list_outputs(silent=False):
     """
     Get output names and geometry from i3 tree, assign to Gdk.Display monitors.
     :return: {"name": str, "x": int, "y": int, "width": int, "height": int, "monitor": Gkd.Monitor}
     """
     outputs_dict = {}
     if common.sway:
-        print("Running on sway")
+        if not silent:
+            print("Running on sway")
         for item in common.i3.get_tree():
             if item.type == "output" and not item.name.startswith("__"):
                 outputs_dict[item.name] = {"x": item.rect.x,
@@ -148,7 +149,8 @@ def list_outputs():
                                            "width": item.rect.width,
                                            "height": item.rect.height}
     elif os.getenv('WAYLAND_DISPLAY') is not None:
-        print("Running on Wayland, but not sway")
+        if not silent:
+            print("Running on Wayland, but not sway")
         if is_command("wlr-randr"):
             lines = subprocess.check_output("wlr-randr", shell=True).decode("utf-8").strip().splitlines()
             if lines:
