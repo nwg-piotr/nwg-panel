@@ -85,6 +85,7 @@ def instantiate_content(panel, container, content_list):
     elif panel["icons"] == "dark":
         common.icons_path = "icons_dark"
 
+    check_key(panel, "position", "top")
     for item in content_list:
         if item == "sway-taskbar":
             if "sway-taskbar" in panel:
@@ -202,6 +203,8 @@ def main():
             check_key(panel, "spacing", 6)
             check_key(panel, "homogeneous", False)
             check_key(panel, "css-name", "")
+            check_key(panel, "padding-horizontal", 0)
+            check_key(panel, "padding-vertical", 0)
             window = Gtk.Window()
             if panel["css-name"]:
                 window.set_property("name", panel["css-name"])
@@ -224,11 +227,13 @@ def main():
             h = panel["height"]
 
             check_key(panel, "controls", False)
-            check_key(panel, "controls-settings", {})
+            if panel["controls"]:
+                check_key(panel, "controls-settings", {})
 
-            controls_settings = panel["controls-settings"]
-            check_key(controls_settings, "alignment", "right")
-            check_key(controls_settings, "show-values", False)
+            if "controls-settings" in panel:
+                controls_settings = panel["controls-settings"]
+                check_key(controls_settings, "alignment", "right")
+                check_key(controls_settings, "show-values", False)
 
             Gtk.Widget.set_size_request(window, w, h)
 
@@ -254,10 +259,12 @@ def main():
                               int(w / 6), monitor=monitor)
                 common.controls_list.append(cc)
                 left_box.pack_start(cc, False, False, 0)
+            check_key(panel, "modules-left", [])
             instantiate_content(panel, left_box, panel["modules-left"])
 
             center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
             inner_box.pack_start(center_box, True, False, 0)
+            check_key(panel, "modules-center", [])
             instantiate_content(panel, center_box, panel["modules-center"])
 
             right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
@@ -265,6 +272,7 @@ def main():
             helper_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             helper_box.pack_end(right_box, False, False, 0)
             inner_box.pack_start(helper_box, False, True, 0)
+            check_key(panel, "modules-right", [])
             instantiate_content(panel, right_box, panel["modules-right"])
 
             if panel["controls"] and panel["controls-settings"]["alignment"] == "right":
@@ -289,6 +297,7 @@ def main():
             except KeyError:
                 pass
 
+            check_key(panel, "layer", "top")
             o = panel["output"] if "output" in panel else "undefined"
             print("Display: {}, position: {}, layer: {}, width: {}, height: {}".format(o, panel["position"],
                                                                                        panel["layer"], panel["width"],
@@ -299,7 +308,6 @@ def main():
 
             GtkLayerShell.auto_exclusive_zone_enable(window)
 
-            check_key(panel, "layer", "top")
             if panel["layer"] == "top":
                 GtkLayerShell.set_layer(window, GtkLayerShell.Layer.TOP)
             else:
@@ -311,7 +319,6 @@ def main():
             check_key(panel, "margin-bottom", 0)
             GtkLayerShell.set_margin(window, GtkLayerShell.Edge.BOTTOM, panel["margin-bottom"])
 
-            check_key(panel, "position", "top")
             if panel["position"] == "top":
                 GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.TOP, 1)
             else:

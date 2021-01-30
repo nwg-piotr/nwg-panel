@@ -5,7 +5,7 @@ from gi.repository import GLib
 import subprocess
 import threading
 
-from nwg_panel.tools import check_key
+from nwg_panel.tools import check_key, update_image
 
 import gi
 
@@ -21,7 +21,7 @@ class Executor(Gtk.EventBox):
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
-        self.image = Gtk.Image.new_from_icon_name("wtf", Gtk.IconSize.MENU)
+        self.image = Gtk.Image()
         self.label = Gtk.Label("")
         self.icon_path = None
 
@@ -36,6 +36,8 @@ class Executor(Gtk.EventBox):
         check_key(settings, "on-middle-click", "")
         check_key(settings, "on-scroll-up", "")
         check_key(settings, "on-scroll-down", "")
+
+        update_image(self.image, "view-refresh-symbolic", self.settings["icon-size"])
 
         if settings["css-name"]:
             self.label.set_property("name", settings["css-name"])
@@ -66,17 +68,22 @@ class Executor(Gtk.EventBox):
                 if output[0].endswith(".svg") or output[0].endswith(".png"):
                     new_path = output[0].strip()
                     if new_path != self.icon_path:
-                        try:
-                            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                                new_path, self.settings["icon-size"], self.settings["icon-size"])
-                            self.image.set_from_pixbuf(pixbuf)
+                        if "/" not in new_path and "." not in new_path:  # name given instead of path
+                            update_image(self.image, new_path, self.settings["icon-size"])
                             self.icon_path = new_path
-                        except:
-                            print("Failed setting image from {}".format(output[0].strip()))
-                        if not self.image.get_visible():
-                            self.image.show()
-                        if self.label.get_visible():
-                            self.label.hide()
+                            print(new_path)
+                        else:
+                            try:
+                                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                                    new_path, self.settings["icon-size"], self.settings["icon-size"])
+                                self.image.set_from_pixbuf(pixbuf)
+                                self.icon_path = new_path
+                            except:
+                                print("Failed setting image from {}".format(output[0].strip()))
+                            if not self.image.get_visible():
+                                self.image.show()
+                            if self.label.get_visible():
+                                self.label.hide()
                 else:
                     if self.image.get_visible():
                         self.image.hide()
@@ -86,16 +93,21 @@ class Executor(Gtk.EventBox):
 
             elif len(output) == 2:
                 new_path = output[0].strip()
-                if new_path != self.icon_path:
-                    try:
-                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                            new_path, self.settings["icon-size"], self.settings["icon-size"])
-                        self.image.set_from_pixbuf(pixbuf)
-                        self.icon_path = new_path
-                    except:
-                        print("Failed setting image from {}".format(output[0].strip()))
-                    if not self.image.get_visible():
-                        self.image.show()
+                if "/" not in new_path and "." not in new_path:  # name given instead of path
+                    update_image(self.image, new_path, self.settings["icon-size"])
+                    self.icon_path = new_path
+                    print(new_path)
+                else:
+                    if new_path != self.icon_path:
+                        try:
+                            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                                new_path, self.settings["icon-size"], self.settings["icon-size"])
+                            self.image.set_from_pixbuf(pixbuf)
+                            self.icon_path = new_path
+                        except:
+                            print("Failed setting image from {}".format(output[0].strip()))
+                        if not self.image.get_visible():
+                            self.image.show()
 
                 self.label.set_text(output[1].strip())
         else:
