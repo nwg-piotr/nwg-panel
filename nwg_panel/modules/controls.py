@@ -4,6 +4,7 @@ import threading
 import subprocess
 
 import gi
+
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 gi.require_version('GtkLayerShell', '0.1')
@@ -16,13 +17,14 @@ from nwg_panel.common import dependencies
 
 try:
     import netifaces
+
     dependencies["netifaces"] = True
 except ModuleNotFoundError:
     pass
 
 
 class Controls(Gtk.EventBox):
-    def __init__(self, settings, position, alignment, width):
+    def __init__(self, settings, position, alignment, width, monitor=None):
         self.settings = settings
         self.position = position
         self.alignment = alignment
@@ -65,7 +67,7 @@ class Controls(Gtk.EventBox):
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
 
-        self.popup_window = PopupWindow(position, settings, width)
+        self.popup_window = PopupWindow(position, settings, width, monitor=monitor)
 
         self.connect('button-press-event', self.on_button_press)
         self.connect('enter-notify-event', self.on_enter_notify_event)
@@ -108,19 +110,19 @@ class Controls(Gtk.EventBox):
                 box.pack_start(self.bt_image, False, False, 4)
                 if self.bt_label:
                     box.pack_start(self.bt_label, False, False, 0)
-            
+
             if item == "battery":
                 box.pack_start(self.bat_image, False, False, 4)
                 if self.bat_label:
                     box.pack_start(self.bat_label, False, False, 0)
-        
+
         box.pack_start(self.pan_image, False, False, 4)
 
     def get_output(self):
         if "net" in self.settings["components"] and self.settings["net-interface"]:
             ip = get_interface(self.settings["net-interface"])
             GLib.idle_add(self.update_net, ip)
-            
+
         if bt_service_enabled() and "bluetooth" in self.settings["components"]:
             is_on = bt_on()
             name = bt_name()
@@ -135,7 +137,7 @@ class Controls(Gtk.EventBox):
                     print("Couldn't get brightness, is 'light' installed?")
             except Exception as e:
                 print(e)
-                
+
         if "volume" in self.settings["components"]:
             try:
                 value, switch = get_volume()
@@ -173,18 +175,18 @@ class Controls(Gtk.EventBox):
         if icon_name != self.net_icon_name:
             update_image(self.net_image, icon_name, self.icon_size)
             self.net_icon_name = icon_name
-            
+
         if self.net_label:
             self.net_label.set_text("{}".format(self.settings["net-interface"]))
-            
+
     def update_bt(self, is_on, name):
         icon_name = "bluetooth-active-symbolic" if is_on else "bluetooth-disabled-symbolic"
         if icon_name != self.bt_icon_name:
             update_image(self.bt_image, icon_name, self.icon_size)
-            
+
         if self.bt_label:
             self.bt_label.set_text(name)
-    
+
     def update_brightness(self, value):
         icon_name = bri_icon_name(value)
 
@@ -194,20 +196,20 @@ class Controls(Gtk.EventBox):
 
         if self.bri_label:
             self.bri_label.set_text("{}%".format(value))
-            
+
     def update_battery(self, value):
         icon_name = bat_icon_name(value)
-            
+
         if icon_name != self.bat_icon_name:
             update_image(self.bat_image, icon_name, self.icon_size)
             self.bat_icon_name = icon_name
 
         if self.bat_label:
             self.bat_label.set_text("{}%".format(value))
-            
+
     def update_volume(self, value, switch):
         icon_name = vol_icon_name(value, switch)
-            
+
         if icon_name != self.vol_icon_name:
             update_image(self.vol_image, icon_name, self.settings["icon-size"])
             self.vol_icon_name = icon_name
@@ -238,19 +240,22 @@ class Controls(Gtk.EventBox):
 
 
 class PopupWindow(Gtk.Window):
-    def __init__(self, position, settings, width):
+    def __init__(self, position, settings, width, monitor=None):
         Gtk.Window.__init__(self, type_hint=Gdk.WindowTypeHint.NORMAL)
         GtkLayerShell.init_for_window(self)
+        if monitor:
+            GtkLayerShell.set_monitor(self, monitor)
+
         check_key(settings, "css-name", "controls-window")
         self.set_property("name", settings["css-name"])
         self.icon_size = settings["icon-size"]
-        
+
         self.settings = settings
         self.position = position
 
         self.bt_icon_name = ""
         self.bt_image = Gtk.Image()
-        
+
         eb = Gtk.EventBox()
         eb.set_above_child(False)
         self.connect("leave_notify_event", self.on_window_exit)
@@ -281,14 +286,14 @@ class PopupWindow(Gtk.Window):
             GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.BOTTOM, True)
         else:
             GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.TOP, True)
-        
+
         check_key(settings, "commands", {"battery": "", "net": ""})
 
         add_sep = False
         if "brightness" in settings["components"]:
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             v_box.pack_start(inner_hbox, False, False, 0)
-            
+
             self.bri_icon_name = "wtf"
             self.bri_image = Gtk.Image.new_from_icon_name(self.bri_icon_name, Gtk.IconSize.MENU)
 
@@ -306,7 +311,7 @@ class PopupWindow(Gtk.Window):
 
             inner_hbox.pack_start(scale, True, True, 5)
             add_sep = True
-            
+
         if "volume" in settings["components"]:
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             v_box.pack_start(inner_hbox, False, False, 6)
@@ -330,7 +335,7 @@ class PopupWindow(Gtk.Window):
 
             inner_hbox.pack_start(scale, True, True, 5)
             add_sep = True
-            
+
         if add_sep:
             sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
             v_box.pack_start(sep, True, True, 10)
@@ -403,7 +408,7 @@ class PopupWindow(Gtk.Window):
                 inner_hbox.pack_end(img, False, True, 4)
 
             event_box.add(inner_vbox)
-        
+
         if "battery" in settings["components"]:
             event_box = Gtk.EventBox()
             if "battery" in settings["commands"] and settings["commands"]["battery"]:
@@ -411,7 +416,7 @@ class PopupWindow(Gtk.Window):
                 event_box.connect("leave_notify_event", self.on_leave_notify_event)
 
                 event_box.connect('button-press-event', self.launch, settings["commands"]["battery"])
-        
+
             inner_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             inner_vbox.pack_start(inner_hbox, True, True, 6)
@@ -428,10 +433,10 @@ class PopupWindow(Gtk.Window):
                 self.bat_icon_name = icon_name
 
             inner_hbox.pack_start(self.bat_image, False, False, 6)
-            
+
             self.bat_label = Gtk.Label(msg)
             inner_hbox.pack_start(self.bat_label, False, True, 6)
-            
+
             if "battery" in settings["commands"] and settings["commands"]["battery"]:
                 img = Gtk.Image()
                 update_image(img, "pan-end-symbolic", self.icon_size)
@@ -448,7 +453,7 @@ class PopupWindow(Gtk.Window):
         check_key(settings, "menu", {})
         if settings["menu"]:
             template = settings["menu"]
-            
+
             sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
             v_box.pack_start(sep, True, True, 10)
 
@@ -466,7 +471,7 @@ class PopupWindow(Gtk.Window):
             check_key(template, "name", "Menu name")
             label = Gtk.Label(template["name"])
             inner_hbox.pack_start(label, False, False, 6)
-            
+
             check_key(template, "items", [])
             if template["items"]:
                 img = Gtk.Image()
@@ -497,13 +502,13 @@ class PopupWindow(Gtk.Window):
 
     def on_window_exit(self, w, e):
         self.hide()
-            
+
     def switch_menu_box(self, widget, event):
         if self.menu_box.get_visible():
             self.menu_box.hide()
         else:
             self.menu_box.show_all()
-    
+
     def custom_item(self, name, icon, cmd):
         eb = Gtk.EventBox()
 
@@ -523,13 +528,13 @@ class PopupWindow(Gtk.Window):
             eb.connect("enter_notify_event", self.on_enter_notify_event)
             eb.connect("leave_notify_event", self.on_leave_notify_event)
             eb.connect('button-press-event', self.launch, cmd)
-    
+
             img = Gtk.Image()
             update_image(img, "pan-end-symbolic", self.icon_size)
             h_box.pack_end(img, False, True, 4)
-        
+
         return eb
-    
+
     def refresh(self):
         if self.get_visible():
             if "net" in self.settings["components"] and dependencies["netifaces"]:
@@ -585,10 +590,10 @@ class PopupWindow(Gtk.Window):
         if icon_name != self.vol_icon_name:
             update_image(self.vol_image, icon_name, self.icon_size)
             self.vol_icon_name = icon_name
-    
+
     def close_win(self, w, e):
         self.hide()
-    
+
     def handle_keyboard(self, w, e):
         if e.type == Gdk.EventType.KEY_RELEASE and e.keyval == Gdk.KEY_Escape:
             self.close_win(w, e)

@@ -42,12 +42,12 @@ class SwayTaskbar(Gtk.Box):
             for item in i3_tree:
                 if item.type == "output" and not item.name.startswith("__"):
                     displays_tree.append(item)
-                    
+
         # sort by x, y coordinates
         displays_tree = sorted(displays_tree, key=lambda d: (d.rect.x, d.rect.y))
 
         return displays_tree
-    
+
     def build_box(self):
         self.displays_tree = self.list_tree()
 
@@ -61,7 +61,7 @@ class SwayTaskbar(Gtk.Box):
                             self.ws_box.pack_start(win_box, False, False, 0)
                     self.pack_start(self.ws_box, False, False, 0)
         self.show_all()
-                    
+
     def refresh(self):
         for item in self.get_children():
             item.destroy()
@@ -81,7 +81,7 @@ class WorkspaceBox(Gtk.Box):
             widget = Gtk.Label("{}:".format(con.num))
 
         self.pack_start(widget, False, False, 4)
-        
+
     def on_click(self, button):
         nwg_panel.common.i3.command("{} number {} focus".format(self.con.type, self.con.num))
 
@@ -96,7 +96,7 @@ class WindowBox(Gtk.EventBox):
         self.add(self.box)
         self.con = con
         self.pid = con.pid
-        
+
         self.old_name = ""
 
         if con.focused:
@@ -115,11 +115,13 @@ class WindowBox(Gtk.EventBox):
 
             icon_from_desktop = get_icon(name)
             if icon_from_desktop:
-                if "/" not in icon_from_desktop and not icon_from_desktop.endswith(".svg") and not icon_from_desktop.endswith(".png"):
+                if "/" not in icon_from_desktop and not icon_from_desktop.endswith(
+                        ".svg") and not icon_from_desktop.endswith(".png"):
                     image = Gtk.Image()
                     update_image(image, icon_from_desktop, settings["image-size"])
                 else:
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop, settings["image-size"], settings["image-size"])
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop, settings["image-size"],
+                                                                    settings["image-size"])
                     image = Gtk.Image.new_from_pixbuf(pixbuf)
 
                 self.box.pack_start(image, False, False, 4)
@@ -150,12 +152,12 @@ class WindowBox(Gtk.EventBox):
             else:
                 image = Gtk.Image()
                 update_image(image, "window-new", 16)
-            
+
             self.box.pack_start(image, False, False, 4)
 
     def on_enter_notify_event(self, widget, event):
         self.get_style_context().set_state(Gtk.StateFlags.SELECTED)
-        
+
     def on_leave_notify_event(self, widget, event):
         self.get_style_context().set_state(Gtk.StateFlags.NORMAL)
 
@@ -190,15 +192,15 @@ class WindowBox(Gtk.EventBox):
                 item = Gtk.MenuItem(text)
                 item.connect("activate", self.execute, i)
                 menu.append(item)
-            
+
         item = Gtk.SeparatorMenuItem()
         menu.append(item)
         item = Gtk.MenuItem("Kill")
         item.connect("activate", self.kill)
         menu.append(item)
-        
+
         return menu
-    
+
     def con_ws_num(self, con):
         ws_num = 0
         leave = con
@@ -208,16 +210,16 @@ class WindowBox(Gtk.EventBox):
             leave = parent
             if leave.type == "workspace":
                 ws_num = leave.num
-        
+
         return ws_num
-        
+
     def execute(self, item, ws_num):
         cmd = "[con_id=\"{}\"] move to workspace number {}".format(self.con.id, ws_num)
         nwg_panel.common.i3.command(cmd)
 
         cmd = "[con_id=\"{}\"] focus".format(self.con.id)
         nwg_panel.common.i3.command(cmd)
-        
+
     def kill(self, item):
         cmd = "[con_id=\"{}\"] kill".format(self.con.id)
         nwg_panel.common.i3.command(cmd)

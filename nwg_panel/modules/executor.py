@@ -46,7 +46,7 @@ class Executor(Gtk.EventBox):
             self.set_tooltip_text(settings["tooltip-text"])
 
         if settings["on-left-click"] or settings["on-right-click"] or settings["on-middle-click"] or settings[
-                "on-scroll-up"] or settings["on-scroll-down"]:
+            "on-scroll-up"] or settings["on-scroll-down"]:
             self.connect('button-press-event', self.on_button_press)
             self.add_events(Gdk.EventMask.SCROLL_MASK)
             self.connect('scroll-event', self.on_scroll)
@@ -83,7 +83,7 @@ class Executor(Gtk.EventBox):
                     self.label.set_text(output[0].strip())
                     if not self.label.get_visible():
                         self.label.show()
-                    
+
             elif len(output) == 2:
                 new_path = output[0].strip()
                 if new_path != self.icon_path:
@@ -96,7 +96,7 @@ class Executor(Gtk.EventBox):
                         print("Failed setting image from {}".format(output[0].strip()))
                     if not self.image.get_visible():
                         self.image.show()
-    
+
                 self.label.set_text(output[1].strip())
         else:
             if self.image.get_visible():

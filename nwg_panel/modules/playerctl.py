@@ -30,7 +30,7 @@ class Playerctl(Gtk.EventBox):
         if self.settings["button-css-name"]:
             self.play_pause_btn.set_property("name", self.settings["button-css-name"])
         self.status = ""
-        self.retries = 2    # to avoid hiding the module on forward / backward btn when playing from the browser
+        self.retries = 2  # to avoid hiding the module on forward / backward btn when playing from the browser
 
         check_key(settings, "interval", 0)
         check_key(settings, "label-css-name", "")
@@ -54,14 +54,16 @@ class Playerctl(Gtk.EventBox):
             self.retries = 2
             if not self.get_visible():
                 self.show()
-            
+
             if not self.status == status:
                 if status == "Playing":
-                    update_image(self.play_pause_btn.get_image(), "media-playback-pause-symbolic", self.settings["icon-size"])
+                    update_image(self.play_pause_btn.get_image(), "media-playback-pause-symbolic",
+                                 self.settings["icon-size"])
                 elif status == "Paused":
-                    update_image(self.play_pause_btn.get_image(), "media-playback-start-symbolic", self.settings["icon-size"])
+                    update_image(self.play_pause_btn.get_image(), "media-playback-start-symbolic",
+                                 self.settings["icon-size"])
                     metadata = "{} - paused".format(metadata)
-        
+
             self.label.set_text(metadata)
         else:
             if self.get_visible():

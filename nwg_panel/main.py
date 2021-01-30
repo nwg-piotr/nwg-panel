@@ -30,16 +30,18 @@ from modules.cpu_avg import CpuAvg
 common.sway = os.getenv('SWAYSOCK') is not None
 if common.sway:
     from i3ipc import Connection
+
     common.i3 = Connection()
     from modules.sway_taskbar import SwayTaskbar
     from modules.sway_workspaces import SwayWorkspaces
 
 try:
     from pyalsa import alsamixer
+
     common.dependencies["pyalsa"] = True
 except:
     print("pylsa module not found, will try amixer")
-    
+
 restart_cmd = ""
 
 
@@ -59,13 +61,13 @@ def check_tree():
     if old != 0 and old != new:
         print("Number of outputs changed")
         restart()
-        
+
     # Do if tree changed
     tree = common.i3.get_tree()
     if tree.ipc_data != common.ipc_data:
         for item in common.taskbars_list:
             item.refresh()
-            
+
         for item in common.controls_list:
             if item.popup_window.get_visible():
                 item.popup_window.hide()
@@ -94,13 +96,13 @@ def instantiate_content(panel, container, content_list):
                         taskbar = SwayTaskbar(panel["sway-taskbar"], common.i3, panel["position"],
                                               display_name="{}".format(panel["output"]))
                     common.taskbars_list.append(taskbar)
-        
+
                     container.pack_start(taskbar, False, False, panel["items-padding"])
                 else:
                     print("'sway-taskbar' ignored")
             else:
                 print("'sway-taskbar' not defined in this panel instance")
-            
+
         if item == "sway-workspaces":
             if common.sway:
                 if "sway-workspaces" in panel:
@@ -116,14 +118,14 @@ def instantiate_content(panel, container, content_list):
                 container.pack_start(button, False, False, panel["items-padding"])
             else:
                 print("'{}' not defined in this panel instance".format(item))
-                
+
         if "executor-" in item:
             if item in panel:
                 executor = Executor(panel[item])
                 container.pack_start(executor, False, False, panel["items-padding"])
             else:
                 print("'{}' not defined in this panel instance".format(item))
-                
+
         if item == "clock":
             if item in panel:
                 clock = Clock(panel[item])
@@ -131,7 +133,7 @@ def instantiate_content(panel, container, content_list):
             else:
                 clock = Clock({})
                 container.pack_start(clock, False, False, panel["items-padding"])
-                
+
         if item == "playerctl":
             if item in panel:
                 playerctl = Playerctl(panel[item])
@@ -146,7 +148,7 @@ def instantiate_content(panel, container, content_list):
 
 def main():
     common.config_dir = get_config_dir()
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-c",
                         "--config",
@@ -174,7 +176,7 @@ def main():
         except:
             pass
     save_string(str(os.getpid()), pid_file)
-    
+
     common.app_dirs = get_app_dirs()
 
     common.dependencies["upower"] = is_command("upower")
@@ -214,10 +216,7 @@ def main():
             # setups. Otherwise moving the pointer between displays over the panels remains undetected,
             # and the Controls window may appear on the previous output.
             if "output" in panel and panel["output"] and "width" not in panel:
-                if len(common.outputs) > 1:
-                    panel["width"] = common.outputs[panel["output"]]["width"] - 12
-                else:
-                    panel["width"] = common.outputs[panel["output"]]["width"]
+                panel["width"] = common.outputs[panel["output"]]["width"]
 
             check_key(panel, "width", 0)
             w = panel["width"]
@@ -245,7 +244,14 @@ def main():
             left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
             inner_box.pack_start(left_box, False, True, 0)
             if panel["controls"] and panel["controls-settings"]["alignment"] == "left":
-                cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"], int(w/6))
+                monitor = None
+                try:
+                    monitor = common.outputs[panel["output"]]["monitor"]
+                except KeyError:
+                    pass
+
+                cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"],
+                              int(w / 6), monitor=monitor)
                 common.controls_list.append(cc)
                 left_box.pack_start(cc, False, False, 0)
             instantiate_content(panel, left_box, panel["modules-left"])
@@ -262,7 +268,14 @@ def main():
             instantiate_content(panel, right_box, panel["modules-right"])
 
             if panel["controls"] and panel["controls-settings"]["alignment"] == "right":
-                cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"], int(w/6))
+                monitor = None
+                try:
+                    monitor = common.outputs[panel["output"]]["monitor"]
+                except KeyError:
+                    pass
+
+                cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"],
+                              int(w / 6), monitor=monitor)
                 common.controls_list.append(cc)
                 right_box.pack_end(cc, False, False, 0)
 
@@ -277,7 +290,9 @@ def main():
                 pass
 
             o = panel["output"] if "output" in panel else "undefined"
-            print("Display: {}, position: {}, layer: {}, width: {}, height: {}".format(o, panel["position"], panel["layer"], panel["width"], panel["height"]))
+            print("Display: {}, position: {}, layer: {}, width: {}, height: {}".format(o, panel["position"],
+                                                                                       panel["layer"], panel["width"],
+                                                                                       panel["height"]))
 
             if monitor:
                 GtkLayerShell.set_monitor(window, monitor)
@@ -303,13 +318,13 @@ def main():
                 GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.BOTTOM, 1)
 
             window.show_all()
-            #window.connect('destroy', Gtk.main_quit)
-        
+            # window.connect('destroy', Gtk.main_quit)
+
     if common.key_missing:
         print("Saving amended config")
         save_json(panels, os.path.join(common.config_dir, "config_amended"))
 
-    #GLib.timeout_add(100, listener_reply)
+    # GLib.timeout_add(100, listener_reply)
     if common.sway:
         Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 150, check_tree)
 

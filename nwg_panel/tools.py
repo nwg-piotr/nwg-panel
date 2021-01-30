@@ -168,10 +168,10 @@ def list_outputs(silent=False):
                         y = int(x_y[1])
                         if name is not None and w is not None and h is not None and x is not None and y is not None:
                             outputs_dict[name] = {'name': name,
-                                       'x': x,
-                                       'y': y,
-                                       'width': w,
-                                       'height': h}
+                                                  'x': x,
+                                                  'y': y,
+                                                  'width': w,
+                                                  'height': h}
         else:
             print("'wlr-randr' command not found, terminating")
             sys.exit(1)

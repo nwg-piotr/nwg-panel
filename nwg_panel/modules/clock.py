@@ -36,12 +36,12 @@ class Clock(Gtk.EventBox):
 
         if "css-name" in settings:
             self.label.set_property("name", settings["css-name"])
-            
+
         if "format" not in settings:
             self.settings["format"] = "%a, %d. %b  %H:%M:%S"
 
         if settings["on-left-click"] or settings["on-right-click"] or settings["on-middle-click"] or settings[
-                "on-scroll-up"] or settings["on-scroll-down"]:
+            "on-scroll-up"] or settings["on-scroll-down"]:
             self.connect('button-press-event', self.on_button_press)
             self.add_events(Gdk.EventMask.SCROLL_MASK)
             self.connect('scroll-event', self.on_scroll)

@@ -18,7 +18,7 @@ class SwayWorkspaces(Gtk.Box):
             btn = Gtk.Button.new_with_label("{}".format(num))
             btn.connect("clicked", self.on_click, num)
             self.pack_start(btn, False, False, 0)
-        
+
         self.show_all()
 
     def on_click(self, button, num):
