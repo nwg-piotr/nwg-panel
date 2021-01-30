@@ -91,6 +91,7 @@ class WindowBox(Gtk.EventBox):
         self.position = position
         self.settings = settings
         Gtk.EventBox.__init__(self)
+        check_key(settings, "task-spacing", 0)
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,
                            spacing=settings["task-spacing"] if settings["task-spacing"] else 0)
         self.add(self.box)
@@ -110,6 +111,7 @@ class WindowBox(Gtk.EventBox):
         self.add_events(Gdk.EventMask.SCROLL_MASK)
         self.connect('scroll-event', self.on_scroll)
 
+        check_key(settings, "show-app-icon", True)
         if settings["show-app-icon"]:
             name = con.app_id if con.app_id else con.window_class
 
@@ -136,6 +138,7 @@ class WindowBox(Gtk.EventBox):
             label = Gtk.Label(name)
             self.box.pack_start(label, False, False, 0)
 
+        check_key(settings, "show-layout", True)
         if settings["show-layout"] and con.parent.layout:
             if con.parent.layout == "splith":
                 image = Gtk.Image()
