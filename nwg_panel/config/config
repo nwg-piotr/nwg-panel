@@ -4,8 +4,7 @@
     "layer": "bottom",
     "position": "top",
 
-    "height": 0,
-    "homogeneous": true,
+    "height": 30,
     "margin-top": 0,
     "margin-bottom": 0,
     "padding-horizontal": 0,
@@ -13,16 +12,17 @@
     "spacing": 4,
     "controls": true,
     "items-padding": 0,
-    "css-name": "primary-top",
+    "css-name": "panel-top",
     "icons": "light",
     "modules-left": [
+       "button-sample",
        "playerctl"
 
     ],
     "modules-center": [
       "clock"
     ],
-    "modules-right": [],
+    "modules-right": ["cpu-avg"],
     "sway-taskbar": {
       "workspace-buttons": false,
       "show-app-icon": true,
@@ -39,13 +39,11 @@
         "net",
         "brightness",
         "volume",
-        "bluetooth",
         "battery"
       ],
       "commands": {
         "battery": "",
-        "net": "",
-        "bluetooth": "blueman-manager"
+        "net": ""
       },
       "custom-items": [
         { "name": "Wallpapers", "icon": "azote", "cmd": "azote" },
@@ -69,6 +67,11 @@
       "hover-opens": true,
       "css-name": "controls-window",
       "net-interface": "wlo1"
+    },
+    "button-sample": {
+      "icon": "view-grid",
+      "command": "notify-send \"Just a lonely button\" \"that desperately needs a command\"",
+      "css-name": "button-custom"
     },
     "playerctl": {
       "interval": 1,
