@@ -15,7 +15,7 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk, Gdk, GdkPixbuf
 from shutil import copyfile
 
-import common
+from nwg_panel import common
 
 try:
     import netifaces

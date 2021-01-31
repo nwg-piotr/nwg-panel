@@ -29,6 +29,8 @@ from modules.cpu_avg import CpuAvg
 
 dir_name = os.path.dirname(__file__)
 
+from nwg_panel import common
+
 common.sway = os.getenv('SWAYSOCK') is not None
 if common.sway:
     from i3ipc import Connection
