@@ -86,9 +86,9 @@ def instantiate_content(panel, container, content_list):
     check_key(panel, "items-padding", 0)
     check_key(panel, "icons", "")
     if panel["icons"] == "light":
-        common.icons_path = "icons_light"
+        common.icons_path = os.path.join(common.config_dir, "icons_light")
     elif panel["icons"] == "dark":
-        common.icons_path = "icons_dark"
+        common.icons_path = os.path.join(common.config_dir, "icons_dark")
 
     check_key(panel, "position", "top")
     for item in content_list:

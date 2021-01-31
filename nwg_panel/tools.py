@@ -15,7 +15,7 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk, Gdk, GdkPixbuf
 from shutil import copyfile
 
-from nwg_panel.common import *
+import nwg_panel.common
 
 try:
     import netifaces
@@ -66,7 +66,7 @@ def get_app_dirs():
 
 
 def get_icon(app_name):
-    for d in app_dirs:
+    for d in nwg_panel.common.app_dirs:
         path = os.path.join(d, "{}.desktop".format(app_name))
         content = None
         if os.path.isfile(path):
@@ -167,10 +167,10 @@ def list_outputs(silent=False):
     :return: {"name": str, "x": int, "y": int, "width": int, "height": int, "monitor": Gkd.Monitor}
     """
     outputs_dict = {}
-    if sway:
+    if nwg_panel.common.sway:
         if not silent:
             print("Running on sway")
-        for item in i3.get_tree():
+        for item in nwg_panel.common.i3.get_tree():
             if item.type == "output" and not item.name.startswith("__"):
                 outputs_dict[item.name] = {"x": item.rect.x,
                                            "y": item.rect.y,
@@ -246,7 +246,7 @@ def is_command(cmd):
 def get_volume():
     vol = None
     switch = False
-    if dependencies["pyalsa"]:
+    if nwg_panel.common.dependencies["pyalsa"]:
         mixer = alsamixer.Mixer()
         mixer.attach()
         mixer.load()
@@ -257,7 +257,7 @@ def get_volume():
         switch = element.get_switch()
         del mixer
     else:
-        result = cmd2string(commands["set_volume_alt"])
+        result = cmd2string(nwg_panel.common.commands["set_volume_alt"])
         if result:
             lines = result.splitlines()
             for line in lines:
@@ -274,7 +274,7 @@ def get_volume():
 
 def set_volume(slider):
     percent = slider.get_value()
-    if dependencies["pyalsa"]:
+    if nwg_panel.common.dependencies["pyalsa"]:
         mixer = alsamixer.Mixer()
         mixer.attach()
         mixer.load()
@@ -284,13 +284,13 @@ def set_volume(slider):
         element.set_volume_all(int(percent * max_vol / 100))
         del mixer
     else:
-        cmd = "{} {}% /dev/null 2>&1".format(commands["set_volume_alt"], percent)
+        cmd = "{} {}% /dev/null 2>&1".format(nwg_panel.common.commands["set_volume_alt"], percent)
         subprocess.call(cmd, shell=True)
 
 
 def get_brightness():
     brightness = 0
-    output = cmd2string(commands["get_brightness"])
+    output = cmd2string(nwg_panel.common.commands["get_brightness"])
     try:
         brightness = int(round(float(output), 0))
     except:
@@ -301,16 +301,16 @@ def get_brightness():
 
 def set_brightness(slider):
     value = slider.get_value()
-    res = subprocess.call("{} {}".format(commands["set_brightness"], value), shell=True)
+    res = subprocess.call("{} {}".format(nwg_panel.common.commands["set_brightness"], value), shell=True)
     if res != 0:
         print("Couldn't set brightness, is 'light' installed?")
 
 
 def get_battery():
-    if dependencies["upower"]:
-        cmd = commands["get_battery"]
-    elif dependencies["acpi"]:
-        cmd = commands["get_battery_alt"]
+    if nwg_panel.common.dependencies["upower"]:
+        cmd = nwg_panel.common.commands["get_battery"]
+    elif nwg_panel.common.dependencies["acpi"]:
+        cmd = nwg_panel.common.commands["get_battery_alt"]
     else:
         return None, None
 
@@ -391,8 +391,8 @@ def player_metadata():
 
 def update_image(image, icon_name, icon_size):
     icon_theme = Gtk.IconTheme.get_default()
-    if icons_path:
-        path = "{}/{}.svg".format(icons_path, icon_name)
+    if nwg_panel.common.icons_path:
+        path = "{}/{}.svg".format(nwg_panel.common.icons_path, icon_name)
         try:
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
                 path, icon_size, icon_size)
