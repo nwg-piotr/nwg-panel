@@ -41,26 +41,26 @@ class Controls(Gtk.EventBox):
 
         self.icon_size = settings["icon-size"]
 
-        self.net_icon_name = "wtf"
+        self.net_icon_name = "view-refresh-symbolic"
         self.net_image = Gtk.Image.new_from_icon_name(self.net_icon_name, Gtk.IconSize.MENU)
-        self.net_label = Gtk.Label("?") if settings["show-values"] else None
+        self.net_label = Gtk.Label() if settings["show-values"] else None
 
-        self.bri_icon_name = "wtf"
+        self.bri_icon_name = "view-refresh-symbolic"
         self.bri_image = Gtk.Image.new_from_icon_name(self.bri_icon_name, Gtk.IconSize.MENU)
-        self.bri_label = Gtk.Label("0%") if settings["show-values"] else None
+        self.bri_label = Gtk.Label() if settings["show-values"] else None
         self.bri_slider = None
 
-        self.vol_icon_name = "wtf"
+        self.vol_icon_name = "view-refresh-symbolic"
         self.vol_image = Gtk.Image.new_from_icon_name(self.vol_icon_name, Gtk.IconSize.MENU)
-        self.vol_label = Gtk.Label("0%") if settings["show-values"] else None
+        self.vol_label = Gtk.Label() if settings["show-values"] else None
 
-        self.bt_icon_name = "wtf"
+        self.bt_icon_name = "view-refresh-symbolic"
         self.bt_image = Gtk.Image.new_from_icon_name(self.bt_icon_name, Gtk.IconSize.MENU)
-        self.bt_label = Gtk.Label("?") if settings["show-values"] else None
+        self.bt_label = Gtk.Label() if settings["show-values"] else None
 
-        self.bat_icon_name = "wtf"
+        self.bat_icon_name = "view-refresh-symbolic"
         self.bat_image = Gtk.Image.new_from_icon_name(self.bat_icon_name, Gtk.IconSize.MENU)
-        self.bat_label = Gtk.Label("0%") if settings["show-values"] else None
+        self.bat_label = Gtk.Label() if settings["show-values"] else None
 
         self.pan_image = Gtk.Image.new_from_icon_name("pan-down", Gtk.IconSize.MENU)
 
@@ -294,7 +294,7 @@ class PopupWindow(Gtk.Window):
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             v_box.pack_start(inner_hbox, False, False, 0)
 
-            self.bri_icon_name = "wtf"
+            self.bri_icon_name = "view-refresh-symbolic"
             self.bri_image = Gtk.Image.new_from_icon_name(self.bri_icon_name, Gtk.IconSize.MENU)
 
             icon_name = bri_icon_name(int(get_brightness()))
@@ -316,7 +316,7 @@ class PopupWindow(Gtk.Window):
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             v_box.pack_start(inner_hbox, False, False, 6)
 
-            self.vol_icon_name = "wtf"
+            self.vol_icon_name = "view-refresh-symbolic"
             self.vol_image = Gtk.Image.new_from_icon_name(self.vol_icon_name, Gtk.IconSize.MENU)
 
             vol, switch = get_volume()
@@ -353,7 +353,7 @@ class PopupWindow(Gtk.Window):
             inner_vbox.pack_start(inner_hbox, True, True, 6)
             v_box.pack_start(event_box, True, True, 10)
 
-            self.net_icon_name = "wtf"
+            self.net_icon_name = "view-refresh-symbolic"
             self.net_image = Gtk.Image.new_from_icon_name(self.net_icon_name, Gtk.IconSize.MENU)
 
             ip_addr = get_interface(settings["net-interface"])
@@ -388,7 +388,7 @@ class PopupWindow(Gtk.Window):
             inner_vbox.pack_start(inner_hbox, True, True, 6)
             v_box.pack_start(event_box, True, True, 6)
 
-            self.bt_icon_name = "wtf"
+            self.bt_icon_name = "view-refresh-symbolic"
             self.bt_image = Gtk.Image.new_from_icon_name(self.bt_icon_name, Gtk.IconSize.MENU)
 
             icon_name = bt_icon_name(bt_on())
@@ -422,7 +422,7 @@ class PopupWindow(Gtk.Window):
             inner_vbox.pack_start(inner_hbox, True, True, 6)
             v_box.pack_start(event_box, True, True, 6)
 
-            self.bat_icon_name = "wtf"
+            self.bat_icon_name = "view-refresh-symbolic"
             self.bat_image = Gtk.Image.new_from_icon_name(self.bat_icon_name, Gtk.IconSize.MENU)
 
             msg, level = get_battery()

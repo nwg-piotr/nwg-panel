@@ -19,10 +19,18 @@ class Playerctl(Gtk.EventBox):
     def __init__(self, settings):
         self.settings = settings
         Gtk.EventBox.__init__(self)
+        check_key(settings, "interval", 0)
+        check_key(settings, "label-css-name", "")
+        check_key(settings, "button-css-name", "")
+        check_key(settings, "icon-size", 16)
+        check_key(settings, "buttons-position", "left")
+        check_key(settings, "chars", 30)
+
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.box.set_property("name", "task-box")
         self.add(self.box)
-        self.image = Gtk.Image.new_from_icon_name("wtf", Gtk.IconSize.MENU)
+        self.image = Gtk.Image()
+        update_image(self.image, "view-refresh-symbolic", self.settings["icon-size"])
         self.label = Gtk.Label("")
         self.icon_path = None
         self.play_pause_btn = Gtk.Button()
@@ -31,13 +39,6 @@ class Playerctl(Gtk.EventBox):
             self.play_pause_btn.set_property("name", self.settings["button-css-name"])
         self.status = ""
         self.retries = 2  # to avoid hiding the module on forward / backward btn when playing from the browser
-
-        check_key(settings, "interval", 0)
-        check_key(settings, "label-css-name", "")
-        check_key(settings, "button-css-name", "")
-        check_key(settings, "icon-size", 16)
-        check_key(settings, "buttons-position", "left")
-        check_key(settings, "chars", 30)
 
         if settings["label-css-name"]:
             self.label.set_property("name", settings["label-css-name"])
