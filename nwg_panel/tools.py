@@ -122,11 +122,10 @@ def copy_executors(src_dir, dst_dir):
     src_files = os.listdir(src_dir)
     for file in src_files:
         if not os.path.isfile(os.path.join(dst_dir, file)):
-            f = os.path.join(dst_dir, file)
-            copyfile(os.path.join(src_dir, file), f)
+            copyfile(os.path.join(src_dir, file), os.path.join(dst_dir, file))
             print("Copying '{}', marking executable".format(os.path.join(dst_dir, file)))
-            st = os.stat(f)
-            os.chmod(f, st.st_mode | stat.S_IEXEC)
+            st = os.stat(os.path.join(dst_dir, file))
+            os.chmod(os.path.join(dst_dir, file), st.st_mode | stat.S_IEXEC)
 
 
 def load_text_file(path):
