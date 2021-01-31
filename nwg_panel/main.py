@@ -62,17 +62,18 @@ def check_tree():
         print("Number of outputs changed")
         restart()
 
-    # Do if tree changed
-    tree = common.i3.get_tree()
-    if tree.ipc_data != common.ipc_data:
-        for item in common.taskbars_list:
-            item.refresh()
+    if common.sway:
+        # Do if tree changed
+        tree = common.i3.get_tree()
+        if tree.ipc_data != common.ipc_data:
+            for item in common.taskbars_list:
+                item.refresh()
 
-        for item in common.controls_list:
-            if item.popup_window.get_visible():
-                item.popup_window.hide()
+            for item in common.controls_list:
+                if item.popup_window.get_visible():
+                    item.popup_window.hide()
 
-    common.ipc_data = common.i3.get_tree().ipc_data
+        common.ipc_data = common.i3.get_tree().ipc_data
 
     return True
 
@@ -333,8 +334,7 @@ def main():
         save_json(panels, os.path.join(common.config_dir, "config_amended"))
 
     # GLib.timeout_add(100, listener_reply)
-    if common.sway:
-        Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 150, check_tree)
+    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 150, check_tree)
 
     signal.signal(signal.SIGINT, signal_handler)
 
