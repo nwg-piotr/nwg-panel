@@ -7,7 +7,7 @@ def read(f_name):
 
 
 setup(
-    name='nwgpanel',
+    name='nwg-panel',
     version='0.0.1',
     description='GTK-based panel for sway window manager',
     packages=find_packages(),
