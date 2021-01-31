@@ -192,7 +192,7 @@ def main():
 
     copy_files(os.path.join(dir_name, "icons_light"), os.path.join(common.config_dir, "icons_light"))
     copy_files(os.path.join(dir_name, "icons_dark"), os.path.join(common.config_dir, "icons_dark"))
-    copy_executors(os.path.join(dir_name, "executors"), os.path.join(common.config_dir, "executors"))
+    copy_files(os.path.join(dir_name, "executors"), os.path.join(common.config_dir, "executors"))
     copy_files(os.path.join(dir_name, "config"), common.config_dir)
 
     common.outputs = list_outputs()
