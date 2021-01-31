@@ -3,19 +3,21 @@
     "output": "",
     "layer": "bottom",
     "position": "top",
-    "height": 30,
+
+    "height": 0,
     "homogeneous": true,
     "margin-top": 0,
     "margin-bottom": 0,
     "padding-horizontal": 0,
     "padding-vertical": 0,
-    "spacing": 0,
+    "spacing": 4,
+    "controls": true,
     "items-padding": 0,
     "css-name": "primary-top",
     "icons": "light",
-    "controls": true,
     "modules-left": [
-      "playerctl"
+       "playerctl"
+
     ],
     "modules-center": [
       "executor-weather",
@@ -34,12 +36,6 @@
     },
     "controls-settings": {
       "alignment": "right",
-      "show-values": false,
-      "interval": 1,
-      "icon-size": 16,
-      "hover-opens": true,
-      "css-name": "controls-window",
-      "net-interface": "wlo1",
       "components": [
         "net",
         "brightness",
@@ -48,60 +44,47 @@
         "battery"
       ],
       "commands": {
+        "battery": "",
         "net": "",
-        "bluetooth": "",
-        "battery": ""
+        "bluetooth": "blueman-manager"
       },
       "custom-items": [
-        {
-          "name": "Wallpapers",
-          "icon": "azote",
-          "cmd": "azote"
-        },
-        {
-          "name": "Look & Feel",
-          "icon": "preferences-desktop-theme",
-          "cmd": "lxappearance"
+        { "name": "Wallpapers", "icon": "azote", "cmd": "azote" },
+        { "name": "Look & Feel", "icon": "preferences-desktop-theme", "cmd": "lxappearance" },
+        { "name": "pavucontrol", "icon": "audio-speakers", "cmd": "pavucontrol"
         }
       ],
       "menu": {
         "name": "Exit",
         "icon": "system-shutdown-symbolic",
         "items": [
-          {
-            "name": "Lock",
-            "cmd": "swaylock -f -c 000000"
-          },
-          {
-            "name": "Logout",
-            "cmd": "swaymsg exit"
-          },
-          {
-            "name": "Reboot",
-            "cmd": "systemctl reboot"
-          },
-          {
-            "name": "Shutdown",
-            "cmd": "systemctl -i poweroff"
-          }
-        ]
-      }
+           { "name": "Lock", "cmd": "swaylock -f -c 000000" },
+           { "name": "Logout", "cmd": "swaymsg exit" },
+           { "name": "Reboot", "cmd": "systemctl reboot" },
+           { "name": "Shutdown", "cmd": "systemctl -i poweroff" }
+         ]
+      },
+      "show-values": false,
+      "interval": 1,
+      "icon-size": 16,
+      "hover-opens": true,
+      "css-name": "controls-window",
+      "net-interface": "wlo1"
     },
     "playerctl": {
       "interval": 1,
+      "buttons": true,
       "buttons-position": "left",
       "chars": 50,
-      "label-css-name": "",
-      "button-css-name": "",
-      "icon-size": 16
+      "css-name": "button-grid"
     },
     "clock": {
       "format": "%a, %d. %b %H:%M:%S",
       "interval": 1,
-      "on-left-click": "",
+      "on-right-click": "",
       "css-name": "clock",
       "tooltip-text": "",
-      "on-right-click": "",
+      "on-left-click": "",
       "on-middle-click": "",
       "on-scroll-up": "",
       "on-scroll-down": ""
@@ -112,7 +95,7 @@
       "css-name": "weather",
       "on-right-click": "",
       "icon-size": 16,
-      "show-icon": false,
+      "show-icon": true,
       "tooltip-text": "",
       "on-left-click": "",
       "on-middle-click": "",
@@ -124,46 +107,41 @@
     "output": "",
     "layer": "bottom",
     "position": "bottom",
+
     "height": 30,
-    "homogeneous": false,
     "margin-top": 0,
     "margin-bottom": 0,
-    "padding-horizontal": 6,
+    "padding-horizontal": 10,
     "padding-vertical": 0,
-    "spacing": 0,
+    "spacing": 4,
     "items-padding": 0,
-    "css-name": "",
-    "icons": "light",
-    "controls": false,
+    "css-name": "all-bottom",
+    "focus": true,
     "modules-left": [
       "sway-taskbar"
     ],
     "modules-center": [],
     "modules-right": [
-      "executor-uptime"
+      "executor-example"
     ],
     "sway-taskbar": {
       "workspace-buttons": false,
       "show-app-icon": true,
       "show-layout": true,
       "show-app-name": true,
-      "name-max-len": 20,
+      "name-max-len": 15,
       "workspaces-spacing": 0,
       "task-spacing": 0,
-      "all-outputs": true
+      "all-outputs": false,
+      "image-size": 16,
+       "workspace-menu": [1, 2, 3, 4, 5, 6, 7, 8]
     },
-    "executor-uptime": {
+    "sway-workspaces": {
+      "numbers": []
+    },
+    "executor-example": {
       "script": "uname -sr",
-      "interval": 60,
-      "css-name": "",
-      "on-right-click": "",
-      "icon-size": 16,
-      "show-icon": false,
-      "tooltip-text": "",
-      "on-left-click": "",
-      "on-middle-click": "",
-      "on-scroll-up": "",
-      "on-scroll-down": ""
+      "interval": 0
     }
   }
 ]

@@ -199,7 +199,8 @@ def main():
         print(e)
 
     for panel in panels:
-        if panel["output"] in common.outputs:
+        check_key(panel, "output", "")
+        if panel["output"] in common.outputs or not panel["output"]:
             check_key(panel, "spacing", 6)
             check_key(panel, "homogeneous", False)
             check_key(panel, "css-name", "")

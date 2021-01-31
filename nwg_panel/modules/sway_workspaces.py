@@ -13,7 +13,7 @@ class SwayWorkspaces(Gtk.Box):
         self.build_box()
 
     def build_box(self):
-        check_key(self.settings, "numbers", [1, 2, 3, 4])
+        check_key(self.settings, "numbers", [1, 2, 3, 4, 5, 6, 7, 8])
         for num in self.settings["numbers"]:
             btn = Gtk.Button.new_with_label("{}".format(num))
             btn.connect("clicked", self.on_click, num)
