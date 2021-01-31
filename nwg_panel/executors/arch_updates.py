@@ -2,20 +2,25 @@
 
 import subprocess
 
-# put your icons path here
-icons_path = "/home/piotr/.config/nwg-panel/icons_light"
+
+# You may either use the full icon(s) path here, like e.g.:
+# "/home/piotr/.config/nwg-panel/icons_light/arch-linux.svg"
+# or just give the icon name, like below.
+
+# The icon name must either exist in your icon theme, or you may place `icon_name.svg`
+# custom files in '~/.config/nwg-panel/icons_light/' and '~/.config/nwg-panel/icons_dark/'.
 
 
 def main():
     arch, aur = check_updates()
     if arch and aur:
-        print("{}/arch-linux.svg".format(icons_path))
+        print("software-update-urgent")
         print("{}/{}".format(arch, aur))
     elif arch:
-        print("{}/arch-linux.svg".format(icons_path))
+        print("software-update-available")
         print("{}".format(arch))
     elif aur:
-        print("{}/arch-linux.svg".format(icons_path))
+        print("software-update-available")
         print("{}".format(aur))
 
 

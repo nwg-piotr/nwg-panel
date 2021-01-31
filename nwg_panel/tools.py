@@ -4,6 +4,7 @@ import os
 import sys
 import json
 import subprocess
+import stat
 
 import gi
 
@@ -12,6 +13,7 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk, Gdk, GdkPixbuf
+from shutil import copyfile
 
 import common
 
@@ -78,7 +80,10 @@ def get_icon(app_name):
 
 
 def get_config_dir():
-    # Determine config dir path, create if not found, then create sub-dirs
+    """
+    Determine config dir path, create if not found, then create sub-dirs
+    :return: config dir path
+    """
     xdg_config_home = os.getenv('XDG_CONFIG_HOME')
     config_home = xdg_config_home if xdg_config_home else os.path.join(os.getenv("HOME"), ".config")
     config_dir = os.path.join(config_home, "nwg-panel")
@@ -87,17 +92,41 @@ def get_config_dir():
         os.mkdir(config_dir)
 
     # Icon folders to store user-defined icon replacements
-    icon_folder = os.path.join(config_dir, "icons_light")
-    if not os.path.isdir(icon_folder):
-        print("Creating '{}'".format(icon_folder))
-        os.mkdir(icon_folder)
+    folder = os.path.join(config_dir, "icons_light")
+    if not os.path.isdir(folder):
+        print("Creating '{}'".format(folder))
+        os.mkdir(folder)
 
-    icon_folder = os.path.join(config_dir, "icons_dark")
-    if not os.path.isdir(os.path.join(icon_folder)):
-        print("Creating '{}'".format(icon_folder))
-        os.mkdir(icon_folder)
+    folder = os.path.join(config_dir, "icons_dark")
+    if not os.path.isdir(os.path.join(folder)):
+        print("Creating '{}'".format(folder))
+        os.mkdir(folder)
+
+    folder = os.path.join(config_dir, "executors")
+    if not os.path.isdir(os.path.join(folder)):
+        print("Creating '{}'".format(folder))
+        os.mkdir(folder)
 
     return config_dir
+
+
+def copy_files(src_dir, dst_dir):
+    src_files = os.listdir(src_dir)
+    for file in src_files:
+        if not os.path.isfile(os.path.join(dst_dir, file)):
+            copyfile(os.path.join(src_dir, file), os.path.join(dst_dir, file))
+            print("Copying '{}'".format(os.path.join(dst_dir, file)))
+
+
+def copy_executors(src_dir, dst_dir):
+    src_files = os.listdir(src_dir)
+    for file in src_files:
+        if not os.path.isfile(os.path.join(dst_dir, file)):
+            f = os.path.join(dst_dir, file)
+            copyfile(os.path.join(src_dir, file), f)
+            print("Copying '{}', marking executable".format(os.path.join(dst_dir, file)))
+            st = os.stat(f)
+            os.chmod(f, st.st_mode | stat.S_IEXEC)
 
 
 def load_text_file(path):

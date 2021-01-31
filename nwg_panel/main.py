@@ -27,6 +27,8 @@ from modules.controls import Controls
 from modules.playerctl import Playerctl
 from modules.cpu_avg import CpuAvg
 
+dir_name = os.path.dirname(__file__)
+
 common.sway = os.getenv('SWAYSOCK') is not None
 if common.sway:
     from i3ipc import Connection
@@ -186,6 +188,11 @@ def main():
 
     config_file = os.path.join(common.config_dir, args.config)
 
+    copy_files(os.path.join(dir_name, "icons_light"), os.path.join(common.config_dir, "icons_light"))
+    copy_files(os.path.join(dir_name, "icons_dark"), os.path.join(common.config_dir, "icons_dark"))
+    copy_executors(os.path.join(dir_name, "executors"), os.path.join(common.config_dir, "executors"))
+    copy_files(os.path.join(dir_name, "config"), common.config_dir)
+
     common.outputs = list_outputs()
 
     panels = load_json(config_file)
@@ -331,7 +338,7 @@ def main():
 
     if common.key_missing:
         print("Saving amended config")
-        save_json(panels, os.path.join(common.config_dir, "config_amended"))
+        save_json(panels, os.path.join(common.config_dir, "config_with_missing_keys"))
 
     # GLib.timeout_add(100, listener_reply)
     Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 150, check_tree)

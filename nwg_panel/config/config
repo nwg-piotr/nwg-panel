@@ -20,7 +20,6 @@
 
     ],
     "modules-center": [
-      "executor-weather",
       "clock"
     ],
     "modules-right": [],
@@ -88,19 +87,6 @@
       "on-middle-click": "",
       "on-scroll-up": "",
       "on-scroll-down": ""
-    },
-    "executor-weather": {
-      "script": "curl https://wttr.in/?format=1 -s",
-      "interval": 1800,
-      "css-name": "weather",
-      "on-right-click": "",
-      "icon-size": 16,
-      "show-icon": true,
-      "tooltip-text": "",
-      "on-left-click": "",
-      "on-middle-click": "",
-      "on-scroll-up": "",
-      "on-scroll-down": ""
     }
   },
   {
@@ -122,7 +108,7 @@
     ],
     "modules-center": [],
     "modules-right": [
-      "executor-example"
+      "executor-weather"
     ],
     "sway-taskbar": {
       "workspace-buttons": false,
@@ -139,9 +125,18 @@
     "sway-workspaces": {
       "numbers": []
     },
-    "executor-example": {
-      "script": "uname -sr",
-      "interval": 0
+    "executor-weather": {
+      "script": "curl https://wttr.in/?format=1 -s",
+      "interval": 1800,
+      "css-name": "weather",
+      "on-right-click": "",
+      "icon-size": 16,
+      "show-icon": true,
+      "tooltip-text": "",
+      "on-left-click": "",
+      "on-middle-click": "",
+      "on-scroll-up": "",
+      "on-scroll-down": ""
     }
   }
 ]
