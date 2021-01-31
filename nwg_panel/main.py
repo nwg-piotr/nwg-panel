@@ -210,7 +210,6 @@ def main():
         check_key(panel, "output", "")
         if panel["output"] in common.outputs or not panel["output"]:
             check_key(panel, "spacing", 6)
-            check_key(panel, "homogeneous", False)
             check_key(panel, "css-name", "")
             check_key(panel, "padding-horizontal", 0)
             check_key(panel, "padding-vertical", 0)
@@ -250,9 +249,18 @@ def main():
             hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             vbox.pack_start(hbox, True, True, panel["padding-vertical"])
 
+            check_key(panel, "modules-left", [])
+            check_key(panel, "modules-center", [])
+            check_key(panel, "modules-right", [])
+            # set equal columns width by default if "modules-center" not empty; this may be overridden in config
+            if panel["modules-center"]:
+                check_key(panel, "homogeneous", True)
+            else:
+                check_key(panel, "homogeneous", False)
+
             inner_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-            if panel["homogeneous"]:
-                inner_box.set_homogeneous(True)
+            inner_box.set_homogeneous(panel["homogeneous"])
+
             hbox.pack_start(inner_box, True, True, panel["padding-horizontal"])
 
             left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
@@ -268,7 +276,7 @@ def main():
                               int(w / 6), monitor=monitor)
                 common.controls_list.append(cc)
                 left_box.pack_start(cc, False, False, 0)
-            check_key(panel, "modules-left", [])
+            
             instantiate_content(panel, left_box, panel["modules-left"])
 
             center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
