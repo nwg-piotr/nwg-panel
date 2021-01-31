@@ -197,7 +197,12 @@ class WindowBox(Gtk.EventBox):
                 menu.append(item)
 
         item = Gtk.SeparatorMenuItem()
+
         menu.append(item)
+        item = Gtk.MenuItem("Toggle floating")
+        item.connect("activate", self.floating_toggle)
+        menu.append(item)
+
         item = Gtk.MenuItem("Kill")
         item.connect("activate", self.kill)
         menu.append(item)
@@ -221,6 +226,10 @@ class WindowBox(Gtk.EventBox):
         nwg_panel.common.i3.command(cmd)
 
         cmd = "[con_id=\"{}\"] focus".format(self.con.id)
+        nwg_panel.common.i3.command(cmd)
+
+    def floating_toggle(self, item):
+        cmd = "[con_id=\"{}\"] floating toggle".format(self.con.id)
         nwg_panel.common.i3.command(cmd)
 
     def kill(self, item):
