@@ -47,9 +47,7 @@
       },
       "custom-items": [
         { "name": "Wallpapers", "icon": "azote", "cmd": "azote" },
-        { "name": "Look & Feel", "icon": "preferences-desktop-theme", "cmd": "lxappearance" },
-        { "name": "pavucontrol", "icon": "audio-speakers", "cmd": "pavucontrol"
-        }
+        { "name": "Look & Feel", "icon": "preferences-desktop-theme", "cmd": "lxappearance" }
       ],
       "menu": {
         "name": "Exit",
