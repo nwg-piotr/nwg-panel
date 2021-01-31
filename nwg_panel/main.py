@@ -18,7 +18,7 @@ except ValueError:
 
 from gi.repository import GtkLayerShell, GLib
 
-from tools import *
+from nwg_panel.tools import *
 
 from modules.custom_button import CustomButton
 from modules.executor import Executor
