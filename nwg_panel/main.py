@@ -20,12 +20,12 @@ from gi.repository import GtkLayerShell, GLib
 
 from nwg_panel.tools import *
 
-from modules.custom_button import CustomButton
-from modules.executor import Executor
-from modules.clock import Clock
-from modules.controls import Controls
-from modules.playerctl import Playerctl
-from modules.cpu_avg import CpuAvg
+from nwg_panel.modules.custom_button import CustomButton
+from nwg_panel.modules.executor import Executor
+from nwg_panel.modules.clock import Clock
+from nwg_panel.modules.controls import Controls
+from nwg_panel.modules.playerctl import Playerctl
+from nwg_panel.modules.cpu_avg import CpuAvg
 
 dir_name = os.path.dirname(__file__)
 
@@ -36,8 +36,8 @@ if common.sway:
     from i3ipc import Connection
 
     common.i3 = Connection()
-    from modules.sway_taskbar import SwayTaskbar
-    from modules.sway_workspaces import SwayWorkspaces
+    from nwg_panel.modules.sway_taskbar import SwayTaskbar
+    from nwg_panel.modules.sway_workspaces import SwayWorkspaces
 
 try:
     from pyalsa import alsamixer
