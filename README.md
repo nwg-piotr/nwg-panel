@@ -45,3 +45,5 @@ Set of buttons, and a label to control mpris media player with the
 
 Last but not least: the Executor module displays an icon, and a label on the basis of a script 
 output, in user-defined intervals *(bottom right, and the weather executor next to the clock)*.
+
+See [Wiki](https://github.com/nwg-piotr/nwg-panel/wiki) for more information.
