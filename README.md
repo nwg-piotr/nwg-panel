@@ -16,32 +16,32 @@ and whatever else you may need, there's an Executor for that.
 ### Controls
 
 Panel widget with a GNOME-like popup window, including sliders, some system info, user-defined rows 
-and customizable menu (top right);
+and customizable menu *(top right in the picture)*;
 
 ### SwayTaskbar 
 
 Shows tasks from a selected or all outputs, with the program icon and name; allows switching between them,
 toggle the container layout (`tabbed stacking splitv splith`) with the mouse scroller, move to workspaces,
-toggle floating and kill with the right-click menu (bottom left);
+toggle floating and kill with the right-click menu *(bottom left)*;
 
 ### CustomButton 
 
-Simple Gtk.Button with an icon, and a command assigned to it (top left corner);
+Simple Gtk.Button with an icon, and a command assigned to it *(top left corner)*;
 
 ### SwayWorkspaces
 
-Not really necessary set of textual buttons to switch between workspaces (not in the picture);
+Not really necessary set of textual buttons to switch between workspaces *(not in the picture)*;
 
 ### Clock
 
-Just a label to show the `date` command output in the format of your choice (top center);
+Just a label to show the `date` command output in the format of your choice *(top center)*;
 
 ### Playerctl
 
 Set of buttons, and a label to control mpris media player with the 
-[Playerctl utility](https://github.com/altdesktop/playerctl) (top left);
+[Playerctl utility](https://github.com/altdesktop/playerctl) *(top left)*;
 
 ### Executor 
 
 Last but not least: the Executor module displays an icon, and a label on the basis of a script 
-output, in user-defined intervals (bottom right, and the weather executor next to the clock).
+output, in user-defined intervals *(bottom right, and the weather executor next to the clock)*.
