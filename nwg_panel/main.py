@@ -210,6 +210,11 @@ def main():
 
     for panel in panels:
         check_key(panel, "output", "")
+        
+        # This is to allow width "auto" value. Actually all non-numeric values will be removed.
+        if "width" in panel and not isinstance(panel["width"], int):
+            panel.pop("width")
+            
         if panel["output"] in common.outputs or not panel["output"]:
             check_key(panel, "spacing", 6)
             check_key(panel, "css-name", "")
@@ -225,9 +230,8 @@ def main():
                 for key in common.outputs:
                     if common.outputs[key]["monitor"] == monitor:
                         panel["output"] = key
-            # If not full screen width demanded explicit, let's leave 6 pixel of margin on both sides on multi-headed
-            # setups. Otherwise moving the pointer between displays over the panels remains undetected,
-            # and the Controls window may appear on the previous output.
+
+            # Width undefined or "auto"
             if "output" in panel and panel["output"] and "width" not in panel:
                 panel["width"] = common.outputs[panel["output"]]["width"]
 

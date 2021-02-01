@@ -3,7 +3,7 @@
     "output": "",
     "layer": "bottom",
     "position": "top",
-
+    "width": "auto",
     "height": 30,
     "margin-top": 0,
     "margin-bottom": 0,
@@ -94,7 +94,7 @@
     "output": "",
     "layer": "bottom",
     "position": "bottom",
-
+    "width": "auto",
     "height": 30,
     "margin-top": 0,
     "margin-bottom": 0,
