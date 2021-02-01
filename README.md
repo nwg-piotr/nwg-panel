@@ -16,7 +16,7 @@ and whatever else you may need, there's an Executor for that.
 
 ### Controls
 
-Panel widget with a GNOME-like popup window, including sliders, some system info, user-defined rows 
+Panel widget with a popup window, including sliders, some system info, user-defined rows 
 and customizable menu *(top right in the picture)*;
 
 ### SwayTaskbar 
