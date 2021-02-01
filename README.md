@@ -7,7 +7,7 @@ and Tint2.
 **Development status is alpha. Errors are expected (please report by submitting issues). 
 Breaking changes may, and probably will occur.**
 
-I don't plan on many built-in modules. Basis system controls are available in the Controls module, 
+I don't plan on many more built-in modules. Basis system controls are available in the Controls module, 
 and whatever else you may need, there's an Executor for that.
 
 ![gh.png](https://scrot.cloud/images/2021/02/01/gh.png)
