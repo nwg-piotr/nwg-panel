@@ -19,7 +19,7 @@ class Playerctl(Gtk.EventBox):
     def __init__(self, settings):
         self.settings = settings
         Gtk.EventBox.__init__(self)
-        check_key(settings, "interval", 0)
+        check_key(settings, "interval", 1)
         check_key(settings, "label-css-name", "")
         check_key(settings, "button-css-name", "")
         check_key(settings, "icon-size", 16)
