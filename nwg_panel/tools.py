@@ -442,3 +442,18 @@ def bt_service_enabled():
         result = enabled and active
 
     return result
+
+
+def list_configs(config_dir):
+    configs = {}
+    for entry in os.listdir(config_dir):
+        path = os.path.join(config_dir, entry)
+        if os.path.isfile(path):
+            try:
+                with open(path, 'r') as f:
+                    config = json.load(f)
+                configs[path] = config
+            except:
+                pass
+
+    return configs
