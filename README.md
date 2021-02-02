@@ -1,8 +1,9 @@
 # nwg-panel
 I have been using sway since 2019 and find it the most comfortable working environment, but... 
 Have you ever missed all the graphical bells and whistles in your panel, we used to have in tint2? It happens to me. 
-That's why I decided to try to code a GTK-based panel, including best features from my two favourites: Waybar 
-and tint2. 
+That's why I decided to try to code a GTK-based panel, including best features from my two favourites: 
+[Waybar](https://github.com/Alexays/Waybar) and [tint2](https://gitlab.com/o9000/tint2). Many thanks to Developers
+and Contributors of the both projects!
 
 **Development status is alpha. Errors are expected (please report!). 
 Breaking changes may, and probably will occur.**
