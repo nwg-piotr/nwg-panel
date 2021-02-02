@@ -20,11 +20,7 @@ setup(
     author='Piotr Miller',
     author_email='nwg.piotr@gmail.com',
     python_requires='>=3.4.0',
-    install_requires=[
-        'pygobject',
-        'pyalsa',
-        'netifaces'
-    ],
+    install_requires=['pygobject'],
     entry_points={
         'gui_scripts': [
             'nwg-panel = nwg_panel.main:main'
