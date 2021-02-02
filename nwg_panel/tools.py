@@ -258,7 +258,7 @@ def get_volume():
         switch = element.get_switch()
         del mixer
     else:
-        result = cmd2string(nwg_panel.common.commands["set_volume_alt"])
+        result = cmd2string(nwg_panel.common.commands["get_volume_alt"])
         if result:
             lines = result.splitlines()
             for line in lines:
