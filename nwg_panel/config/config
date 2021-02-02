@@ -22,17 +22,7 @@
     "modules-center": [
       "clock"
     ],
-    "modules-right": ["cpu-avg"],
-    "sway-taskbar": {
-      "workspace-buttons": false,
-      "show-app-icon": true,
-      "show-layout": true,
-      "show-app-name": true,
-      "name-max-len": 20,
-      "workspaces-spacing": 0,
-      "task-spacing": 0,
-      "all-outputs": false
-    },
+    "modules-right": [],
     "controls-settings": {
       "alignment": "right",
       "components": [
@@ -68,6 +58,8 @@
     },
     "button-sample": {
       "icon": "view-grid",
+      "label": "button",
+      "label-position": "",
       "command": "notify-send \"Just a lonely button\" \"that desperately needs a command\"",
       "css-name": "button-custom"
     },
