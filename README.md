@@ -4,7 +4,7 @@ Have you ever missed all the graphical bells and whistles in your panel, we used
 Finally, I decided to try to code my own panel, including best features from my two favourites: Waybar 
 and Tint2. 
 
-**Development status is alpha. Errors are expected (please report by submitting issues). 
+**Development status is alpha. Errors are expected (please report!). 
 Breaking changes may, and probably will occur.**
 
 I don't plan on many more built-in modules. Basis system controls are available in the Controls module, 
