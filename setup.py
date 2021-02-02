@@ -22,7 +22,8 @@ setup(
     python_requires='>=3.4.0',
     install_requires=[
         'pygobject',
-        'pyalsa'
+        'pyalsa',
+        'netifaces'
     ],
     entry_points={
         'gui_scripts': [
