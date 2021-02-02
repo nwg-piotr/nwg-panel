@@ -168,6 +168,11 @@ def main():
                         default="style.css",
                         help="css filename (in {}/)".format(common.config_dir))
 
+    parser.add_argument("-r",
+                        "--restore",
+                        action="store_true",
+                        help="restore default config files")
+
     args = parser.parse_args()
     global restart_cmd
     restart_cmd = "nwg-panel -c {} -s {}".format(args.config, args.style)
@@ -193,7 +198,7 @@ def main():
     copy_files(os.path.join(dir_name, "icons_light"), os.path.join(common.config_dir, "icons_light"))
     copy_files(os.path.join(dir_name, "icons_dark"), os.path.join(common.config_dir, "icons_dark"))
     copy_executors(os.path.join(dir_name, "executors"), os.path.join(common.config_dir, "executors"))
-    copy_files(os.path.join(dir_name, "config"), common.config_dir)
+    copy_files(os.path.join(dir_name, "config"), common.config_dir, args.restore)
 
     common.outputs = list_outputs()
 
