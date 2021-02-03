@@ -46,7 +46,7 @@ class PanelSelector(Gtk.Window):
         row = 0
         for path in configs:
             label = Gtk.Label()
-            label.set_text("File: {}".format(path))
+            label.set_text("File: '{}'".format(path))
             label.set_halign(Gtk.Align.START)
             grid.attach(label, 0, row, 3, 1)
             row += 1
@@ -54,39 +54,39 @@ class PanelSelector(Gtk.Window):
             panels = configs[path]
 
             label = Gtk.Label()
-            label.set_text("PANEL NAME")
+            label.set_text("Name:")
             label.set_halign(Gtk.Align.START)
             grid.attach(label, 0, row, 1, 1)
 
             label = Gtk.Label()
-            label.set_text("OUTPUT")
+            label.set_text("Output:")
             label.set_halign(Gtk.Align.START)
             grid.attach(label, 1, row, 1, 1)
 
             label = Gtk.Label()
-            label.set_text("POSITION")
+            label.set_text("Position:")
             label.set_halign(Gtk.Align.START)
             grid.attach(label, 2, row, 1, 1)
             row += 1
 
             panel_idx = 0
             for panel in panels:
-                check_key(panel, "name", "-")
-                check_key(panel, "output", "-")
-                check_key(panel, "position", "-")
+                check_key(panel, "name", "")
+                check_key(panel, "output", "")
+                check_key(panel, "position", "")
 
                 label = Gtk.Label()
-                label.set_text(panel["name"])
+                label.set_text('"{}"'.format(panel["name"]))
                 label.set_halign(Gtk.Align.START)
                 grid.attach(label, 0, row, 1, 1)
 
                 label = Gtk.Label()
-                label.set_text(panel["output"])
+                label.set_text('"{}"'.format(panel["output"]))
                 label.set_halign(Gtk.Align.START)
                 grid.attach(label, 1, row, 1, 1)
 
                 label = Gtk.Label()
-                label.set_text(panel["position"])
+                label.set_text('"{}"'.format(panel["position"]))
                 label.set_halign(Gtk.Align.START)
                 grid.attach(label, 2, row, 1, 1)
 
@@ -103,7 +103,6 @@ class PanelSelector(Gtk.Window):
     def on_button_clicked(self, button, file, panel):
         editor.set_values(file, panel)
         self.close()
-        
         
     def release_parent(self, w, parent):
         parent.set_sensitive(True)
@@ -163,8 +162,7 @@ class PanelEditor(object):
         check_key(self.panel, "items-padding", 0)
         check_key(self.panel, "icons", "")
         check_key(self.panel, "css-name", "")
-        
-        #self.lb_panel_desc.set_text("Panel #{} in {}".format(panel_num, file))
+
         self.lb_panel_desc.set_text("Panel #{} in {}".format(panel_num, file))
         self.eb_name.set_text(self.panel["name"])
 
