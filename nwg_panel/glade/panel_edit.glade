@@ -69,7 +69,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkComboBoxText">
+                  <object class="GtkComboBoxText" id="output">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                   </object>
@@ -79,12 +79,12 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkComboBoxText">
+                  <object class="GtkComboBoxText" id="position">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <items>
-                      <item translatable="yes">top</item>
-                      <item translatable="yes">bottom</item>
+                      <item id="top" translatable="yes">top</item>
+                      <item id="bottom" translatable="yes">bottom</item>
                     </items>
                   </object>
                   <packing>
@@ -93,12 +93,12 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkComboBoxText">
+                  <object class="GtkComboBoxText" id="layer">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <items>
-                      <item translatable="yes">top</item>
-                      <item translatable="yes">bottom</item>
+                      <item id="top" translatable="yes">top</item>
+                      <item id="bottom" translatable="yes">bottom</item>
                     </items>
                   </object>
                   <packing>
@@ -179,7 +179,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="width">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                   </object>
@@ -189,7 +189,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="height">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                   </object>
@@ -199,7 +199,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="margin-top">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                   </object>
@@ -209,7 +209,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="margin-bottom">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                   </object>
@@ -219,7 +219,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="padding-horizontal">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                   </object>
@@ -229,7 +229,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="padding-vertical">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                   </object>
@@ -239,7 +239,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="name">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="max-width-chars">24</property>
@@ -298,7 +298,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="spacing">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                   </object>
@@ -308,7 +308,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="items-padding">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                   </object>
@@ -318,13 +318,13 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkComboBoxText">
+                  <object class="GtkComboBoxText" id="icons">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <items>
-                      <item translatable="yes">custom light</item>
-                      <item translatable="yes">custom dark</item>
-                      <item translatable="yes">GTK</item>
+                      <item id="light" translatable="yes">custom light</item>
+                      <item id="dark" translatable="yes">custom dark</item>
+                      <item id="gtk" translatable="yes">GTK</item>
                     </items>
                   </object>
                   <packing>
@@ -333,7 +333,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="css-name">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                   </object>
@@ -348,7 +348,7 @@
                     <property name="can-focus">False</property>
                     <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkLabel">
+                      <object class="GtkLabel" id="label-desc">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Select panel</property>
