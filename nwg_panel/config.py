@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import sys
-
 import gi
 
 gi.require_version('Gtk', '3.0')
