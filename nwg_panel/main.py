@@ -5,6 +5,11 @@ import signal
 import gi
 import argparse
 
+try:
+    from .__about__ import __version__
+except ImportError:
+    __version__ = "unknown"
+
 gi.require_version('Gtk', '3.0')
 try:
     gi.require_version('GtkLayerShell', '0.1')
@@ -38,13 +43,6 @@ if common.sway:
     common.i3 = Connection()
     from nwg_panel.modules.sway_taskbar import SwayTaskbar
     from nwg_panel.modules.sway_workspaces import SwayWorkspaces
-
-try:
-    from pyalsa import alsamixer
-
-    common.dependencies["pyalsa"] = True
-except:
-    print("pylsa module not found, will try amixer")
 
 restart_cmd = ""
 
@@ -173,10 +171,23 @@ def main():
                         action="store_true",
                         help="restore default config files")
 
+    parser.add_argument("-v",
+                        "--version",
+                        action="version",
+                        version="%(prog)s {}".format(__version__),
+                        help="display version information")
+
     args = parser.parse_args()
+
+    try:
+        from pyalsa import alsamixer
+        common.dependencies["pyalsa"] = True
+    except:
+        print("pylsa module not found, will try amixer")
+
     global restart_cmd
     restart_cmd = "nwg-panel -c {} -s {}".format(args.config, args.style)
-
+    
     # Try and kill already running instance if any
     pid_file = os.path.join(temp_dir(), "nwg-panel.pid")
     if os.path.isfile(pid_file):
@@ -187,6 +198,10 @@ def main():
         except:
             pass
     save_string(str(os.getpid()), pid_file)
+
+    cmd_file = os.path.join(local_dir(), "args")
+    cmd = "-c {} -s {}".format(args.config, args.style)
+    save_string(cmd, cmd_file)
 
     common.app_dirs = get_app_dirs()
 

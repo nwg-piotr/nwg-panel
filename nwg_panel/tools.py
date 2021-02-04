@@ -79,6 +79,15 @@ def get_icon(app_name):
                     return line.split("=")[1]
 
 
+def local_dir():
+    local_dir = os.path.join(os.path.join(os.getenv("HOME"), ".local/share/nwg-panel"))
+    if not os.path.isdir(local_dir):
+        print("Creating '{}'".format(local_dir))
+        os.mkdir(local_dir)
+
+    return local_dir
+
+
 def get_config_dir():
     """
     Determine config dir path, create if not found, then create sub-dirs
@@ -258,7 +267,7 @@ def get_volume():
         switch = element.get_switch()
         del mixer
     else:
-        result = cmd2string(nwg_panel.common.commands["set_volume_alt"])
+        result = cmd2string(nwg_panel.common.commands["get_volume_alt"])
         if result:
             lines = result.splitlines()
             for line in lines:
