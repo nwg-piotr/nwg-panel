@@ -282,9 +282,14 @@ class EditorWrapper(object):
 
 
 def restart_panel(w):
-    cmd = ["nwg-panel"] + load_string(os.path.join(local_dir(), "args")).split()
+    cmd = "nwg-panel"
+    try:
+        args_string = load_string(os.path.join(local_dir(), "args"))
+        cmd = "nwg-panel {}".format(args_string)
+    except:
+        pass
     print("Restarting panels".format(cmd))
-    subprocess.Popen(cmd)
+    subprocess.Popen('exec {}'.format(cmd), shell=True)
 
 
 def main():

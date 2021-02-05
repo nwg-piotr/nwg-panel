@@ -45,7 +45,8 @@ restart_cmd = ""
 
 
 def signal_handler(sig, frame):
-    print("SIGINT received, terminating")
+    desc = {2: "SIGINT", 15: "SIGTERM"}
+    print("Terminated with {}".format(desc[sig]))
     Gtk.main_quit()
 
 
@@ -378,6 +379,7 @@ def main():
     Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 150, check_tree)
 
     signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
 
     Gtk.main()
 

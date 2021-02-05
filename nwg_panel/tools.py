@@ -423,7 +423,7 @@ def update_image(image, icon_name, icon_size):
                 if image:
                     image.set_from_pixbuf(pixbuf)
             except:
-                print("{} :: neither GTK nor custom icon found".format(icon_name))
+                pass
     else:
         image.set_from_icon_name(icon_name, Gtk.IconSize.MENU)
 
