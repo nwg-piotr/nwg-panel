@@ -5,7 +5,7 @@ import signal
 import gi
 import argparse
 
-from .__about__ import __version__
+from nwg_panel.__about__ import __version__
 
 gi.require_version('Gtk', '3.0')
 try:
