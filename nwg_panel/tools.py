@@ -171,6 +171,15 @@ def save_string(string, file):
         print("Error writing file '{}'".format(file))
 
 
+def load_string(path):
+    try:
+        with open(path, 'r') as file:
+            data = file.read()
+            return data
+    except:
+        return "Error reading file"
+
+
 def list_outputs(sway=False, silent=False):
     """
     Get output names and geometry from i3 tree, assign to Gdk.Display monitors.
@@ -408,13 +417,13 @@ def update_image(image, icon_name, icon_size):
                 path, icon_size, icon_size)
             if image:
                 image.set_from_pixbuf(pixbuf)
-        except Exception as e:
+        except:
             try:
                 pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
                 if image:
                     image.set_from_pixbuf(pixbuf)
             except:
-                print("update_image :: failed setting image from {}: {}".format(path, e))
+                print("{} :: neither GTK nor custom icon found".format(icon_name))
     else:
         image.set_from_icon_name(icon_name, Gtk.IconSize.MENU)
 

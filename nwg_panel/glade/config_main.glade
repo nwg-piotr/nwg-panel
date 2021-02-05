@@ -182,7 +182,7 @@
                 <property name="spacing">20</property>
                 <property name="homogeneous">True</property>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButton" id="btn-apply">
                     <property name="label">gtk-apply</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>

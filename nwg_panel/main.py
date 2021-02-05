@@ -196,9 +196,7 @@ def main():
             pass
     save_string(str(os.getpid()), pid_file)
 
-    cmd_file = os.path.join(local_dir(), "args")
-    cmd = "-c {} -s {}".format(args.config, args.style)
-    save_string(cmd, cmd_file)
+    save_string("-c {} -s {}".format(args.config, args.style), os.path.join(local_dir(), "args"))
 
     common.app_dirs = get_app_dirs()
 

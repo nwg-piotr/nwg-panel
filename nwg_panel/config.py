@@ -2,12 +2,13 @@
 
 import os
 import sys
+import subprocess
 import gi
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
-from nwg_panel.tools import get_config_dir, load_json, list_outputs, check_key, is_command, list_configs
+from nwg_panel.tools import get_config_dir, load_json, load_string, list_outputs, check_key, list_configs, local_dir
 
 dir_name = os.path.dirname(__file__)
 
@@ -123,8 +124,12 @@ class EditorWrapper(object):
         self.window.connect("show", self.lock_parent, parent)
 
         self.scrolled_window = builder.get_object("scrolled-window")
+
         btn_cancel = builder.get_object("btn-cancel")
         btn_cancel.connect("clicked", self.quit)
+
+        btn_apply = builder.get_object("btn-apply")
+        btn_apply.connect("clicked", restart_panel)
         
         self.set_panel()
         self.edit_panel()
@@ -274,6 +279,12 @@ class EditorWrapper(object):
 
     def release_parent(self, w, parent):
         parent.show()
+
+
+def restart_panel(w):
+    cmd = ["nwg-panel"] + load_string(os.path.join(local_dir(), "args")).split()
+    print("Restarting panels".format(cmd))
+    subprocess.Popen(cmd)
 
 
 def main():
