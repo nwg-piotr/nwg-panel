@@ -40,18 +40,18 @@ class PanelSelector(Gtk.Window):
         self.hbox.pack_start(grid, True, True, 20)
         self.show_all()
         
-        self.connect("show", self.build_grid)
+        self.connect("show", self.refresh)
     
-    def refresh(self):
+    def refresh(self, w):
         for item in self.hbox.get_children():
             item.destroy()
         grid = self.build_grid()
         self.hbox.pack_start(grid, True, True, 20)
+        self.show_all()
     
     def build_grid(self, *args):
         global configs
         configs = list_configs(config_dir)
-        print(configs)
 
         grid = Gtk.Grid()
         grid.set_column_spacing(20)
@@ -382,7 +382,8 @@ class EditorWrapper(object):
         except:
             pass
         print("Restarting panels".format(cmd))
-        subprocess.Popen('exec {}'.format(cmd), shell=True)
+        #subprocess.Popen('exec {}'.format(cmd), shell=True)
+        self.window.close()
 
 
 def main():
