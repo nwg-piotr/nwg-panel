@@ -15,7 +15,7 @@ config_dir = get_config_dir()
 configs = {}
 editor = None
 selector_window = None
-outputs = list_outputs(sway=sway, silent=True)
+outputs = list_outputs(sway=sway)
 
 
 def handle_keyboard(window, event):
