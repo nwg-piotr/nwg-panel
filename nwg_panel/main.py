@@ -36,8 +36,8 @@ dir_name = os.path.dirname(__file__)
 
 from nwg_panel import common
 
-common.sway = os.getenv('SWAYSOCK') is not None
-if common.sway:
+sway = os.getenv('SWAYSOCK') is not None
+if sway:
     from i3ipc import Connection
 
     common.i3 = Connection()
@@ -58,13 +58,13 @@ def restart():
 
 def check_tree():
     old = len(common.outputs)
-    common.outputs = list_outputs(silent=True)
+    common.outputs = list_outputs(sway=sway, silent=True)
     new = len(common.outputs)
     if old != 0 and old != new:
         print("Number of outputs changed")
         restart()
 
-    if common.sway:
+    if sway:
         # Do if tree changed
         tree = common.i3.get_tree()
         if tree.ipc_data != common.ipc_data:
@@ -92,7 +92,7 @@ def instantiate_content(panel, container, content_list):
     for item in content_list:
         if item == "sway-taskbar":
             if "sway-taskbar" in panel:
-                if common.sway:
+                if sway:
                     check_key(panel["sway-taskbar"], "all-outputs", False)
                     if panel["sway-taskbar"]["all-outputs"] or "output" not in panel:
                         taskbar = SwayTaskbar(panel["sway-taskbar"], common.i3, panel["position"])
@@ -108,7 +108,7 @@ def instantiate_content(panel, container, content_list):
                 print("'sway-taskbar' not defined in this panel instance")
 
         if item == "sway-workspaces":
-            if common.sway:
+            if sway:
                 if "sway-workspaces" in panel:
                     workspaces = SwayWorkspaces(panel["sway-workspaces"])
                     container.pack_start(workspaces, False, False, panel["items-padding"])
@@ -215,7 +215,7 @@ def main():
     copy_executors(os.path.join(dir_name, "executors"), os.path.join(common.config_dir, "executors"))
     copy_files(os.path.join(dir_name, "config"), common.config_dir, args.restore)
 
-    common.outputs = list_outputs()
+    common.outputs = list_outputs(sway=sway)
 
     panels = load_json(config_file)
 

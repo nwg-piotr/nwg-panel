@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import os
 import sys
 import gi
 
@@ -8,11 +9,13 @@ from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, load_json, list_outputs, check_key, is_command, list_configs
 
+sway = os.getenv('SWAYSOCK') is not None
+
 config_dir = get_config_dir()
 configs = {}
 editor = None
 selector_window = None
-outputs = list_outputs()
+outputs = list_outputs(sway=sway, silent=True)
 
 
 def handle_keyboard(window, event):

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
+import os
 sway = False
 
-if sway:
+if os.getenv('SWAYSOCK') is not None:
     from i3ipc import Connection
     i3 = Connection()
+
 ipc_data = None
 
 outputs = {}

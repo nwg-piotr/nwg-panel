@@ -171,13 +171,13 @@ def save_string(string, file):
         print("Error writing file '{}'".format(file))
 
 
-def list_outputs(silent=False):
+def list_outputs(sway=False, silent=False):
     """
     Get output names and geometry from i3 tree, assign to Gdk.Display monitors.
     :return: {"name": str, "x": int, "y": int, "width": int, "height": int, "monitor": Gkd.Monitor}
     """
     outputs_dict = {}
-    if nwg_panel.common.sway:
+    if sway:
         if not silent:
             print("Running on sway")
         for item in nwg_panel.common.i3.get_tree():
