@@ -23,7 +23,8 @@ setup(
     install_requires=['pygobject'],
     entry_points={
         'gui_scripts': [
-            'nwg-panel = nwg_panel.main:main'
+            'nwg-panel = nwg_panel.main:main',
+            'nwg-panel-config = nwg_panel.config:main'
         ]
     }
 )
