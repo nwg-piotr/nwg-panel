@@ -256,7 +256,10 @@ class EditorWrapper(object):
         sb_items_padding.set_value(float(self.panel["items-padding"]))
 
         cb_icons = builder.get_object("icons")
-        cb_icons.set_active_id(self.panel["icons"])
+        if self.panel["icons"]:
+            cb_icons.set_active_id(self.panel["icons"])
+        else:
+            cb_icons.set_active_id("gtk")
 
         eb_css_name = builder.get_object("css-name")
         eb_css_name.set_text(self.panel["css-name"])
