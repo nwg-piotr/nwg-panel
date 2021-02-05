@@ -5,10 +5,7 @@ import signal
 import gi
 import argparse
 
-try:
-    from .__about__ import __version__
-except ImportError:
-    __version__ = "unknown"
+from .__about__ import __version__
 
 gi.require_version('Gtk', '3.0')
 try:
