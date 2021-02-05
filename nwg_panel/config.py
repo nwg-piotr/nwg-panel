@@ -9,6 +9,8 @@ from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, load_json, list_outputs, check_key, is_command, list_configs
 
+dir_name = os.path.dirname(__file__)
+
 sway = os.getenv('SWAYSOCK') is not None
 
 config_dir = get_config_dir()
@@ -110,7 +112,7 @@ class EditorWrapper(object):
         self.config = {}
         self.panel = {}
         builder = Gtk.Builder()
-        builder.add_from_file("glade/config_main.glade")
+        builder.add_from_file(os.path.join(dir_name, "glade/config_main.glade"))
 
         self.window = builder.get_object("main-window")
         self.window.set_transient_for(parent)
@@ -160,7 +162,7 @@ class EditorWrapper(object):
             check_key(self.panel, key, defaults[key])
     
     def edit_panel(self):
-        builder = Gtk.Builder.new_from_file("glade/config_panel.glade")
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_panel.glade"))
         grid = builder.get_object("grid")
 
         eb_name = builder.get_object("name")
