@@ -382,7 +382,7 @@ class EditorWrapper(object):
         except:
             pass
         print("Restarting panels".format(cmd))
-        #subprocess.Popen('exec {}'.format(cmd), shell=True)
+        subprocess.Popen('exec {}'.format(cmd), shell=True)
         self.window.close()
 
 
