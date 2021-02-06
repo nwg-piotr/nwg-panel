@@ -145,6 +145,9 @@ class EditorWrapper(object):
         btn_apply = builder.get_object("btn-apply")
         btn_apply.connect("clicked", self.restart_panel)
 
+        btn_apply = builder.get_object("btn-apply-restart")
+        btn_apply.connect("clicked", self.restart_panel, True)
+
         self.eb_name = None
         self.cb_output = None
         self.cb_position = None
@@ -371,7 +374,7 @@ class EditorWrapper(object):
     def release_parent(self, w, parent):
         parent.show()
 
-    def restart_panel(self, w):
+    def restart_panel(self, w, restart=False):
         if self.edited == "panel":
             self.update_panel()
 
@@ -381,8 +384,9 @@ class EditorWrapper(object):
             cmd = "nwg-panel {}".format(args_string)
         except:
             pass
-        print("Restarting panels".format(cmd))
-        subprocess.Popen('exec {}'.format(cmd), shell=True)
+        if restart:
+            print("Restarting panels".format(cmd))
+            subprocess.Popen('exec {}'.format(cmd), shell=True)
         self.window.close()
 
 

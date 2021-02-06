@@ -182,12 +182,25 @@
                 <property name="spacing">20</property>
                 <property name="homogeneous">True</property>
                 <child>
-                  <object class="GtkButton" id="btn-apply">
-                    <property name="label">gtk-apply</property>
+                  <object class="GtkButton" id="btn-apply-restart">
+                    <property name="label">Apply &amp; restart</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
-                    <property name="use-stock">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="pack-type">end</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="btn-cancel">
+                    <property name="label">Cancel</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -197,18 +210,17 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="btn-cancel">
-                    <property name="label">gtk-cancel</property>
+                  <object class="GtkButton" id="btn-apply">
+                    <property name="label">Apply</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
-                    <property name="use-stock">True</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="pack-type">end</property>
-                    <property name="position">1</property>
+                    <property name="position">3</property>
                   </packing>
                 </child>
               </object>
