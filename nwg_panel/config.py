@@ -354,17 +354,52 @@ class EditorWrapper(object):
             else:
                 self.panel["controls"] = "off"
 
-        print(self.cb_controls.get_active_id())
-        print(self.cb_layer.get_active_id())
-        print(self.sb_width.get_value())
-        print(self.ckb_width_auto.get_active())
-        print(self.sb_height.get_value())
-        print(self.sb_margin_top.get_value())
-        print(self.sb_margin_bottom.get_value())
-        print(self.sb_padding_horizontal.get_value())
-        print(self.sb_padding_vertical.get_value())
-        print(self.sb_spacing.get_value())
-        print(self.sb_items_padding.get_value())
+        val = self.cb_layer.get_active_id()
+        if val:
+            self.panel["layer"] = val
+
+        val = self.ckb_width_auto.get_active()
+        if val:
+            self.panel["width"] = "auto"
+        else:
+            val = self.sb_width.get_value()
+            if val is not None:
+                self.panel["width"] = int(val)
+
+        val = self.sb_height.get_value()
+        if val is not None:
+            self.panel["height"] = int(val)
+
+        val = self.sb_margin_top.get_value()
+        if val is not None:
+            self.panel["margin-top"] = int(val)
+
+        val = self.sb_margin_bottom.get_value()
+        if val is not None:
+            self.panel["margin-bottom"] = int(val)
+
+        val = self.sb_padding_horizontal.get_value()
+        if val is not None:
+            self.panel["padding-horizontal"] = int(val)
+
+        val = self.sb_padding_vertical.get_value()
+        if val is not None:
+            self.panel["padding-vertical"] = int(val)
+
+        val = self.sb_spacing.get_value()
+        if val is not None:
+            self.panel["spacing"] = int(val)
+
+        val = self.sb_items_padding.get_value()
+        if val is not None:
+            self.panel["items-padding"] = int(val)
+
+        val = self.cb_icons.get_active_id()
+        if val != "gtk":
+            self.panel["icons"] = val
+        else:
+            self.panel["icons"] = ""
+
         print(self.cb_icons.get_active_id())
         print(self.eb_css_name.get_text())
 
