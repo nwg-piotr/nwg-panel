@@ -256,13 +256,12 @@ def main():
             check_key(panel, "height", 0)
             h = panel["height"]
 
-            check_key(panel, "controls", False)
+            check_key(panel, "controls", "off")
             if panel["controls"]:
                 check_key(panel, "controls-settings", {})
 
             if "controls-settings" in panel:
                 controls_settings = panel["controls-settings"]
-                check_key(controls_settings, "alignment", "right")
                 check_key(controls_settings, "show-values", False)
 
             Gtk.Widget.set_size_request(window, w, h)
@@ -292,14 +291,14 @@ def main():
 
             left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
             inner_box.pack_start(left_box, False, True, 0)
-            if panel["controls"] and panel["controls-settings"]["alignment"] == "left":
+            if panel["controls"] and panel["controls"] == "left":
                 monitor = None
                 try:
                     monitor = common.outputs[panel["output"]]["monitor"]
                 except KeyError:
                     pass
 
-                cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"],
+                cc = Controls(panel["controls-settings"], panel["position"], panel["controls"],
                               int(w / 6), monitor=monitor)
                 common.controls_list.append(cc)
                 left_box.pack_start(cc, False, False, 0)
@@ -319,14 +318,14 @@ def main():
             check_key(panel, "modules-right", [])
             instantiate_content(panel, right_box, panel["modules-right"])
 
-            if panel["controls"] and panel["controls-settings"]["alignment"] == "right":
+            if panel["controls"] and panel["controls"] == "right":
                 monitor = None
                 try:
                     monitor = common.outputs[panel["output"]]["monitor"]
                 except KeyError:
                     pass
 
-                cc = Controls(panel["controls-settings"], panel["position"], panel["controls-settings"]["alignment"],
+                cc = Controls(panel["controls-settings"], panel["position"], panel["controls"],
                               int(w / 6), monitor=monitor)
                 common.controls_list.append(cc)
                 right_box.pack_end(cc, False, False, 0)

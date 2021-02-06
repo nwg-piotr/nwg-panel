@@ -67,7 +67,7 @@ class Controls(Gtk.EventBox):
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
 
-        self.popup_window = PopupWindow(position, settings, width, monitor=monitor)
+        self.popup_window = PopupWindow(position, alignment, settings, width, monitor=monitor)
 
         self.connect('button-press-event', self.on_button_press)
         self.connect('enter-notify-event', self.on_enter_notify_event)
@@ -240,7 +240,7 @@ class Controls(Gtk.EventBox):
 
 
 class PopupWindow(Gtk.Window):
-    def __init__(self, position, settings, width, monitor=None):
+    def __init__(self, position, alignment, settings, width, monitor=None):
         Gtk.Window.__init__(self, type_hint=Gdk.WindowTypeHint.NORMAL)
         GtkLayerShell.init_for_window(self)
         if monitor:
@@ -278,7 +278,7 @@ class PopupWindow(Gtk.Window):
         GtkLayerShell.set_margin(self, GtkLayerShell.Edge.RIGHT, 6)
         GtkLayerShell.set_margin(self, GtkLayerShell.Edge.LEFT, 6)
 
-        if settings["alignment"] == "left":
+        if alignment == "left":
             GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.LEFT, True)
         else:
             GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.RIGHT, True)

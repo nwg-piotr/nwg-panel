@@ -203,7 +203,6 @@ class EditorWrapper(object):
             check_key(self.panel, key, defaults[key])
 
         check_key(self.panel, "controls-settings", {
-            "alignment": "right",
             "components": [
                 "net",
                 "brightness",
@@ -238,9 +237,9 @@ class EditorWrapper(object):
         if not self.panel["controls"]:
             self.cb_controls.set_active_id("off")
         else:
-            if self.panel["controls-settings"]["alignment"] == "right":
+            if self.panel["controls"] == "right":
                 self.cb_controls.set_active_id("right")
-            elif self.panel["controls-settings"]["alignment"] == "left":
+            elif self.panel["controls"] == "left":
                 self.cb_controls.set_active_id("left")
             else:
                 self.cb_controls.set_active_id("off")
@@ -350,7 +349,10 @@ class EditorWrapper(object):
 
         val = self.cb_controls.get_active_id()
         if val:
-            self.panel["controls"] = val
+            if val in ["left", "right"]:
+                self.panel["controls"] = val
+            else:
+                self.panel["controls"] = "off"
 
         print(self.cb_controls.get_active_id())
         print(self.cb_layer.get_active_id())
