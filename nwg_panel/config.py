@@ -161,7 +161,6 @@ class EditorWrapper(object):
         self.sb_padding_horizontal = None
         self.sb_padding_vertical = None
         self.sb_spacing = None
-        self.sb_items_padding = None
         self.cb_icons = None
         self.eb_css_name = None
 
@@ -195,7 +194,6 @@ class EditorWrapper(object):
             "padding-horizontal": 0,
             "padding-vertical": 0,
             "spacing": 0,
-            "items-padding": 0,
             "icons": "",
             "css-name": ""
         }
@@ -306,12 +304,6 @@ class EditorWrapper(object):
         self.sb_spacing.configure(adj, 1, 0)
         self.sb_spacing.set_value(float(self.panel["spacing"]))
 
-        self.sb_items_padding = builder.get_object("items-padding")
-        self.sb_items_padding.set_numeric(True)
-        adj = Gtk.Adjustment(value=0, lower=0, upper=201, step_increment=1, page_increment=10, page_size=1)
-        self.sb_items_padding.configure(adj, 1, 0)
-        self.sb_items_padding.set_value(float(self.panel["items-padding"]))
-
         self.cb_icons = builder.get_object("icons")
         if self.panel["icons"]:
             self.cb_icons.set_active_id(self.panel["icons"])
@@ -389,10 +381,6 @@ class EditorWrapper(object):
         val = self.sb_spacing.get_value()
         if val is not None:
             self.panel["spacing"] = int(val)
-
-        val = self.sb_items_padding.get_value()
-        if val is not None:
-            self.panel["items-padding"] = int(val)
 
         val = self.cb_icons.get_active_id()
         if val != "gtk":

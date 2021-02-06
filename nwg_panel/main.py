@@ -79,7 +79,6 @@ def check_tree():
 
 
 def instantiate_content(panel, container, content_list):
-    check_key(panel, "items-padding", 0)
     check_key(panel, "icons", "")
     if panel["icons"] == "light":
         common.icons_path = os.path.join(common.config_dir, "icons_light")
@@ -90,6 +89,8 @@ def instantiate_content(panel, container, content_list):
     for item in content_list:
         if item == "sway-taskbar":
             if "sway-taskbar" in panel:
+                settings = panel["sway-taskbar"]
+                check_key(settings, "padding", 0)
                 if sway:
                     check_key(panel["sway-taskbar"], "all-outputs", False)
                     if panel["sway-taskbar"]["all-outputs"] or "output" not in panel:
@@ -99,7 +100,7 @@ def instantiate_content(panel, container, content_list):
                                               display_name="{}".format(panel["output"]))
                     common.taskbars_list.append(taskbar)
 
-                    container.pack_start(taskbar, False, False, panel["items-padding"])
+                    container.pack_start(taskbar, False, False, settings["padding"])
                 else:
                     print("'sway-taskbar' ignored")
             else:
@@ -108,44 +109,54 @@ def instantiate_content(panel, container, content_list):
         if item == "sway-workspaces":
             if sway:
                 if "sway-workspaces" in panel:
+                    settings = panel["sway-workspaces"]
+                    check_key(settings, "padding", 0)
                     workspaces = SwayWorkspaces(panel["sway-workspaces"])
-                    container.pack_start(workspaces, False, False, panel["items-padding"])
+                    container.pack_start(workspaces, False, False, settings["padding"])
                 else:
                     print("'sway-workspaces' not defined in this panel instance")
             else:
                 print("'sway-workspaces' ignored")
         if "button-" in item:
             if item in panel:
+                settings = panel[item]
+                check_key(settings, "padding", 0)
                 button = CustomButton(panel[item])
-                container.pack_start(button, False, False, panel["items-padding"])
+                container.pack_start(button, False, False, settings["padding"])
             else:
                 print("'{}' not defined in this panel instance".format(item))
 
         if "executor-" in item:
             if item in panel:
+                settings = panel[item]
+                check_key(settings, "padding", 0)
                 executor = Executor(panel[item])
-                container.pack_start(executor, False, False, panel["items-padding"])
+                container.pack_start(executor, False, False, settings["padding"])
             else:
                 print("'{}' not defined in this panel instance".format(item))
 
         if item == "clock":
             if item in panel:
+                settings = panel[item]
+                check_key(settings, "padding", 0)
                 clock = Clock(panel[item])
-                container.pack_start(clock, False, False, panel["items-padding"])
+                container.pack_start(clock, False, False, settings["padding"])
             else:
                 clock = Clock({})
-                container.pack_start(clock, False, False, panel["items-padding"])
+                container.pack_start(clock, False, False, settings["padding"])
 
         if item == "playerctl":
             if item in panel:
+                settings = panel[item]
+                check_key(settings, "padding", 0)
                 playerctl = Playerctl(panel[item])
-                container.pack_start(playerctl, False, False, panel["items-padding"])
+                container.pack_start(playerctl, False, False, settings["padding"])
             else:
                 print("'{}' not defined in this panel instance".format(item))
 
         if item == "cpu-avg":
             cpu_avg = CpuAvg()
-            container.pack_start(cpu_avg, False, False, panel["items-padding"])
+            container.pack_start(cpu_avg, False, False, 10)
 
 
 def main():
