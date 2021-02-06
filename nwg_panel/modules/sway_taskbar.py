@@ -12,6 +12,7 @@ class SwayTaskbar(Gtk.Box):
         check_key(settings, "workspaces-spacing", 0)
         check_key(settings, "image-size", 16)
         check_key(settings, "workspace-menu", [1, 2, 3, 4, 5, 6, 7, 8])
+        check_key(settings, "task-padding", 0)
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=settings["workspaces-spacing"])
         self.settings = settings
         self.display_name = display_name
@@ -58,7 +59,7 @@ class SwayTaskbar(Gtk.Box):
                     for con in desc.descendants():
                         if con.name or con.app_id:
                             win_box = WindowBox(con, self.settings, self.position)
-                            self.ws_box.pack_start(win_box, False, False, 0)
+                            self.ws_box.pack_start(win_box, False, False, self.settings["task-padding"])
                     self.pack_start(self.ws_box, False, False, 0)
         self.show_all()
 
@@ -91,9 +92,7 @@ class WindowBox(Gtk.EventBox):
         self.position = position
         self.settings = settings
         Gtk.EventBox.__init__(self)
-        check_key(settings, "task-spacing", 0)
-        self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,
-                           spacing=settings["task-spacing"] if settings["task-spacing"] else 0)
+        self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
         self.con = con
         self.pid = con.pid
