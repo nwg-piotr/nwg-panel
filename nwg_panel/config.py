@@ -420,7 +420,7 @@ def main():
     global configs
     configs = list_configs(config_dir)
 
-    GLib.set_prgname('nwg-panel-config')
+    GLib.set_prgname('nwg-panel')
 
     global selector_window
     selector_window = PanelSelector()
