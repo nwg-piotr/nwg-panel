@@ -134,11 +134,13 @@ class WindowBox(Gtk.EventBox):
 
         if con.name:
             check_key(settings, "show-app-name", True)
+            name = con.name[:settings["name-max-len"]] if len(con.name) > settings["name-max-len"] else con.name
             if settings["show-app-name"]:
                 check_key(settings, "name-max-len", 10)
-                name = con.name[:settings["name-max-len"]] if len(con.name) > settings["name-max-len"] else con.name
                 label = Gtk.Label(name)
                 self.box.pack_start(label, False, False, 0)
+            else:
+                self.set_tooltip_text(name)
 
         check_key(settings, "show-layout", True)
         if settings["show-layout"] and con.parent.layout:
