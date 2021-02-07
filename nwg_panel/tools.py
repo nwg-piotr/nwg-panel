@@ -425,6 +425,7 @@ def update_image(image, icon_name, icon_size, icons_path=""):
             except:
                 pass
     else:
+        print("icons_path=", icons_path)
         image.set_from_icon_name(icon_name, Gtk.IconSize.MENU)
 
 

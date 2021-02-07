@@ -88,10 +88,10 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 if sway:
                     check_key(panel["sway-taskbar"], "all-outputs", False)
                     if panel["sway-taskbar"]["all-outputs"] or "output" not in panel:
-                        taskbar = SwayTaskbar(panel["sway-taskbar"], common.i3, panel["position"])
+                        taskbar = SwayTaskbar(panel["sway-taskbar"], common.i3, panel["position"], icons_path=icons_path)
                     else:
                         taskbar = SwayTaskbar(panel["sway-taskbar"], common.i3, panel["position"],
-                                              display_name="{}".format(panel["output"]))
+                                              display_name="{}".format(panel["output"]), icons_path=icons_path)
                     common.taskbars_list.append(taskbar)
 
                     container.pack_start(taskbar, False, False, settings["padding"])
@@ -137,7 +137,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 container.pack_start(clock, False, False, settings["padding"])
             else:
                 clock = Clock({})
-                container.pack_start(clock, False, False, settings["padding"])
+                container.pack_start(clock, False, False, 0)
 
         if item == "playerctl":
             if item in panel:
