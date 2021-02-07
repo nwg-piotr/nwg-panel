@@ -409,6 +409,8 @@ class EditorWrapper(object):
     def restart_panel(self, w, restart=False):
         if self.edited == "panel":
             self.update_panel()
+        elif self.edited == "sway-taskbar":
+            self.update_sway_taskbar()
 
         cmd = "nwg-panel"
         try:
@@ -498,6 +500,31 @@ class EditorWrapper(object):
         while '  ' in valid_text:
             valid_text = valid_text.replace('  ', ' ')
         gtk_entry.set_text(valid_text)
+        
+    def update_sway_taskbar(self):
+        settings = self.panel["sway-taskbar"]
+
+        val = self.eb_workspace_menu.get_text()
+        if val:
+            settings["workspace-menu"] = val.split()
+
+        val = self.sb_name_max_len.get_value()
+        if val is not None:
+            settings["name-max-len"] = int(val)
+
+        val = self.sb_image_size.get_value()
+        if val is not None:
+            settings["image-size"] = int(val)
+
+        val = self.sb_workspace_spacing.get_value()
+        if val is not None:
+            settings["workspaces-spacing"] = int(val)
+
+        val = self.sb_task_padding.get_value()
+        if val is not None:
+            settings["task-padding"] = int(val)
+
+        save_json(self.config, self.file)
 
 
 def main():
