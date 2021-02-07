@@ -36,6 +36,7 @@ class Controls(Gtk.EventBox):
         check_key(settings, "interval", 1)
         check_key(settings, "icon-size", 16)
         check_key(settings, "hover-opens", True)
+        check_key(settings, "leave-closes", True)
         check_key(settings, "css-name", "controls-label")
         check_key(settings, "components", ["net", "brightness", "volume", "battery"])
         check_key(settings, "net-interface", "")
@@ -260,7 +261,8 @@ class PopupWindow(Gtk.Window):
 
         eb = Gtk.EventBox()
         eb.set_above_child(False)
-        self.connect("leave_notify_event", self.on_window_exit)
+        if settings["leave-closes"]:
+            self.connect("leave_notify_event", self.on_window_exit)
 
         outer_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         eb.add(outer_vbox)
