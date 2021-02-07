@@ -523,6 +523,22 @@ class EditorWrapper(object):
         val = self.sb_task_padding.get_value()
         if val is not None:
             settings["task-padding"] = int(val)
+            
+        val = self.ckb_show_app_icon.get_active()
+        if val is not None:
+            settings["show-app-icon"] = val
+
+        val = self.ckb_show_app_name.get_active()
+        if val is not None:
+            settings["show-app-name"] = val
+
+        val = self.ckb_show_layout.get_active()
+        if val is not None:
+            settings["show-layout"] = val
+
+        val = self.workspace_buttons.get_active()
+        if val is not None:
+            settings["workspace-buttons"] = val
 
         save_json(self.config, self.file)
 
