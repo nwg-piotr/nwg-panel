@@ -7,8 +7,9 @@ import nwg_panel.common
 
 
 class SwayTaskbar(Gtk.Box):
-    def __init__(self, settings, i3, position, display_name=""):
+    def __init__(self, settings, i3, position, display_name="", icons_path=""):
         self.position = position
+        self.icons_path = icons_path
         check_key(settings, "workspaces-spacing", 0)
         check_key(settings, "image-size", 16)
         check_key(settings, "workspace-menu", [1, 2, 3, 4, 5, 6, 7, 8])
@@ -58,7 +59,7 @@ class SwayTaskbar(Gtk.Box):
                     self.ws_box = WorkspaceBox(desc, self.settings)
                     for con in desc.descendants():
                         if con.name or con.app_id:
-                            win_box = WindowBox(con, self.settings, self.position)
+                            win_box = WindowBox(con, self.settings, self.position, self.icons_path)
                             self.ws_box.pack_start(win_box, False, False, self.settings["task-padding"])
                     self.pack_start(self.ws_box, False, False, 0)
         self.show_all()
@@ -88,7 +89,7 @@ class WorkspaceBox(Gtk.Box):
 
 
 class WindowBox(Gtk.EventBox):
-    def __init__(self, con, settings, position):
+    def __init__(self, con, settings, position, icons_path):
         self.position = position
         self.settings = settings
         Gtk.EventBox.__init__(self)
@@ -119,7 +120,7 @@ class WindowBox(Gtk.EventBox):
                 if "/" not in icon_from_desktop and not icon_from_desktop.endswith(
                         ".svg") and not icon_from_desktop.endswith(".png"):
                     image = Gtk.Image()
-                    update_image(image, icon_from_desktop, settings["image-size"])
+                    update_image(image, icon_from_desktop, settings["image-size"], icons_path)
                 else:
                     pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop, settings["image-size"],
                                                                     settings["image-size"])
@@ -128,7 +129,7 @@ class WindowBox(Gtk.EventBox):
                 self.box.pack_start(image, False, False, 4)
             else:
                 image = Gtk.Image()
-                update_image(image, name, settings["image-size"])
+                update_image(image, name, settings["image-size"], icons_path)
                 self.box.pack_start(image, False, False, 4)
 
         if con.name:
@@ -143,19 +144,19 @@ class WindowBox(Gtk.EventBox):
         if settings["show-layout"] and con.parent.layout:
             if con.parent.layout == "splith":
                 image = Gtk.Image()
-                update_image(image, "go-next", 16)
+                update_image(image, "go-next", 16, icons_path)
             elif con.parent.layout == "splitv":
                 image = Gtk.Image()
-                update_image(image, "go-down", 16)
+                update_image(image, "go-down", 16, icons_path)
             elif con.parent.layout == "tabbed":
                 image = Gtk.Image()
-                update_image(image, "view-dual", 16)
+                update_image(image, "view-dual", 16, icons_path)
             elif con.parent.layout == "stacked":
                 image = Gtk.Image()
-                update_image(image, "view-paged", 16)
+                update_image(image, "view-paged", 16, icons_path)
             else:
                 image = Gtk.Image()
-                update_image(image, "window-new", 16)
+                update_image(image, "window-new", 16, icons_path)
 
             self.box.pack_start(image, False, False, 4)
 

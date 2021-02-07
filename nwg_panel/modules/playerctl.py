@@ -16,8 +16,9 @@ from gi.repository import Gtk, Gdk, GdkPixbuf
 
 
 class Playerctl(Gtk.EventBox):
-    def __init__(self, settings):
+    def __init__(self, settings, icons_path=""):
         self.settings = settings
+        self.icons_path = icons_path
         Gtk.EventBox.__init__(self)
         check_key(settings, "interval", 1)
         check_key(settings, "label-css-name", "")
@@ -30,7 +31,7 @@ class Playerctl(Gtk.EventBox):
         self.box.set_property("name", "task-box")
         self.add(self.box)
         self.image = Gtk.Image()
-        update_image(self.image, "view-refresh-symbolic", self.settings["icon-size"])
+        update_image(self.image, "view-refresh-symbolic", self.settings["icon-size"], icons_path=self.icons_path)
         self.label = Gtk.Label("")
         self.icon_path = None
         self.play_pause_btn = Gtk.Button()
@@ -59,10 +60,10 @@ class Playerctl(Gtk.EventBox):
             if not self.status == status:
                 if status == "Playing":
                     update_image(self.play_pause_btn.get_image(), "media-playback-pause-symbolic",
-                                 self.settings["icon-size"])
+                                 self.settings["icon-size"], icons_path=self.icons_path)
                 elif status == "Paused":
                     update_image(self.play_pause_btn.get_image(), "media-playback-start-symbolic",
-                                 self.settings["icon-size"])
+                                 self.settings["icon-size"], icons_path=self.icons_path)
                     metadata = "{} - paused".format(metadata)
 
             self.label.set_text(metadata)
@@ -95,7 +96,7 @@ class Playerctl(Gtk.EventBox):
         button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
 
         img = Gtk.Image()
-        update_image(img, "media-skip-backward-symbolic", self.settings["icon-size"])
+        update_image(img, "media-skip-backward-symbolic", self.settings["icon-size"], icons_path=self.icons_path)
         btn = Gtk.Button()
         btn.set_image(img)
         if self.settings["button-css-name"]:
@@ -104,13 +105,13 @@ class Playerctl(Gtk.EventBox):
         button_box.pack_start(btn, False, False, 1)
 
         img = Gtk.Image()
-        update_image(img, "media-playback-start-symbolic", self.settings["icon-size"])
+        update_image(img, "media-playback-start-symbolic", self.settings["icon-size"], icons_path=self.icons_path)
         self.play_pause_btn.set_image(img)
         self.play_pause_btn.connect("clicked", self.launch, "playerctl play-pause")
         button_box.pack_start(self.play_pause_btn, False, False, 1)
 
         img = Gtk.Image()
-        update_image(img, "media-skip-forward-symbolic", self.settings["icon-size"])
+        update_image(img, "media-skip-forward-symbolic", self.settings["icon-size"], icons_path=self.icons_path)
         btn = Gtk.Button()
         btn.set_image(img)
         if self.settings["button-css-name"]:

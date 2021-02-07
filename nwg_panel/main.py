@@ -78,13 +78,7 @@ def check_tree():
     return True
 
 
-def instantiate_content(panel, container, content_list):
-    check_key(panel, "icons", "")
-    if panel["icons"] == "light":
-        common.icons_path = os.path.join(common.config_dir, "icons_light")
-    elif panel["icons"] == "dark":
-        common.icons_path = os.path.join(common.config_dir, "icons_dark")
-
+def instantiate_content(panel, container, content_list, icons_path=""):
     check_key(panel, "position", "top")
     for item in content_list:
         if item == "sway-taskbar":
@@ -121,7 +115,7 @@ def instantiate_content(panel, container, content_list):
             if item in panel:
                 settings = panel[item]
                 check_key(settings, "padding", 0)
-                button = CustomButton(panel[item])
+                button = CustomButton(panel[item], icons_path)
                 container.pack_start(button, False, False, settings["padding"])
             else:
                 print("'{}' not defined in this panel instance".format(item))
@@ -149,7 +143,7 @@ def instantiate_content(panel, container, content_list):
             if item in panel:
                 settings = panel[item]
                 check_key(settings, "padding", 0)
-                playerctl = Playerctl(panel[item])
+                playerctl = Playerctl(panel[item], icons_path)
                 container.pack_start(playerctl, False, False, settings["padding"])
             else:
                 print("'{}' not defined in this panel instance".format(item))
@@ -236,6 +230,13 @@ def main():
         print(e)
 
     for panel in panels:
+        check_key(panel, "icons", "")
+        icons_path = ""
+        if panel["icons"] == "light":
+            icons_path = os.path.join(common.config_dir, "icons_light")
+        elif panel["icons"] == "dark":
+            icons_path = os.path.join(common.config_dir, "icons_dark")
+
         check_key(panel, "output", "")
         
         # This is to allow width "auto" value. Actually all non-numeric values will be removed.
@@ -310,16 +311,16 @@ def main():
                     pass
 
                 cc = Controls(panel["controls-settings"], panel["position"], panel["controls"],
-                              int(w / 6), monitor=monitor)
+                              int(w / 6), monitor=monitor, icons_path=icons_path)
                 common.controls_list.append(cc)
                 left_box.pack_start(cc, False, False, 0)
             
-            instantiate_content(panel, left_box, panel["modules-left"])
+            instantiate_content(panel, left_box, panel["modules-left"], icons_path=icons_path)
 
             center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
             inner_box.pack_start(center_box, True, False, 0)
             check_key(panel, "modules-center", [])
-            instantiate_content(panel, center_box, panel["modules-center"])
+            instantiate_content(panel, center_box, panel["modules-center"], icons_path=icons_path)
 
             right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
             # Damn on the guy who invented `pack_start(child, expand, fill, padding)`!
@@ -327,7 +328,7 @@ def main():
             helper_box.pack_end(right_box, False, False, 0)
             inner_box.pack_start(helper_box, False, True, 0)
             check_key(panel, "modules-right", [])
-            instantiate_content(panel, right_box, panel["modules-right"])
+            instantiate_content(panel, right_box, panel["modules-right"], icons_path=icons_path)
 
             if panel["controls"] and panel["controls"] == "right":
                 monitor = None
@@ -337,7 +338,7 @@ def main():
                     pass
 
                 cc = Controls(panel["controls-settings"], panel["position"], panel["controls"],
-                              int(w / 6), monitor=monitor)
+                              int(w / 6), monitor=monitor, icons_path=icons_path)
                 common.controls_list.append(cc)
                 right_box.pack_end(cc, False, False, 0)
 
