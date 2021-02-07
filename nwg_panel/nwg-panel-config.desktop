@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Application
+
+Name=nwg Panel Settings
+Name[pl]=Ustawienia Panelu nwg
+
+GenericName=nwg Panel configurator
+GenericName[pl]=Ustawienia Panelu nwg
+
+Comment=Tool to configure nwg panel
+Comment[pl]=Narzędzie do konfiguracji Panelu nwg
+
+Exec=nwg-panel-config
+Icon=nwg-panel
+Terminal=false
+Categories=Settings;DesktopSettings;
