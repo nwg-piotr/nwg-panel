@@ -133,20 +133,26 @@ class EditorWrapper(object):
         self.window.set_transient_for(parent)
         self.window.set_keep_above(True)
         self.window.set_type_hint(Gdk.WindowTypeHint.DIALOG)
-        self.window.connect('destroy', self.release_parent, parent)
+        self.window.connect('destroy', self.show_parent, parent)
         self.window.connect("key-release-event", handle_keyboard)
-        self.window.connect("show", self.lock_parent, parent)
+        self.window.connect("show", self.hide_parent, parent)
 
         self.scrolled_window = builder.get_object("scrolled-window")
 
-        btn_cancel = builder.get_object("btn-cancel")
-        btn_cancel.connect("clicked", self.quit)
+        btn = builder.get_object("btn-panel")
+        btn.connect("clicked", self.edit_panel)
 
-        btn_apply = builder.get_object("btn-apply")
-        btn_apply.connect("clicked", self.restart_panel)
+        btn = builder.get_object("btn-sway-taskbar")
+        btn.connect("clicked", self.edit_sway_taskbar)
+        
+        btn = builder.get_object("btn-cancel")
+        btn.connect("clicked", self.quit)
 
-        btn_apply = builder.get_object("btn-apply-restart")
-        btn_apply.connect("clicked", self.restart_panel, True)
+        btn = builder.get_object("btn-apply")
+        btn.connect("clicked", self.restart_panel)
+
+        btn = builder.get_object("btn-apply-restart")
+        btn.connect("clicked", self.restart_panel, True)
 
         self.eb_name = None
         self.cb_output = None
@@ -209,7 +215,7 @@ class EditorWrapper(object):
             ]
         })
     
-    def edit_panel(self):
+    def edit_panel(self, *args):
         self.edited = "panel"
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_panel.glade"))
         grid = builder.get_object("grid")
@@ -394,10 +400,10 @@ class EditorWrapper(object):
 
         save_json(self.config, self.file)
 
-    def lock_parent(self, w, parent):
+    def hide_parent(self, w, parent):
         parent.hide()
 
-    def release_parent(self, w, parent):
+    def show_parent(self, w, parent):
         parent.show()
 
     def restart_panel(self, w, restart=False):
@@ -414,6 +420,84 @@ class EditorWrapper(object):
             print("Restarting panels".format(cmd))
             subprocess.Popen('exec {}'.format(cmd), shell=True)
         self.window.close()
+
+    def edit_sway_taskbar(self, *args):
+        self.edited = "sway-taskbar"
+        check_key(self.panel, "sway-taskbar", {})
+        settings = self.panel["sway-taskbar"]
+        defaults = {
+            "workspace-menu": [1, 2, 3, 4, 5, 6, 7, 8],
+            "name-max-len": 20,
+            "image-size": 16,
+            "workspaces-spacing": 0,
+            "task-padding": 0,
+            "show-app-icon": True,
+            "show-app-name": True,
+            "show-layout": True,
+            "workspace-buttons": True
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_sway_taskbar.glade"))
+        grid = builder.get_object("grid")
+
+        self.eb_workspace_menu = builder.get_object("workspace-menu")
+        workspaces = settings["workspace-menu"]
+        text = ""
+        for item in workspaces:
+            text += str(item) + " "
+        self.eb_workspace_menu.set_text(text.strip())
+        self.eb_workspace_menu.connect("changed", self.validate_workspaces)
+
+        self.sb_name_max_len = builder.get_object("name-max-len")
+        self.sb_name_max_len.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=1, upper=257, step_increment=1, page_increment=10, page_size=1)
+        self.sb_name_max_len.configure(adj, 1, 0)
+        self.sb_name_max_len.set_value(settings["name-max-len"])
+
+        self.sb_image_size = builder.get_object("image-size")
+        self.sb_image_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
+        self.sb_image_size.configure(adj, 1, 0)
+        self.sb_image_size.set_value(settings["image-size"])
+
+        self.sb_workspace_spacing = builder.get_object("workspaces-spacing")
+        self.sb_workspace_spacing.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=1000, step_increment=1, page_increment=10, page_size=1)
+        self.sb_workspace_spacing.configure(adj, 1, 0)
+        self.sb_workspace_spacing.set_value(settings["workspaces-spacing"])
+
+        self.sb_task_padding = builder.get_object("task-padding")
+        self.sb_task_padding.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=257, step_increment=1, page_increment=10, page_size=1)
+        self.sb_task_padding.configure(adj, 1, 0)
+        self.sb_task_padding.set_value(settings["task-padding"])
+
+        self.ckb_show_app_icon = builder.get_object("show-app-icon")
+        self.ckb_show_app_icon.set_active(settings["show-app-icon"])
+
+        self.ckb_show_app_name = builder.get_object("show-app-name")
+        self.ckb_show_app_name.set_active(settings["show-app-name"])
+
+        self.ckb_show_layout = builder.get_object("show-layout")
+        self.ckb_show_layout.set_active(settings["show-layout"])
+
+        self.workspace_buttons = builder.get_object("workspace-buttons")
+        self.workspace_buttons.set_active(settings["workspace-buttons"])
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(grid)
+        
+    def validate_workspaces(self, gtk_entry):
+        valid_text = ""
+        for char in gtk_entry.get_text():
+            if char.isdigit() or char == " ":
+                valid_text += char
+        while '  ' in valid_text:
+            valid_text = valid_text.replace('  ', ' ')
+        gtk_entry.set_text(valid_text)
 
 
 def main():
