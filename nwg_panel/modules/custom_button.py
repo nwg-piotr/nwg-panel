@@ -7,7 +7,7 @@ import subprocess
 
 sys.path.append('../')
 
-from nwg_panel.tools import check_key
+from nwg_panel.tools import check_key, update_image
 
 
 class CustomButton(Gtk.Button):
@@ -17,7 +17,9 @@ class CustomButton(Gtk.Button):
         self.settings = settings
 
         check_key(settings, "icon", "dialog-error")
-        image = Gtk.Image.new_from_icon_name(settings["icon"], Gtk.IconSize.MENU)
+        check_key(settings, "icon-size", 16)
+        image = Gtk.Image()
+        update_image(image, settings["icon"], settings["icon-size"])
         self.set_image(image)
 
         check_key(settings, "label", "")
