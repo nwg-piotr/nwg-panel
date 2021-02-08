@@ -436,7 +436,8 @@ class EditorWrapper(object):
             "show-app-icon": True,
             "show-app-name": True,
             "show-layout": True,
-            "workspace-buttons": True
+            "workspace-buttons": True,
+            "all-outputs": False
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -487,6 +488,9 @@ class EditorWrapper(object):
 
         self.workspace_buttons = builder.get_object("workspace-buttons")
         self.workspace_buttons.set_active(settings["workspace-buttons"])
+
+        self.ckb_all_outputs = builder.get_object("all-outputs")
+        self.ckb_all_outputs.set_active(settings["all-outputs"])
 
         for item in self.scrolled_window.get_children():
             item.destroy()
@@ -539,6 +543,10 @@ class EditorWrapper(object):
         val = self.workspace_buttons.get_active()
         if val is not None:
             settings["workspace-buttons"] = val
+
+        val = self.ckb_all_outputs.get_active()
+        if val is not None:
+            settings["all-outputs"] = val
 
         save_json(self.config, self.file)
 
