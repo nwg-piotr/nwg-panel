@@ -150,6 +150,9 @@ class EditorWrapper(object):
 
         btn = builder.get_object("btn-sway-taskbar")
         btn.connect("clicked", self.edit_sway_taskbar)
+
+        btn = builder.get_object("btn-sway-workspaces")
+        btn.connect("clicked", self.edit_sway_workspaces)
         
         btn = builder.get_object("btn-cancel")
         btn.connect("clicked", self.quit)
@@ -421,6 +424,8 @@ class EditorWrapper(object):
             self.update_clock()
         elif self.edited == "playerctl":
             self.update_playerctl()
+        elif self.edited == "sway-workspaces":
+            self.update_sway_workspaces()
 
         cmd = "nwg-panel"
         try:
@@ -697,6 +702,40 @@ class EditorWrapper(object):
         settings["label-css-name"] = self.eb_label_css_name.get_text()
 
         settings["interval"] = int(self.sc_interval_playerctl.get_value())
+
+        save_json(self.config, self.file)
+        
+    def edit_sway_workspaces(self, *args):
+        self.edited = "sway-workspaces"
+        check_key(self.panel, "sway-workspaces", {})
+        settings = self.panel["sway-workspaces"]
+        defaults = {
+            "numbers": [1, 2, 3, 4, 5, 6, 7, 8]
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_sway_workspaces.glade"))
+        grid = builder.get_object("grid")
+
+        self.eb_workspaces_menu = builder.get_object("numbers")
+        workspaces = settings["numbers"]
+        text = ""
+        for item in workspaces:
+            text += str(item) + " "
+        self.eb_workspaces_menu.set_text(text.strip())
+        self.eb_workspaces_menu.connect("changed", self.validate_workspaces)
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(grid)
+
+    def update_sway_workspaces(self):
+        settings = self.panel["sway-workspaces"]
+
+        val = self.eb_workspaces_menu.get_text()
+        if val:
+            settings["numbers"] = val.split()
 
         save_json(self.config, self.file)
 
