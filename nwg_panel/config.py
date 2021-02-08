@@ -142,6 +142,9 @@ class EditorWrapper(object):
         btn = builder.get_object("btn-panel")
         btn.connect("clicked", self.edit_panel)
 
+        btn = builder.get_object("btn-clock")
+        btn.connect("clicked", self.edit_clock)
+
         btn = builder.get_object("btn-sway-taskbar")
         btn.connect("clicked", self.edit_sway_taskbar)
         
@@ -411,6 +414,8 @@ class EditorWrapper(object):
             self.update_panel()
         elif self.edited == "sway-taskbar":
             self.update_sway_taskbar()
+        elif self.edited == "clock":
+            self.update_clock()
 
         cmd = "nwg-panel"
         try:
@@ -547,6 +552,80 @@ class EditorWrapper(object):
         val = self.ckb_all_outputs.get_active()
         if val is not None:
             settings["all-outputs"] = val
+
+        save_json(self.config, self.file)
+        
+    def edit_clock(self, *args):
+        self.edited = "clock"
+        check_key(self.panel, "clock", {})
+        settings = self.panel["clock"]
+        defaults = {
+            "format": "%a, %d. %b  %H:%M:%S",
+            "tooltip-text": "",
+            "on-left-click": "",
+            "on-middle-click": "",
+            "on-right-click": "",
+            "on-scroll-up": "",
+            "on-scroll-down": "",
+            "css-name": "clock",
+            "interval": 1
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_clock.glade"))
+        grid = builder.get_object("grid")
+
+        self.eb_format = builder.get_object("format")
+        self.eb_format.set_text(settings["format"])
+
+        self.eb_tooltip_text = builder.get_object("tooltip-text")
+        self.eb_tooltip_text.set_text(settings["tooltip-text"])
+
+        self.eb_on_left_click = builder.get_object("on-left-click")
+        self.eb_on_left_click.set_text(settings["on-left-click"])
+
+        self.eb_on_middle_click = builder.get_object("on-middle-click")
+        self.eb_on_middle_click.set_text(settings["on-middle-click"])
+
+        self.eb_on_right_click = builder.get_object("on-right-click")
+        self.eb_on_right_click.set_text(settings["on-right-click"])
+
+        self.eb_on_scroll_up = builder.get_object("on-scroll-up")
+        self.eb_on_scroll_up.set_text(settings["on-scroll-up"])
+
+        self.eb_on_scroll_down = builder.get_object("on-scroll-down")
+        self.eb_on_scroll_down.set_text(settings["on-scroll-down"])
+
+        self.eb_css_name_clock = builder.get_object("css-name")
+        self.eb_css_name_clock.set_text(settings["css-name"])
+
+        self.sb_interval = builder.get_object("interval")
+        self.sb_interval.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=1, upper=3600, step_increment=1, page_increment=10, page_size=1)
+        self.sb_interval.configure(adj, 1, 0)
+        self.sb_interval.set_value(settings["interval"])
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(grid)
+
+    def update_clock(self):
+        settings = self.panel["clock"]
+
+        settings["format"] = self.eb_format.get_text()
+        settings["tooltip-text"] = self.eb_tooltip_text.get_text()
+        settings["on-left-click"] = self.eb_on_left_click.get_text()
+        settings["on-middle-click"] = self.eb_on_middle_click.get_text()
+        settings["on-right-click"] = self.eb_on_right_click.get_text()
+
+        settings["on-scroll-up"] = self.eb_on_scroll_up.get_text()
+        settings["on-scroll-down"] = self.eb_on_scroll_down.get_text()
+        settings["css-name"] = self.eb_css_name_clock.get_text()
+
+        val = self.sb_interval.get_value()
+        if val is not None:
+            settings["interval"] = int(val)
 
         save_json(self.config, self.file)
 
