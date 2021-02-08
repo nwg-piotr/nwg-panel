@@ -17,6 +17,10 @@ from shutil import copyfile
 
 import nwg_panel.common
 
+import nwg_panel.app_locale
+_ = nwg_panel.app_locale.lang_init()
+
+
 try:
     import netifaces
 except ModuleNotFoundError:
@@ -337,7 +341,7 @@ def get_battery():
                 state = parts[1]
             if "time_to_empty:" in parts[0]:
                 time = " ".join(parts[1:])
-        msg = "{} {} {}".format(percentage, state, time)
+        msg = "{} {} {}".format(percentage, _(state), time)
     elif cmd.split()[0] == "acpi":
         bat = ""
         try:

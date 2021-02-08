@@ -3,8 +3,10 @@
 from gi.repository import Gtk, Gdk, GdkPixbuf
 
 from nwg_panel.tools import check_key, get_icon, update_image
+import nwg_panel.app_locale
 import nwg_panel.common
 
+_ = nwg_panel.app_locale.lang_init()
 
 class SwayTaskbar(Gtk.Box):
     def __init__(self, settings, i3, position, display_name=""):
@@ -191,7 +193,7 @@ class WindowBox(Gtk.EventBox):
         for i in workspaces:
             ws_num = self.con_ws_num(self.con)
             if i != ws_num:
-                text = "To workspace {}".format(i)
+                text = _("To workspace {}").format(i)
                 item = Gtk.MenuItem(text)
                 item.connect("activate", self.execute, i)
                 menu.append(item)
@@ -199,11 +201,11 @@ class WindowBox(Gtk.EventBox):
         item = Gtk.SeparatorMenuItem()
 
         menu.append(item)
-        item = Gtk.MenuItem("Toggle floating")
+        item = Gtk.MenuItem(_("Toggle floating"))
         item.connect("activate", self.floating_toggle)
         menu.append(item)
 
-        item = Gtk.MenuItem("Kill")
+        item = Gtk.MenuItem(_("Kill"))
         item.connect("activate", self.kill)
         menu.append(item)
 

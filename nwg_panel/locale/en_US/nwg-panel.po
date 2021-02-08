@@ -1,0 +1,36 @@
+# English translations for PACKAGE package.
+# Copyright (C) 2021 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#  <ilya77105@gmail.com>, 2021.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-02-07 20:54+0300\n"
+"PO-Revision-Date: 2021-02-07 21:02+0300\n"
+"Last-Translator:  <ilya77105@gmail.com>\n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: modules/sway_taskbar.py:206
+msgid "Kill"
+msgstr "Kill"
+
+#: modules/sway_taskbar.py:194
+msgid "To workspace {}"
+msgstr "To workspace {}"
+
+#: modules/sway_taskbar.py:202
+msgid "Toggle floating"
+msgstr "Toggle floating"
+
+msgid "discharging"
+msgstr "discharging"
+
+msgid "charging"
+msgstr "charging"

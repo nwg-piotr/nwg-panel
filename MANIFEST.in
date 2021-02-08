@@ -1,4 +1,5 @@
 recursive-include nwg_panel/config *
+recursive-include nwg_panel/locale *
 recursive-include nwg_panel/executors *
 recursive-include nwg_panel/icons_light *
 recursive-include nwg_panel/icons_dark *
