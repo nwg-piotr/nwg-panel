@@ -145,6 +145,9 @@ class EditorWrapper(object):
         btn = builder.get_object("btn-clock")
         btn.connect("clicked", self.edit_clock)
 
+        btn = builder.get_object("btn-playerctl")
+        btn.connect("clicked", self.edit_playerctl)
+
         btn = builder.get_object("btn-sway-taskbar")
         btn.connect("clicked", self.edit_sway_taskbar)
         
@@ -416,6 +419,8 @@ class EditorWrapper(object):
             self.update_sway_taskbar()
         elif self.edited == "clock":
             self.update_clock()
+        elif self.edited == "playerctl":
+            self.update_playerctl()
 
         cmd = "nwg-panel"
         try:
@@ -626,6 +631,72 @@ class EditorWrapper(object):
         val = self.sb_interval.get_value()
         if val is not None:
             settings["interval"] = int(val)
+
+        save_json(self.config, self.file)
+
+    def edit_playerctl(self, *args):
+        self.edited = "playerctl"
+        check_key(self.panel, "playerctl", {})
+        settings = self.panel["playerctl"]
+        defaults = {
+            "buttons-position": "left",
+            "icon-size": 16,
+            "chars": 30,
+            "button-css-name": "",
+            "label-css-name": "",
+            "interval": 1
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_playerctl.glade"))
+        grid = builder.get_object("grid")
+
+        self.cb_buttons_position = builder.get_object("buttons-position")
+        self.cb_buttons_position.set_active_id(settings["buttons-position"])
+        
+        self.sc_icon_size_playerctl = builder.get_object("icon-size")
+        self.sc_icon_size_playerctl.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
+        self.sc_icon_size_playerctl.configure(adj, 1, 0)
+        self.sc_icon_size_playerctl.set_value(settings["icon-size"])
+
+        self.sc_chars = builder.get_object("chars")
+        self.sc_chars.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=1, upper=256, step_increment=1, page_increment=10, page_size=1)
+        self.sc_chars.configure(adj, 1, 0)
+        self.sc_chars.set_value(settings["chars"])
+
+        self.sc_interval_playerctl = builder.get_object("interval")
+        self.sc_interval_playerctl.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=60, step_increment=1, page_increment=10, page_size=1)
+        self.sc_interval_playerctl.configure(adj, 1, 0)
+        self.sc_interval_playerctl.set_value(settings["interval"])
+        
+        self.eb_button_css_name = builder.get_object("button-css-name")
+        self.eb_button_css_name.set_text(settings["button-css-name"])
+
+        self.eb_label_css_name = builder.get_object("label-css-name")
+        self.eb_label_css_name.set_text(settings["label-css-name"])
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(grid)
+
+    def update_playerctl(self):
+        settings = self.panel["playerctl"]
+
+        val = self.cb_buttons_position.get_active_id()
+        if val:
+            settings["buttons-position"] = val
+
+        settings["icon-size"] = int(self.sc_icon_size_playerctl.get_value())
+        settings["chars"] = int(self.sc_chars.get_value())
+
+        settings["button-css-name"] = self.eb_button_css_name.get_text()
+        settings["label-css-name"] = self.eb_label_css_name.get_text()
+
+        settings["interval"] = int(self.sc_interval_playerctl.get_value())
 
         save_json(self.config, self.file)
 
