@@ -29,7 +29,6 @@ class Executor(Gtk.EventBox):
         check_key(settings, "interval", 0)
         check_key(settings, "css-name", "")
         check_key(settings, "icon-size", 16)
-        check_key(settings, "show-icon", True)
         check_key(settings, "tooltip-text", "")
         check_key(settings, "on-left-click", "")
         check_key(settings, "on-right-click", "")

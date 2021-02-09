@@ -120,6 +120,26 @@ class PanelSelector(Gtk.Window):
         editor.edit_panel()
 
 
+def validate_workspaces(gtk_entry):
+    valid_text = ""
+    for char in gtk_entry.get_text():
+        if char.isdigit() or char == " ":
+            valid_text += char
+    while '  ' in valid_text:
+        valid_text = valid_text.replace('  ', ' ')
+    gtk_entry.set_text(valid_text)
+    
+
+def validate_name(gtk_entry):
+    valid_text = ""
+    for char in gtk_entry.get_text():
+        if char.isalnum() or char in ["-", "_"]:
+            if char == "-":
+                char = "_"
+            valid_text += char.lower()
+    gtk_entry.set_text(valid_text)
+
+
 class EditorWrapper(object):
     def __init__(self, parent, file, panel_idx):
         self.file = file
@@ -153,15 +173,18 @@ class EditorWrapper(object):
 
         btn = builder.get_object("btn-sway-workspaces")
         btn.connect("clicked", self.edit_sway_workspaces)
+
+        btn = builder.get_object("btn-executors")
+        btn.connect("clicked", self.select_executor)
         
         btn = builder.get_object("btn-cancel")
         btn.connect("clicked", self.quit)
 
         btn = builder.get_object("btn-apply")
-        btn.connect("clicked", self.restart_panel)
+        btn.connect("clicked", self.apply_changes)
 
         btn = builder.get_object("btn-apply-restart")
-        btn.connect("clicked", self.restart_panel, True)
+        btn.connect("clicked", self.restart_panel)
 
         self.eb_name = None
         self.cb_output = None
@@ -231,6 +254,7 @@ class EditorWrapper(object):
 
         self.eb_name = builder.get_object("name")
         self.eb_name.set_text(self.panel["name"])
+        self.eb_name.connect("changed", validate_name)
 
         self.cb_output = builder.get_object("output")
         for key in outputs:
@@ -415,7 +439,7 @@ class EditorWrapper(object):
     def show_parent(self, w, parent):
         parent.show()
 
-    def restart_panel(self, w, restart=False):
+    def apply_changes(self, w):
         if self.edited == "panel":
             self.update_panel()
         elif self.edited == "sway-taskbar":
@@ -426,17 +450,19 @@ class EditorWrapper(object):
             self.update_playerctl()
         elif self.edited == "sway-workspaces":
             self.update_sway_workspaces()
-
+        elif self.edited == "executor":
+            self.update_executor()
+        
+    def restart_panel(self, w):
         cmd = "nwg-panel"
         try:
             args_string = load_string(os.path.join(local_dir(), "args"))
             cmd = "nwg-panel {}".format(args_string)
         except:
             pass
-        if restart:
-            print("Restarting panels".format(cmd))
-            subprocess.Popen('exec {}'.format(cmd), shell=True)
-        self.window.close()
+
+        print("Restarting panels".format(cmd))
+        subprocess.Popen('exec {}'.format(cmd), shell=True)
 
     def edit_sway_taskbar(self, *args):
         self.edited = "sway-taskbar"
@@ -466,7 +492,7 @@ class EditorWrapper(object):
         for item in workspaces:
             text += str(item) + " "
         self.eb_workspace_menu.set_text(text.strip())
-        self.eb_workspace_menu.connect("changed", self.validate_workspaces)
+        self.eb_workspace_menu.connect("changed", validate_workspaces)
 
         self.sb_name_max_len = builder.get_object("name-max-len")
         self.sb_name_max_len.set_numeric(True)
@@ -510,16 +536,7 @@ class EditorWrapper(object):
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(grid)
-        
-    def validate_workspaces(self, gtk_entry):
-        valid_text = ""
-        for char in gtk_entry.get_text():
-            if char.isdigit() or char == " ":
-                valid_text += char
-        while '  ' in valid_text:
-            valid_text = valid_text.replace('  ', ' ')
-        gtk_entry.set_text(valid_text)
-        
+
     def update_sway_taskbar(self):
         settings = self.panel["sway-taskbar"]
 
@@ -724,7 +741,7 @@ class EditorWrapper(object):
         for item in workspaces:
             text += str(item) + " "
         self.eb_workspaces_menu.set_text(text.strip())
-        self.eb_workspaces_menu.connect("changed", self.validate_workspaces)
+        self.eb_workspaces_menu.connect("changed", validate_workspaces)
 
         for item in self.scrolled_window.get_children():
             item.destroy()
@@ -738,6 +755,123 @@ class EditorWrapper(object):
             settings["numbers"] = val.split()
 
         save_json(self.config, self.file)
+        
+    def select_executor(self, btn):
+        self.edited = "executors"
+        menu = Gtk.Menu()
+        executors = []  # Why the list? We need the number of executors.
+        for key in self.panel:
+            if key.startswith("executor-"):
+                executors.append(key)
+        for name in executors:
+            item = Gtk.MenuItem.new_with_label(name[9:])
+            item.connect("activate", self.edit_executor, name)
+            menu.append(item)
+            
+        item = Gtk.SeparatorMenuItem()
+        menu.append(item)
+        item = Gtk.MenuItem.new_with_label("Add new")
+        menu.append(item)
+        item.connect("activate", self.edit_executor, "executor-unnamed_{}".format(len(executors) + 1), True)
+        menu.show_all()
+        menu.popup_at_widget(btn, Gdk.Gravity.CENTER, Gdk.Gravity.CENTER, None)
+
+    def edit_executor(self, item, name, new=False):
+        self.edited = "executor"
+        check_key(self.panel, "clock", {})
+        settings = self.panel[name] if not new else {}
+        defaults = {
+            "script": "",
+            "tooltip-text": "",
+            "on-left-click": "",
+            "on-middle-click": "",
+            "on-right-click": "",
+            "on-scroll-up": "",
+            "on-scroll-down": "",
+            "css-name": "",
+            "icon-size": 16,
+            "interval": 1
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_executor.glade"))
+        grid = builder.get_object("grid")
+
+        self.executor_name = builder.get_object("name")
+        self.executor_name.set_text(name[9:])
+        self.executor_name.connect("changed", validate_name)
+
+        self.executor_script = builder.get_object("script")
+        self.executor_script.set_text(settings["script"])
+
+        self.executor_tooltip_text = builder.get_object("tooltip-text")
+        self.executor_tooltip_text.set_text(settings["tooltip-text"])
+
+        self.executor_on_left_click = builder.get_object("on-left-click")
+        self.executor_on_left_click.set_text(settings["on-left-click"])
+
+        self.executor_on_middle_click = builder.get_object("on-middle-click")
+        self.executor_on_middle_click.set_text(settings["on-middle-click"])
+
+        self.executor_on_right_click = builder.get_object("on-right-click")
+        self.executor_on_right_click.set_text(settings["on-right-click"])
+
+        self.executor_on_scroll_up = builder.get_object("on-scroll-up")
+        self.executor_on_scroll_up.set_text(settings["on-scroll-up"])
+
+        self.executor_on_scroll_down = builder.get_object("on-scroll-down")
+        self.executor_on_scroll_down.set_text(settings["on-scroll-down"])
+
+        self.executor_css_name = builder.get_object("css-name")
+        self.executor_css_name.set_text(settings["css-name"])
+
+        self.executor_icon_size = builder.get_object("icon-size")
+        self.executor_icon_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
+        self.executor_icon_size.configure(adj, 1, 0)
+        self.executor_icon_size.set_value(settings["icon-size"])
+        
+        self.executor_interval = builder.get_object("interval")
+        self.executor_interval.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=1, upper=3600, step_increment=1, page_increment=10, page_size=1)
+        self.executor_interval.configure(adj, 1, 0)
+        self.executor_interval.set_value(settings["interval"])
+
+        self.executor_remove = builder.get_object("remove")
+        self.executor_remove.set_sensitive(name in self.panel)
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(grid)
+        
+    def update_executor(self):
+        config_key = "executor-{}".format(self.executor_name.get_text())
+        settings = self.panel[config_key] if config_key in self.panel else {}
+
+        if not self.executor_remove.get_active():
+            settings["script"] = self.executor_script.get_text()
+            settings["tooltip-text"] = self.executor_tooltip_text.get_text()
+            settings["on-left-click"] = self.executor_on_left_click.get_text()
+            settings["on-middle-click"] = self.executor_on_middle_click.get_text()
+            settings["on-right-click"] = self.executor_on_right_click.get_text()
+            settings["on-scroll-up"] = self.executor_on_scroll_up.get_text()
+            settings["on-scroll-down"] = self.executor_on_scroll_down.get_text()
+            settings["css-name"] = self.executor_css_name.get_text()
+            settings["icon-size"] = int(self.executor_icon_size.get_value())
+            settings["interval"] = int(self.executor_interval.get_value())
+    
+            print("Adding '{}'".format(config_key))
+            self.panel[config_key] = settings
+        else:
+            try:
+                self.panel.pop(config_key)
+                print("Removed '{}'".format(config_key))
+            except Exception as e:
+                print(e)
+
+        save_json(self.config, self.file)
+        self.edit_panel()
 
 
 def main():
