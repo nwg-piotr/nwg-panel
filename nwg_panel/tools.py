@@ -425,8 +425,10 @@ def update_image(image, icon_name, icon_size, icons_path=""):
             except:
                 pass
     else:
-        print("icons_path=", icons_path)
-        image.set_from_icon_name(icon_name, Gtk.IconSize.MENU)
+        pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+        if image:
+            image.set_from_pixbuf(pixbuf)
+        #image.set_from_icon_name(icon_name, Gtk.IconSize.MENU)
 
 
 def bt_on():
