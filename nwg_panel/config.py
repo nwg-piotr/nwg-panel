@@ -11,8 +11,6 @@ from gi.repository import Gtk, Gdk, GLib
 from nwg_panel.tools import get_config_dir, load_json, save_json, load_string, list_outputs, check_key, list_configs, \
     local_dir, create_pixbuf
 
-import nwg_panel.common
-
 dir_name = os.path.dirname(__file__)
 
 sway = os.getenv('SWAYSOCK') is not None
@@ -144,9 +142,9 @@ def validate_name(gtk_entry):
 def update_icon(gtk_entry, icons):
     icons_path = ""
     if icons == "light":
-        icons_path = os.path.join(nwg_panel.common.config_dir, "icons_light")
+        icons_path = os.path.join(get_config_dir(), "icons_light")
     elif icons == "dark":
-        icons_path = os.path.join(nwg_panel.common.config_dir, "icons_dark")
+        icons_path = os.path.join(get_config_dir(), "icons_dark")
     name = gtk_entry.get_text()
     gtk_entry.set_icon_from_pixbuf(Gtk.EntryIconPosition.PRIMARY, create_pixbuf(name, 16, icons_path=icons_path))
 
