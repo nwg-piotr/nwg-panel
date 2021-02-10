@@ -895,19 +895,19 @@ class EditorWrapper(object):
                 buttons.append(key)
         for name in buttons:
             item = Gtk.MenuItem.new_with_label(name[7:])
-            item.connect("activate", self.edit_button, name, self.panel["icons"])
+            item.connect("activate", self.edit_button, name)
             menu.append(item)
 
         item = Gtk.SeparatorMenuItem()
         menu.append(item)
         item = Gtk.MenuItem.new_with_label("Add new")
         menu.append(item)
-        item.connect("activate", self.edit_button, "button-unnamed_{}".format(len(buttons) + 1), self.panel["icons"],
+        item.connect("activate", self.edit_button, "button-unnamed_{}".format(len(buttons) + 1),
                      True)
         menu.show_all()
         menu.popup_at_widget(btn, Gdk.Gravity.CENTER, Gdk.Gravity.CENTER, None)
 
-    def edit_button(self, item, name, icons, new=False):
+    def edit_button(self, item, name, new=False):
         self.edited = "button"
         settings = self.panel[name] if not new else {}
         defaults = {
