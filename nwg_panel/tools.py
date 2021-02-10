@@ -409,29 +409,51 @@ def player_metadata():
 
 
 def update_image(image, icon_name, icon_size, icons_path=""):
-    icon_theme = Gtk.IconTheme.get_default()
-    if icons_path:
-        path = "{}/{}.svg".format(icons_path, icon_name)
+    # In case a full path was given
+    if icon_name.startswith("/"):
         try:
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                path, icon_size, icon_size)
-            if image:
-                image.set_from_pixbuf(pixbuf)
+                icon_name, icon_size, icon_size)
+            image.set_from_pixbuf(pixbuf)
         except:
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), icon_size, icon_size)
+            image.set_from_pixbuf(pixbuf)
+    else:
+
+        icon_theme = Gtk.IconTheme.get_default()
+        if icons_path:
+            path = "{}/{}.svg".format(icons_path, icon_name)
             try:
-                pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                    path, icon_size, icon_size)
                 if image:
                     image.set_from_pixbuf(pixbuf)
             except:
-                pass
-    else:
-        pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
-        if image:
-            image.set_from_pixbuf(pixbuf)
-        #image.set_from_icon_name(icon_name, Gtk.IconSize.MENU)
+                try:
+                    pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+                    if image:
+                        image.set_from_pixbuf(pixbuf)
+                except:
+                    pass
+        else:
+            pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+            if image:
+                image.set_from_pixbuf(pixbuf)
         
 
 def create_pixbuf(icon_name, icon_size, icons_path=""):
+    # In case a full path was given
+    if icon_name.startswith("/"):
+        try:
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                icon_name, icon_size, icon_size)
+            return pixbuf
+        except:
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), icon_size, icon_size)
+            return pixbuf
+
     icon_theme = Gtk.IconTheme.get_default()
     if icons_path:
         path = "{}/{}.svg".format(icons_path, icon_name)
