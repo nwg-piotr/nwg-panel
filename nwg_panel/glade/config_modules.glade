@@ -31,8 +31,8 @@
       </packing>
     </child>
     <child>
-      <object class="GtkButton">
-        <property name="label" translatable="yes">Add</property>
+      <object class="GtkButton" id="btn-append">
+        <property name="label" translatable="yes">Append</property>
         <property name="visible">True</property>
         <property name="can-focus">True</property>
         <property name="receives-default">True</property>

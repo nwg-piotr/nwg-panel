@@ -9,7 +9,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, load_json, save_json, load_string, list_outputs, check_key, list_configs, \
-    local_dir, create_pixbuf
+    local_dir, create_pixbuf, update_image
 
 dir_name = os.path.dirname(__file__)
 
@@ -476,6 +476,8 @@ class EditorWrapper(object):
             self.update_executor()
         elif self.edited == "button":
             self.update_button()
+        elif self.edited == "modules":
+            save_json(self.config, self.file)
 
     def restart_panel(self, w):
         cmd = "nwg-panel"
@@ -1042,33 +1044,50 @@ class EditorWrapper(object):
 
     def edit_modules(self, item, which):
         self.edited = "modules"
+        self.modules = None
         if which == "left":
             check_key(self.panel, "modules-left", [])
-            modules = self.panel["modules-left"]
+            self.modules = self.panel["modules-left"]
         elif which == "center":
             check_key(self.panel, "modules-center", [])
-            modules = self.panel["modules-center"]
+            self.modules = self.panel["modules-center"]
         elif which == "right":
             check_key(self.panel, "modules-right", [])
-            modules = self.panel["modules-right"]
-        else:
-            modules = None
+            self.modules = self.panel["modules-right"]
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_modules.glade"))
-        grid = builder.get_object("grid")
+        self.modules_grid = builder.get_object("grid")
 
-        self.modules_menu = builder.get_object("menu")
+        self.modules_combo = builder.get_object("menu")
+        
+        btn = builder.get_object("btn-append")
+        btn.connect("clicked", self.append)
 
         for key in self.panel:
             if key in self.known_modules or key.startswith("executor-") or key.startswith("button-"):
-                self.modules_menu.append(key, key.capitalize())
+                self.modules_combo.append(key, key)
 
-        self.modules_menu.set_active(0)
-        self.modules_menu.show_all()
+        self.modules_combo.set_active(0)
+        self.modules_combo.show_all()
 
-        self.modules_listbox = Gtk.ListBox()
-        self.modules_listbox.set_selection_mode(Gtk.SelectionMode.NONE)
-        for module in modules:
+        self.refresh_listbox()
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(self.modules_grid)
+        
+    def refresh_listbox(self):
+        if self.modules_grid.get_child_at(1, 1) is not None:
+            self.modules_grid.get_child_at(1, 1).destroy()
+        
+        self.modules_listbox = self.build_listbox()
+        self.modules_grid.attach(self.modules_listbox, 1, 1, 2, 1)
+    
+    def build_listbox(self):
+        listbox = Gtk.ListBox()
+        listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+        for i in range(len(self.modules)):
+            module = self.modules[i]
             if module in self.panel:
                 row = Gtk.ListBoxRow()
                 vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -1078,16 +1097,49 @@ class EditorWrapper(object):
 
                 label = Gtk.Label()
                 label.set_text(module)
-                hbox.pack_start(label, False, False, 0)
+                label.set_halign(Gtk.Align.START)
+                hbox.pack_start(label, True, True, 0)
 
-                self.modules_listbox.add(row)
-            
-        grid.attach(self.modules_listbox, 1, 1, 2, 1)
-        self.modules_listbox.show_all()
-            
-        for item in self.scrolled_window.get_children():
-            item.destroy()
-        self.scrolled_window.add(grid)
+                btn = Gtk.Button.new_from_icon_name("gtk-go-up", Gtk.IconSize.MENU)
+                btn.set_always_show_image(True)
+                btn.set_sensitive(i > 0)
+                btn.connect("clicked", self.move_up, module)
+                hbox.pack_start(btn, False, False, 0)
+
+                btn = Gtk.Button.new_from_icon_name("gtk-go-down", Gtk.IconSize.MENU)
+                btn.set_always_show_image(True)
+                btn.set_sensitive(i < len(self.modules) - 1)
+                btn.connect("clicked", self.move_down, module)
+                hbox.pack_start(btn, False, False, 0)
+
+                btn = Gtk.Button.new_from_icon_name("gtk-delete", Gtk.IconSize.MENU)
+                btn.set_always_show_image(True)
+                btn.connect("clicked", self.delete, module)
+                hbox.pack_start(btn, False, False, 0)
+
+                listbox.add(row)
+        listbox.show_all()
+        
+        return listbox
+    
+    def move_up(self, btn, module):
+        old_index = self.modules.index(module)
+        self.modules.insert(old_index - 1, self.modules.pop(old_index))
+        self.refresh_listbox()
+        
+    def move_down(self, btn, module):
+        old_index = self.modules.index(module)
+        self.modules.insert(old_index + 1, self.modules.pop(old_index))
+        self.refresh_listbox()
+        
+    def delete(self, btn, module):
+        self.modules.remove(module)
+        self.refresh_listbox()
+        
+    def append(self, btn):
+        if self.modules_combo.get_active_id():
+            self.modules.append(self.modules_combo.get_active_id())
+            self.refresh_listbox()
 
 
 def main():
