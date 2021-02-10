@@ -440,8 +440,7 @@ class EditorWrapper(object):
             self.panel["icons"] = ""
 
         val = self.eb_css_name.get_text()
-        if val:
-            self.panel["css-name"] = val
+        self.panel["css-name"] = val
 
         save_json(self.config, self.file)
 

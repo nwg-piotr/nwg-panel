@@ -64,7 +64,8 @@ class Controls(Gtk.EventBox):
         self.bat_image = Gtk.Image.new_from_icon_name(self.bat_icon_name, Gtk.IconSize.MENU)
         self.bat_label = Gtk.Label() if settings["show-values"] else None
 
-        self.pan_image = Gtk.Image.new_from_icon_name("pan-down", Gtk.IconSize.MENU)
+        self.pan_image = Gtk.Image()
+        update_image(self.pan_image, "pan-down-symbolic", self.icon_size, self.icons_path)
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)

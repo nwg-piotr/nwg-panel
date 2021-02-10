@@ -124,7 +124,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             if item in panel:
                 settings = panel[item]
                 check_key(settings, "padding", 0)
-                executor = Executor(panel[item])
+                executor = Executor(panel[item], icons_path)
                 container.pack_start(executor, False, False, settings["padding"])
             else:
                 print("'{}' not defined in this panel instance".format(item))

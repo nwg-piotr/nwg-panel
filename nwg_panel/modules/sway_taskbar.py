@@ -146,19 +146,19 @@ class WindowBox(Gtk.EventBox):
         if settings["show-layout"] and con.parent.layout:
             if con.parent.layout == "splith":
                 image = Gtk.Image()
-                update_image(image, "go-next", 16, icons_path)
+                update_image(image, "go-next-symbolic", 16, icons_path)
             elif con.parent.layout == "splitv":
                 image = Gtk.Image()
-                update_image(image, "go-down", 16, icons_path)
+                update_image(image, "go-down-symbolic", 16, icons_path)
             elif con.parent.layout == "tabbed":
                 image = Gtk.Image()
-                update_image(image, "view-dual", 16, icons_path)
+                update_image(image, "view-dual-symbolic", 16, icons_path)
             elif con.parent.layout == "stacked":
                 image = Gtk.Image()
-                update_image(image, "view-paged", 16, icons_path)
+                update_image(image, "view-paged-symbolic", 16, icons_path)
             else:
                 image = Gtk.Image()
-                update_image(image, "window-new", 16, icons_path)
+                update_image(image, "window-new-symbolic", 16, icons_path)
 
             self.box.pack_start(image, False, False, 4)
 
