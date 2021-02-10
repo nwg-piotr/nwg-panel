@@ -429,6 +429,32 @@ def update_image(image, icon_name, icon_size, icons_path=""):
         if image:
             image.set_from_pixbuf(pixbuf)
         #image.set_from_icon_name(icon_name, Gtk.IconSize.MENU)
+        
+
+def create_pixbuf(icon_name, icon_size, icons_path=""):
+    icon_theme = Gtk.IconTheme.get_default()
+    if icons_path:
+        path = "{}/{}.svg".format(icons_path, icon_name)
+        try:
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                path, icon_size, icon_size)
+            return pixbuf
+        except:
+            try:
+                pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+                return pixbuf
+            except:
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                    os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), icon_size, icon_size)
+                return pixbuf
+    else:
+        try:
+            pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+            return pixbuf
+        except:
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), icon_size, icon_size)
+            return pixbuf
 
 
 def bt_on():

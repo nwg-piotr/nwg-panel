@@ -8,7 +8,10 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
-from nwg_panel.tools import get_config_dir, load_json, save_json, load_string, list_outputs, check_key, list_configs, local_dir
+from nwg_panel.tools import get_config_dir, load_json, save_json, load_string, list_outputs, check_key, list_configs, \
+    local_dir, create_pixbuf
+
+import common
 
 dir_name = os.path.dirname(__file__)
 
@@ -39,16 +42,16 @@ class PanelSelector(Gtk.Window):
         grid = self.build_grid()
         self.hbox.pack_start(grid, True, True, 20)
         self.show_all()
-        
+
         self.connect("show", self.refresh)
-    
+
     def refresh(self, w):
         for item in self.hbox.get_children():
             item.destroy()
         grid = self.build_grid()
         self.hbox.pack_start(grid, True, True, 20)
         self.show_all()
-    
+
     def build_grid(self, *args):
         global configs
         configs = list_configs(config_dir)
@@ -110,7 +113,7 @@ class PanelSelector(Gtk.Window):
 
                 row += 1
                 panel_idx += 1
-        
+
         return grid
 
     def on_button_clicked(self, button, file, panel_idx):
@@ -128,16 +131,24 @@ def validate_workspaces(gtk_entry):
     while '  ' in valid_text:
         valid_text = valid_text.replace('  ', ' ')
     gtk_entry.set_text(valid_text)
-    
+
 
 def validate_name(gtk_entry):
     valid_text = ""
     for char in gtk_entry.get_text():
         if char.isalnum() or char in ["-", "_"]:
-            if char == "-":
-                char = "_"
             valid_text += char.lower()
     gtk_entry.set_text(valid_text)
+
+
+def update_icon(gtk_entry, icons):
+    icons_path = ""
+    if icons == "light":
+        icons_path = os.path.join(common.config_dir, "icons_light")
+    elif icons == "dark":
+        icons_path = os.path.join(common.config_dir, "icons_dark")
+    name = gtk_entry.get_text()
+    gtk_entry.set_icon_from_pixbuf(Gtk.EntryIconPosition.PRIMARY, create_pixbuf(name, 16, icons_path=icons_path))
 
 
 class EditorWrapper(object):
@@ -176,7 +187,10 @@ class EditorWrapper(object):
 
         btn = builder.get_object("btn-executors")
         btn.connect("clicked", self.select_executor)
-        
+
+        btn = builder.get_object("btn-buttons")
+        btn.connect("clicked", self.select_button)
+
         btn = builder.get_object("btn-cancel")
         btn.connect("clicked", self.quit)
 
@@ -206,13 +220,13 @@ class EditorWrapper(object):
 
         self.set_panel()
         self.edit_panel()
-    
+
         self.window.show_all()
-        
+
     def quit(self, btn):
         selector_window.show_all()
         self.window.close()
-    
+
     def set_panel(self):
         if self.file:
             self.config = load_json(self.file)
@@ -246,7 +260,7 @@ class EditorWrapper(object):
                 "battery"
             ]
         })
-    
+
     def edit_panel(self, *args):
         self.edited = "panel"
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_panel.glade"))
@@ -261,7 +275,7 @@ class EditorWrapper(object):
             self.cb_output.append(key, key)
         if self.panel["output"] and self.panel["output"] in outputs:
             self.cb_output.set_active_id(self.panel["output"])
-            
+
         screen_width, screen_height = None, None
         if self.cb_output.get_active_id() and self.cb_output.get_active_id() in outputs:
             screen_width = outputs[self.cb_output.get_active_id()]["width"]
@@ -289,7 +303,7 @@ class EditorWrapper(object):
         upper = float(screen_width + 1) if screen_width is not None else 8193
         adj = Gtk.Adjustment(value=0, lower=0, upper=upper, step_increment=1, page_increment=10, page_size=1)
         self.sb_width.configure(adj, 1, 0)
-        
+
         self.ckb_width_auto = builder.get_object("width-auto")
         if isinstance(self.panel["width"], int):
             self.sb_width.set_value(float(self.panel["width"]))
@@ -355,7 +369,7 @@ class EditorWrapper(object):
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(grid)
-        
+
     def on_auto_toggle(self, checkbutton, sb_width, cb_output):
         if not checkbutton.get_active():
             o_name = cb_output.get_active_id()
@@ -452,7 +466,9 @@ class EditorWrapper(object):
             self.update_sway_workspaces()
         elif self.edited == "executor":
             self.update_executor()
-        
+        elif self.edited == "button":
+            self.update_button()
+
     def restart_panel(self, w):
         cmd = "nwg-panel"
         try:
@@ -559,7 +575,7 @@ class EditorWrapper(object):
         val = self.sb_task_padding.get_value()
         if val is not None:
             settings["task-padding"] = int(val)
-            
+
         val = self.ckb_show_app_icon.get_active()
         if val is not None:
             settings["show-app-icon"] = val
@@ -581,7 +597,7 @@ class EditorWrapper(object):
             settings["all-outputs"] = val
 
         save_json(self.config, self.file)
-        
+
     def edit_clock(self, *args):
         self.edited = "clock"
         check_key(self.panel, "clock", {})
@@ -676,7 +692,7 @@ class EditorWrapper(object):
 
         self.cb_buttons_position = builder.get_object("buttons-position")
         self.cb_buttons_position.set_active_id(settings["buttons-position"])
-        
+
         self.sc_icon_size_playerctl = builder.get_object("icon-size")
         self.sc_icon_size_playerctl.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
@@ -694,7 +710,7 @@ class EditorWrapper(object):
         adj = Gtk.Adjustment(value=0, lower=0, upper=60, step_increment=1, page_increment=10, page_size=1)
         self.sc_interval_playerctl.configure(adj, 1, 0)
         self.sc_interval_playerctl.set_value(settings["interval"])
-        
+
         self.eb_button_css_name = builder.get_object("button-css-name")
         self.eb_button_css_name.set_text(settings["button-css-name"])
 
@@ -721,7 +737,7 @@ class EditorWrapper(object):
         settings["interval"] = int(self.sc_interval_playerctl.get_value())
 
         save_json(self.config, self.file)
-        
+
     def edit_sway_workspaces(self, *args):
         self.edited = "sway-workspaces"
         check_key(self.panel, "sway-workspaces", {})
@@ -755,7 +771,7 @@ class EditorWrapper(object):
             settings["numbers"] = val.split()
 
         save_json(self.config, self.file)
-        
+
     def select_executor(self, btn):
         self.edited = "executors"
         menu = Gtk.Menu()
@@ -767,7 +783,7 @@ class EditorWrapper(object):
             item = Gtk.MenuItem.new_with_label(name[9:])
             item.connect("activate", self.edit_executor, name)
             menu.append(item)
-            
+
         item = Gtk.SeparatorMenuItem()
         menu.append(item)
         item = Gtk.MenuItem.new_with_label("Add new")
@@ -778,7 +794,6 @@ class EditorWrapper(object):
 
     def edit_executor(self, item, name, new=False):
         self.edited = "executor"
-        check_key(self.panel, "clock", {})
         settings = self.panel[name] if not new else {}
         defaults = {
             "script": "",
@@ -831,7 +846,7 @@ class EditorWrapper(object):
         adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
         self.executor_icon_size.configure(adj, 1, 0)
         self.executor_icon_size.set_value(settings["icon-size"])
-        
+
         self.executor_interval = builder.get_object("interval")
         self.executor_interval.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=1, upper=3600, step_increment=1, page_increment=10, page_size=1)
@@ -844,7 +859,7 @@ class EditorWrapper(object):
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(grid)
-        
+
     def update_executor(self):
         config_key = "executor-{}".format(self.executor_name.get_text())
         settings = self.panel[config_key] if config_key in self.panel else {}
@@ -860,8 +875,7 @@ class EditorWrapper(object):
             settings["css-name"] = self.executor_css_name.get_text()
             settings["icon-size"] = int(self.executor_icon_size.get_value())
             settings["interval"] = int(self.executor_interval.get_value())
-    
-            print("Adding '{}'".format(config_key))
+
             self.panel[config_key] = settings
         else:
             try:
@@ -871,7 +885,100 @@ class EditorWrapper(object):
                 print(e)
 
         save_json(self.config, self.file)
-        self.edit_panel()
+
+    def select_button(self, btn):
+        self.edited = "buttons"
+        menu = Gtk.Menu()
+        buttons = []
+        for key in self.panel:
+            if key.startswith("button-"):
+                buttons.append(key)
+        for name in buttons:
+            item = Gtk.MenuItem.new_with_label(name[7:])
+            item.connect("activate", self.edit_button, name, self.panel["icons"])
+            menu.append(item)
+
+        item = Gtk.SeparatorMenuItem()
+        menu.append(item)
+        item = Gtk.MenuItem.new_with_label("Add new")
+        menu.append(item)
+        item.connect("activate", self.edit_button, "button-unnamed_{}".format(len(buttons) + 1), self.panel["icons"],
+                     True)
+        menu.show_all()
+        menu.popup_at_widget(btn, Gdk.Gravity.CENTER, Gdk.Gravity.CENTER, None)
+
+    def edit_button(self, item, name, icons, new=False):
+        self.edited = "button"
+        settings = self.panel[name] if not new else {}
+        defaults = {
+            "command": "",
+            "icon": "",
+            "label": "",
+            "label-position": "right",
+            "css-name": "",
+            "icon-size": 16
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_button.glade"))
+        grid = builder.get_object("grid")
+
+        self.button_name = builder.get_object("name")
+        self.button_name.set_text(name[7:])
+        self.button_name.connect("changed", validate_name)
+
+        self.button_command = builder.get_object("command")
+        self.button_command.set_text(settings["command"])
+
+        self.button_icon = builder.get_object("icon")
+        self.button_icon.set_text(settings["icon"])
+        update_icon(self.button_icon, self.panel["icons"])
+        self.button_icon.connect("changed", update_icon, self.panel["icons"])
+
+        self.button_label = builder.get_object("label")
+        self.button_label.set_text(settings["label"])
+
+        self.button_label_position = builder.get_object("label-position")
+        self.button_label_position.set_active_id(settings["label-position"])
+
+        self.button_css_name = builder.get_object("css-name")
+        self.button_css_name.set_text(settings["css-name"])
+
+        self.button_icon_size = builder.get_object("icon-size")
+        self.button_icon_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
+        self.button_icon_size.configure(adj, 1, 0)
+        self.button_icon_size.set_value(settings["icon-size"])
+
+        self.button_remove = builder.get_object("remove")
+        self.button_remove.set_sensitive(name in self.panel)
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(grid)
+        
+    def update_button(self):
+        config_key = "button-{}".format(self.button_name.get_text())
+        settings = self.panel[config_key] if config_key in self.panel else {}
+
+        if not self.button_remove.get_active():
+            settings["command"] = self.button_command.get_text()
+            settings["icon"] = self.button_icon.get_text()
+            settings["label"] = self.button_label.get_text()
+            settings["label-position"] = self.button_label_position.get_active_id()
+            settings["css-name"] = self.button_css_name.get_text()
+            settings["icon-size"] = int(self.button_icon_size.get_value())
+
+            self.panel[config_key] = settings
+        else:
+            try:
+                self.panel.pop(config_key)
+                print("Removed '{}'".format(config_key))
+            except Exception as e:
+                print(e)
+
+        save_json(self.config, self.file)
 
 
 def main():
