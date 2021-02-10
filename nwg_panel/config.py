@@ -1063,8 +1063,13 @@ class EditorWrapper(object):
         btn = builder.get_object("btn-append")
         btn.connect("clicked", self.append)
 
+        # Built-in stuff first
         for key in self.panel:
-            if key in self.known_modules or key.startswith("executor-") or key.startswith("button-"):
+            if key in self.known_modules:
+                self.modules_combo.append(key, key.capitalize())
+
+        for key in self.panel:
+            if key.startswith("executor-") or key.startswith("button-"):
                 self.modules_combo.append(key, key)
 
         self.modules_combo.set_active(0)
