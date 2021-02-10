@@ -443,7 +443,8 @@ def create_pixbuf(icon_name, icon_size, icons_path=""):
             try:
                 pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
                 return pixbuf
-            except:
+            except Exception as e:
+                print(e)
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
                     os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), icon_size, icon_size)
                 return pixbuf
@@ -451,7 +452,8 @@ def create_pixbuf(icon_name, icon_size, icons_path=""):
         try:
             pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
             return pixbuf
-        except:
+        except Exception as e:
+            print(e)
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
                 os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), icon_size, icon_size)
             return pixbuf
