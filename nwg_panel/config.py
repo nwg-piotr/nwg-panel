@@ -165,11 +165,22 @@ class EditorWrapper(object):
         self.window.connect('destroy', self.show_parent, parent)
         self.window.connect("key-release-event", handle_keyboard)
         self.window.connect("show", self.hide_parent, parent)
+        
+        self.known_modules = ["clock", "playerctl", "sway-taskbar", "sway-workspaces"]
 
         self.scrolled_window = builder.get_object("scrolled-window")
 
         btn = builder.get_object("btn-panel")
         btn.connect("clicked", self.edit_panel)
+
+        btn = builder.get_object("btn-modules-left")
+        btn.connect("clicked", self.edit_modules, "left")
+
+        btn = builder.get_object("btn-modules-center")
+        btn.connect("clicked", self.edit_modules, "center")
+
+        btn = builder.get_object("btn-modules-right")
+        btn.connect("clicked", self.edit_modules, "right")
 
         btn = builder.get_object("btn-clock")
         btn.connect("clicked", self.edit_clock)
@@ -875,11 +886,37 @@ class EditorWrapper(object):
 
             self.panel[config_key] = settings
         else:
+            # delete from panel
             try:
                 self.panel.pop(config_key)
-                print("Removed '{}'".format(config_key))
-            except Exception as e:
-                print(e)
+                print("Removed '{}' from panel".format(config_key))
+            except:
+                pass
+
+            # delete from modules left/center/right if exists
+            try:
+                for item in self.panel["modules-left"]:
+                    if item == config_key:
+                        self.panel["modules-left"].remove(item)
+                        print("Removed '{}' from modules-left".format(config_key))
+            except:
+                pass
+
+            try:
+                for item in self.panel["modules-center"]:
+                    if item == config_key:
+                        self.panel["modules-center"].remove(item)
+                        print("Removed '{}' from modules-center".format(config_key))
+            except:
+                pass
+
+            try:
+                for item in self.panel["modules-right"]:
+                    if item == config_key:
+                        self.panel["modules-right"].remove(item)
+                        print("Removed '{}' from modules-right".format(config_key))
+            except:
+                pass
 
         save_json(self.config, self.file)
 
@@ -969,13 +1006,88 @@ class EditorWrapper(object):
 
             self.panel[config_key] = settings
         else:
+            # delete from panel
             try:
                 self.panel.pop(config_key)
-                print("Removed '{}'".format(config_key))
-            except Exception as e:
-                print(e)
+                print("Removed '{}' from panel".format(config_key))
+            except:
+                pass
+
+            # delete from modules left/center/right if exists
+            try:
+                for item in self.panel["modules-left"]:
+                    if item == config_key:
+                        self.panel["modules-left"].remove(item)
+                        print("Removed '{}' from modules-left".format(config_key))
+            except:
+                pass
+
+            try:
+                for item in self.panel["modules-center"]:
+                    if item == config_key:
+                        self.panel["modules-center"].remove(item)
+                        print("Removed '{}' from modules-center".format(config_key))
+            except:
+                pass
+
+            try:
+                for item in self.panel["modules-right"]:
+                    if item == config_key:
+                        self.panel["modules-right"].remove(item)
+                        print("Removed '{}' from modules-right".format(config_key))
+            except:
+                pass
 
         save_json(self.config, self.file)
+
+    def edit_modules(self, item, which):
+        self.edited = "modules"
+        if which == "left":
+            check_key(self.panel, "modules-left", [])
+            modules = self.panel["modules-left"]
+        elif which == "center":
+            check_key(self.panel, "modules-center", [])
+            modules = self.panel["modules-center"]
+        elif which == "right":
+            check_key(self.panel, "modules-right", [])
+            modules = self.panel["modules-right"]
+        else:
+            modules = None
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_modules.glade"))
+        grid = builder.get_object("grid")
+
+        self.modules_menu = builder.get_object("menu")
+
+        for key in self.panel:
+            if key in self.known_modules or key.startswith("executor-") or key.startswith("button-"):
+                self.modules_menu.append(key, key.capitalize())
+
+        self.modules_menu.set_active(0)
+        self.modules_menu.show_all()
+
+        self.modules_listbox = Gtk.ListBox()
+        self.modules_listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+        for module in modules:
+            if module in self.panel:
+                row = Gtk.ListBoxRow()
+                vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+                row.add(vbox)
+                hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+                vbox.pack_start(hbox, False, False, 6)
+
+                label = Gtk.Label()
+                label.set_text(module)
+                hbox.pack_start(label, False, False, 0)
+
+                self.modules_listbox.add(row)
+            
+        grid.attach(self.modules_listbox, 1, 1, 2, 1)
+        self.modules_listbox.show_all()
+            
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(grid)
 
 
 def main():
