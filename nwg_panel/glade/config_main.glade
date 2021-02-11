@@ -74,7 +74,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="btn-contols">
+                  <object class="GtkButton" id="btn-controls">
                     <property name="label" translatable="yes">Controls</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>

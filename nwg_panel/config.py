@@ -182,6 +182,9 @@ class EditorWrapper(object):
         btn = builder.get_object("btn-modules-right")
         btn.connect("clicked", self.edit_modules, "right")
 
+        btn = builder.get_object("btn-controls")
+        btn.connect("clicked", self.edit_controls)
+        
         btn = builder.get_object("btn-clock")
         btn.connect("clicked", self.edit_clock)
 
@@ -1145,6 +1148,153 @@ class EditorWrapper(object):
         if self.modules_combo.get_active_id():
             self.modules.append(self.modules_combo.get_active_id())
             self.refresh_listbox()
+            
+    def edit_controls(self, *args):
+        self.edited = "controls"
+        check_key(self.panel, "controls-settings", {})
+        settings = self.panel["controls-settings"]
+        defaults = {
+            "components": [
+                "net",
+                "brightness",
+                "volume",
+                "bluetooth",
+                "battery"
+            ],
+            "commands": {
+                "battery": "",
+                "net": "",
+                "bluetooth": ""
+            },
+            "show-values": False,
+            "interval": 1,
+            "icon-size": 16,
+            "hover-opens": True,
+            "leave-closes": True,
+            "css-name": "controls-window",
+            "net-interface": "",
+            "custom-items": [
+                {
+                    "name": "Panel settings",
+                    "icon": "nwg-panel",
+                    "cmd": "nwg-panel-config"
+                },
+                {
+                    "name": "Wallpapers",
+                    "icon": "azote",
+                    "cmd": "azote"
+                }
+            ],
+            "menu": {
+                "name": "Exit",
+                "icon": "system-shutdown-symbolic",
+                "items": [
+                    {
+                        "name": "Lock",
+                        "cmd": "swaylock -f -c 000000"
+                    },
+                    {
+                        "name": "Logout",
+                        "cmd": "swaymsg exit"
+                    },
+                    {
+                        "name": "Reboot",
+                        "cmd": "systemctl reboot"
+                    },
+                    {
+                        "name": "Shutdown",
+                        "cmd": "systemctl -i poweroff"
+                    }
+                ]
+            }
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_controls.glade"))
+        grid = builder.get_object("grid")
+
+        self.ctrl_comp_brightness = builder.get_object("ctrl-comp-brightness")
+        self.ctrl_comp_brightness.set_active("brightness" in settings["components"])
+
+        self.ctrl_comp_volume = builder.get_object("ctrl-comp-volume")
+        self.ctrl_comp_volume.set_active("volume" in settings["components"])
+
+        self.ctrl_comp_net = builder.get_object("ctrl-comp-net")
+        self.ctrl_comp_net.set_active("net" in settings["components"])
+
+        self.ctrl_comp_bluetooth = builder.get_object("ctrl-comp-bluetooth")
+        self.ctrl_comp_bluetooth.set_active("bluetooth" in settings["components"])
+
+        self.ctrl_comp_battery = builder.get_object("ctrl-comp-battery")
+        self.ctrl_comp_battery.set_active("battery" in settings["components"])
+
+        self.ctrl_cdm_net = builder.get_object("ctrl-cmd-net")
+        self.ctrl_cdm_net.set_text(settings["commands"]["battery"])
+
+        self.ctrl_net_name = builder.get_object("ctrl-net-name")
+        self.ctrl_net_name.set_text(settings["net-interface"])
+
+        self.ctrl_cdm_bluetooth = builder.get_object("ctrl-cmd-bluetooth")
+        self.ctrl_cdm_bluetooth.set_text(settings["commands"]["bluetooth"])
+
+        self.ctrl_cdm_battery = builder.get_object("ctrl-cmd-battery")
+        self.ctrl_cdm_battery.set_text(settings["commands"]["battery"])
+
+        self.ctrl_css_name = builder.get_object("css-name")
+        self.ctrl_css_name.set_text(settings["css-name"])
+
+        self.ctrl_icon_size = builder.get_object("icon-size")
+        self.ctrl_icon_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
+        self.ctrl_icon_size.configure(adj, 1, 0)
+        self.ctrl_icon_size.set_value(settings["icon-size"])
+
+        self.ctrl_interval = builder.get_object("interval")
+        self.ctrl_interval.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=60, step_increment=1, page_increment=10, page_size=1)
+        self.ctrl_interval.configure(adj, 1, 0)
+        self.ctrl_interval.set_value(settings["interval"])
+
+        self.ctrl_show_values = builder.get_object("show-values")
+        self.ctrl_show_values.set_active(settings["show-values"])
+
+        self.ctrl_hover_opens = builder.get_object("hover-opens")
+        self.ctrl_hover_opens.set_active(settings["hover-opens"])
+
+        self.ctrl_leave_closes = builder.get_object("leave-closes")
+        self.ctrl_leave_closes.set_active(settings["leave-closes"])
+
+        """self.cb_buttons_position = builder.get_object("buttons-position")
+        self.cb_buttons_position.set_active_id(settings["buttons-position"])
+
+        self.sc_icon_size_playerctl = builder.get_object("icon-size")
+        self.sc_icon_size_playerctl.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
+        self.sc_icon_size_playerctl.configure(adj, 1, 0)
+        self.sc_icon_size_playerctl.set_value(settings["icon-size"])
+
+        self.sc_chars = builder.get_object("chars")
+        self.sc_chars.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=1, upper=256, step_increment=1, page_increment=10, page_size=1)
+        self.sc_chars.configure(adj, 1, 0)
+        self.sc_chars.set_value(settings["chars"])
+
+        self.sc_interval_playerctl = builder.get_object("interval")
+        self.sc_interval_playerctl.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=60, step_increment=1, page_increment=10, page_size=1)
+        self.sc_interval_playerctl.configure(adj, 1, 0)
+        self.sc_interval_playerctl.set_value(settings["interval"])
+
+        self.eb_button_css_name = builder.get_object("button-css-name")
+        self.eb_button_css_name.set_text(settings["button-css-name"])
+
+        self.eb_label_css_name = builder.get_object("label-css-name")
+        self.eb_label_css_name.set_text(settings["label-css-name"])"""
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(grid)
 
 
 def main():
