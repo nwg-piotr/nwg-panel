@@ -248,8 +248,8 @@ class EditorWrapper(object):
         defaults = {
             "name": "",
             "output": "",
-            "layer": "",
-            "position": "",
+            "layer": "bottom",
+            "position": "top",
             "controls": False,
             "width": "auto",
             "height": 0,
@@ -263,15 +263,6 @@ class EditorWrapper(object):
         }
         for key in defaults:
             check_key(self.panel, key, defaults[key])
-
-        check_key(self.panel, "controls-settings", {
-            "components": [
-                "net",
-                "brightness",
-                "volume",
-                "battery"
-            ]
-        })
 
     def edit_panel(self, *args):
         self.edited = "panel"
@@ -1158,13 +1149,9 @@ class EditorWrapper(object):
                 "net",
                 "brightness",
                 "volume",
-                "bluetooth",
                 "battery"
             ],
             "commands": {
-                "battery": "",
-                "net": "",
-                "bluetooth": ""
             },
             "show-values": False,
             "interval": 1,
@@ -1230,15 +1217,18 @@ class EditorWrapper(object):
         self.ctrl_comp_battery.set_active("battery" in settings["components"])
 
         self.ctrl_cdm_net = builder.get_object("ctrl-cmd-net")
-        self.ctrl_cdm_net.set_text(settings["commands"]["battery"])
+        check_key(settings["commands"], "net", "")
+        self.ctrl_cdm_net.set_text(settings["commands"]["net"])
 
         self.ctrl_net_name = builder.get_object("ctrl-net-name")
         self.ctrl_net_name.set_text(settings["net-interface"])
 
         self.ctrl_cdm_bluetooth = builder.get_object("ctrl-cmd-bluetooth")
+        check_key(settings["commands"], "bluetooth", "")
         self.ctrl_cdm_bluetooth.set_text(settings["commands"]["bluetooth"])
 
         self.ctrl_cdm_battery = builder.get_object("ctrl-cmd-battery")
+        check_key(settings["commands"], "battery", "")
         self.ctrl_cdm_battery.set_text(settings["commands"]["battery"])
 
         self.ctrl_css_name = builder.get_object("css-name")
@@ -1301,7 +1291,7 @@ def main():
     global configs
     configs = list_configs(config_dir)
 
-    GLib.set_prgname('nwg-panel')
+    GLib.set_prgname('nwg-panel-config')
 
     global selector_window
     selector_window = PanelSelector()
