@@ -1304,17 +1304,46 @@ class EditorWrapper(object):
             if "brightness" in settings["components"]:
                 settings["components"].remove("brightness")
 
-        """self.ctrl_comp_volume = builder.get_object("ctrl-comp-volume")
-        self.ctrl_comp_volume.set_active("volume" in settings["components"])
+        if self.ctrl_comp_volume.get_active():
+            if "volume" not in settings["components"]:
+                settings["components"].append("volume")
+        else:
+            if "volume" in settings["components"]:
+                settings["components"].remove("volume")
 
-        self.ctrl_comp_net = builder.get_object("ctrl-comp-net")
-        self.ctrl_comp_net.set_active("net" in settings["components"])
+        if self.ctrl_comp_net.get_active():
+            if "net" not in settings["components"]:
+                settings["components"].append("net")
+        else:
+            if "net" in settings["components"]:
+                settings["components"].remove("net")
 
-        self.ctrl_comp_bluetooth = builder.get_object("ctrl-comp-bluetooth")
-        self.ctrl_comp_bluetooth.set_active("bluetooth" in settings["components"])
+        if self.ctrl_comp_bluetooth.get_active():
+            if "bluetooth" not in settings["components"]:
+                settings["components"].append("bluetooth")
+        else:
+            if "bluetooth" in settings["components"]:
+                settings["components"].remove("bluetooth")
 
-        self.ctrl_comp_battery = builder.get_object("ctrl-comp-battery")
-        self.ctrl_comp_battery.set_active("battery" in settings["components"])"""
+        if self.ctrl_comp_battery.get_active():
+            if "battery" not in settings["components"]:
+                settings["components"].append("battery")
+        else:
+            if "battery" in settings["components"]:
+                settings["components"].remove("battery")
+                
+        settings["commands"]["net"] = self.ctrl_cdm_net.get_text()
+        settings["net-interface"] = self.ctrl_net_name.get_text()
+        settings["commands"]["bluetooth"] = self.ctrl_cdm_bluetooth.get_text()
+        settings["commands"]["battery"] = self.ctrl_cdm_battery.get_text()
+        settings["css-name"] = self.ctrl_css_name.get_text()
+
+        settings["icon-size"] = int(self.ctrl_icon_size.get_value())
+        settings["interval"] = int(self.ctrl_interval.get_value())
+
+        settings["show-values"] = self.ctrl_show_values.get_active()
+        settings["hover-opens"] = self.ctrl_hover_opens.get_active()
+        settings["leave-closes"] = self.ctrl_leave_closes.get_active()
 
         save_json(self.config, self.file)
         
