@@ -476,6 +476,8 @@ class EditorWrapper(object):
             self.update_button()
         elif self.edited == "modules":
             save_json(self.config, self.file)
+        elif self.edited == "controls":
+            self.update_controls()
         elif self.edited == "custom-items":
             save_json(self.config, self.file)
 
@@ -1291,6 +1293,30 @@ class EditorWrapper(object):
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(grid)
+        
+    def update_controls(self):
+        settings = self.panel["controls-settings"]
+
+        if self.ctrl_comp_brightness.get_active():
+            if "brightness" not in settings["components"]:
+                settings["components"].append("brightness")
+        else:
+            if "brightness" in settings["components"]:
+                settings["components"].remove("brightness")
+
+        """self.ctrl_comp_volume = builder.get_object("ctrl-comp-volume")
+        self.ctrl_comp_volume.set_active("volume" in settings["components"])
+
+        self.ctrl_comp_net = builder.get_object("ctrl-comp-net")
+        self.ctrl_comp_net.set_active("net" in settings["components"])
+
+        self.ctrl_comp_bluetooth = builder.get_object("ctrl-comp-bluetooth")
+        self.ctrl_comp_bluetooth.set_active("bluetooth" in settings["components"])
+
+        self.ctrl_comp_battery = builder.get_object("ctrl-comp-battery")
+        self.ctrl_comp_battery.set_active("battery" in settings["components"])"""
+
+        save_json(self.config, self.file)
         
     def edit_custom_items(self, settings):
         self.load_panel()

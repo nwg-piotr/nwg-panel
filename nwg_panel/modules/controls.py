@@ -90,34 +90,34 @@ class Controls(Gtk.EventBox):
     def build_box(self):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.box.pack_start(box, False, False, 6)
-        for item in self.settings["components"]:
-            if item == "net":
-                if dependencies["netifaces"]:
-                    box.pack_start(self.net_image, False, False, 4)
-                    if self.net_label:
-                        box.pack_start(self.net_label, False, False, 0)
-                else:
-                    print("'netifaces' python module not found")
 
-            if item == "brightness":
-                box.pack_start(self.bri_image, False, False, 4)
-                if self.bri_label:
-                    box.pack_start(self.bri_label, False, False, 0)
+        if "brightness" in self.settings["components"]:
+            box.pack_start(self.bri_image, False, False, 4)
+            if self.bri_label:
+                box.pack_start(self.bri_label, False, False, 0)
 
-            if item == "volume":
-                box.pack_start(self.vol_image, False, False, 4)
-                if self.vol_label:
-                    box.pack_start(self.vol_label, False, False, 0)
+        if "volume" in self.settings["components"]:
+            box.pack_start(self.vol_image, False, False, 4)
+            if self.vol_label:
+                box.pack_start(self.vol_label, False, False, 0)
 
-            if item == "bluetooth" and bt_service_enabled():
-                box.pack_start(self.bt_image, False, False, 4)
-                if self.bt_label:
-                    box.pack_start(self.bt_label, False, False, 0)
+        if "net" in self.settings["components"]:
+            if dependencies["netifaces"]:
+                box.pack_start(self.net_image, False, False, 4)
+                if self.net_label:
+                    box.pack_start(self.net_label, False, False, 0)
+            else:
+                print("'netifaces' python module not found")
 
-            if item == "battery":
-                box.pack_start(self.bat_image, False, False, 4)
-                if self.bat_label:
-                    box.pack_start(self.bat_label, False, False, 0)
+        if "bluetooth" in self.settings["components"] and bt_service_enabled():
+            box.pack_start(self.bt_image, False, False, 4)
+            if self.bt_label:
+                box.pack_start(self.bt_label, False, False, 0)
+
+        if "battery" in self.settings["components"]:
+            box.pack_start(self.bat_image, False, False, 4)
+            if self.bat_label:
+                box.pack_start(self.bat_label, False, False, 0)
 
         box.pack_start(self.pan_image, False, False, 4)
 
