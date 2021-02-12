@@ -459,7 +459,7 @@ class EditorWrapper(object):
     def show_parent(self, w, parent):
         parent.show()
 
-    def apply_changes(self, w):
+    def apply_changes(self, *args):
         if self.edited == "panel":
             self.update_panel()
         elif self.edited == "sway-taskbar":
@@ -477,9 +477,11 @@ class EditorWrapper(object):
         elif self.edited == "modules":
             save_json(self.config, self.file)
         elif self.edited == "custom-items":
-            self.update_custom_items()
+            save_json(self.config, self.file)
 
-    def restart_panel(self, w):
+    def restart_panel(self, *args):
+        self.apply_changes()
+        
         cmd = "nwg-panel"
         try:
             args_string = load_string(os.path.join(local_dir(), "args"))
@@ -1293,15 +1295,11 @@ class EditorWrapper(object):
     def edit_custom_items(self, settings):
         self.load_panel()
         self.edited = "custom-items"
-        self.custom_items_grid = ControlsCustomItems(self.panel, self.config, self.file)
+        custom_items_grid = ControlsCustomItems(self.panel, self.config, self.file)
 
         for item in self.scrolled_window.get_children():
             item.destroy()
-        self.scrolled_window.add(self.custom_items_grid)
-        
-    def update_custom_items(self):
-        self.panel["controls-settings"]["custom-items"] = self.custom_items_grid.items
-        save_json(self.config, self.file)
+        self.scrolled_window.add(custom_items_grid)
 
 
 class ControlsCustomItems(Gtk.Grid):
@@ -1310,7 +1308,6 @@ class ControlsCustomItems(Gtk.Grid):
         Gtk.Grid.__init__(self)
         self.set_column_spacing(10)
         self.set_row_spacing(10)
-        # We'll work on a copy and save it to config on "Apply changes" button
         self.items = self.settings["custom-items"]
         self.icons = panel["icons"]
         
