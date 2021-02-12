@@ -9,7 +9,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, load_json, save_json, load_string, list_outputs, check_key, list_configs, \
-    local_dir, create_pixbuf, update_image
+    local_dir, create_pixbuf
 
 dir_name = os.path.dirname(__file__)
 
@@ -148,7 +148,6 @@ def update_icon(gtk_entry, icons):
     name = gtk_entry.get_text()
     gtk_entry.set_icon_from_pixbuf(Gtk.EntryIconPosition.PRIMARY, create_pixbuf(name, 16, icons_path=icons_path))
 
-
 class EditorWrapper(object):
     def __init__(self, parent, file, panel_idx):
         self.file = file
@@ -165,6 +164,8 @@ class EditorWrapper(object):
         self.window.connect('destroy', self.show_parent, parent)
         self.window.connect("key-release-event", handle_keyboard)
         self.window.connect("show", self.hide_parent, parent)
+
+        Gtk.Widget.set_size_request(self.window, 820, 1)
         
         self.known_modules = ["clock", "playerctl", "sway-taskbar", "sway-workspaces"]
 
@@ -183,7 +184,7 @@ class EditorWrapper(object):
         btn.connect("clicked", self.edit_modules, "right")
 
         btn = builder.get_object("btn-controls")
-        btn.connect("clicked", self.edit_controls)
+        btn.connect("clicked", self.controls_menu)
         
         btn = builder.get_object("btn-clock")
         btn.connect("clicked", self.edit_clock)
@@ -239,10 +240,13 @@ class EditorWrapper(object):
         selector_window.show_all()
         self.window.close()
 
+    def load_panel(self):
+        self.config = load_json(self.file)
+        self.panel = self.config[self.panel_idx]
+    
     def set_panel(self):
         if self.file:
-            self.config = load_json(self.file)
-            self.panel = self.config[self.panel_idx]
+            self.load_panel()
         else:
             self.panel = {}
         defaults = {
@@ -472,6 +476,8 @@ class EditorWrapper(object):
             self.update_button()
         elif self.edited == "modules":
             save_json(self.config, self.file)
+        elif self.edited == "custom-items":
+            self.update_custom_items()
 
     def restart_panel(self, w):
         cmd = "nwg-panel"
@@ -485,6 +491,7 @@ class EditorWrapper(object):
         subprocess.Popen('exec {}'.format(cmd), shell=True)
 
     def edit_sway_taskbar(self, *args):
+        self.load_panel()
         self.edited = "sway-taskbar"
         check_key(self.panel, "sway-taskbar", {})
         settings = self.panel["sway-taskbar"]
@@ -603,6 +610,7 @@ class EditorWrapper(object):
         save_json(self.config, self.file)
 
     def edit_clock(self, *args):
+        self.load_panel()
         self.edited = "clock"
         check_key(self.panel, "clock", {})
         settings = self.panel["clock"]
@@ -677,6 +685,7 @@ class EditorWrapper(object):
         save_json(self.config, self.file)
 
     def edit_playerctl(self, *args):
+        self.load_panel()
         self.edited = "playerctl"
         check_key(self.panel, "playerctl", {})
         settings = self.panel["playerctl"]
@@ -743,6 +752,7 @@ class EditorWrapper(object):
         save_json(self.config, self.file)
 
     def edit_sway_workspaces(self, *args):
+        self.load_panel()
         self.edited = "sway-workspaces"
         check_key(self.panel, "sway-workspaces", {})
         settings = self.panel["sway-workspaces"]
@@ -794,9 +804,10 @@ class EditorWrapper(object):
         menu.append(item)
         item.connect("activate", self.edit_executor, "executor-unnamed_{}".format(len(executors) + 1), True)
         menu.show_all()
-        menu.popup_at_widget(btn, Gdk.Gravity.CENTER, Gdk.Gravity.CENTER, None)
+        menu.popup_at_widget(btn, Gdk.Gravity.EAST, Gdk.Gravity.WEST, None)
 
     def edit_executor(self, item, name, new=False):
+        self.load_panel()
         self.edited = "executor"
         settings = self.panel[name] if not new else {}
         defaults = {
@@ -935,9 +946,10 @@ class EditorWrapper(object):
         item.connect("activate", self.edit_button, "button-unnamed_{}".format(len(buttons) + 1),
                      True)
         menu.show_all()
-        menu.popup_at_widget(btn, Gdk.Gravity.CENTER, Gdk.Gravity.CENTER, None)
+        menu.popup_at_widget(btn, Gdk.Gravity.EAST, Gdk.Gravity.WEST, None)
 
     def edit_button(self, item, name, new=False):
+        self.load_panel()
         self.edited = "button"
         settings = self.panel[name] if not new else {}
         defaults = {
@@ -1037,6 +1049,8 @@ class EditorWrapper(object):
         save_json(self.config, self.file)
 
     def edit_modules(self, item, which):
+        self.load_panel()
+
         self.edited = "modules"
         self.modules = None
         if which == "left":
@@ -1140,7 +1154,24 @@ class EditorWrapper(object):
             self.modules.append(self.modules_combo.get_active_id())
             self.refresh_listbox()
             
+    def controls_menu(self, btn):
+        menu = Gtk.Menu()
+        item = Gtk.MenuItem.new_with_label("Settings")
+        item.connect("activate", self.edit_controls)
+        menu.append(item)
+
+        item = Gtk.MenuItem.new_with_label("Custom items")
+        item.connect("activate", self.edit_custom_items)
+        menu.append(item)
+
+        item = Gtk.MenuItem.new_with_label("User menu")
+        menu.append(item)
+        
+        menu.show_all()
+        menu.popup_at_widget(btn, Gdk.Gravity.EAST, Gdk.Gravity.WEST, None)
+    
     def edit_controls(self, *args):
+        self.load_panel()
         self.edited = "controls"
         check_key(self.panel, "controls-settings", {})
         settings = self.panel["controls-settings"]
@@ -1255,36 +1286,169 @@ class EditorWrapper(object):
         self.ctrl_leave_closes = builder.get_object("leave-closes")
         self.ctrl_leave_closes.set_active(settings["leave-closes"])
 
-        """self.cb_buttons_position = builder.get_object("buttons-position")
-        self.cb_buttons_position.set_active_id(settings["buttons-position"])
-
-        self.sc_icon_size_playerctl = builder.get_object("icon-size")
-        self.sc_icon_size_playerctl.set_numeric(True)
-        adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
-        self.sc_icon_size_playerctl.configure(adj, 1, 0)
-        self.sc_icon_size_playerctl.set_value(settings["icon-size"])
-
-        self.sc_chars = builder.get_object("chars")
-        self.sc_chars.set_numeric(True)
-        adj = Gtk.Adjustment(value=0, lower=1, upper=256, step_increment=1, page_increment=10, page_size=1)
-        self.sc_chars.configure(adj, 1, 0)
-        self.sc_chars.set_value(settings["chars"])
-
-        self.sc_interval_playerctl = builder.get_object("interval")
-        self.sc_interval_playerctl.set_numeric(True)
-        adj = Gtk.Adjustment(value=0, lower=0, upper=60, step_increment=1, page_increment=10, page_size=1)
-        self.sc_interval_playerctl.configure(adj, 1, 0)
-        self.sc_interval_playerctl.set_value(settings["interval"])
-
-        self.eb_button_css_name = builder.get_object("button-css-name")
-        self.eb_button_css_name.set_text(settings["button-css-name"])
-
-        self.eb_label_css_name = builder.get_object("label-css-name")
-        self.eb_label_css_name.set_text(settings["label-css-name"])"""
-
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(grid)
+        
+    def edit_custom_items(self, settings):
+        self.load_panel()
+        self.edited = "custom-items"
+        self.custom_items_grid = ControlsCustomItems(self.panel, self.config, self.file)
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(self.custom_items_grid)
+        
+    def update_custom_items(self):
+        self.panel["controls-settings"]["custom-items"] = self.custom_items_grid.items
+        save_json(self.config, self.file)
+
+
+class ControlsCustomItems(Gtk.Grid):
+    def __init__(self, panel, config, file):
+        self.settings = panel["controls-settings"]
+        Gtk.Grid.__init__(self)
+        self.set_column_spacing(10)
+        self.set_row_spacing(10)
+        # We'll work on a copy and save it to config on "Apply changes" button
+        self.items = self.settings["custom-items"]
+        self.icons = panel["icons"]
+        
+        self.config = config
+        self.file = file
+        
+        label = Gtk.Label()
+        label.set_text("Controls :: Custom items")
+        label.set_halign(Gtk.Align.START)
+        self.attach(label, 0, 0, 3, 1)
+
+        self.refresh()
+
+    def refresh(self):
+        listbox = Gtk.ListBox()
+        listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+        for i in range(len(self.items)):
+            item = self.items[i]
+
+            row = Gtk.ListBoxRow()
+            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            row.add(vbox)
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+            vbox.pack_start(hbox, False, False, 6)
+
+            entry = Gtk.Entry()
+            entry.set_width_chars(15)
+            entry.set_text(item["name"])
+            entry.connect("changed", self.update_value_from_entry, i, "name")
+            hbox.pack_start(entry, False, False, 0)
+
+            entry = Gtk.Entry()
+            entry.set_width_chars(15)
+            entry.set_text(item["icon"])
+            update_icon(entry, self.icons)
+            entry.connect("changed", self.update_icon, self.icons, i, "icon")
+            hbox.pack_start(entry, False, False, 0)
+
+            entry = Gtk.Entry()
+            entry.set_width_chars(15)
+            entry.set_text(item["cmd"])
+            entry.connect("changed", self.update_value_from_entry, i, "cmd")
+            hbox.pack_start(entry, False, False, 0)
+
+            btn = Gtk.Button.new_from_icon_name("gtk-go-up", Gtk.IconSize.MENU)
+            btn.set_always_show_image(True)
+            btn.set_sensitive(i > 0)
+            btn.connect("clicked", self.move_up, item)
+            hbox.pack_start(btn, False, False, 0)
+
+            btn = Gtk.Button.new_from_icon_name("gtk-go-down", Gtk.IconSize.MENU)
+            btn.set_always_show_image(True)
+            btn.set_sensitive(i < len(self.items) - 1)
+            btn.connect("clicked", self.move_down, item)
+            hbox.pack_start(btn, False, False, 0)
+
+            btn = Gtk.Button.new_from_icon_name("gtk-delete", Gtk.IconSize.MENU)
+            btn.set_always_show_image(True)
+            btn.connect("clicked", self.delete, item)
+            hbox.pack_start(btn, False, False, 0)
+
+            listbox.add(row)
+
+        # Empty row
+        row = Gtk.ListBoxRow()
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        row.add(vbox)
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        vbox.pack_start(hbox, False, False, 6)
+
+        self.new_name = Gtk.Entry()
+        self.new_name.set_width_chars(15)
+        self.new_name.set_placeholder_text("label")
+        hbox.pack_start(self.new_name, False, False, 0)
+
+        self.new_icon = Gtk.Entry()
+        self.new_icon.set_width_chars(15)
+        self.new_icon.set_placeholder_text("icon")
+        update_icon(self.new_icon, self.icons)
+        self.new_icon.connect("changed", update_icon, self.icons)
+        hbox.pack_start(self.new_icon, False, False, 0)
+
+        self.new_command = Gtk.Entry()
+        self.new_command.set_width_chars(15)
+        self.new_command.set_placeholder_text("command")
+        hbox.pack_start(self.new_command, False, False, 0)
+
+        btn = Gtk.Button.new_from_icon_name("gtk-add", Gtk.IconSize.MENU)
+        btn.set_always_show_image(True)
+        btn.set_label("Append")
+        btn.connect("clicked", self.append)
+        hbox.pack_start(btn, True, True, 0)
+
+        listbox.add(row)
+
+        if self.get_child_at(0, 1):
+            self.get_child_at(0, 1).destroy()
+        self.attach(listbox, 0, 1, 3, 1)
+        
+        self.show_all()
+
+    def update_value_from_entry(self, gtk_entry, i, key):
+        self.items[i][key] = gtk_entry.get_text()
+
+    def update_icon(self, gtk_entry, icons, i, key):
+        icons_path = ""
+        if icons == "light":
+            icons_path = os.path.join(get_config_dir(), "icons_light")
+        elif icons == "dark":
+            icons_path = os.path.join(get_config_dir(), "icons_dark")
+        name = gtk_entry.get_text()
+        gtk_entry.set_icon_from_pixbuf(Gtk.EntryIconPosition.PRIMARY, create_pixbuf(name, 16, icons_path=icons_path))
+
+        self.items[i][key] = gtk_entry.get_text()
+
+    def move_up(self, btn, item):
+        old_index = self.items.index(item)
+        self.items.insert(old_index - 1, self.items.pop(old_index))
+        self.refresh()
+
+    def move_down(self, btn, item):
+        old_index = self.items.index(item)
+        self.items.insert(old_index + 1, self.items.pop(old_index))
+        self.refresh()
+
+    def delete(self, btn, item):
+        self.items.remove(item)
+        self.refresh()
+
+    def append(self, btn):
+        name = self.new_name.get_text()
+        icon = self.new_icon.get_text()
+        cmd = self.new_command.get_text()
+        if name:
+            item = {"name": name, "icon": icon, "cmd": cmd}
+            self.items.append(item)
+            save_json(self.config, self.file)
+        self.refresh()
 
 
 def main():

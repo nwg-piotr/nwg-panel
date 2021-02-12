@@ -452,6 +452,9 @@ class PopupWindow(Gtk.Window):
         check_key(settings, "custom-items", [])
         if settings["custom-items"]:
             for item in settings["custom-items"]:
+                check_key(item, "name", "undefined")
+                check_key(item, "icon", "")
+                check_key(item, "cmd", "")
                 c_item = self.custom_item(item["name"], item["icon"], item["cmd"])
                 v_box.pack_start(c_item, True, True, 6)
 
