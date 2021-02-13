@@ -480,6 +480,8 @@ class EditorWrapper(object):
             self.update_controls()
         elif self.edited == "custom-items":
             save_json(self.config, self.file)
+        elif self.edited == "user-menu":
+            save_json(self.config, self.file)
 
     def restart_panel(self, *args):
         self.apply_changes()
@@ -1169,6 +1171,7 @@ class EditorWrapper(object):
         menu.append(item)
 
         item = Gtk.MenuItem.new_with_label("User menu")
+        item.connect("activate", self.edit_user_menu)
         menu.append(item)
         
         menu.show_all()
@@ -1347,10 +1350,19 @@ class EditorWrapper(object):
 
         save_json(self.config, self.file)
         
-    def edit_custom_items(self, settings):
+    def edit_custom_items(self, item):
         self.load_panel()
         self.edited = "custom-items"
         custom_items_grid = ControlsCustomItems(self.panel, self.config, self.file)
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(custom_items_grid)
+
+    def edit_user_menu(self, item):
+        self.load_panel()
+        self.edited = "user-menu"
+        custom_items_grid = ControlsUserMenu(self.panel, self.config, self.file)
 
         for item in self.scrolled_window.get_children():
             item.destroy()
@@ -1377,6 +1389,7 @@ class ControlsCustomItems(Gtk.Grid):
         self.refresh()
 
     def refresh(self):
+
         listbox = Gtk.ListBox()
         listbox.set_selection_mode(Gtk.SelectionMode.NONE)
         for i in range(len(self.items)):
@@ -1499,7 +1512,169 @@ class ControlsCustomItems(Gtk.Grid):
         if name:
             item = {"name": name, "icon": icon, "cmd": cmd}
             self.items.append(item)
-            save_json(self.config, self.file)
+        self.refresh()
+
+
+class ControlsUserMenu(Gtk.Grid):
+    def __init__(self, panel, config, file):
+        self.settings = panel["controls-settings"]
+        Gtk.Grid.__init__(self)
+        self.set_column_spacing(10)
+        self.set_row_spacing(10)
+        self.name = self.settings["menu"]["name"]
+        self.icon = self.settings["menu"]["icon"]
+        self.items = self.settings["menu"]["items"]
+        self.icons = panel["icons"]
+
+        self.config = config
+        self.file = file
+
+        label = Gtk.Label()
+        label.set_text("Controls :: User menu")
+        label.set_halign(Gtk.Align.START)
+        self.attach(label, 0, 0, 3, 1)
+
+        self.refresh()
+
+    def refresh(self):
+
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        vbox.pack_start(hbox, False, False, 6)
+
+        label = Gtk.Label()
+        label.set_text("Menu name")
+        hbox.pack_start(label, False, False, 6)
+        
+        entry = Gtk.Entry()
+        #entry.set_width_chars(15)
+        entry.set_text(self.name)
+        entry.connect("changed", self.update_prop_from_entry, "name")
+        hbox.pack_start(entry, False, False, 0)
+
+        label = Gtk.Label()
+        label.set_text("Icon")
+        hbox.pack_start(label, False, False, 6)
+
+        entry = Gtk.Entry()
+        entry.set_width_chars(25)
+        entry.set_text(self.icon)
+        update_icon(entry, self.icons)
+        entry.connect("changed", self.update_icon, self.icons, "icon")
+        hbox.pack_start(entry, False, False, 0)
+
+        self.attach(vbox, 0, 1, 3, 1)
+
+        listbox = Gtk.ListBox()
+        listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+        for i in range(len(self.items)):
+            item = self.items[i]
+
+            row = Gtk.ListBoxRow()
+            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            row.add(vbox)
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+            vbox.pack_start(hbox, False, False, 6)
+
+            entry = Gtk.Entry()
+            entry.set_width_chars(15)
+            entry.set_text(item["name"])
+            entry.connect("changed", self.update_value_from_entry, i, "name")
+            hbox.pack_start(entry, False, False, 0)
+
+            entry = Gtk.Entry()
+            entry.set_width_chars(25)
+            entry.set_text(item["cmd"])
+            entry.connect("changed", self.update_value_from_entry, i, "cmd")
+            hbox.pack_start(entry, False, False, 0)
+
+            btn = Gtk.Button.new_from_icon_name("gtk-go-up", Gtk.IconSize.MENU)
+            btn.set_always_show_image(True)
+            btn.set_sensitive(i > 0)
+            btn.connect("clicked", self.move_up, item)
+            hbox.pack_start(btn, False, False, 0)
+
+            btn = Gtk.Button.new_from_icon_name("gtk-go-down", Gtk.IconSize.MENU)
+            btn.set_always_show_image(True)
+            btn.set_sensitive(i < len(self.items) - 1)
+            btn.connect("clicked", self.move_down, item)
+            hbox.pack_start(btn, False, False, 0)
+
+            btn = Gtk.Button.new_from_icon_name("gtk-delete", Gtk.IconSize.MENU)
+            btn.set_always_show_image(True)
+            btn.connect("clicked", self.delete, item)
+            hbox.pack_start(btn, False, False, 0)
+
+            listbox.add(row)
+
+        # Empty row
+        row = Gtk.ListBoxRow()
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        row.add(vbox)
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        vbox.pack_start(hbox, False, False, 6)
+
+        self.new_name = Gtk.Entry()
+        self.new_name.set_width_chars(15)
+        self.new_name.set_placeholder_text("label")
+        hbox.pack_start(self.new_name, False, False, 0)
+
+        self.new_command = Gtk.Entry()
+        self.new_command.set_width_chars(25)
+        self.new_command.set_placeholder_text("command")
+        hbox.pack_start(self.new_command, False, False, 0)
+
+        btn = Gtk.Button.new_from_icon_name("gtk-add", Gtk.IconSize.MENU)
+        btn.set_always_show_image(True)
+        btn.set_label("Append")
+        btn.connect("clicked", self.append)
+        hbox.pack_start(btn, True, True, 0)
+
+        listbox.add(row)
+
+        if self.get_child_at(0, 2):
+            self.get_child_at(0, 2).destroy()
+        self.attach(listbox, 0, 2, 3, 1)
+
+        self.show_all()
+
+    def update_prop_from_entry(self, gtk_entry, key):
+        self.settings["menu"][key] = gtk_entry.get_text()
+    
+    def update_value_from_entry(self, gtk_entry, i, key):
+        self.items[i][key] = gtk_entry.get_text()
+
+    def update_icon(self, gtk_entry, icons, key):
+        icons_path = ""
+        if icons == "light":
+            icons_path = os.path.join(get_config_dir(), "icons_light")
+        elif icons == "dark":
+            icons_path = os.path.join(get_config_dir(), "icons_dark")
+        name = gtk_entry.get_text()
+        gtk_entry.set_icon_from_pixbuf(Gtk.EntryIconPosition.PRIMARY, create_pixbuf(name, 16, icons_path=icons_path))
+
+        self.update_prop_from_entry(gtk_entry, key)
+
+    def move_up(self, btn, item):
+        old_index = self.items.index(item)
+        self.items.insert(old_index - 1, self.items.pop(old_index))
+        self.refresh()
+
+    def move_down(self, btn, item):
+        old_index = self.items.index(item)
+        self.items.insert(old_index + 1, self.items.pop(old_index))
+        self.refresh()
+
+    def delete(self, btn, item):
+        self.items.remove(item)
+        self.refresh()
+
+    def append(self, btn):
+        name = self.new_name.get_text()
+        cmd = self.new_command.get_text()
+        if name and cmd:
+            item = {"name": name, "cmd": cmd}
+            self.items.append(item)
         self.refresh()
 
 
