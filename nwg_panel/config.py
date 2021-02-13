@@ -1070,8 +1070,9 @@ class EditorWrapper(object):
             self.modules = self.panel["modules-right"]
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_modules.glade"))
+        modules_label = builder.get_object("label")
+        modules_label.set_text("{} {}".format(modules_label.get_text(), which.capitalize()))
         self.modules_grid = builder.get_object("grid")
-
         self.modules_combo = builder.get_object("menu")
         
         btn = builder.get_object("btn-append")
@@ -1096,11 +1097,11 @@ class EditorWrapper(object):
         self.scrolled_window.add(self.modules_grid)
         
     def refresh_listbox(self):
-        if self.modules_grid.get_child_at(1, 1) is not None:
-            self.modules_grid.get_child_at(1, 1).destroy()
+        if self.modules_grid.get_child_at(1, 2) is not None:
+            self.modules_grid.get_child_at(1, 2).destroy()
         
         self.modules_listbox = self.build_listbox()
-        self.modules_grid.attach(self.modules_listbox, 1, 1, 2, 1)
+        self.modules_grid.attach(self.modules_listbox, 1, 2, 2, 1)
     
     def build_listbox(self):
         listbox = Gtk.ListBox()
@@ -1547,7 +1548,7 @@ class ControlsUserMenu(Gtk.Grid):
         hbox.pack_start(label, False, False, 6)
         
         entry = Gtk.Entry()
-        #entry.set_width_chars(15)
+        entry.set_width_chars(15)
         entry.set_text(self.name)
         entry.connect("changed", self.update_prop_from_entry, "name")
         hbox.pack_start(entry, False, False, 0)
