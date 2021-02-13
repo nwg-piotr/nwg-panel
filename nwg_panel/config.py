@@ -35,10 +35,10 @@ class PanelSelector(Gtk.Window):
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        vbox.pack_start(self.hbox, True, True, 20)
+        vbox.pack_start(self.hbox, True, True, 10)
         self.add(vbox)
         grid = self.build_grid()
-        self.hbox.pack_start(grid, True, True, 20)
+        self.hbox.pack_start(grid, True, True, 10)
         self.show_all()
 
         self.connect("show", self.refresh)
@@ -47,7 +47,7 @@ class PanelSelector(Gtk.Window):
         for item in self.hbox.get_children():
             item.destroy()
         grid = self.build_grid()
-        self.hbox.pack_start(grid, True, True, 20)
+        self.hbox.pack_start(grid, True, True, 10)
         self.show_all()
 
     def build_grid(self, *args):
@@ -56,12 +56,12 @@ class PanelSelector(Gtk.Window):
 
         grid = Gtk.Grid()
         grid.set_column_spacing(20)
-        grid.set_row_spacing(4)
+        grid.set_row_spacing(6)
 
         row = 0
         for path in configs:
             label = Gtk.Label()
-            label.set_text("File: '{}'".format(path))
+            label.set_text("FILE: {}".format(path))
             label.set_halign(Gtk.Align.START)
             grid.attach(label, 0, row, 3, 1)
             row += 1
@@ -69,7 +69,7 @@ class PanelSelector(Gtk.Window):
             panels = configs[path]
 
             label = Gtk.Label()
-            label.set_text("Name:")
+            label.set_text("Panel name:")
             label.set_halign(Gtk.Align.START)
             grid.attach(label, 0, row, 1, 1)
 
@@ -90,17 +90,17 @@ class PanelSelector(Gtk.Window):
                     check_key(panel, item, "")
 
                 label = Gtk.Label()
-                label.set_text('"{}"'.format(panel["name"]))
+                label.set_text('{}'.format(panel["name"]))
                 label.set_halign(Gtk.Align.START)
                 grid.attach(label, 0, row, 1, 1)
 
                 label = Gtk.Label()
-                label.set_text('"{}"'.format(panel["output"]))
+                label.set_text('{}'.format(panel["output"]))
                 label.set_halign(Gtk.Align.START)
                 grid.attach(label, 1, row, 1, 1)
 
                 label = Gtk.Label()
-                label.set_text('"{}"'.format(panel["position"]))
+                label.set_text('{}'.format(panel["position"]))
                 label.set_halign(Gtk.Align.START)
                 grid.attach(label, 2, row, 1, 1)
 
