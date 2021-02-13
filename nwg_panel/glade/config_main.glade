@@ -209,7 +209,7 @@
                 <property name="homogeneous">True</property>
                 <child>
                   <object class="GtkButton" id="btn-apply-restart">
-                    <property name="label">Restart panels</property>
+                    <property name="label">Apply &amp;restart</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
