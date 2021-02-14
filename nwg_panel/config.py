@@ -101,10 +101,10 @@ class PanelSelector(Gtk.Window):
         self.connect("key-release-event", handle_keyboard)
         self.connect('destroy', Gtk.main_quit)
 
-        outer_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        self.add(outer_box)
+        self.outer_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.add(self.outer_box)
         ivbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        outer_box.pack_start(ivbox, False, False, 10)
+        self.outer_box.pack_start(ivbox, False, False, 10)
         logo = Gtk.Image()
         update_image(logo, "nwg-panel", 48)
         ivbox.pack_start(logo, True, False, 10)
@@ -130,16 +130,36 @@ class PanelSelector(Gtk.Window):
             if not h > max_height:
                 max_height = h
         self.scrolled_window.set_max_content_height(int(max_height * 0.9))
-        outer_box.add(self.scrolled_window)
+        self.outer_box.add(self.scrolled_window)
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.scrolled_window.add(vbox)
 
 
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        vbox.pack_start(self.hbox, True, True, 20)
+        vbox.pack_start(self.hbox, True, False, 20)
         listboxes = self.build_listboxes()
         self.hbox.pack_start(listboxes, True, True, 20)
+
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        self.outer_box.pack_end(hbox, False, False, 20)
+        inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        hbox.pack_start(inner_hbox, True, True, 20)
+        label = Gtk.Label()
+        label.set_text("New file:")
+        label.set_halign(Gtk.Align.START)
+        inner_hbox.pack_start(label, False, False, 6)
+
+        self.new_file_entry = Gtk.Entry()
+        self.new_file_entry.set_width_chars(20)
+        self.new_file_entry.set_placeholder_text("filename")
+        self.new_file_entry.connect("changed", validate_name)
+        inner_hbox.pack_start(self.new_file_entry, False, False, 0)
+
+        btn = Gtk.Button.new_with_label("Add/delete files")
+        btn.connect("clicked", self.add_delete_files)
+        inner_hbox.pack_end(btn, False, False, 0)
+
         self.show_all()
 
         self.connect("show", self.refresh)
@@ -153,9 +173,10 @@ class PanelSelector(Gtk.Window):
             item.destroy()
         listboxes = self.build_listboxes()
         self.hbox.pack_start(listboxes, True, True, 10)
+        
+        self.new_file_entry.set_text("")
 
         self.show_all()
-        self.unmaximize()
 
     def build_listboxes(self):
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -263,23 +284,6 @@ class PanelSelector(Gtk.Window):
             hbox.pack_end(btn_box, False, False, 6)
             row.add(ivbox)
             listbox.add(row)
-            
-        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        vbox.pack_start(hbox, False, False, 10)
-        label = Gtk.Label()
-        label.set_text("New file:")
-        label.set_halign(Gtk.Align.START)
-        hbox.pack_start(label, False, False, 6)
-
-        self.new_file_entry = Gtk.Entry()
-        self.new_file_entry.set_width_chars(20)
-        self.new_file_entry.set_placeholder_text("filename")
-        self.new_file_entry.connect("changed", validate_name)
-        hbox.pack_start(self.new_file_entry, False, False, 0)
-        
-        btn = Gtk.Button.new_with_label("Add/delete files")
-        btn.connect("clicked", self.add_delete_files)
-        hbox.pack_end(btn, False, False, 0)
 
         return vbox
     
@@ -672,10 +676,12 @@ class EditorWrapper(object):
         print(self.file, self.config)
 
     def hide_parent(self, w, parent):
-        parent.hide()
+        #parent.hide()
+        parent.set_sensitive(False)
 
     def show_parent(self, w, parent):
-        parent.show()
+        #parent.show()
+        parent.set_sensitive(True)
 
     def apply_changes(self, *args):
         if self.edited == "panel":
