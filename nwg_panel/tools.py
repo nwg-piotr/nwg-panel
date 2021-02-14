@@ -434,7 +434,11 @@ def update_image(image, icon_name, icon_size, icons_path=""):
                 except:
                     pass
         else:
-            pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+            try:
+                pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+            except:
+                path = os.path.join(get_config_dir(), "icons_light/icon-missing.svg")
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, icon_size, icon_size)
             if image:
                 image.set_from_pixbuf(pixbuf)
         
