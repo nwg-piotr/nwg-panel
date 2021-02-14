@@ -24,10 +24,11 @@ except ModuleNotFoundError:
 
 
 class Controls(Gtk.EventBox):
-    def __init__(self, settings, position, alignment, width, monitor=None):
+    def __init__(self, settings, position, alignment, width, monitor=None, icons_path=""):
         self.settings = settings
         self.position = position
         self.alignment = alignment
+        self.icons_path = icons_path
         Gtk.EventBox.__init__(self)
 
         check_key(settings, "show-values", True)
@@ -35,6 +36,7 @@ class Controls(Gtk.EventBox):
         check_key(settings, "interval", 1)
         check_key(settings, "icon-size", 16)
         check_key(settings, "hover-opens", True)
+        check_key(settings, "leave-closes", True)
         check_key(settings, "css-name", "controls-label")
         check_key(settings, "components", ["net", "brightness", "volume", "battery"])
         check_key(settings, "net-interface", "")
@@ -62,12 +64,13 @@ class Controls(Gtk.EventBox):
         self.bat_image = Gtk.Image.new_from_icon_name(self.bat_icon_name, Gtk.IconSize.MENU)
         self.bat_label = Gtk.Label() if settings["show-values"] else None
 
-        self.pan_image = Gtk.Image.new_from_icon_name("pan-down", Gtk.IconSize.MENU)
+        self.pan_image = Gtk.Image()
+        update_image(self.pan_image, "pan-down-symbolic", self.icon_size, self.icons_path)
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
 
-        self.popup_window = PopupWindow(position, settings, width, monitor=monitor)
+        self.popup_window = PopupWindow(position, alignment, settings, width, monitor=monitor, icons_path=self.icons_path)
 
         self.connect('button-press-event', self.on_button_press)
         self.connect('enter-notify-event', self.on_enter_notify_event)
@@ -87,34 +90,34 @@ class Controls(Gtk.EventBox):
     def build_box(self):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.box.pack_start(box, False, False, 6)
-        for item in self.settings["components"]:
-            if item == "net":
-                if dependencies["netifaces"]:
-                    box.pack_start(self.net_image, False, False, 4)
-                    if self.net_label:
-                        box.pack_start(self.net_label, False, False, 0)
-                else:
-                    print("'netifaces' python module not found")
 
-            if item == "brightness":
-                box.pack_start(self.bri_image, False, False, 4)
-                if self.bri_label:
-                    box.pack_start(self.bri_label, False, False, 0)
+        if "brightness" in self.settings["components"]:
+            box.pack_start(self.bri_image, False, False, 4)
+            if self.bri_label:
+                box.pack_start(self.bri_label, False, False, 0)
 
-            if item == "volume":
-                box.pack_start(self.vol_image, False, False, 4)
-                if self.vol_label:
-                    box.pack_start(self.vol_label, False, False, 0)
+        if "volume" in self.settings["components"]:
+            box.pack_start(self.vol_image, False, False, 4)
+            if self.vol_label:
+                box.pack_start(self.vol_label, False, False, 0)
 
-            if item == "bluetooth" and bt_service_enabled():
-                box.pack_start(self.bt_image, False, False, 4)
-                if self.bt_label:
-                    box.pack_start(self.bt_label, False, False, 0)
+        if "net" in self.settings["components"] and self.settings["net-interface"]:
+            if dependencies["netifaces"]:
+                box.pack_start(self.net_image, False, False, 4)
+                if self.net_label:
+                    box.pack_start(self.net_label, False, False, 0)
+            else:
+                print("'netifaces' python module not found")
 
-            if item == "battery":
-                box.pack_start(self.bat_image, False, False, 4)
-                if self.bat_label:
-                    box.pack_start(self.bat_label, False, False, 0)
+        if "bluetooth" in self.settings["components"] and bt_service_enabled():
+            box.pack_start(self.bt_image, False, False, 4)
+            if self.bt_label:
+                box.pack_start(self.bt_label, False, False, 0)
+
+        if "battery" in self.settings["components"]:
+            box.pack_start(self.bat_image, False, False, 4)
+            if self.bat_label:
+                box.pack_start(self.bat_label, False, False, 0)
 
         box.pack_start(self.pan_image, False, False, 4)
 
@@ -173,7 +176,7 @@ class Controls(Gtk.EventBox):
     def update_net(self, ip):
         icon_name = "network-wired-symbolic" if ip else "network-wired-disconnected-symbolic"
         if icon_name != self.net_icon_name:
-            update_image(self.net_image, icon_name, self.icon_size)
+            update_image(self.net_image, icon_name, self.icon_size, self.icons_path)
             self.net_icon_name = icon_name
 
         if self.net_label:
@@ -182,7 +185,7 @@ class Controls(Gtk.EventBox):
     def update_bt(self, is_on, name):
         icon_name = "bluetooth-active-symbolic" if is_on else "bluetooth-disabled-symbolic"
         if icon_name != self.bt_icon_name:
-            update_image(self.bt_image, icon_name, self.icon_size)
+            update_image(self.bt_image, icon_name, self.icon_size, self.icons_path)
 
         if self.bt_label:
             self.bt_label.set_text(name)
@@ -191,7 +194,7 @@ class Controls(Gtk.EventBox):
         icon_name = bri_icon_name(value)
 
         if icon_name != self.bri_icon_name:
-            update_image(self.bri_image, icon_name, self.icon_size)
+            update_image(self.bri_image, icon_name, self.icon_size, self.icons_path)
             self.bri_icon_name = icon_name
 
         if self.bri_label:
@@ -201,7 +204,7 @@ class Controls(Gtk.EventBox):
         icon_name = bat_icon_name(value)
 
         if icon_name != self.bat_icon_name:
-            update_image(self.bat_image, icon_name, self.icon_size)
+            update_image(self.bat_image, icon_name, self.icon_size, self.icons_path)
             self.bat_icon_name = icon_name
 
         if self.bat_label:
@@ -211,7 +214,7 @@ class Controls(Gtk.EventBox):
         icon_name = vol_icon_name(value, switch)
 
         if icon_name != self.vol_icon_name:
-            update_image(self.vol_image, icon_name, self.settings["icon-size"])
+            update_image(self.vol_image, icon_name, self.settings["icon-size"], self.icons_path)
             self.vol_icon_name = icon_name
 
         if self.vol_label:
@@ -240,7 +243,7 @@ class Controls(Gtk.EventBox):
 
 
 class PopupWindow(Gtk.Window):
-    def __init__(self, position, settings, width, monitor=None):
+    def __init__(self, position, alignment, settings, width, monitor=None, icons_path=""):
         Gtk.Window.__init__(self, type_hint=Gdk.WindowTypeHint.NORMAL)
         GtkLayerShell.init_for_window(self)
         if monitor:
@@ -249,6 +252,7 @@ class PopupWindow(Gtk.Window):
         check_key(settings, "css-name", "controls-window")
         self.set_property("name", settings["css-name"])
         self.icon_size = settings["icon-size"]
+        self.icons_path = icons_path
 
         self.settings = settings
         self.position = position
@@ -256,9 +260,12 @@ class PopupWindow(Gtk.Window):
         self.bt_icon_name = ""
         self.bt_image = Gtk.Image()
 
+        self.net_icon_name = ""
+
         eb = Gtk.EventBox()
         eb.set_above_child(False)
-        self.connect("leave_notify_event", self.on_window_exit)
+        if settings["leave-closes"]:
+            self.connect("leave_notify_event", self.on_window_exit)
 
         outer_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         eb.add(outer_vbox)
@@ -278,7 +285,7 @@ class PopupWindow(Gtk.Window):
         GtkLayerShell.set_margin(self, GtkLayerShell.Edge.RIGHT, 6)
         GtkLayerShell.set_margin(self, GtkLayerShell.Edge.LEFT, 6)
 
-        if settings["alignment"] == "left":
+        if alignment == "left":
             GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.LEFT, True)
         else:
             GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.RIGHT, True)
@@ -299,7 +306,7 @@ class PopupWindow(Gtk.Window):
 
             icon_name = bri_icon_name(int(get_brightness()))
             if icon_name != self.bri_icon_name:
-                update_image(self.bri_image, icon_name, self.icon_size)
+                update_image(self.bri_image, icon_name, self.icon_size, self.icons_path)
                 self.bri_icon_name = icon_name
 
             inner_hbox.pack_start(self.bri_image, False, False, 6)
@@ -323,7 +330,7 @@ class PopupWindow(Gtk.Window):
             icon_name = vol_icon_name(vol, switch)
 
             if icon_name != self.vol_icon_name:
-                update_image(self.vol_image, icon_name, self.icon_size)
+                update_image(self.vol_image, icon_name, self.icon_size, self.icons_path)
                 self.vol_icon_name = icon_name
 
             inner_hbox.pack_start(self.vol_image, False, False, 6)
@@ -340,7 +347,7 @@ class PopupWindow(Gtk.Window):
             sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
             v_box.pack_start(sep, True, True, 10)
 
-        if "net" in settings["components"] and dependencies["netifaces"]:
+        if "net" in settings["components"] and dependencies["netifaces"] and settings["net-interface"]:
             event_box = Gtk.EventBox()
             if "net" in settings["commands"] and settings["commands"]["net"]:
                 event_box.connect("enter_notify_event", self.on_enter_notify_event)
@@ -357,10 +364,13 @@ class PopupWindow(Gtk.Window):
             self.net_image = Gtk.Image.new_from_icon_name(self.net_icon_name, Gtk.IconSize.MENU)
 
             ip_addr = get_interface(settings["net-interface"])
+
             icon_name = "network-wired-symbolic" if ip_addr else "network-wired-disconnected-symbolic"
+            print("ip_addr", ip_addr, "icon_name", icon_name, self.net_icon_name)
 
             if icon_name != self.net_icon_name:
-                update_image(self.net_image, icon_name, self.icon_size)
+                print("update_image", self.net_image, icon_name, self.icon_size, self.icons_path)
+                update_image(self.net_image, icon_name, self.icon_size, self.icons_path)
                 self.net_icon_name = icon_name
 
             inner_hbox.pack_start(self.net_image, False, False, 6)
@@ -370,7 +380,7 @@ class PopupWindow(Gtk.Window):
 
             if "net" in settings["commands"] and settings["commands"]["net"]:
                 img = Gtk.Image()
-                update_image(img, "pan-end-symbolic", self.icon_size)
+                update_image(img, "pan-end-symbolic", self.icon_size, self.icons_path)
                 inner_hbox.pack_end(img, False, True, 4)
 
             event_box.add(inner_vbox)
@@ -394,7 +404,7 @@ class PopupWindow(Gtk.Window):
             icon_name = bt_icon_name(bt_on())
 
             if icon_name != self.bt_icon_name:
-                update_image(self.bt_image, icon_name, self.icon_size)
+                update_image(self.bt_image, icon_name, self.icon_size, self.icons_path)
                 self.bt_icon_name = icon_name
 
             inner_hbox.pack_start(self.bt_image, False, False, 6)
@@ -404,7 +414,7 @@ class PopupWindow(Gtk.Window):
 
             if "bluetooth" in settings["commands"] and settings["commands"]["bluetooth"]:
                 img = Gtk.Image()
-                update_image(img, "pan-end-symbolic", self.icon_size)
+                update_image(img, "pan-end-symbolic", self.icon_size, self.icons_path)
                 inner_hbox.pack_end(img, False, True, 4)
 
             event_box.add(inner_vbox)
@@ -429,7 +439,7 @@ class PopupWindow(Gtk.Window):
             icon_name = bat_icon_name(level)
 
             if icon_name != self.bat_icon_name:
-                update_image(self.bat_image, icon_name, self.icon_size)
+                update_image(self.bat_image, icon_name, self.icon_size, self.icons_path)
                 self.bat_icon_name = icon_name
 
             inner_hbox.pack_start(self.bat_image, False, False, 6)
@@ -439,7 +449,7 @@ class PopupWindow(Gtk.Window):
 
             if "battery" in settings["commands"] and settings["commands"]["battery"]:
                 img = Gtk.Image()
-                update_image(img, "pan-end-symbolic", self.icon_size)
+                update_image(img, "pan-end-symbolic", self.icon_size, self.icons_path)
                 inner_hbox.pack_end(img, False, True, 4)
 
             event_box.add(inner_vbox)
@@ -447,6 +457,9 @@ class PopupWindow(Gtk.Window):
         check_key(settings, "custom-items", [])
         if settings["custom-items"]:
             for item in settings["custom-items"]:
+                check_key(item, "name", "undefined")
+                check_key(item, "icon", "")
+                check_key(item, "cmd", "")
                 c_item = self.custom_item(item["name"], item["icon"], item["cmd"])
                 v_box.pack_start(c_item, True, True, 6)
 
@@ -465,7 +478,7 @@ class PopupWindow(Gtk.Window):
             v_box.pack_start(e_box, True, True, 6)
 
             img = Gtk.Image()
-            update_image(img, template["icon"], self.icon_size)
+            update_image(img, template["icon"], self.icon_size, self.icons_path)
             inner_hbox.pack_start(img, False, False, 6)
 
             check_key(template, "name", "Menu name")
@@ -475,7 +488,7 @@ class PopupWindow(Gtk.Window):
             check_key(template, "items", [])
             if template["items"]:
                 img = Gtk.Image()
-                update_image(img, "pan-end-symbolic", self.icon_size)
+                update_image(img, "pan-end-symbolic", self.icon_size, self.icons_path)
                 inner_hbox.pack_end(img, False, True, 0)
 
                 e_box.connect("enter-notify-event", self.on_enter_notify_event)
@@ -518,7 +531,7 @@ class PopupWindow(Gtk.Window):
         eb.add(v_box)
 
         image = Gtk.Image()
-        update_image(image, icon, self.icon_size)
+        update_image(image, icon, self.icon_size, self.icons_path)
         h_box.pack_start(image, False, True, 6)
 
         label = Gtk.Label(name)
@@ -530,7 +543,7 @@ class PopupWindow(Gtk.Window):
             eb.connect('button-press-event', self.launch, cmd)
 
             img = Gtk.Image()
-            update_image(img, "pan-end-symbolic", self.icon_size)
+            update_image(img, "pan-end-symbolic", self.icon_size, self.icons_path)
             h_box.pack_end(img, False, True, 4)
 
         return eb
@@ -542,7 +555,7 @@ class PopupWindow(Gtk.Window):
                 icon_name = "network-wired-symbolic" if ip_addr else "network-wired-disconnected-symbolic"
 
                 if icon_name != self.net_icon_name:
-                    update_image(self.net_image, icon_name, self.icon_size)
+                    update_image(self.net_image, icon_name, self.icon_size, self.icons_path)
                     self.net_icon_name = icon_name
 
                 if not ip_addr:
@@ -553,7 +566,7 @@ class PopupWindow(Gtk.Window):
                 icon_name = bt_icon_name(bt_on())
 
                 if icon_name != self.bt_icon_name:
-                    update_image(self.bt_image, icon_name, self.icon_size)
+                    update_image(self.bt_image, icon_name, self.icon_size, self.icons_path)
                     self.bt_icon_name = icon_name
 
                 self.bat_label.set_text(bt_name())
@@ -563,7 +576,7 @@ class PopupWindow(Gtk.Window):
                 icon_name = bat_icon_name(level)
 
                 if icon_name != self.bat_icon_name:
-                    update_image(self.bat_image, icon_name, self.icon_size)
+                    update_image(self.bat_image, icon_name, self.icon_size, self.icons_path)
                     self.bat_icon_name = icon_name
 
                 self.bat_label.set_text(msg)
@@ -580,7 +593,7 @@ class PopupWindow(Gtk.Window):
         set_brightness(slider)
         icon_name = bri_icon_name(int(slider.get_value()))
         if icon_name != self.bri_icon_name:
-            update_image(self.bri_image, icon_name, self.icon_size)
+            update_image(self.bri_image, icon_name, self.icon_size, self.icons_path)
             self.bri_icon_name = icon_name
 
     def set_vol(self, slider):
@@ -588,7 +601,7 @@ class PopupWindow(Gtk.Window):
         vol, switch = get_volume()
         icon_name = vol_icon_name(vol, switch)
         if icon_name != self.vol_icon_name:
-            update_image(self.vol_image, icon_name, self.icon_size)
+            update_image(self.vol_image, icon_name, self.icon_size, self.icons_path)
             self.vol_icon_name = icon_name
 
     def close_win(self, w, e):

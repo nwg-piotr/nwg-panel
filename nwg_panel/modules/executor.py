@@ -16,8 +16,9 @@ from gi.repository import Gtk, Gdk, GdkPixbuf
 
 
 class Executor(Gtk.EventBox):
-    def __init__(self, settings):
+    def __init__(self, settings, icons_path):
         self.settings = settings
+        self.icons_path = icons_path
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
@@ -29,7 +30,6 @@ class Executor(Gtk.EventBox):
         check_key(settings, "interval", 0)
         check_key(settings, "css-name", "")
         check_key(settings, "icon-size", 16)
-        check_key(settings, "show-icon", True)
         check_key(settings, "tooltip-text", "")
         check_key(settings, "on-left-click", "")
         check_key(settings, "on-right-click", "")
@@ -37,7 +37,7 @@ class Executor(Gtk.EventBox):
         check_key(settings, "on-scroll-up", "")
         check_key(settings, "on-scroll-down", "")
 
-        update_image(self.image, "view-refresh-symbolic", self.settings["icon-size"])
+        update_image(self.image, "view-refresh-symbolic", self.settings["icon-size"], self.icons_path)
 
         if settings["css-name"]:
             self.label.set_property("name", settings["css-name"])
@@ -69,9 +69,8 @@ class Executor(Gtk.EventBox):
                     new_path = output[0].strip()
                     if new_path != self.icon_path:
                         if "/" not in new_path and "." not in new_path:  # name given instead of path
-                            update_image(self.image, new_path, self.settings["icon-size"])
+                            update_image(self.image, new_path, self.settings["icon-size"], self.icons_path)
                             self.icon_path = new_path
-                            print(new_path)
                         else:
                             try:
                                 pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
@@ -94,7 +93,7 @@ class Executor(Gtk.EventBox):
             elif len(output) == 2:
                 new_path = output[0].strip()
                 if "/" not in new_path and "." not in new_path:  # name given instead of path
-                    update_image(self.image, new_path, self.settings["icon-size"])
+                    update_image(self.image, new_path, self.settings["icon-size"], self.icons_path)
                     self.icon_path = new_path
                     print(new_path)
                 else:

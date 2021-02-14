@@ -79,6 +79,15 @@ def get_icon(app_name):
                     return line.split("=")[1]
 
 
+def local_dir():
+    local_dir = os.path.join(os.path.join(os.getenv("HOME"), ".local/share/nwg-panel"))
+    if not os.path.isdir(local_dir):
+        print("Creating '{}'".format(local_dir))
+        os.mkdir(local_dir)
+
+    return local_dir
+
+
 def get_config_dir():
     """
     Determine config dir path, create if not found, then create sub-dirs
@@ -162,13 +171,22 @@ def save_string(string, file):
         print("Error writing file '{}'".format(file))
 
 
-def list_outputs(silent=False):
+def load_string(path):
+    try:
+        with open(path, 'r') as file:
+            data = file.read()
+            return data
+    except:
+        return "Error reading file"
+
+
+def list_outputs(sway=False, silent=False):
     """
     Get output names and geometry from i3 tree, assign to Gdk.Display monitors.
     :return: {"name": str, "x": int, "y": int, "width": int, "height": int, "monitor": Gkd.Monitor}
     """
     outputs_dict = {}
-    if nwg_panel.common.sway:
+    if sway:
         if not silent:
             print("Running on sway")
         for item in nwg_panel.common.i3.get_tree():
@@ -390,24 +408,76 @@ def player_metadata():
     return data
 
 
-def update_image(image, icon_name, icon_size):
-    icon_theme = Gtk.IconTheme.get_default()
-    if nwg_panel.common.icons_path:
-        path = "{}/{}.svg".format(nwg_panel.common.icons_path, icon_name)
+def update_image(image, icon_name, icon_size, icons_path=""):
+    # In case a full path was given
+    if icon_name.startswith("/"):
         try:
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_name, icon_size, icon_size)
+            image.set_from_pixbuf(pixbuf)
+        except:
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                path, icon_size, icon_size)
-            if image:
-                image.set_from_pixbuf(pixbuf)
-        except Exception as e:
+                os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), icon_size, icon_size)
+            image.set_from_pixbuf(pixbuf)
+    else:
+        icon_theme = Gtk.IconTheme.get_default()
+        if icons_path:
+            path = "{}/{}.svg".format(icons_path, icon_name)
             try:
-                pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, icon_size, icon_size)
                 if image:
                     image.set_from_pixbuf(pixbuf)
             except:
-                print("update_image :: failed setting image from {}: {}".format(path, e))
+                try:
+                    pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+                    if image:
+                        image.set_from_pixbuf(pixbuf)
+                except:
+                    pass
+        else:
+            try:
+                pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+            except:
+                path = os.path.join(get_config_dir(), "icons_light/icon-missing.svg")
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, icon_size, icon_size)
+            if image:
+                image.set_from_pixbuf(pixbuf)
+        
+
+def create_pixbuf(icon_name, icon_size, icons_path=""):
+    # In case a full path was given
+    if icon_name.startswith("/"):
+        try:
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                icon_name, icon_size, icon_size)
+            return pixbuf
+        except:
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), icon_size, icon_size)
+            return pixbuf
+
+    icon_theme = Gtk.IconTheme.get_default()
+    if icons_path:
+        path = "{}/{}.svg".format(icons_path, icon_name)
+        try:
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                path, icon_size, icon_size)
+            return pixbuf
+        except:
+            try:
+                pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+                return pixbuf
+            except:
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                    os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), icon_size, icon_size)
+                return pixbuf
     else:
-        image.set_from_icon_name(icon_name, Gtk.IconSize.MENU)
+        try:
+            pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+            return pixbuf
+        except:
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), icon_size, icon_size)
+            return pixbuf
 
 
 def bt_on():
@@ -442,3 +512,20 @@ def bt_service_enabled():
         result = enabled and active
 
     return result
+
+
+def list_configs(config_dir):
+    configs = {}
+    entries = os.listdir(config_dir)
+    entries.sort()
+    for entry in entries:
+        path = os.path.join(config_dir, entry)
+        if os.path.isfile(path):
+            try:
+                with open(path, 'r') as f:
+                    config = json.load(f)
+                configs[path] = config
+            except:
+                pass
+
+    return configs
