@@ -168,7 +168,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="padding">10</property>
+                <property name="padding">20</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -193,7 +193,7 @@
           <packing>
             <property name="expand">True</property>
             <property name="fill">True</property>
-            <property name="padding">10</property>
+            <property name="padding">20</property>
             <property name="position">0</property>
           </packing>
         </child>
@@ -253,7 +253,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="padding">10</property>
+                <property name="padding">20</property>
                 <property name="pack-type">end</property>
                 <property name="position">0</property>
               </packing>
