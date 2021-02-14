@@ -101,23 +101,10 @@ class PanelSelector(Gtk.Window):
         self.connect("key-release-event", handle_keyboard)
         self.connect('destroy', Gtk.main_quit)
 
-        self.scrolled_window = Gtk.ScrolledWindow()
-        self.scrolled_window.set_propagate_natural_width(True)
-        self.scrolled_window.set_propagate_natural_height(True)
-        max_height = 0
-        for key in outputs:
-            h = outputs[key]["height"]
-            if max_height == 0:
-                max_height = h
-            if not h > max_height:
-                max_height = h
-        self.scrolled_window.set_max_content_height(int(max_height * 0.9))
-        self.add(self.scrolled_window)
-
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        self.scrolled_window.add(vbox)
+        outer_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.add(outer_box)
         ivbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        vbox.pack_start(ivbox, False, False, 10)
+        outer_box.pack_start(ivbox, False, False, 10)
         logo = Gtk.Image()
         update_image(logo, "nwg-panel", 48)
         ivbox.pack_start(logo, True, False, 10)
@@ -131,6 +118,23 @@ class PanelSelector(Gtk.Window):
         label = Gtk.Label()
         label.set_text("https://github.com/nwg-piotr/nwg-panel")
         ivbox.pack_start(label, True, False, 0)
+
+        self.scrolled_window = Gtk.ScrolledWindow()
+        self.scrolled_window.set_propagate_natural_width(True)
+        self.scrolled_window.set_propagate_natural_height(True)
+        max_height = 0
+        for key in outputs:
+            h = outputs[key]["height"]
+            if max_height == 0:
+                max_height = h
+            if not h > max_height:
+                max_height = h
+        self.scrolled_window.set_max_content_height(int(max_height * 0.9))
+        outer_box.add(self.scrolled_window)
+
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.scrolled_window.add(vbox)
+
 
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         vbox.pack_start(self.hbox, True, True, 20)
@@ -290,7 +294,7 @@ class PanelSelector(Gtk.Window):
     def add_delete_files(self, btn):
         for file in self.to_delete:
             os.remove(file)
-            self.to_delete.remove(file)
+        self.to_delete = []
 
         if self.new_file_entry.get_text():
             config = []
