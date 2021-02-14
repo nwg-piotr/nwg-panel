@@ -1,6 +1,6 @@
 [
   {
-    "name": "top",
+    "name": "panel-top",
     "output": "",
     "layer": "bottom",
     "position": "top",
@@ -125,7 +125,7 @@
     }
   },
   {
-    "name": "bottom",
+    "name": "panel-bottom",
     "output": "",
     "layer": "bottom",
     "position": "bottom",
