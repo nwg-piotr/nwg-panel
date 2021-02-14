@@ -23,6 +23,71 @@ editor = None
 selector_window = None
 outputs = list_outputs(sway=sway)
 
+SKELETON_PANEL: dict = {
+    "name": "",
+    "output": "",
+    "layer": "bottom",
+    "position": "top",
+    "controls": "off",
+    "width": "auto",
+    "height": 0,
+    "margin-top": 0,
+    "margin-bottom": 0,
+    "padding-horizontal": 0,
+    "padding-vertical": 0,
+    "spacing": 0,
+    "icons": "",
+    "css-name": "",
+    "modules-left": [],
+    "modules-center": [],
+    "modules-right": [],
+    "controls-settings": {
+        "components": ["net", "brightness", "volume", "battery"],
+        "commands": {"net": "", "bluetooth": "", "battery": ""},
+        "show-values": False,
+        "interval": 1,
+        "icon-size": 16,
+        "hover-opens": True,
+        "leave-closes": True,
+        "css-name": "controls-window",
+        "net-interface": "",
+        "custom-items": [{"name": "Panel settings", "icon": "nwg-panel", "cmd": "nwg-panel-config"}],
+        "menu": {"name": "unnamed", "icon": "", "items": []}
+    },
+    "sway-taskbar": {
+        "workspace-menu": ["1", "2", "3", "4", "5", "6", "7", "8"],
+        "name-max-len": 20,
+        "image-size": 16,
+        "workspaces-spacing": 0,
+        "task-padding": 0,
+        "show-app-icon": True,
+        "show-app-name": True,
+        "show-layout": True,
+        "workspace-buttons": True,
+        "all-outputs": False
+    },
+    "sway-workspaces": {"numbers": ["1", "2", "3", "4", "5", "6", "7", "8"]},
+    "clock": {
+        "format": "%a, %d. %b  %H:%M:%S",
+        "tooltip-text": "",
+        "on-left-click": "",
+        "on-middle-click": "",
+        "on-right-click": "",
+        "on-scroll-up": "",
+        "on-scroll-down": "",
+        "css-name": "clock",
+        "interval": 1
+    },
+    "playerctl": {
+        "buttons-position": "left",
+        "icon-size": 16,
+        "chars": 30,
+        "button-css-name": "",
+        "label-css-name": "",
+        "interval": 1
+    }
+}
+
 
 def handle_keyboard(window, event):
     if event.type == Gdk.EventType.KEY_RELEASE and event.keyval == Gdk.KEY_Escape:
@@ -32,6 +97,7 @@ def handle_keyboard(window, event):
 class PanelSelector(Gtk.Window):
     def __init__(self):
         super(PanelSelector, self).__init__()
+        self.to_delete = []
         self.connect("key-release-event", handle_keyboard)
         self.connect('destroy', Gtk.main_quit)
 
@@ -91,10 +157,15 @@ class PanelSelector(Gtk.Window):
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
         for path in configs:
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
             label = Gtk.Label()
             label.set_text(path)
             label.set_halign(Gtk.Align.START)
-            vbox.pack_start(label, False, False, 10)
+            hbox.pack_start(label, True, True, 6)
+            checkbox = Gtk.CheckButton.new_with_label("delete file")
+            checkbox.connect("toggled", self.mark_to_delete, path)
+            hbox.pack_end(checkbox, False, False, 0)
+            vbox.pack_start(hbox, False, False, 10)
 
             panels = configs[path]
             panel_idx = 0
@@ -182,20 +253,54 @@ class PanelSelector(Gtk.Window):
             btn_box.pack_start(btn, False, False, 0)
 
             btn = Gtk.Button.new_from_icon_name("gtk-apply", Gtk.IconSize.BUTTON)
-            #btn.connect("clicked", self.on_button_clicked, path, panel_idx)
             btn.set_tooltip_text("Apply changes")
             btn_box.pack_start(btn, False, False, 0)
             btn.connect("clicked", self.apply, panels, path)
             hbox.pack_end(btn_box, False, False, 6)
             row.add(ivbox)
             listbox.add(row)
+            
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        vbox.pack_start(hbox, False, False, 10)
+        label = Gtk.Label()
+        label.set_text("New file:")
+        label.set_halign(Gtk.Align.START)
+        hbox.pack_start(label, False, False, 6)
+
+        self.new_file_entry = Gtk.Entry()
+        self.new_file_entry.set_width_chars(20)
+        self.new_file_entry.set_placeholder_text("filename")
+        self.new_file_entry.connect("changed", validate_name)
+        hbox.pack_start(self.new_file_entry, False, False, 0)
+        
+        btn = Gtk.Button.new_with_label("Add/delete files")
+        btn.connect("clicked", self.add_delete_files)
+        hbox.pack_end(btn, False, False, 0)
 
         return vbox
+    
+    def mark_to_delete(self, cb, file):
+        if cb.get_active():
+            if file not in self.to_delete:
+                self.to_delete.append(file)
+        else:
+            if file in self.to_delete:
+                self.to_delete.remove(file)
+                
+    def add_delete_files(self, btn):
+        for file in self.to_delete:
+            os.remove(file)
+            self.to_delete.remove(file)
+
+        if self.new_file_entry.get_text():
+            config = []
+            save_json(config, os.path.join(config_dir, self.new_file_entry.get_text()))
+            
+        self.refresh()
 
     def on_edit_button(self, button, file, panel_idx):
         global editor
         editor = EditorWrapper(self, file, panel_idx)
-        #editor.set_panel()
         editor.edit_panel()
 
     def move_up(self, btn, panels, panel):
@@ -215,7 +320,6 @@ class PanelSelector(Gtk.Window):
     def append(self, btn, file):
         global editor
         editor = EditorWrapper(self, file, None)
-        #editor.set_panel()
         editor.edit_panel()
             
     def apply(self, btn, panels, path):
@@ -344,22 +448,20 @@ class EditorWrapper(object):
         self.window.close()
 
     def load_panel(self):
-        #self.config = load_json(self.file)
         if self.panel_idx is not None:
             self.config = load_json(self.file)
             self.panel = self.config[self.panel_idx]
         else:
             self.config = []
-            self.panel = {}
+            self.panel = SKELETON_PANEL
             self.config.append(self.panel)
             self.panel_idx = self.config.index(self.panel)
-            
-    
+
     def set_panel(self):
         if self.file:
             self.load_panel()
         else:
-            self.panel = {}
+            self.panel = SKELETON_PANEL
         defaults = {
             "name": "",
             "output": "",
@@ -1316,11 +1418,6 @@ class EditorWrapper(object):
                     "name": "Panel settings",
                     "icon": "nwg-panel",
                     "cmd": "nwg-panel-config"
-                },
-                {
-                    "name": "Wallpapers",
-                    "icon": "azote",
-                    "cmd": "azote"
                 }
             ],
             "menu": {

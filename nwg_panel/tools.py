@@ -512,7 +512,9 @@ def bt_service_enabled():
 
 def list_configs(config_dir):
     configs = {}
-    for entry in os.listdir(config_dir):
+    entries = os.listdir(config_dir)
+    entries.sort()
+    for entry in entries:
         path = os.path.join(config_dir, entry)
         if os.path.isfile(path):
             try:
