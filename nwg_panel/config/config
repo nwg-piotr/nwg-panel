@@ -6,13 +6,13 @@
     "position": "top",
     "controls": "right",
     "width": "auto",
-    "height": 0,
+    "height": 30,
     "margin-top": 0,
     "margin-bottom": 0,
     "padding-horizontal": 0,
     "padding-vertical": 0,
     "spacing": 0,
-    "icons": "",
+    "icons": "light",
     "css-name": "panel-top",
     "modules-left": [
       "button-sample",
@@ -24,7 +24,6 @@
     "modules-right": [],
     "controls-settings": {
       "components": [
-        "net",
         "brightness",
         "volume",
         "battery"
@@ -49,8 +48,8 @@
         }
       ],
       "menu": {
-        "name": "unnamed",
-        "icon": "",
+        "name": "Exit",
+        "icon": "system-shutdown-symbolic",
         "items": [
           {
             "name": "Lock",
@@ -89,7 +88,7 @@
       "show-app-icon": true,
       "show-app-name": true,
       "show-layout": true,
-      "workspace-buttons": true,
+      "workspace-buttons": false,
       "all-outputs": true
     },
     "sway-workspaces": {
@@ -122,6 +121,14 @@
       "button-css-name": "",
       "label-css-name": "",
       "interval": 1
+    },
+    "button-sample": {
+      "command": "notify-send 'sample button'",
+      "icon": "view-grid",
+      "label": "",
+      "label-position": "right",
+      "css-name": "button-custom",
+      "icon-size": 16
     }
   },
   {
@@ -131,10 +138,10 @@
     "position": "bottom",
     "controls": "off",
     "width": "auto",
-    "height": 0,
+    "height": 30,
     "margin-top": 0,
     "margin-bottom": 0,
-    "padding-horizontal": 0,
+    "padding-horizontal": 6,
     "padding-vertical": 0,
     "spacing": 0,
     "icons": "",
@@ -196,7 +203,7 @@
       "show-app-icon": true,
       "show-app-name": true,
       "show-layout": true,
-      "workspace-buttons": true,
+      "workspace-buttons": false,
       "all-outputs": false
     },
     "sway-workspaces": {

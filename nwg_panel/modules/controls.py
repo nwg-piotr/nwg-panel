@@ -101,7 +101,7 @@ class Controls(Gtk.EventBox):
             if self.vol_label:
                 box.pack_start(self.vol_label, False, False, 0)
 
-        if "net" in self.settings["components"]:
+        if "net" in self.settings["components"] and self.settings["net-interface"]:
             if dependencies["netifaces"]:
                 box.pack_start(self.net_image, False, False, 4)
                 if self.net_label:
@@ -260,6 +260,8 @@ class PopupWindow(Gtk.Window):
         self.bt_icon_name = ""
         self.bt_image = Gtk.Image()
 
+        self.net_icon_name = ""
+
         eb = Gtk.EventBox()
         eb.set_above_child(False)
         if settings["leave-closes"]:
@@ -345,7 +347,7 @@ class PopupWindow(Gtk.Window):
             sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
             v_box.pack_start(sep, True, True, 10)
 
-        if "net" in settings["components"] and dependencies["netifaces"]:
+        if "net" in settings["components"] and dependencies["netifaces"] and settings["net-interface"]:
             event_box = Gtk.EventBox()
             if "net" in settings["commands"] and settings["commands"]["net"]:
                 event_box.connect("enter_notify_event", self.on_enter_notify_event)
@@ -362,9 +364,12 @@ class PopupWindow(Gtk.Window):
             self.net_image = Gtk.Image.new_from_icon_name(self.net_icon_name, Gtk.IconSize.MENU)
 
             ip_addr = get_interface(settings["net-interface"])
+
             icon_name = "network-wired-symbolic" if ip_addr else "network-wired-disconnected-symbolic"
+            print("ip_addr", ip_addr, "icon_name", icon_name, self.net_icon_name)
 
             if icon_name != self.net_icon_name:
+                print("update_image", self.net_image, icon_name, self.icon_size, self.icons_path)
                 update_image(self.net_image, icon_name, self.icon_size, self.icons_path)
                 self.net_icon_name = icon_name
 
