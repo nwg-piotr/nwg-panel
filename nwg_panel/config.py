@@ -9,7 +9,9 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, load_json, save_json, load_string, list_outputs, check_key, list_configs, \
-    local_dir, create_pixbuf
+    local_dir, create_pixbuf, update_image
+
+from nwg_panel.__about__ import __version__
 
 dir_name = os.path.dirname(__file__)
 
@@ -33,92 +35,192 @@ class PanelSelector(Gtk.Window):
         self.connect("key-release-event", handle_keyboard)
         self.connect('destroy', Gtk.main_quit)
 
+        self.scrolled_window = Gtk.ScrolledWindow()
+        self.scrolled_window.set_propagate_natural_width(True)
+        self.scrolled_window.set_propagate_natural_height(True)
+        max_height = 0
+        for key in outputs:
+            h = outputs[key]["height"]
+            if max_height == 0:
+                max_height = h
+            if not h > max_height:
+                max_height = h
+        self.scrolled_window.set_max_content_height(int(max_height * 0.9))
+        self.add(self.scrolled_window)
+
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.scrolled_window.add(vbox)
+        ivbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        vbox.pack_start(ivbox, False, False, 10)
+        logo = Gtk.Image()
+        update_image(logo, "nwg-panel", 48)
+        ivbox.pack_start(logo, True, False, 10)
+        label = Gtk.Label()
+        try:
+            ver = __version__
+        except:
+            ver = ""
+        label.set_text("nwg-panel {}".format(ver))
+        ivbox.pack_start(label, True, False, 0)
+        label = Gtk.Label()
+        label.set_text("https://github.com/nwg-piotr/nwg-panel")
+        ivbox.pack_start(label, True, False, 0)
+
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        vbox.pack_start(self.hbox, True, True, 10)
-        self.add(vbox)
-        grid = self.build_grid()
-        self.hbox.pack_start(grid, True, True, 10)
+        vbox.pack_start(self.hbox, True, True, 20)
+        listboxes = self.build_listboxes()
+        self.hbox.pack_start(listboxes, True, True, 20)
         self.show_all()
 
         self.connect("show", self.refresh)
 
-    def refresh(self, w):
+    def refresh(self, *args, reload=True):
+        if reload:
+            global configs
+            configs = list_configs(config_dir)
+
         for item in self.hbox.get_children():
             item.destroy()
-        grid = self.build_grid()
-        self.hbox.pack_start(grid, True, True, 10)
+        listboxes = self.build_listboxes()
+        self.hbox.pack_start(listboxes, True, True, 10)
+
         self.show_all()
+        self.unmaximize()
 
-    def build_grid(self, *args):
-        global configs
-        configs = list_configs(config_dir)
+    def build_listboxes(self):
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
-        grid = Gtk.Grid()
-        grid.set_column_spacing(20)
-        grid.set_row_spacing(6)
-
-        row = 0
         for path in configs:
             label = Gtk.Label()
-            label.set_text("FILE: {}".format(path))
+            label.set_text(path)
             label.set_halign(Gtk.Align.START)
-            grid.attach(label, 0, row, 3, 1)
-            row += 1
+            vbox.pack_start(label, False, False, 10)
 
             panels = configs[path]
-
-            label = Gtk.Label()
-            label.set_text("Panel name:")
-            label.set_halign(Gtk.Align.START)
-            grid.attach(label, 0, row, 1, 1)
-
-            label = Gtk.Label()
-            label.set_text("Output:")
-            label.set_halign(Gtk.Align.START)
-            grid.attach(label, 1, row, 1, 1)
-
-            label = Gtk.Label()
-            label.set_text("Position:")
-            label.set_halign(Gtk.Align.START)
-            grid.attach(label, 2, row, 1, 1)
-            row += 1
-
             panel_idx = 0
             for panel in panels:
                 for item in ["name", "output", "position"]:
                     check_key(panel, item, "")
+                listbox = Gtk.ListBox()
+                listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+                vbox.add(listbox)
+    
+                row = Gtk.ListBoxRow()
+                ivbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+
+                hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+                lbl_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+                lbl_box.set_homogeneous(True)
+                hbox.pack_start(lbl_box, True, True, 0)
+
+                ivbox.pack_start(hbox, False, False, 3)
+                
+                label = Gtk.Label()
+                label.set_text("{}                ".format(panel["name"])[:20])
+                label.set_halign(Gtk.Align.START)
+                lbl_box.pack_start(label, True, True, 6)
 
                 label = Gtk.Label()
-                label.set_text('{}'.format(panel["name"]))
+                label.set_text(panel["output"])
                 label.set_halign(Gtk.Align.START)
-                grid.attach(label, 0, row, 1, 1)
+                lbl_box.pack_start(label, True, True, 6)
 
                 label = Gtk.Label()
-                label.set_text('{}'.format(panel["output"]))
+                label.set_text(panel["position"])
                 label.set_halign(Gtk.Align.START)
-                grid.attach(label, 1, row, 1, 1)
+                lbl_box.pack_start(label, True, True, 6)
 
-                label = Gtk.Label()
-                label.set_text('{}'.format(panel["position"]))
-                label.set_halign(Gtk.Align.START)
-                grid.attach(label, 2, row, 1, 1)
+                btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
 
-                button = Gtk.Button.new_from_icon_name("document-edit", Gtk.IconSize.BUTTON)
-                button.set_label("edit")
-                button.connect("clicked", self.on_button_clicked, path, panel_idx)
-                grid.attach(button, 3, row, 1, 1)
+                btn = Gtk.Button.new_from_icon_name("gtk-go-up", Gtk.IconSize.MENU)
+                btn.set_always_show_image(True)
+                if panel_idx > 0:
+                    btn.set_tooltip_text("Move up")
+                btn.set_sensitive(panel_idx > 0)
+                btn.connect("clicked", self.move_up, panels, panels[panel_idx])
+                btn_box.pack_start(btn, False, False, 0)
 
-                row += 1
+                btn = Gtk.Button.new_from_icon_name("gtk-go-down", Gtk.IconSize.MENU)
+                btn.set_always_show_image(True)
+                if panel_idx < len(panels) - 1:
+                    btn.set_tooltip_text("Move down")
+                btn.set_sensitive(panel_idx < len(panels) - 1)
+                btn.connect("clicked", self.move_down, panels, panels[panel_idx])
+                btn_box.pack_start(btn, False, False, 0)
+
+                btn = Gtk.Button.new_from_icon_name("gtk-remove", Gtk.IconSize.MENU)
+                btn.set_always_show_image(True)
+                btn.set_tooltip_text("Remove panel")
+                btn.connect("clicked", self.delete, panels, panels[panel_idx])
+                btn_box.pack_start(btn, False, False, 0)
+
+                btn = Gtk.Button.new_from_icon_name("gtk-edit", Gtk.IconSize.BUTTON)
+                btn.connect("clicked", self.on_edit_button, path, panel_idx)
+                btn.set_tooltip_text("Edit panel")
+                btn_box.pack_start(btn, False, False, 0)
+
+                hbox.pack_end(btn_box, False, False, 6)
+
+                row.add(ivbox)
+                listbox.add(row)
                 panel_idx += 1
 
-        return grid
+            listbox = Gtk.ListBox()
+            listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+            vbox.add(listbox)
 
-    def on_button_clicked(self, button, file, panel_idx):
+            row = Gtk.ListBoxRow()
+            ivbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+            ivbox.pack_start(hbox, False, False, 3)
+            btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+
+            btn = Gtk.Button.new_from_icon_name("gtk-add", Gtk.IconSize.MENU)
+            btn.set_always_show_image(True)
+            btn.set_tooltip_text("New panel")
+            btn.connect("clicked", self.append, path)
+            btn_box.pack_start(btn, False, False, 0)
+
+            btn = Gtk.Button.new_from_icon_name("gtk-apply", Gtk.IconSize.BUTTON)
+            #btn.connect("clicked", self.on_button_clicked, path, panel_idx)
+            btn.set_tooltip_text("Apply changes")
+            btn_box.pack_start(btn, False, False, 0)
+            btn.connect("clicked", self.apply, panels, path)
+            hbox.pack_end(btn_box, False, False, 6)
+            row.add(ivbox)
+            listbox.add(row)
+
+        return vbox
+
+    def on_edit_button(self, button, file, panel_idx):
         global editor
         editor = EditorWrapper(self, file, panel_idx)
-        editor.set_panel()
+        #editor.set_panel()
         editor.edit_panel()
+
+    def move_up(self, btn, panels, panel):
+        old_index = panels.index(panel)
+        panels.insert(old_index - 1, panels.pop(old_index))
+        self.refresh(reload=False)
+
+    def move_down(self, btn, panels, panel):
+        old_index = panels.index(panel)
+        panels.insert(old_index + 1, panels.pop(old_index))
+        self.refresh(reload=False)
+
+    def delete(self, btn, panels, panel):
+        panels.remove(panel)
+        self.refresh(reload=False)
+
+    def append(self, btn, file):
+        global editor
+        editor = EditorWrapper(self, file, None)
+        #editor.set_panel()
+        editor.edit_panel()
+            
+    def apply(self, btn, panels, path):
+        save_json(panels, path)
+        self.refresh()
 
 
 def validate_workspaces(gtk_entry):
@@ -147,6 +249,7 @@ def update_icon(gtk_entry, icons):
         icons_path = os.path.join(get_config_dir(), "icons_dark")
     name = gtk_entry.get_text()
     gtk_entry.set_icon_from_pixbuf(Gtk.EntryIconPosition.PRIMARY, create_pixbuf(name, 16, icons_path=icons_path))
+
 
 class EditorWrapper(object):
     def __init__(self, parent, file, panel_idx):
@@ -204,7 +307,7 @@ class EditorWrapper(object):
         btn = builder.get_object("btn-buttons")
         btn.connect("clicked", self.select_button)
 
-        btn = builder.get_object("btn-cancel")
+        btn = builder.get_object("btn-close")
         btn.connect("clicked", self.quit)
 
         btn = builder.get_object("btn-apply")
@@ -241,8 +344,16 @@ class EditorWrapper(object):
         self.window.close()
 
     def load_panel(self):
-        self.config = load_json(self.file)
-        self.panel = self.config[self.panel_idx]
+        #self.config = load_json(self.file)
+        if self.panel_idx is not None:
+            self.config = load_json(self.file)
+            self.panel = self.config[self.panel_idx]
+        else:
+            self.config = []
+            self.panel = {}
+            self.config.append(self.panel)
+            self.panel_idx = self.config.index(self.panel)
+            
     
     def set_panel(self):
         if self.file:
@@ -452,6 +563,7 @@ class EditorWrapper(object):
         self.panel["css-name"] = val
 
         save_json(self.config, self.file)
+        print(self.file, self.config)
 
     def hide_parent(self, w, parent):
         parent.hide()
@@ -1132,7 +1244,7 @@ class EditorWrapper(object):
                 btn.connect("clicked", self.move_down, module)
                 hbox.pack_start(btn, False, False, 0)
 
-                btn = Gtk.Button.new_from_icon_name("gtk-delete", Gtk.IconSize.MENU)
+                btn = Gtk.Button.new_from_icon_name("gtk-remove", Gtk.IconSize.MENU)
                 btn.set_always_show_image(True)
                 btn.connect("clicked", self.delete, module)
                 hbox.pack_start(btn, False, False, 0)
@@ -1372,10 +1484,12 @@ class EditorWrapper(object):
 
 class ControlsCustomItems(Gtk.Grid):
     def __init__(self, panel, config, file):
+        check_key(panel, "controls-settings", {})
         self.settings = panel["controls-settings"]
         Gtk.Grid.__init__(self)
         self.set_column_spacing(10)
         self.set_row_spacing(10)
+        check_key(self.settings, "custom-items", [])
         self.items = self.settings["custom-items"]
         self.icons = panel["icons"]
         
@@ -1433,7 +1547,7 @@ class ControlsCustomItems(Gtk.Grid):
             btn.connect("clicked", self.move_down, item)
             hbox.pack_start(btn, False, False, 0)
 
-            btn = Gtk.Button.new_from_icon_name("gtk-delete", Gtk.IconSize.MENU)
+            btn = Gtk.Button.new_from_icon_name("gtk-remove", Gtk.IconSize.MENU)
             btn.set_always_show_image(True)
             btn.connect("clicked", self.delete, item)
             hbox.pack_start(btn, False, False, 0)
@@ -1518,10 +1632,16 @@ class ControlsCustomItems(Gtk.Grid):
 
 class ControlsUserMenu(Gtk.Grid):
     def __init__(self, panel, config, file):
+        check_key(panel, "controls-settings", {})
         self.settings = panel["controls-settings"]
         Gtk.Grid.__init__(self)
         self.set_column_spacing(10)
         self.set_row_spacing(10)
+        check_key(self.settings, "menu", {})
+        check_key(self.settings["menu"], "name", "unnamed")
+        check_key(self.settings["menu"], "icon", "")
+        check_key(self.settings["menu"], "items", [])
+
         self.name = self.settings["menu"]["name"]
         self.icon = self.settings["menu"]["icon"]
         self.items = self.settings["menu"]["items"]
@@ -1601,7 +1721,7 @@ class ControlsUserMenu(Gtk.Grid):
             btn.connect("clicked", self.move_down, item)
             hbox.pack_start(btn, False, False, 0)
 
-            btn = Gtk.Button.new_from_icon_name("gtk-delete", Gtk.IconSize.MENU)
+            btn = Gtk.Button.new_from_icon_name("gtk-remove", Gtk.IconSize.MENU)
             btn.set_always_show_image(True)
             btn.connect("clicked", self.delete, item)
             hbox.pack_start(btn, False, False, 0)

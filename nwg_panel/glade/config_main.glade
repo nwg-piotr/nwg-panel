@@ -222,7 +222,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="btn-cancel">
+                  <object class="GtkButton" id="btn-close">
                     <property name="label">Close</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>

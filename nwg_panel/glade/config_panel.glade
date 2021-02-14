@@ -24,6 +24,8 @@
       <object class="GtkEntry" id="name">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
+        <property name="max-length">20</property>
+        <property name="width-chars">20</property>
         <property name="max-width-chars">24</property>
       </object>
       <packing>
@@ -109,6 +111,7 @@
       <object class="GtkSpinButton" id="spacing">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
+        <property name="width-chars">4</property>
       </object>
       <packing>
         <property name="left-attach">1</property>
@@ -131,6 +134,7 @@
       <object class="GtkSpinButton" id="padding-vertical">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
+        <property name="width-chars">4</property>
       </object>
       <packing>
         <property name="left-attach">1</property>
@@ -153,6 +157,7 @@
       <object class="GtkSpinButton" id="padding-horizontal">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
+        <property name="width-chars">4</property>
       </object>
       <packing>
         <property name="left-attach">1</property>
@@ -175,6 +180,7 @@
       <object class="GtkSpinButton" id="margin-bottom">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
+        <property name="width-chars">4</property>
       </object>
       <packing>
         <property name="left-attach">1</property>
@@ -197,6 +203,7 @@
       <object class="GtkSpinButton" id="margin-top">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
+        <property name="width-chars">4</property>
       </object>
       <packing>
         <property name="left-attach">1</property>
@@ -220,6 +227,7 @@
         <property name="visible">True</property>
         <property name="can-focus">True</property>
         <property name="max-length">4</property>
+        <property name="width-chars">4</property>
       </object>
       <packing>
         <property name="left-attach">1</property>
@@ -356,6 +364,7 @@
       <object class="GtkEntry" id="css-name">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
+        <property name="width-chars">20</property>
       </object>
       <packing>
         <property name="left-attach">1</property>
