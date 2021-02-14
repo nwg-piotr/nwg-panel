@@ -273,7 +273,7 @@ class PanelSelector(Gtk.Window):
 
             btn = Gtk.Button.new_from_icon_name("gtk-add", Gtk.IconSize.MENU)
             btn.set_always_show_image(True)
-            btn.set_tooltip_text("New panel")
+            btn.set_label("New")
             btn.connect("clicked", self.append, path)
             btn_box.pack_start(btn, False, False, 0)
 
