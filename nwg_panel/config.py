@@ -172,7 +172,7 @@ class PanelSelector(Gtk.Window):
         for item in self.hbox.get_children():
             item.destroy()
         listboxes = self.build_listboxes()
-        self.hbox.pack_start(listboxes, True, True, 10)
+        self.hbox.pack_start(listboxes, True, True, 20)
         
         self.new_file_entry.set_text("")
 
@@ -278,7 +278,7 @@ class PanelSelector(Gtk.Window):
             btn_box.pack_start(btn, False, False, 0)
 
             btn = Gtk.Button.new_from_icon_name("gtk-apply", Gtk.IconSize.BUTTON)
-            btn.set_tooltip_text("Apply changes")
+            btn.set_label("Apply")
             btn_box.pack_start(btn, False, False, 0)
             btn.connect("clicked", self.apply, panels, path)
             hbox.pack_end(btn_box, False, False, 6)
@@ -326,8 +326,14 @@ class PanelSelector(Gtk.Window):
         self.refresh(reload=False)
 
     def append(self, btn, file):
+        config = load_json(file)
+        panel = SKELETON_PANEL
+        config.append(panel)
+        idx = config.index(panel)
+        save_json(config, file)
         global editor
-        editor = EditorWrapper(self, file, None)
+        editor = EditorWrapper(self, file, idx)
+        editor.set_panel()
         editor.edit_panel()
             
     def apply(self, btn, panels, path):
@@ -348,8 +354,12 @@ def validate_workspaces(gtk_entry):
 def validate_name(gtk_entry):
     valid_text = ""
     for char in gtk_entry.get_text():
+        if char == " ":
+            char = "-"
         if char.isalnum() or char in ["-", "_"]:
             valid_text += char.lower()
+        while '--' in valid_text:
+            valid_text = valid_text.replace('--', '-')
     gtk_entry.set_text(valid_text)
 
 
@@ -460,10 +470,12 @@ class EditorWrapper(object):
             self.config = load_json(self.file)
             self.panel = self.config[self.panel_idx]
         else:
+            print("else")
             self.config = []
             self.panel = SKELETON_PANEL
             self.config.append(self.panel)
             self.panel_idx = self.config.index(self.panel)
+            save_json(self.config, self.file)
 
     def set_panel(self):
         if self.file:
@@ -673,14 +685,11 @@ class EditorWrapper(object):
         self.panel["css-name"] = val
 
         save_json(self.config, self.file)
-        print(self.file, self.config)
 
     def hide_parent(self, w, parent):
-        #parent.hide()
         parent.set_sensitive(False)
 
     def show_parent(self, w, parent):
-        #parent.show()
         parent.set_sensitive(True)
 
     def apply_changes(self, *args):
@@ -706,6 +715,8 @@ class EditorWrapper(object):
             save_json(self.config, self.file)
         elif self.edited == "user-menu":
             save_json(self.config, self.file)
+            
+        selector_window.refresh(reload=True)
 
     def restart_panel(self, *args):
         self.apply_changes()
@@ -1341,8 +1352,9 @@ class EditorWrapper(object):
 
                 label = Gtk.Label()
                 label.set_text(module)
-                label.set_halign(Gtk.Align.START)
-                hbox.pack_start(label, True, True, 0)
+                label.set_xalign(0)
+                Gtk.Widget.set_size_request(label, 180, 1)
+                hbox.pack_start(label, False, False, 6)
 
                 btn = Gtk.Button.new_from_icon_name("gtk-go-up", Gtk.IconSize.MENU)
                 btn.set_always_show_image(True)
