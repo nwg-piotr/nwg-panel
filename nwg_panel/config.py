@@ -116,7 +116,7 @@ class PanelSelector(Gtk.Window):
         label.set_text("nwg-panel {}".format(ver))
         ivbox.pack_start(label, True, False, 0)
         label = Gtk.Label()
-        label.set_text("https://github.com/nwg-piotr/nwg-panel")
+        label.set_markup('see on <a href="https://github.com/nwg-piotr/nwg-panel">GitHub</a>')
         ivbox.pack_start(label, True, False, 0)
 
         self.scrolled_window = Gtk.ScrolledWindow()
