@@ -2,7 +2,7 @@
 
 from gi.repository import Gtk, Gdk, GdkPixbuf
 
-from nwg_panel.tools import check_key, get_icon, update_image
+from nwg_panel.tools import check_key, get_icon, update_image, load_autotiling
 import nwg_panel.common
 
 
@@ -19,6 +19,9 @@ class SwayTaskbar(Gtk.Box):
         self.display_name = display_name
         self.i3 = i3
         self.displays_tree = self.list_tree()
+
+        self.autotiling = load_autotiling()
+
         self.build_box()
         self.ipc_data = {}
         self.ws_box = None
@@ -56,7 +59,7 @@ class SwayTaskbar(Gtk.Box):
         for display in self.displays_tree:
             for desc in display.descendants():
                 if desc.type == "workspace":
-                    self.ws_box = WorkspaceBox(desc, self.settings)
+                    self.ws_box = WorkspaceBox(desc, self.settings, self.autotiling)
                     for con in desc.descendants():
                         if con.name or con.app_id:
                             win_box = WindowBox(con, self.settings, self.position, self.icons_path)
@@ -71,16 +74,17 @@ class SwayTaskbar(Gtk.Box):
 
 
 class WorkspaceBox(Gtk.Box):
-    def __init__(self, con, settings):
+    def __init__(self, con, settings, autotiling):
         self.con = con
+        at_indicator = "a" if con.num in autotiling else ""
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
 
         check_key(settings, "workspace-buttons", False)
         if settings["workspace-buttons"]:
-            widget = Gtk.Button.new_with_label("{}".format(con.num))
+            widget = Gtk.Button.new_with_label("{}{}".format(at_indicator, con.num))
             widget.connect("clicked", self.on_click)
         else:
-            widget = Gtk.Label("{}:".format(con.num))
+            widget = Gtk.Label("{}{}:".format(at_indicator, con.num))
 
         self.pack_start(widget, False, False, 4)
 
