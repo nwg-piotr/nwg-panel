@@ -177,7 +177,18 @@ def load_string(path):
             data = file.read()
             return data
     except:
-        return "Error reading file"
+        return ""
+    
+
+def load_autotiling():
+    autotiling = []
+    path = os.path.join(temp_dir(), "autotiling")
+    try:
+        for ws in load_string(path).split(","):
+            autotiling.append(int(ws))
+    except:
+        pass
+    return autotiling
 
 
 def list_outputs(sway=False, silent=False):
