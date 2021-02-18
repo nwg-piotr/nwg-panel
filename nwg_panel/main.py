@@ -208,6 +208,7 @@ def main():
 
     common.dependencies["upower"] = is_command("upower")
     common.dependencies["acpi"] = is_command("acpi")
+    common.dependencies["amixer"] = is_command("amixer")
 
     config_file = os.path.join(common.config_dir, args.config)
 

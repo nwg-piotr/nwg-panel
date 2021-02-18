@@ -23,6 +23,7 @@ dependencies = {
     "upower": False,
     "acpi": False,
     "netifaces": False,
+    "amixer": False
 }
 
 icons_path = ""  # "icons_light", "icons_dark" or "" (GTK icons)

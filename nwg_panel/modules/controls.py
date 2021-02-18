@@ -141,7 +141,7 @@ class Controls(Gtk.EventBox):
             except Exception as e:
                 print(e)
 
-        if "volume" in self.settings["components"]:
+        if "volume" in self.settings["components"] and dependencies["pyalsa"] or dependencies["amixer"]:
             try:
                 value, switch = get_volume()
                 GLib.idle_add(self.update_volume, value, switch)
@@ -319,7 +319,7 @@ class PopupWindow(Gtk.Window):
             inner_hbox.pack_start(scale, True, True, 5)
             add_sep = True
 
-        if "volume" in settings["components"]:
+        if "volume" in settings["components"] and dependencies["pyalsa"] or dependencies["amixer"]:
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             v_box.pack_start(inner_hbox, False, False, 6)
 
