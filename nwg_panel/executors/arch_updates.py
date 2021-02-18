@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+import os
+import time
+from pathlib import Path
 import subprocess
 
 
@@ -12,7 +15,17 @@ import subprocess
 
 
 def main():
-    arch, aur = check_updates()
+    arch, aur = None, None
+
+    # Avoid checking on each panel restart: check if 15 minutes passed. Adjust the time (in seconds) to your liking.
+    file = "/tmp/arch-updates"
+    if os.path.isfile(file):
+        if int(time.time() - os.stat(file).st_mtime) > 900:
+            arch, aur = check_updates()
+            Path(file).touch()
+    else:
+        Path(file).touch()
+
     if arch and aur:
         print("software-update-urgent")
         print("{}/{}".format(arch, aur))
@@ -25,7 +38,7 @@ def main():
 
 
 def check_updates():
-    arch, aur = 0, 0
+    arch, aur = None, None
     try:
         arch = len(subprocess.check_output(["checkupdates"]).decode("utf-8").splitlines())
     except:
@@ -34,6 +47,7 @@ def check_updates():
         aur = len(subprocess.check_output(["trizen", "-Qqu", "-a"]).decode("utf-8").splitlines())
     except:
         pass
+
     return arch, aur
 
 
