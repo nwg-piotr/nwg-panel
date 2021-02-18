@@ -135,7 +135,6 @@ class PanelSelector(Gtk.Window):
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.scrolled_window.add(vbox)
 
-
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         vbox.pack_start(self.hbox, True, False, 20)
         listboxes = self.build_listboxes()
@@ -173,7 +172,7 @@ class PanelSelector(Gtk.Window):
             item.destroy()
         listboxes = self.build_listboxes()
         self.hbox.pack_start(listboxes, True, True, 20)
-        
+
         self.new_file_entry.set_text("")
 
         self.show_all()
@@ -200,7 +199,7 @@ class PanelSelector(Gtk.Window):
                 listbox = Gtk.ListBox()
                 listbox.set_selection_mode(Gtk.SelectionMode.NONE)
                 vbox.add(listbox)
-    
+
                 row = Gtk.ListBoxRow()
                 ivbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
@@ -210,7 +209,7 @@ class PanelSelector(Gtk.Window):
                 hbox.pack_start(lbl_box, True, True, 0)
 
                 ivbox.pack_start(hbox, False, False, 3)
-                
+
                 label = Gtk.Label()
                 label.set_text("{}                ".format(panel["name"])[:20])
                 label.set_halign(Gtk.Align.START)
@@ -286,7 +285,7 @@ class PanelSelector(Gtk.Window):
             listbox.add(row)
 
         return vbox
-    
+
     def mark_to_delete(self, cb, file):
         if cb.get_active():
             if file not in self.to_delete:
@@ -294,7 +293,7 @@ class PanelSelector(Gtk.Window):
         else:
             if file in self.to_delete:
                 self.to_delete.remove(file)
-                
+
     def add_delete_files(self, btn):
         for file in self.to_delete:
             os.remove(file)
@@ -303,7 +302,7 @@ class PanelSelector(Gtk.Window):
         if self.new_file_entry.get_text():
             config = []
             save_json(config, os.path.join(config_dir, self.new_file_entry.get_text()))
-            
+
         self.refresh()
 
     def on_edit_button(self, button, file, panel_idx):
@@ -335,7 +334,7 @@ class PanelSelector(Gtk.Window):
         editor = EditorWrapper(self, file, idx)
         editor.set_panel()
         editor.edit_panel()
-            
+
     def apply(self, btn, panels, path):
         save_json(panels, path)
         self.refresh()
@@ -391,7 +390,7 @@ class EditorWrapper(object):
         self.window.connect("show", self.hide_parent, parent)
 
         Gtk.Widget.set_size_request(self.window, 820, 1)
-        
+
         self.known_modules = ["clock", "playerctl", "sway-taskbar", "sway-workspaces"]
 
         self.scrolled_window = builder.get_object("scrolled-window")
@@ -410,7 +409,7 @@ class EditorWrapper(object):
 
         btn = builder.get_object("btn-controls")
         btn.connect("clicked", self.controls_menu)
-        
+
         btn = builder.get_object("btn-clock")
         btn.connect("clicked", self.edit_clock)
 
@@ -482,6 +481,10 @@ class EditorWrapper(object):
             self.load_panel()
         else:
             self.panel = SKELETON_PANEL
+
+        self.check_defaults()
+
+    def check_defaults(self):
         defaults = {
             "name": "",
             "output": "",
@@ -502,6 +505,7 @@ class EditorWrapper(object):
             check_key(self.panel, key, defaults[key])
 
     def edit_panel(self, *args):
+        self.check_defaults()
         self.edited = "panel"
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_panel.glade"))
         grid = builder.get_object("grid")
@@ -715,12 +719,12 @@ class EditorWrapper(object):
             save_json(self.config, self.file)
         elif self.edited == "user-menu":
             save_json(self.config, self.file)
-            
+
         selector_window.refresh(reload=True)
 
     def restart_panel(self, *args):
         self.apply_changes()
-        
+
         cmd = "nwg-panel"
         try:
             args_string = load_string(os.path.join(local_dir(), "args"))
@@ -1240,7 +1244,7 @@ class EditorWrapper(object):
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(grid)
-        
+
     def update_button(self):
         config_key = "button-{}".format(self.button_name.get_text())
         settings = self.panel[config_key] if config_key in self.panel else {}
@@ -1309,7 +1313,7 @@ class EditorWrapper(object):
         modules_label.set_text("{} {}".format(modules_label.get_text(), which.capitalize()))
         self.modules_grid = builder.get_object("grid")
         self.modules_combo = builder.get_object("menu")
-        
+
         btn = builder.get_object("btn-append")
         btn.connect("clicked", self.append)
 
@@ -1330,14 +1334,14 @@ class EditorWrapper(object):
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(self.modules_grid)
-        
+
     def refresh_listbox(self):
         if self.modules_grid.get_child_at(1, 2) is not None:
             self.modules_grid.get_child_at(1, 2).destroy()
-        
+
         self.modules_listbox = self.build_listbox()
         self.modules_grid.attach(self.modules_listbox, 1, 2, 2, 1)
-    
+
     def build_listbox(self):
         listbox = Gtk.ListBox()
         listbox.set_selection_mode(Gtk.SelectionMode.NONE)
@@ -1375,28 +1379,28 @@ class EditorWrapper(object):
 
                 listbox.add(row)
         listbox.show_all()
-        
+
         return listbox
-    
+
     def move_up(self, btn, module):
         old_index = self.modules.index(module)
         self.modules.insert(old_index - 1, self.modules.pop(old_index))
         self.refresh_listbox()
-        
+
     def move_down(self, btn, module):
         old_index = self.modules.index(module)
         self.modules.insert(old_index + 1, self.modules.pop(old_index))
         self.refresh_listbox()
-        
+
     def delete(self, btn, module):
         self.modules.remove(module)
         self.refresh_listbox()
-        
+
     def append(self, btn):
         if self.modules_combo.get_active_id():
             self.modules.append(self.modules_combo.get_active_id())
             self.refresh_listbox()
-            
+
     def controls_menu(self, btn):
         menu = Gtk.Menu()
         item = Gtk.MenuItem.new_with_label("Settings")
@@ -1410,10 +1414,10 @@ class EditorWrapper(object):
         item = Gtk.MenuItem.new_with_label("User menu")
         item.connect("activate", self.edit_user_menu)
         menu.append(item)
-        
+
         menu.show_all()
         menu.popup_at_widget(btn, Gdk.Gravity.EAST, Gdk.Gravity.WEST, None)
-    
+
     def edit_controls(self, *args):
         self.load_panel()
         self.edited = "controls"
@@ -1528,7 +1532,7 @@ class EditorWrapper(object):
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(grid)
-        
+
     def update_controls(self):
         settings = self.panel["controls-settings"]
 
@@ -1566,7 +1570,7 @@ class EditorWrapper(object):
         else:
             if "battery" in settings["components"]:
                 settings["components"].remove("battery")
-                
+
         settings["commands"]["net"] = self.ctrl_cdm_net.get_text()
         settings["net-interface"] = self.ctrl_net_name.get_text()
         settings["commands"]["bluetooth"] = self.ctrl_cdm_bluetooth.get_text()
@@ -1581,7 +1585,7 @@ class EditorWrapper(object):
         settings["leave-closes"] = self.ctrl_leave_closes.get_active()
 
         save_json(self.config, self.file)
-        
+
     def edit_custom_items(self, item):
         self.load_panel()
         self.edited = "custom-items"
@@ -1611,10 +1615,10 @@ class ControlsCustomItems(Gtk.Grid):
         check_key(self.settings, "custom-items", [])
         self.items = self.settings["custom-items"]
         self.icons = panel["icons"]
-        
+
         self.config = config
         self.file = file
-        
+
         label = Gtk.Label()
         label.set_text("Controls :: Custom items")
         label.set_halign(Gtk.Align.START)
@@ -1708,7 +1712,7 @@ class ControlsCustomItems(Gtk.Grid):
         if self.get_child_at(0, 1):
             self.get_child_at(0, 1).destroy()
         self.attach(listbox, 0, 1, 3, 1)
-        
+
         self.show_all()
 
     def update_value_from_entry(self, gtk_entry, i, key):
@@ -1785,7 +1789,7 @@ class ControlsUserMenu(Gtk.Grid):
         label = Gtk.Label()
         label.set_text("Menu name")
         hbox.pack_start(label, False, False, 6)
-        
+
         entry = Gtk.Entry()
         entry.set_width_chars(15)
         entry.set_text(self.name)
@@ -1880,7 +1884,7 @@ class ControlsUserMenu(Gtk.Grid):
 
     def update_prop_from_entry(self, gtk_entry, key):
         self.settings["menu"][key] = gtk_entry.get_text()
-    
+
     def update_value_from_entry(self, gtk_entry, i, key):
         self.items[i][key] = gtk_entry.get_text()
 
