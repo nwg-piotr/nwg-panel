@@ -2,7 +2,6 @@
 
 import os
 import time
-from pathlib import Path
 import subprocess
 
 
@@ -13,32 +12,59 @@ import subprocess
 # The icon name must either exist in your icon theme, or you may place `icon_name.svg`
 # custom files in '~/.config/nwg-panel/icons_light/' and '~/.config/nwg-panel/icons_dark/'.
 
+# This script needs the `au.sh` helper on path or in the same directory. See comments in `au.sh`.
 
 def main():
-    arch, aur = None, None
-
-    # Avoid checking on each panel restart: check if 15 minutes passed. Adjust the time (in seconds) to your liking.
+    # Avoid checking on each panel restart: check if 15 minutes passed.
+    # Adjust the time (in seconds) to your liking.
+    # Make sure if the path below matches your temp directory.
     file = "/tmp/arch-updates"
+    
     if os.path.isfile(file):
         if int(time.time() - os.stat(file).st_mtime) > 900:
             arch, aur = check_updates()
-            Path(file).touch()
+            save_string("{},{}".format(arch, aur), file)
+        else:
+            try:
+                vals = load_string(file).split(",")
+                arch, aur = int(vals[0]), int(vals[1])
+            except:
+                arch, aur = 0, 0
     else:
-        Path(file).touch()
+        arch, aur = check_updates()
+        save_string("{},{}".format(arch, aur), file)
 
-    if arch and aur:
+    if arch > 0 and aur > 0:
         print("software-update-urgent")
         print("{}/{}".format(arch, aur))
-    elif arch:
+    elif arch > 0:
         print("software-update-available")
         print("{}".format(arch))
-    elif aur:
+    elif aur > 0:
         print("software-update-available")
         print("{}".format(aur))
 
 
+def save_string(string, file):
+    try:
+        file = open(file, "wt")
+        file.write(string)
+        file.close()
+    except:
+        print("Error writing file '{}'".format(file))
+
+
+def load_string(path):
+    try:
+        with open(path, 'r') as file:
+            data = file.read()
+            return data
+    except:
+        return ""
+
+
 def check_updates():
-    arch, aur = None, None
+    arch, aur = 0, 0
     try:
         arch = len(subprocess.check_output(["checkupdates"]).decode("utf-8").splitlines())
     except:
