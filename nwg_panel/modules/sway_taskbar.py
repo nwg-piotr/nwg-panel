@@ -101,6 +101,7 @@ class WindowBox(Gtk.EventBox):
         self.add(self.box)
         self.con = con
         self.pid = con.pid
+        self.icons_path = icons_path
 
         self.old_name = ""
 
@@ -196,22 +197,45 @@ class WindowBox(Gtk.EventBox):
 
     def context_menu(self, workspaces):
         menu = Gtk.Menu()
+        menu.set_reserve_toggle_size(False)
+        # Numbers have been converted to strings by mistake (config.py). Reverting this would be a breaking change,
+        # so let's accept both numbers and strings.
         for i in workspaces:
             ws_num = self.con_ws_num(self.con)
-            if i != ws_num:
-                text = "To workspace {}".format(i)
-                item = Gtk.MenuItem(text)
+            if str(i) != str(ws_num):
+                hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+                img = Gtk.Image()
+                update_image(img, "go-next-symbolic", 16, self.icons_path)
+                hbox.pack_start(img, True, True, 0)
+                label = Gtk.Label(str(i))
+                hbox.pack_start(label, True, True, 0)
+                item = Gtk.MenuItem()
+                item.add(hbox)
                 item.connect("activate", self.execute, i)
                 menu.append(item)
 
         item = Gtk.SeparatorMenuItem()
 
         menu.append(item)
-        item = Gtk.MenuItem("Toggle floating")
+
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        img = Gtk.Image()
+        update_image(img, "view-paged-symbolic", 16, self.icons_path)
+        hbox.pack_start(img, True, True, 0)
+        img = Gtk.Image()
+        update_image(img, "view-dual-symbolic", 16, self.icons_path)
+        hbox.pack_start(img, True, True, 0)
+        item = Gtk.MenuItem()
+        item.add(hbox)
         item.connect("activate", self.floating_toggle)
         menu.append(item)
 
-        item = Gtk.MenuItem("Kill")
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        img = Gtk.Image()
+        update_image(img, "window-close-symbolic", 16, self.icons_path)
+        hbox.pack_start(img, True, True, 0)
+        item = Gtk.MenuItem()
+        item.add(hbox)
         item.connect("activate", self.kill)
         menu.append(item)
 
