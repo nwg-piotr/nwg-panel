@@ -27,7 +27,8 @@ from nwg_panel.modules.executor import Executor
 from nwg_panel.modules.clock import Clock
 from nwg_panel.modules.controls import Controls
 from nwg_panel.modules.playerctl import Playerctl
-from nwg_panel.modules.cpu_avg import CpuAvg
+if nwg_panel.common.dependencies["psutil"]:
+    from nwg_panel.modules.cpu_avg import CpuAvg
 
 dir_name = os.path.dirname(__file__)
 
@@ -148,7 +149,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             else:
                 print("'{}' not defined in this panel instance".format(item))
 
-        if item == "cpu-avg":
+        if item == "cpu-avg" and nwg_panel.common.dependencies["psutil"]:
             cpu_avg = CpuAvg()
             container.pack_start(cpu_avg, False, False, 10)
 
@@ -187,6 +188,12 @@ def main():
         common.dependencies["pyalsa"] = True
     except:
         print("pylsa module not found, will try amixer")
+        
+    try:
+        import psutil
+        common.dependencies["psutil"] = True
+    except:
+        pass
 
     global restart_cmd
     restart_cmd = "nwg-panel -c {} -s {}".format(args.config, args.style)

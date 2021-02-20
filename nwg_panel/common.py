@@ -20,6 +20,7 @@ key_missing = False
 
 dependencies = {
     "pyalsa": False,
+    "psutil": False,
     "upower": False,
     "acpi": False,
     "netifaces": False,
