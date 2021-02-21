@@ -366,10 +366,8 @@ class PopupWindow(Gtk.Window):
             ip_addr = get_interface(settings["net-interface"])
 
             icon_name = "network-wired-symbolic" if ip_addr else "network-wired-disconnected-symbolic"
-            print("ip_addr", ip_addr, "icon_name", icon_name, self.net_icon_name)
 
             if icon_name != self.net_icon_name:
-                print("update_image", self.net_image, icon_name, self.icon_size, self.icons_path)
                 update_image(self.net_image, icon_name, self.icon_size, self.icons_path)
                 self.net_icon_name = icon_name
 

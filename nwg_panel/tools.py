@@ -66,6 +66,8 @@ def get_app_dirs():
 
 
 def get_icon(app_name):
+    if "GIMP" in app_name.upper():
+        return "gimp"
     for d in nwg_panel.common.app_dirs:
         path = os.path.join(d, "{}.desktop".format(app_name))
         content = None
@@ -75,7 +77,7 @@ def get_icon(app_name):
             content = load_text_file(path.lower())
         if content:
             for line in content.splitlines():
-                if line.startswith("Icon="):
+                if line.upper().startswith("ICON"):
                     return line.split("=")[1]
 
 
@@ -274,7 +276,7 @@ def is_command(cmd):
 
 
 def get_volume():
-    vol = None
+    vol = 0
     switch = False
     if nwg_panel.common.dependencies["pyalsa"]:
         mixer = alsamixer.Mixer()

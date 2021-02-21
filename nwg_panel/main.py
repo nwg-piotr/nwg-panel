@@ -29,6 +29,7 @@ from nwg_panel.modules.controls import Controls
 from nwg_panel.modules.playerctl import Playerctl
 if nwg_panel.common.dependencies["psutil"]:
     from nwg_panel.modules.cpu_avg import CpuAvg
+from nwg_panel.modules.scratchpad import Scratchpad
 
 dir_name = os.path.dirname(__file__)
 
@@ -69,6 +70,9 @@ def check_tree():
         if tree.ipc_data != common.ipc_data:
             for item in common.taskbars_list:
                 item.refresh()
+
+            for item in common.scratchpads_list:
+                item.refresh(tree)
 
             for item in common.controls_list:
                 if item.popup_window.get_visible():
@@ -112,6 +116,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                     print("'sway-workspaces' not defined in this panel instance")
             else:
                 print("'sway-workspaces' ignored")
+
         if "button-" in item:
             if item in panel:
                 settings = panel[item]
@@ -152,6 +157,14 @@ def instantiate_content(panel, container, content_list, icons_path=""):
         if item == "cpu-avg" and nwg_panel.common.dependencies["psutil"]:
             cpu_avg = CpuAvg()
             container.pack_start(cpu_avg, False, False, 10)
+
+        if item == "scratchpad":
+            if item in panel:
+                settings = panel[item]
+                scratchpad = Scratchpad(common.i3, common.i3.get_tree(), panel[item])
+                container.pack_start(scratchpad, False, False, settings["padding"])
+
+                common.scratchpads_list.append(scratchpad)
 
 
 def main():
