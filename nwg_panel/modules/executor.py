@@ -95,7 +95,6 @@ class Executor(Gtk.EventBox):
                 if "/" not in new_path and "." not in new_path:  # name given instead of path
                     update_image(self.image, new_path, self.settings["icon-size"], self.icons_path)
                     self.icon_path = new_path
-                    print(new_path)
                 else:
                     if new_path != self.icon_path:
                         try:

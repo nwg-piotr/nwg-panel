@@ -12,6 +12,7 @@ ipc_data = None
 outputs = {}
 windows_list = []
 taskbars_list = []
+scratchpads_list = []
 controls_list = []
 config_dir = ""
 app_dirs = []
