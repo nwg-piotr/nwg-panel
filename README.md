@@ -8,11 +8,11 @@ and Contributors of the both projects!
 There are 7 modules available at the moment, and I don't plan on many more. Basis system controls are available in the 
 Controls module, and whatever else you may need, *there's an executor for that*.
 
-![v012.png](https://scrot.cloud/images/2021/02/21/v012.png)
+![v013.png](https://scrot.cloud/images/2021/02/21/v013.png)
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/nwg-panel.svg)](https://repology.org/project/nwg-panel/versions)
 
-## Modules - as for today
+## Modules
 
 ### Controls
 
@@ -32,6 +32,10 @@ Simple Gtk.Button with an icon, and a command assigned to it *(top left corner)*
 ### SwayWorkspaces
 
 Not really necessary set of textual buttons to switch between workspaces *(not in the picture)*;
+
+### Scratchpad
+
+Displays clickable icons representing windows moved to the sway scratchpad;
 
 ### Clock
 
