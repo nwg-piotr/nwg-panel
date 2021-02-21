@@ -85,6 +85,7 @@ def check_tree():
 
 def instantiate_content(panel, container, content_list, icons_path=""):
     check_key(panel, "position", "top")
+    check_key(panel, "items-padding", 0)
     for item in content_list:
         if item == "sway-taskbar":
             if "sway-taskbar" in panel:
