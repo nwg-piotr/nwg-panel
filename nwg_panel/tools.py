@@ -252,11 +252,11 @@ def list_outputs(sway=False, silent=False):
 
 
 def check_key(dictionary, key, default_value):
-    # adds a key w/ default value if missing from the dictionary
+    """
+    Adds a key w/ default value if missing from the dictionary
+    """
     if key not in dictionary:
         dictionary[key] = default_value
-        # print('Key missing, using default: "{}": {}'.format(key, default_value))
-        key_missing = True
 
 
 def cmd2string(cmd):
