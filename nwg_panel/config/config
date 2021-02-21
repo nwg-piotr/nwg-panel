@@ -12,6 +12,7 @@
     "padding-horizontal": 0,
     "padding-vertical": 0,
     "spacing": 0,
+    "items-padding": 0,
     "icons": "light",
     "css-name": "panel-top",
     "modules-left": [
@@ -144,6 +145,7 @@
     "padding-horizontal": 6,
     "padding-vertical": 0,
     "spacing": 0,
+    "items-padding": 0,
     "icons": "",
     "css-name": "panel-bottom",
     "modules-left": [
