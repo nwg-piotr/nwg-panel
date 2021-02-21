@@ -113,6 +113,17 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                     print("'sway-workspaces' not defined in this panel instance")
             else:
                 print("'sway-workspaces' ignored")
+                
+        if item == "scratchpad":
+            if sway:
+                # Added in v0.1.3, so may be undefined in user's config.
+                if item not in panel:
+                    panel["scratchpad"] = {}
+                scratchpad = Scratchpad(common.i3, common.i3.get_tree(), panel[item])
+                container.pack_start(scratchpad, False, False, panel["items-padding"])
+                common.scratchpads_list.append(scratchpad)
+            else:
+                print("'scratchpad' ignored")
 
         if "button-" in item:
             if item in panel:
@@ -146,14 +157,6 @@ def instantiate_content(panel, container, content_list, icons_path=""):
         if item == "cpu-avg" and nwg_panel.common.dependencies["psutil"]:
             cpu_avg = CpuAvg()
             container.pack_start(cpu_avg, False, False, panel["items-padding"])
-
-        if item == "scratchpad":
-            if item in panel:
-                settings = panel[item]
-                scratchpad = Scratchpad(common.i3, common.i3.get_tree(), panel[item])
-                container.pack_start(scratchpad, False, False, panel["items-padding"])
-
-                common.scratchpads_list.append(scratchpad)
 
 
 def main():
