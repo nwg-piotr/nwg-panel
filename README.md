@@ -10,6 +10,8 @@ Controls module, and whatever else you may need, *there's an executor for that*.
 
 ![v012.png](https://scrot.cloud/images/2021/02/21/v012.png)
 
+[![Packaging status](https://repology.org/badge/vertical-allrepos/nwg-panel.svg)](https://repology.org/project/nwg-panel/versions)
+
 ## Modules - as for today
 
 ### Controls
