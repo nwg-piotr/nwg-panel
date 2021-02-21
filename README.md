@@ -5,7 +5,7 @@ That's why I decided to try to code a GTK-based panel, including best features f
 [Waybar](https://github.com/Alexays/Waybar) and [tint2](https://gitlab.com/o9000/tint2). Many thanks to Developers
 and Contributors of the both projects!
 
-There are 7 modules available at the moment, and I don't plan on many more. Basis system controls are available in the 
+There are 8 modules available at the moment, and I don't plan on many more. Basis system controls are available in the 
 Controls module, and whatever else you may need, *there's an executor for that*.
 
 ![v013.png](https://scrot.cloud/images/2021/02/21/v013.png)
