@@ -389,7 +389,7 @@ class EditorWrapper(object):
         self.window.connect("key-release-event", handle_keyboard)
         self.window.connect("show", self.hide_parent, parent)
 
-        Gtk.Widget.set_size_request(self.window, 820, 1)
+        Gtk.Widget.set_size_request(self.window, 840, 1)
 
         self.known_modules = ["clock", "playerctl", "sway-taskbar", "sway-workspaces"]
 

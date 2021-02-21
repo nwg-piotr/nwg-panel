@@ -11,7 +11,7 @@ from nwg_panel.tools import check_key, get_icon, update_image
 
 class Scratchpad(Gtk.Box):
     def __init__(self, i3, tree, settings, icons_path=""):
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.settings = settings
         self.i3 = i3
         self.tree = tree
@@ -19,16 +19,11 @@ class Scratchpad(Gtk.Box):
         self.icons_path = icons_path
 
         defaults = {
-            "padding": 0,
             "css-name": "",
-            "icon-size": 16,
-            "interval": 1
+            "icon-size": 16
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
-
-        if settings["css-name"]:
-            self.set_property("name", settings["css-name"])
 
     def check_scratchpad(self, tree):
         content = []
@@ -49,7 +44,7 @@ class Scratchpad(Gtk.Box):
 
                 item = {"aid": aid, "pid": pid, "icon": icon, "name": node.name}
                 content.append(item)
-                
+
         if content != self.content:
             self.content = content
             self.build_box()
@@ -57,6 +52,12 @@ class Scratchpad(Gtk.Box):
     def build_box(self):
         for item in self.get_children():
             item.destroy()
+
+        if len(self.content) > 0 and self.settings["css-name"]:
+            self.set_property("name", self.settings["css-name"])
+        else:
+            self.set_property("name", None)
+
         for item in self.content:
             if item["icon"]:
                 eb = Gtk.EventBox()
@@ -66,7 +67,7 @@ class Scratchpad(Gtk.Box):
                 eb.connect("button-press-event", self.on_button_press, item["pid"])
                 if item["name"]:
                     eb.set_tooltip_text(item["name"])
-                self.pack_start(eb, False, False, 2)
+                self.pack_start(eb, False, False, 3)
 
         self.show_all()
 
