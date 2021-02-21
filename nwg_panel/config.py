@@ -85,6 +85,10 @@ SKELETON_PANEL: dict = {
         "button-css-name": "",
         "label-css-name": "",
         "interval": 1
+    },
+    "scratchpad": {
+          "css-name": "",
+          "icon-size": 16
     }
 }
 
@@ -391,7 +395,7 @@ class EditorWrapper(object):
 
         Gtk.Widget.set_size_request(self.window, 840, 1)
 
-        self.known_modules = ["clock", "playerctl", "sway-taskbar", "sway-workspaces"]
+        self.known_modules = ["clock", "playerctl", "sway-taskbar", "sway-workspaces", "scratchpad"]
 
         self.scrolled_window = builder.get_object("scrolled-window")
 
@@ -421,6 +425,9 @@ class EditorWrapper(object):
 
         btn = builder.get_object("btn-sway-workspaces")
         btn.connect("clicked", self.edit_sway_workspaces)
+
+        btn = builder.get_object("btn-scratchpad")
+        btn.connect("clicked", self.edit_scratchpad)
 
         btn = builder.get_object("btn-executors")
         btn.connect("clicked", self.select_executor)
@@ -469,12 +476,13 @@ class EditorWrapper(object):
             self.config = load_json(self.file)
             self.panel = self.config[self.panel_idx]
         else:
-            print("else")
             self.config = []
             self.panel = SKELETON_PANEL
             self.config.append(self.panel)
             self.panel_idx = self.config.index(self.panel)
             save_json(self.config, self.file)
+            
+        self.check_defaults()
 
     def set_panel(self):
         if self.file:
@@ -503,6 +511,9 @@ class EditorWrapper(object):
         }
         for key in defaults:
             check_key(self.panel, key, defaults[key])
+
+        for key in self.known_modules:
+            check_key(self.panel, key, {})
 
     def edit_panel(self, *args):
         self.check_defaults()
@@ -707,6 +718,8 @@ class EditorWrapper(object):
             self.update_playerctl()
         elif self.edited == "sway-workspaces":
             self.update_sway_workspaces()
+        elif self.edited == "scratchpad":
+            self.update_scratchpad()
         elif self.edited == "executor":
             self.update_executor()
         elif self.edited == "button":
@@ -1028,6 +1041,41 @@ class EditorWrapper(object):
         val = self.eb_workspaces_menu.get_text()
         if val:
             settings["numbers"] = val.split()
+
+        save_json(self.config, self.file)
+        
+    def edit_scratchpad(self, *args):
+        self.load_panel()
+        self.edited = "scratchpad"
+        check_key(self.panel, "scratchpad", {})
+        settings = self.panel["scratchpad"]
+        defaults = {
+            "css-name": "",
+            "icon-size": 16
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_scratchpad.glade"))
+        grid = builder.get_object("grid")
+
+        self.scratchpad_css_name = builder.get_object("css-name")
+        self.scratchpad_css_name.set_text(settings["css-name"])
+
+        self.scratchpad_icon_size = builder.get_object("icon-size")
+        self.scratchpad_icon_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
+        self.scratchpad_icon_size.configure(adj, 1, 0)
+        self.scratchpad_icon_size.set_value(settings["icon-size"])
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(grid)
+        
+    def update_scratchpad(self, *args):
+        settings = self.panel["scratchpad"]
+        settings["css-name"] = self.scratchpad_css_name.get_text()
+        settings["icon-size"] = int(self.scratchpad_icon_size.get_value())
 
         save_json(self.config, self.file)
 
