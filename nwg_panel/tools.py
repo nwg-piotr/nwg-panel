@@ -66,8 +66,11 @@ def get_app_dirs():
 
 
 def get_icon(app_name):
+    # GIMP returns "app_id": null and for some reason "class": "Gimp-2.10" instead of just "gimp".
+    # Until the GTK3 version is released, let's make an exception for GIMP.
     if "GIMP" in app_name.upper():
         return "gimp"
+    
     for d in nwg_panel.common.app_dirs:
         path = os.path.join(d, "{}.desktop".format(app_name))
         content = None
@@ -249,11 +252,11 @@ def list_outputs(sway=False, silent=False):
 
 
 def check_key(dictionary, key, default_value):
-    # adds a key w/ default value if missing from the dictionary
+    """
+    Adds a key w/ default value if missing from the dictionary
+    """
     if key not in dictionary:
         dictionary[key] = default_value
-        # print('Key missing, using default: "{}": {}'.format(key, default_value))
-        key_missing = True
 
 
 def cmd2string(cmd):
@@ -288,6 +291,7 @@ def get_volume():
         vol = int(round(element.get_volume() * 100 / max_vol, 0))
         switch = element.get_switch()
         del mixer
+
     elif nwg_panel.common.dependencies["amixer"]:
         result = cmd2string(nwg_panel.common.commands["get_volume_alt"])
         if result:
@@ -296,7 +300,10 @@ def get_volume():
                 if line.strip().startswith("Mono:"):
                     try:
                         vol = int(line.split()[3][1:-2])
-                        switch = "on" in line.split()[4]
+                        try:
+                            switch = "on" in line.split()[5]
+                        except:
+                            switch = "on" in line.split()[4]
                         break
                     except:
                         pass

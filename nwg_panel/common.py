@@ -17,8 +17,6 @@ controls_list = []
 config_dir = ""
 app_dirs = []
 
-key_missing = False
-
 dependencies = {
     "pyalsa": False,
     "psutil": False,
