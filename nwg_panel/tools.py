@@ -291,6 +291,7 @@ def get_volume():
         vol = int(round(element.get_volume() * 100 / max_vol, 0))
         switch = element.get_switch()
         del mixer
+
     elif nwg_panel.common.dependencies["amixer"]:
         result = cmd2string(nwg_panel.common.commands["get_volume_alt"])
         if result:
@@ -299,7 +300,10 @@ def get_volume():
                 if line.strip().startswith("Mono:"):
                     try:
                         vol = int(line.split()[3][1:-2])
-                        switch = "on" in line.split()[5]
+                        try:
+                            switch = "on" in line.split()[5]
+                        except:
+                            switch = "on" in line.split()[4]
                         break
                     except:
                         pass
