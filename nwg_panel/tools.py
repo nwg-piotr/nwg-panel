@@ -66,8 +66,11 @@ def get_app_dirs():
 
 
 def get_icon(app_name):
+    # GIMP returns "app_id": null and for some reason "class": "Gimp-2.10" instead of just "gimp".
+    # Until the GTK3 version is released, let's make an exception for GIMP.
     if "GIMP" in app_name.upper():
         return "gimp"
+    
     for d in nwg_panel.common.app_dirs:
         path = os.path.join(d, "{}.desktop".format(app_name))
         content = None
@@ -296,7 +299,7 @@ def get_volume():
                 if line.strip().startswith("Mono:"):
                     try:
                         vol = int(line.split()[3][1:-2])
-                        switch = "on" in line.split()[4]
+                        switch = "on" in line.split()[5]
                         break
                     except:
                         pass
