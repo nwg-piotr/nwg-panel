@@ -293,13 +293,21 @@ def get_volume():
         if result:
             lines = result.splitlines()
             for line in lines:
-                if "Front Left:" in line:
+                if line.strip().startswith("Mono:"):
                     try:
-                        vol = int(line.split()[4][1:-2])
+                        vol = int(line.split()[3][1:-2])
+                        switch = "on" in line.split()[4]
+                        break
                     except:
                         pass
-                    switch = "on" in line.split()[5]
-                    break
+
+                if line.strip().startswith("Front Left:"):
+                    try:
+                        vol = int(line.split()[4][1:-2])
+                        switch = "on" in line.split()[5]
+                        break
+                    except:
+                        pass
 
     return vol, switch
 
