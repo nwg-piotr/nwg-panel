@@ -25,17 +25,3 @@ dependencies = {
 }
 
 icons_path = ""  # "icons_light", "icons_dark" or "" (GTK icons)
-
-commands = {
-    "get_bt_name": "bluetoothctl show | awk '/Name/{print $2}'",
-    "get_bt_status": "bluetoothctl show | awk '/Powered/{print $2}'",
-    "get_brightness": "light -G",
-    "get_host": "uname -n",
-    "get_ssid": "iwgetid -r",
-    "get_user": "echo $USER",
-    "get_volume_alt": "amixer sget Master",
-    "set_brightness": "light -S",
-    "set_volume_alt": "amixer sset Master",
-    "systemctl": "systemctl",
-    "playerctl": "playerctl"
-}

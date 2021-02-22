@@ -5,7 +5,6 @@ import sys
 import json
 import subprocess
 import stat
-import psutil
 
 import gi
 
@@ -25,6 +24,11 @@ except ModuleNotFoundError:
 
 try:
     from pyalsa import alsamixer
+except:
+    pass
+
+try:
+    import psutil
 except:
     pass
 
@@ -294,7 +298,7 @@ def get_volume():
         del mixer
 
     elif nwg_panel.common.dependencies["amixer"]:
-        result = cmd2string(nwg_panel.common.commands["get_volume_alt"])
+        result = cmd2string("amixer sget Master")
         if result:
             lines = result.splitlines()
             for line in lines:
@@ -332,14 +336,14 @@ def set_volume(slider):
         element.set_volume_all(int(percent * max_vol / 100))
         del mixer
     else:
-        cmd = "{} {}% /dev/null 2>&1".format(nwg_panel.common.commands["set_volume_alt"], percent)
+        cmd = "{} {}% /dev/null 2>&1".format("amixer sset Master", percent)
         subprocess.call(cmd, shell=True)
 
 
 def get_brightness():
     brightness = 0
-    output = cmd2string(nwg_panel.common.commands["get_brightness"])
     try:
+        output = cmd2string("light -G")
         brightness = int(round(float(output), 0))
     except:
         pass
@@ -349,18 +353,21 @@ def get_brightness():
 
 def set_brightness(slider):
     value = slider.get_value()
-    res = subprocess.call("{} {}".format(nwg_panel.common.commands["set_brightness"], value), shell=True)
+    res = subprocess.call("{} {}".format("light -S", value), shell=True)
     if res != 0:
         print("Couldn't set brightness, is 'light' installed?")
 
 
 def get_battery():
-    b = psutil.sensors_battery()
-    percent = int(round(b.percent, 0))
-    charging = b.power_plugged
-    time = seconds2string(b.secsleft) if not charging else ""
+    try:
+        b = psutil.sensors_battery()
+        percent = int(round(b.percent, 0))
+        charging = b.power_plugged
+        time = seconds2string(b.secsleft) if not charging else ""
 
-    return percent, time, charging
+        return percent, time, charging
+    except:
+        return 0, "", False
 
 
 def seconds2string(seconds):
@@ -489,16 +496,20 @@ def create_pixbuf(icon_name, icon_size, icons_path=""):
 
 
 def bt_on():
-    output = subprocess.check_output("bluetoothctl show | awk '/Powered/{print $2}'", shell=True).decode(
-        "utf-8").strip()
-
-    return output == "yes"
+    try:
+        output = subprocess.check_output("bluetoothctl show | awk '/Powered/{print $2}'", shell=True).decode(
+            "utf-8").strip()
+        return output == "yes"
+    except:
+        return False
 
 
 def bt_name():
-    output = subprocess.check_output("bluetoothctl show | awk '/Name/{print $2}'", shell=True).decode("utf-8").strip()
-
-    return output
+    try:
+        output = subprocess.check_output("bluetoothctl show | awk '/Name/{print $2}'", shell=True).decode("utf-8").strip()
+        return output
+    except:
+        return "undetected"
 
 
 def bt_service_enabled():
