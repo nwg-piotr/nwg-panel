@@ -363,7 +363,11 @@ def get_battery():
         b = psutil.sensors_battery()
         percent = int(round(b.percent, 0))
         charging = b.power_plugged
-        time = seconds2string(b.secsleft) if not charging else ""
+        seconds = b.secsleft
+        if seconds != psutil.POWER_TIME_UNLIMITED and seconds != psutil.POWER_TIME_UNKNOWN:
+            time = seconds2string(seconds)
+        else:
+            time = ""
 
         return percent, time, charging
     except:
