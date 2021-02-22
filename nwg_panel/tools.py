@@ -5,6 +5,7 @@ import sys
 import json
 import subprocess
 import stat
+import psutil
 
 import gi
 
@@ -354,48 +355,27 @@ def set_brightness(slider):
 
 
 def get_battery():
-    if nwg_panel.common.dependencies["upower"]:
-        cmd = nwg_panel.common.commands["get_battery"]
-    elif nwg_panel.common.dependencies["acpi"]:
-        cmd = nwg_panel.common.commands["get_battery_alt"]
-    else:
-        return None, None
+    b = psutil.sensors_battery()
+    percent = int(round(b.percent, 0))
+    charging = b.power_plugged
+    time = seconds2string(b.secsleft) if not charging else ""
 
-    msg = ""
-    perc_val = 0
-    if cmd.split()[0] == "upower":
-        bat = []
-        try:
-            bat = cmd2string(cmd).splitlines()
-        except:
-            pass
-        state, time, percentage = "", "", ""
-        for line in bat:
-            line = line.strip()
-            if "time to empty" in line:
-                line = line.replace("time to empty", "time_to_empty")
-            parts = line.split()
+    return percent, time, charging
 
-            if "percentage:" in parts[0]:
-                percentage = parts[1]
-                perc_val = int(percentage.split("%")[0])
-            if "state:" in parts[0]:
-                state = parts[1]
-            if "time_to_empty:" in parts[0]:
-                time = " ".join(parts[1:])
-        msg = "{} {} {}".format(percentage, state, time)
-    elif cmd.split()[0] == "acpi":
-        bat = ""
-        try:
-            bat = cmd2string(cmd).splitlines()[0]
-        except:
-            pass
-        if bat:
-            parts = bat.split()
-            msg = " ".join(parts[2:])
-            perc_val = int(parts[3].split("%")[0])
 
-    return msg, perc_val
+def seconds2string(seconds):
+    min, sec = divmod(seconds, 60)
+    hrs, min = divmod(min, 60)
+
+    hrs = str(hrs)
+    if len(hrs) < 2:
+        hrs = "0{}".format(hrs)
+    
+    min = str(min)
+    if len(min) < 2:
+        min = "0{}".format(min)
+
+    return "{}:{}".format(hrs, min)
 
 
 def list_interfaces():

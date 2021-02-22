@@ -20,8 +20,6 @@ app_dirs = []
 dependencies = {
     "pyalsa": False,
     "psutil": False,
-    "upower": False,
-    "acpi": False,
     "netifaces": False,
     "amixer": False
 }
@@ -29,8 +27,6 @@ dependencies = {
 icons_path = ""  # "icons_light", "icons_dark" or "" (GTK icons)
 
 commands = {
-    "get_battery": "upower -i $(upower -e | grep BAT) | grep --color=never -E 'state|to\\\\ full|to\\\\ empty|percentage'",
-    "get_battery_alt": "acpi",
     "get_bt_name": "bluetoothctl show | awk '/Name/{print $2}'",
     "get_bt_status": "bluetoothctl show | awk '/Powered/{print $2}'",
     "get_brightness": "light -G",

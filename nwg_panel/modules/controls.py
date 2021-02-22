@@ -153,8 +153,8 @@ class Controls(Gtk.EventBox):
     def get_bat_output(self):
         if "battery" in self.settings["components"]:
             try:
-                msg, value = get_battery()
-                GLib.idle_add(self.update_battery, value)
+                value, time, charging = get_battery()
+                GLib.idle_add(self.update_battery, value, charging)
             except Exception as e:
                 print(e)
 
@@ -165,8 +165,7 @@ class Controls(Gtk.EventBox):
 
         return True
 
-    # No point in checking battery data more often that every 5 seconds:
-    # `upower` / `acpi` response does not change that quickly.
+    # No point in checking battery data more often that every 5 seconds
     def refresh_bat(self):
         thread = threading.Thread(target=self.get_bat_output)
         thread.daemon = True
@@ -200,8 +199,8 @@ class Controls(Gtk.EventBox):
         if self.bri_label:
             self.bri_label.set_text("{}%".format(value))
 
-    def update_battery(self, value):
-        icon_name = bat_icon_name(value)
+    def update_battery(self, value, charging):
+        icon_name = bat_icon_name(value, charging)
 
         if icon_name != self.bat_icon_name:
             update_image(self.bat_image, icon_name, self.icon_size, self.icons_path)
@@ -433,8 +432,8 @@ class PopupWindow(Gtk.Window):
             self.bat_icon_name = "view-refresh-symbolic"
             self.bat_image = Gtk.Image.new_from_icon_name(self.bat_icon_name, Gtk.IconSize.MENU)
 
-            msg, level = get_battery()
-            icon_name = bat_icon_name(level)
+            level, msg, charging = get_battery()
+            icon_name = bat_icon_name(level, charging)
 
             if icon_name != self.bat_icon_name:
                 update_image(self.bat_image, icon_name, self.icon_size, self.icons_path)
@@ -442,7 +441,7 @@ class PopupWindow(Gtk.Window):
 
             inner_hbox.pack_start(self.bat_image, False, False, 6)
 
-            self.bat_label = Gtk.Label(msg)
+            self.bat_label = Gtk.Label("{}% {}".format(level, msg))
             inner_hbox.pack_start(self.bat_label, False, True, 6)
 
             if "battery" in settings["commands"] and settings["commands"]["battery"]:
@@ -510,6 +509,7 @@ class PopupWindow(Gtk.Window):
                 e_box.connect('button-press-event', self.switch_menu_box)
 
         Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
+        Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, 5, self.refresh_bat)
 
     def on_window_exit(self, w, e):
         self.hide()
@@ -567,17 +567,22 @@ class PopupWindow(Gtk.Window):
                     update_image(self.bt_image, icon_name, self.icon_size, self.icons_path)
                     self.bt_icon_name = icon_name
 
-                self.bat_label.set_text(bt_name())
+                self.bt_label.set_text(bt_name())
+
+        return True
+
+    def refresh_bat(self):
+        if self.get_visible():
 
             if "battery" in self.settings["components"]:
-                msg, level = get_battery()
-                icon_name = bat_icon_name(level)
+                level, msg, charging = get_battery()
+                icon_name = bat_icon_name(level, charging)
 
                 if icon_name != self.bat_icon_name:
                     update_image(self.bat_image, icon_name, self.icon_size, self.icons_path)
                     self.bat_icon_name = icon_name
 
-                self.bat_label.set_text(msg)
+                self.bat_label.set_text("{}% {}".format(level, msg))
 
         return True
 
@@ -642,14 +647,22 @@ def vol_icon_name(value, switch):
     return icon_name
 
 
-def bat_icon_name(value):
+def bat_icon_name(value, is_charging):
     icon_name = "battery-empty-symbolic"
-    if value > 95:
-        icon_name = "battery-full-symbolic"
-    elif value > 50:
-        icon_name = "battery-good-symbolic"
-    elif value > 20:
-        icon_name = "battery-low-symbolic"
+    if is_charging:
+        if value > 95:
+            icon_name = "battery-full-charging-symbolic"
+        elif value > 50:
+            icon_name = "battery-good-charging-symbolic"
+        elif value > 20:
+            icon_name = "battery-low-charging-symbolic"
+    else:
+        if value > 95:
+            icon_name = "battery-full-symbolic"
+        elif value > 50:
+            icon_name = "battery-good-symbolic"
+        elif value > 20:
+            icon_name = "battery-low-symbolic"
 
     return icon_name
 
