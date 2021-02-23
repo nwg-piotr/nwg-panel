@@ -509,7 +509,6 @@ class PopupWindow(Gtk.Window):
                 e_box.connect('button-press-event', self.switch_menu_box)
 
         Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
-        Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, 5, self.refresh_bat)
 
     def on_window_exit(self, w, e):
         self.hide()
@@ -568,11 +567,6 @@ class PopupWindow(Gtk.Window):
                     self.bt_icon_name = icon_name
 
                 self.bt_label.set_text(bt_name())
-
-        return True
-
-    def refresh_bat(self):
-        if self.get_visible():
 
             if "battery" in self.settings["components"]:
                 level, msg, charging = get_battery()
