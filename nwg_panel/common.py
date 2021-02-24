@@ -19,7 +19,6 @@ app_dirs = []
 
 dependencies = {
     "pyalsa": False,
-    "psutil": False,
     "netifaces": False,
     "amixer": False
 }
