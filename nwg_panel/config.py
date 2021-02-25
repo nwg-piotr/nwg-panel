@@ -1112,6 +1112,7 @@ class EditorWrapper(object):
             "on-scroll-up": "",
             "on-scroll-down": "",
             "css-name": "",
+            "icon-placement": "left",
             "icon-size": 16,
             "interval": 1
         }
@@ -1149,6 +1150,9 @@ class EditorWrapper(object):
         self.executor_css_name = builder.get_object("css-name")
         self.executor_css_name.set_text(settings["css-name"])
 
+        self.executor_icon_placement = builder.get_object("icon-placement")
+        self.executor_icon_placement.set_active_id(settings["icon-placement"])
+
         self.executor_icon_size = builder.get_object("icon-size")
         self.executor_icon_size.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
@@ -1181,6 +1185,9 @@ class EditorWrapper(object):
             settings["on-scroll-up"] = self.executor_on_scroll_up.get_text()
             settings["on-scroll-down"] = self.executor_on_scroll_down.get_text()
             settings["css-name"] = self.executor_css_name.get_text()
+            val = self.executor_icon_placement.get_active_id()
+            if val:
+                settings["icon-placement"] = val
             settings["icon-size"] = int(self.executor_icon_size.get_value())
             settings["interval"] = int(self.executor_interval.get_value())
 

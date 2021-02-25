@@ -29,6 +29,7 @@ class Executor(Gtk.EventBox):
         check_key(settings, "script", "")
         check_key(settings, "interval", 0)
         check_key(settings, "css-name", "")
+        check_key(settings, "icon-placement", "left")
         check_key(settings, "icon-size", 16)
         check_key(settings, "tooltip-text", "")
         check_key(settings, "on-left-click", "")
@@ -131,8 +132,11 @@ class Executor(Gtk.EventBox):
         return True
 
     def build_box(self):
-        self.box.pack_start(self.image, False, False, 2)
+        if self.settings["icon-placement"] == "left":
+            self.box.pack_start(self.image, False, False, 2)
         self.box.pack_start(self.label, False, False, 2)
+        if self.settings["icon-placement"] != "left":
+            self.box.pack_start(self.image, False, False, 2)
 
     def on_enter_notify_event(self, widget, event):
         self.get_style_context().set_state(Gtk.StateFlags.SELECTED)
