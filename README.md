@@ -8,7 +8,7 @@ and Contributors of the both projects!
 There are 8 modules available at the moment, and I don't plan on many more. Basis system controls are available in the 
 Controls module, and whatever else you may need, *there's an executor for that*.
 
-![v013.png](https://scrot.cloud/images/2021/02/21/v013.png)
+![v015.png](https://scrot.cloud/images/2021/02/26/v015.png)
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/nwg-panel.svg)](https://repology.org/project/nwg-panel/versions)
 
@@ -51,4 +51,5 @@ Set of buttons, and a label to control mpris media player with the
 Last but not least: the Executor module displays an icon, and a label on the basis of a script 
 output, in user-defined intervals *(bottom right, and the weather executor next to the clock)*.
 
-See [Wiki](https://github.com/nwg-piotr/nwg-panel/wiki) for more information.
+See [Wiki](https://github.com/nwg-piotr/nwg-panel/wiki) for more information. You'll also find some useful
+executor examples there.
