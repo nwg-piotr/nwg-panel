@@ -290,15 +290,31 @@ def get_volume():
         mixer = alsamixer.Mixer()
         mixer.attach()
         mixer.load()
+        # https://github.com/nwg-piotr/nwg-panel/issues/24
+        try:
+            element = alsamixer.Element(mixer, nwg_panel.common.scontrol)
+        except OSError:
+            nwg_panel.common.scontrol = mixer.list()[0][0]
+            try:
+                element = alsamixer.Element(mixer, nwg_panel.common.scontrol)
+            except:
+                return 0, False
 
-        element = alsamixer.Element(mixer, "Master")
         max_vol = element.get_volume_range()[1]
         vol = int(round(element.get_volume() * 100 / max_vol, 0))
         switch = element.get_switch()
         del mixer
 
     elif nwg_panel.common.dependencies["amixer"]:
-        result = cmd2string("amixer sget Master")
+        # Same issue as above
+        result = cmd2string("amixer sget {}".format(nwg_panel.common.scontrol))
+        if not result:
+            try:
+                nwg_panel.common.scontrol = get_scontrol()
+                result = cmd2string("amixer sget {}".format(nwg_panel.common.scontrol))
+            except:
+                result = None
+
         if result:
             lines = result.splitlines()
             for line in lines:
@@ -324,6 +340,11 @@ def get_volume():
     return vol, switch
 
 
+def get_scontrol():
+    result = cmd2string("amixer scontrols")
+    return result.split()[3].split(",")[0][1:-1]
+
+
 def set_volume(slider):
     percent = slider.get_value()
     if nwg_panel.common.dependencies["pyalsa"]:
@@ -331,13 +352,20 @@ def set_volume(slider):
         mixer.attach()
         mixer.load()
 
-        element = alsamixer.Element(mixer, "Master")
-        max_vol = element.get_volume_range()[1]
-        element.set_volume_all(int(percent * max_vol / 100))
+        try:
+            element = alsamixer.Element(mixer, nwg_panel.common.scontrol)
+            max_vol = element.get_volume_range()[1]
+            element.set_volume_all(int(percent * max_vol / 100))
+        except Exception as e:
+            print(e)
         del mixer
     else:
-        cmd = "{} {}% /dev/null 2>&1".format("amixer sset Master", percent)
-        subprocess.call(cmd, shell=True)
+        c = "amixer sset {}".format(nwg_panel.common.scontrol)
+        cmd = "{} {}% /dev/null 2>&1".format(c, percent)
+        try:
+            subprocess.call(cmd.split())
+        except Exception as e:
+            print(e)
 
 
 def get_brightness():
