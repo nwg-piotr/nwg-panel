@@ -6,7 +6,8 @@ That's why I decided to try to code a GTK-based panel, including best features f
 and Contributors of the both projects!
 
 There are 8 modules available at the moment, and I don't plan on many more. Basis system controls are available in the 
-Controls module, and whatever else you may need, *there's an executor for that*.
+Controls module, and whatever else you may need, 
+[there's an executor for that](https://github.com/nwg-piotr/nwg-panel/wiki/Some-useful-executors).
 
 ![v015.png](https://scrot.cloud/images/2021/02/26/v015.png)
 
