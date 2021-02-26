@@ -24,3 +24,5 @@ dependencies = {
 }
 
 icons_path = ""  # "icons_light", "icons_dark" or "" (GTK icons)
+
+scontrol = "Master"
