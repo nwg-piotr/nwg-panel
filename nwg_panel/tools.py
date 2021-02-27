@@ -129,6 +129,28 @@ def get_config_dir():
     return config_dir
 
 
+def get_defaults():
+    file = os.path.join(local_dir(), "defaults")
+    if os.path.isfile(file):
+        defaults = load_json(file)
+        missing = False
+        if "master" not in defaults:
+            defaults["master"] = "Master"
+            missing = True
+            
+        if missing:
+            save_json(defaults, file)
+
+        return defaults
+    else:
+        defaults = {
+            "master": "Master"
+        }
+        save_json(defaults, file)
+
+        return defaults
+
+
 def copy_files(src_dir, dst_dir, restore=False):
     src_files = os.listdir(src_dir)
     for file in src_files:
@@ -292,15 +314,15 @@ def get_volume():
         mixer.load()
         # https://github.com/nwg-piotr/nwg-panel/issues/24
         try:
-            element = alsamixer.Element(mixer, nwg_panel.common.scontrol)
+            element = alsamixer.Element(mixer, nwg_panel.common.defaults["master"])
         except OSError:
             user_file = os.path.join(get_config_dir(), "scontrol")
             if os.path.isfile(user_file):
-                nwg_panel.common.scontrol = load_string(user_file)
+                nwg_panel.common.defaults["master"] = load_string(user_file)
             else:
-                nwg_panel.common.scontrol = mixer.list()[0][0]
+                nwg_panel.common.defaults["master"] = mixer.list()[0][0]
             try:
-                element = alsamixer.Element(mixer, nwg_panel.common.scontrol)
+                element = alsamixer.Element(mixer, nwg_panel.common.defaults["master"])
             except:
                 return 0, False
 
@@ -314,11 +336,11 @@ def get_volume():
 
     elif nwg_panel.common.dependencies["amixer"]:
         # Same issue as above
-        result = cmd2string("amixer sget {}".format(nwg_panel.common.scontrol))
+        result = cmd2string("amixer sget {}".format(nwg_panel.common.defaults["master"]))
         if not result:
             try:
-                nwg_panel.common.scontrol = get_scontrol()
-                result = cmd2string("amixer sget {}".format(nwg_panel.common.scontrol))
+                nwg_panel.common.defaults["master"] = get_scontrol()
+                result = cmd2string("amixer sget {}".format(nwg_panel.common.defaults["master"]))
             except:
                 result = None
 
@@ -364,14 +386,14 @@ def set_volume(slider):
         mixer.load()
 
         try:
-            element = alsamixer.Element(mixer, nwg_panel.common.scontrol)
+            element = alsamixer.Element(mixer, nwg_panel.common.defaults["master"])
             max_vol = element.get_volume_range()[1]
             element.set_volume_all(int(percent * max_vol / 100))
         except Exception as e:
             print(e)
         del mixer
     else:
-        c = "amixer sset {}".format(nwg_panel.common.scontrol)
+        c = "amixer sset {}".format(nwg_panel.common.defaults["master"])
         cmd = "{} {}% /dev/null 2>&1".format(c, percent)
         try:
             subprocess.call(cmd.split())
