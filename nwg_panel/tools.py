@@ -294,15 +294,22 @@ def get_volume():
         try:
             element = alsamixer.Element(mixer, nwg_panel.common.scontrol)
         except OSError:
-            nwg_panel.common.scontrol = mixer.list()[0][0]
+            user_file = os.path.join(get_config_dir(), "scontrol")
+            if os.path.isfile(user_file):
+                nwg_panel.common.scontrol = load_string(user_file)
+            else:
+                nwg_panel.common.scontrol = mixer.list()[0][0]
             try:
                 element = alsamixer.Element(mixer, nwg_panel.common.scontrol)
             except:
                 return 0, False
 
-        max_vol = element.get_volume_range()[1]
-        vol = int(round(element.get_volume() * 100 / max_vol, 0))
-        switch = element.get_switch()
+        try:
+            max_vol = element.get_volume_range()[1]
+            vol = int(round(element.get_volume() * 100 / max_vol, 0))
+            switch = element.get_switch()
+        except:
+            pass
         del mixer
 
     elif nwg_panel.common.dependencies["amixer"]:
@@ -341,6 +348,10 @@ def get_volume():
 
 
 def get_scontrol():
+    user_file = os.path.join(get_config_dir(), "scontrol")
+    if os.path.isfile(user_file):
+        return load_string(user_file)
+    
     result = cmd2string("amixer scontrols")
     return result.split()[3].split(",")[0][1:-1]
 
