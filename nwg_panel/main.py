@@ -166,6 +166,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
 def main():
     common.config_dir = get_config_dir()
+    common.defaults = get_defaults()
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-c",
