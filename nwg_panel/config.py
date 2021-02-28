@@ -9,7 +9,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, load_json, save_json, load_string, list_outputs, check_key, list_configs, \
-    local_dir, create_pixbuf, update_image
+    local_dir, create_pixbuf, update_image, is_command
 
 from nwg_panel.__about__ import __version__
 
@@ -1488,6 +1488,7 @@ class EditorWrapper(object):
             "commands": {
             },
             "show-values": False,
+            "output-switcher": False,
             "interval": 1,
             "icon-size": 16,
             "hover-opens": True,
@@ -1535,6 +1536,10 @@ class EditorWrapper(object):
 
         self.ctrl_comp_volume = builder.get_object("ctrl-comp-volume")
         self.ctrl_comp_volume.set_active("volume" in settings["components"])
+
+        self.ctrl_comp_switcher = builder.get_object("output-switcher")
+        self.ctrl_comp_switcher.set_sensitive(is_command("pactl"))
+        self.ctrl_comp_switcher.set_active(settings["output-switcher"])
 
         self.ctrl_comp_net = builder.get_object("ctrl-comp-net")
         self.ctrl_comp_net.set_active("net" in settings["components"])
@@ -1604,6 +1609,8 @@ class EditorWrapper(object):
         else:
             if "volume" in settings["components"]:
                 settings["components"].remove("volume")
+                
+        settings["output-switcher"] = self.ctrl_comp_switcher.get_active()
 
         if self.ctrl_comp_net.get_active():
             if "net" not in settings["components"]:

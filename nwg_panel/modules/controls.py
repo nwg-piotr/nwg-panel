@@ -11,7 +11,7 @@ gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, GtkLayerShell
 
 from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery, \
-    get_interface, update_image, bt_service_enabled, bt_on, bt_name
+    get_interface, update_image, bt_service_enabled, bt_on, bt_name, is_command, list_sinks
 
 from nwg_panel.common import dependencies
 
@@ -222,6 +222,7 @@ class Controls(Gtk.EventBox):
     def on_button_press(self, w, event):
         if not self.popup_window.get_visible():
             self.popup_window.show_all()
+            self.popup_window.sink_box.hide()
             self.popup_window.menu_box.hide()
         else:
             self.popup_window.hide()
@@ -231,6 +232,7 @@ class Controls(Gtk.EventBox):
         if self.settings["hover-opens"]:
             if not self.popup_window.get_visible():
                 self.popup_window.show_all()
+                self.popup_window.sink_box.hide()
                 self.popup_window.menu_box.hide()
         else:
             self.get_style_context().set_state(Gtk.StateFlags.SELECTED)
@@ -260,6 +262,11 @@ class PopupWindow(Gtk.Window):
         self.bt_image = Gtk.Image()
 
         self.net_icon_name = ""
+        
+        self.sinks = []
+        if is_command("pactl") and settings["output-switcher"]:
+            self.sinks = list_sinks()
+            self.connect("show", self.refresh_sinks)
 
         eb = Gtk.EventBox()
         eb.set_above_child(False)
@@ -340,7 +347,22 @@ class PopupWindow(Gtk.Window):
             scale.connect("value-changed", self.set_vol)
 
             inner_hbox.pack_start(scale, True, True, 5)
+            if is_command("pactl") and settings["output-switcher"]:
+                pactl_eb = Gtk.EventBox()
+                image = Gtk.Image()
+                pactl_eb.add(image)
+                pactl_eb.connect("enter_notify_event", self.on_enter_notify_event)
+                pactl_eb.connect("leave_notify_event", self.on_leave_notify_event)
+                update_image(image, "pan-down-symbolic", self.icon_size, self.icons_path)
+                inner_hbox.pack_end(pactl_eb, False, False, 5)
+                
+            
             add_sep = True
+
+        if is_command("pactl") and settings["output-switcher"]:
+            self.sink_box = SinkBox()
+            pactl_eb.connect('button-press-event', self.sink_box.switch_visibility)
+            v_box.pack_start(self.sink_box, False, False, 0)
 
         if add_sep:
             sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
@@ -485,8 +507,8 @@ class PopupWindow(Gtk.Window):
             check_key(template, "items", [])
             if template["items"]:
                 img = Gtk.Image()
-                update_image(img, "pan-end-symbolic", self.icon_size, self.icons_path)
-                inner_hbox.pack_end(img, False, True, 0)
+                update_image(img, "pan-down-symbolic", self.icon_size, self.icons_path)
+                inner_hbox.pack_end(img, False, True, 5)
 
                 e_box.connect("enter-notify-event", self.on_enter_notify_event)
                 e_box.connect("leave-notify-event", self.on_leave_notify_event)
@@ -518,6 +540,9 @@ class PopupWindow(Gtk.Window):
             self.menu_box.hide()
         else:
             self.menu_box.show_all()
+            
+    def refresh_sinks(self, *args):
+        self.sinks = list_sinks()
 
     def custom_item(self, name, icon, cmd):
         eb = Gtk.EventBox()
@@ -612,6 +637,48 @@ class PopupWindow(Gtk.Window):
     def launch(self, w, e, cmd):
         print("Executing '{}'".format(cmd))
         subprocess.Popen('exec {}'.format(cmd), shell=True)
+        self.hide()
+
+
+class SinkBox(Gtk.Box):
+    def __init__(self):
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+        self.sinks = None
+        self.refresh()
+
+    def refresh(self):
+        for item in self.get_children():
+            item.destroy()
+        self.sinks = list_sinks()
+        for sink in self.sinks:
+            eb = Gtk.EventBox()
+            eb.connect("enter_notify_event", self.on_enter_notify_event)
+            eb.connect("leave_notify_event", self.on_leave_notify_event)
+            eb.connect('button-press-event', self.switch_sink, sink["name"])
+            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+            vbox.pack_start(hbox, True, True, 6)
+            label = Gtk.Label(sink["desc"][:30])
+            hbox.pack_start(label, False, True, 34)
+            eb.add(vbox)
+            self.pack_start(eb, False, False, 0)
+            
+    def switch_visibility(self, *args):
+        if self.get_visible():
+            self.hide()
+        else:
+            self.refresh()
+            self.show_all()
+
+    def on_enter_notify_event(self, widget, event):
+        widget.get_style_context().set_state(Gtk.StateFlags.SELECTED)
+
+    def on_leave_notify_event(self, widget, event):
+        widget.get_style_context().set_state(Gtk.StateFlags.NORMAL)
+        
+    def switch_sink(self, w, e, sink):
+        print("Sink: '{}'".format(sink))
+        subprocess.Popen('exec pacmd set-default-sink "{}"'.format(sink), shell=True)
         self.hide()
 
 
