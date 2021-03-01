@@ -222,8 +222,10 @@ class Controls(Gtk.EventBox):
     def on_button_press(self, w, event):
         if not self.popup_window.get_visible():
             self.popup_window.show_all()
-            self.popup_window.sink_box.hide()
-            self.popup_window.menu_box.hide()
+            if self.popup_window.sink_box:
+                self.popup_window.sink_box.hide()
+            if self.popup_window.menu_box:
+                self.popup_window.menu_box.hide()
         else:
             self.popup_window.hide()
         return False
@@ -232,8 +234,10 @@ class Controls(Gtk.EventBox):
         if self.settings["hover-opens"]:
             if not self.popup_window.get_visible():
                 self.popup_window.show_all()
-                self.popup_window.sink_box.hide()
-                self.popup_window.menu_box.hide()
+                if self.popup_window.sink_box:
+                    self.popup_window.sink_box.hide()
+                if self.popup_window.menu_box:
+                    self.popup_window.menu_box.hide()
         else:
             self.get_style_context().set_state(Gtk.StateFlags.SELECTED)
         return True
@@ -262,6 +266,9 @@ class PopupWindow(Gtk.Window):
         self.bt_image = Gtk.Image()
 
         self.net_icon_name = ""
+
+        self.menu_box = None
+        self.sink_box = None
         
         check_key(settings, "output-switcher", False)
         self.sinks = []
