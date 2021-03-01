@@ -263,6 +263,7 @@ class PopupWindow(Gtk.Window):
 
         self.net_icon_name = ""
         
+        check_key(settings, "output-switcher", False)
         self.sinks = []
         if is_command("pactl") and settings["output-switcher"]:
             self.sinks = list_sinks()
@@ -658,8 +659,11 @@ class SinkBox(Gtk.Box):
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
             vbox.pack_start(hbox, True, True, 6)
-            label = Gtk.Label(sink["desc"][:30])
-            hbox.pack_start(label, False, True, 34)
+            hb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+            Gtk.Widget.set_size_request(hb, 6, 1)
+            hbox.pack_start(hb, False, False, 0)
+            label = Gtk.Label(sink["desc"][:26])
+            hbox.pack_start(label, False, True, 0)
             eb.add(vbox)
             self.pack_start(eb, False, False, 0)
             

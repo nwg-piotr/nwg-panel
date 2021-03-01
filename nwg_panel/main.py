@@ -322,7 +322,7 @@ def main():
                     pass
 
                 cc = Controls(panel["controls-settings"], panel["position"], panel["controls"],
-                              int(w / 6), monitor=monitor, icons_path=icons_path)
+                              int(w / 5), monitor=monitor, icons_path=icons_path)
                 common.controls_list.append(cc)
                 left_box.pack_start(cc, False, False, 0)
             
@@ -349,7 +349,7 @@ def main():
                     pass
 
                 cc = Controls(panel["controls-settings"], panel["position"], panel["controls"],
-                              int(w / 6), monitor=monitor, icons_path=icons_path)
+                              int(w / 5), monitor=monitor, icons_path=icons_path)
                 common.controls_list.append(cc)
                 right_box.pack_end(cc, False, False, 0)
 
