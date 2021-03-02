@@ -97,7 +97,8 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 if sway:
                     check_key(panel["sway-taskbar"], "all-outputs", False)
                     if panel["sway-taskbar"]["all-outputs"] or "output" not in panel:
-                        taskbar = SwayTaskbar(panel["sway-taskbar"], common.i3, panel["position"], icons_path=icons_path)
+                        taskbar = SwayTaskbar(panel["sway-taskbar"], common.i3, panel["position"],
+                                              icons_path=icons_path)
                     else:
                         taskbar = SwayTaskbar(panel["sway-taskbar"], common.i3, panel["position"],
                                               display_name="{}".format(panel["output"]), icons_path=icons_path)
@@ -118,7 +119,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                     print("'sway-workspaces' not defined in this panel instance")
             else:
                 print("'sway-workspaces' ignored")
-                
+
         if item == "scratchpad":
             if sway:
                 # Added in v0.1.3, so may be undefined in user's config.
@@ -202,7 +203,7 @@ def main():
 
     global restart_cmd
     restart_cmd = "nwg-panel -c {} -s {}".format(args.config, args.style)
-    
+
     # Try and kill already running instance if any
     pid_file = os.path.join(temp_dir(), "nwg-panel.pid")
     if os.path.isfile(pid_file):
@@ -249,11 +250,11 @@ def main():
             icons_path = os.path.join(common.config_dir, "icons_dark")
 
         check_key(panel, "output", "")
-        
+
         # This is to allow width "auto" value. Actually all non-numeric values will be removed.
         if "width" in panel and not isinstance(panel["width"], int):
             panel.pop("width")
-            
+
         if panel["output"] in common.outputs or not panel["output"]:
             check_key(panel, "spacing", 6)
             check_key(panel, "css-name", "")
@@ -276,6 +277,10 @@ def main():
 
             check_key(panel, "width", 0)
             w = panel["width"]
+
+            check_key(panel["controls-settings"], "window-width", 0)
+            controls_width = panel["controls-settings"]["window-width"] if panel["controls-settings"][
+                                                                               "window-width"] > 0 else int(w / 5)
             check_key(panel, "height", 0)
             h = panel["height"]
 
@@ -300,7 +305,7 @@ def main():
             # This is to allow the "auto" value. Actually all non-numeric values will be removed.
             if "homogeneous" in panel and not isinstance(panel["homogeneous"], bool):
                 panel.pop("homogeneous")
-            
+
             # set equal columns width by default if "modules-center" not empty; this may be overridden in config
             if panel["modules-center"]:
                 check_key(panel, "homogeneous", True)
@@ -322,10 +327,10 @@ def main():
                     pass
 
                 cc = Controls(panel["controls-settings"], panel["position"], panel["controls"],
-                              int(w / 5), monitor=monitor, icons_path=icons_path)
+                              controls_width, monitor=monitor, icons_path=icons_path)
                 common.controls_list.append(cc)
                 left_box.pack_start(cc, False, False, 0)
-            
+
             instantiate_content(panel, left_box, panel["modules-left"], icons_path=icons_path)
 
             center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
@@ -349,7 +354,7 @@ def main():
                     pass
 
                 cc = Controls(panel["controls-settings"], panel["position"], panel["controls"],
-                              int(w / 5), monitor=monitor, icons_path=icons_path)
+                              controls_width, monitor=monitor, icons_path=icons_path)
                 common.controls_list.append(cc)
                 right_box.pack_end(cc, False, False, 0)
 

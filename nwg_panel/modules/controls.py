@@ -666,14 +666,11 @@ class SinkBox(Gtk.Box):
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
             vbox.pack_start(hbox, True, True, 6)
-            hb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-            Gtk.Widget.set_size_request(hb, 6, 1)
-            hbox.pack_start(hb, False, False, 0)
             desc = sink["desc"]
             if len(desc) > 26:
                 desc = "{}\u2026".format(desc[:26])
             label = Gtk.Label(desc)
-            hbox.pack_start(label, False, True, 0)
+            hbox.pack_start(label, True, True, 0)
             eb.add(vbox)
             self.pack_start(eb, False, False, 0)
             
