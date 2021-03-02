@@ -9,7 +9,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, load_json, save_json, load_string, list_outputs, check_key, list_configs, \
-    local_dir, create_pixbuf, update_image
+    local_dir, create_pixbuf, update_image, is_command
 
 from nwg_panel.__about__ import __version__
 
@@ -1488,7 +1488,9 @@ class EditorWrapper(object):
             "commands": {
             },
             "show-values": False,
+            "output-switcher": False,
             "interval": 1,
+            "window-width": 0,
             "icon-size": 16,
             "hover-opens": True,
             "leave-closes": True,
@@ -1536,6 +1538,10 @@ class EditorWrapper(object):
         self.ctrl_comp_volume = builder.get_object("ctrl-comp-volume")
         self.ctrl_comp_volume.set_active("volume" in settings["components"])
 
+        self.ctrl_comp_switcher = builder.get_object("output-switcher")
+        self.ctrl_comp_switcher.set_sensitive(is_command("pactl"))
+        self.ctrl_comp_switcher.set_active(settings["output-switcher"])
+
         self.ctrl_comp_net = builder.get_object("ctrl-comp-net")
         self.ctrl_comp_net.set_active("net" in settings["components"])
 
@@ -1562,6 +1568,12 @@ class EditorWrapper(object):
 
         self.ctrl_css_name = builder.get_object("css-name")
         self.ctrl_css_name.set_text(settings["css-name"])
+
+        self.ctrl_window_width = builder.get_object("window-width")
+        self.ctrl_window_width.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=1920, step_increment=1, page_increment=10, page_size=1)
+        self.ctrl_window_width.configure(adj, 1, 0)
+        self.ctrl_window_width.set_value(settings["window-width"])
 
         self.ctrl_icon_size = builder.get_object("icon-size")
         self.ctrl_icon_size.set_numeric(True)
@@ -1604,6 +1616,8 @@ class EditorWrapper(object):
         else:
             if "volume" in settings["components"]:
                 settings["components"].remove("volume")
+                
+        settings["output-switcher"] = self.ctrl_comp_switcher.get_active()
 
         if self.ctrl_comp_net.get_active():
             if "net" not in settings["components"]:
@@ -1632,6 +1646,7 @@ class EditorWrapper(object):
         settings["commands"]["battery"] = self.ctrl_cdm_battery.get_text()
         settings["css-name"] = self.ctrl_css_name.get_text()
 
+        settings["window-width"] = int(self.ctrl_window_width.get_value())
         settings["icon-size"] = int(self.ctrl_icon_size.get_value())
         settings["interval"] = int(self.ctrl_interval.get_value())
 

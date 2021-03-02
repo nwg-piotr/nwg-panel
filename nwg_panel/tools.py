@@ -378,6 +378,33 @@ def get_scontrol():
     return result.split()[3].split(",")[0][1:-1]
 
 
+def list_sinks():
+    sinks = []
+    if is_command("pactl"):
+        output = cmd2string("pactl list short sinks")
+        if output:
+            for line in output.splitlines():
+                details = line.split()
+                name = details[1]
+                if details[-1].upper() == "RUNNING":
+                    sinks.insert(0, {"name": name})
+                else:
+                    sinks.append({"name": name, "desc": "unknown"})
+
+    if is_command("pacmd"):
+        output = cmd2string("pacmd list-sinks").splitlines()
+        for item in sinks:
+            im_in = False
+            for line in output:
+                if item["name"] in line:
+                    im_in = True
+                if im_in and "device.description" in line:
+                    desc = line.split("=")[-1].strip()[1:-1]
+                    item["desc"] = desc
+                    break
+    return sinks
+
+
 def set_volume(slider):
     percent = slider.get_value()
     if nwg_panel.common.dependencies["pyalsa"]:
