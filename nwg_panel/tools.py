@@ -315,8 +315,8 @@ def get_volume():
         # https://github.com/nwg-piotr/nwg-panel/issues/24
         try:
             element = alsamixer.Element(mixer, nwg_panel.common.defaults["master"])
-        except OSError:
-            user_file = os.path.join(get_config_dir(), "scontrol")
+        except:
+            user_file = os.path.join(local_dir(), "defaults")
             if os.path.isfile(user_file):
                 nwg_panel.common.defaults["master"] = load_string(user_file)
             else:
