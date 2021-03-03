@@ -350,6 +350,14 @@ def list_sinks():
     return sinks
 
 
+def toggle_mute(*args):
+    vol, muted = get_volume()
+    if muted:
+        subprocess.call("pamixer -u".split())
+    else:
+        subprocess.call("pamixer -m".split())
+
+
 def set_volume(slider):
     percent = slider.get_value()
     if nwg_panel.common.dependencies["pyalsa"]:

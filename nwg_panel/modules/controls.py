@@ -11,7 +11,7 @@ gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, GtkLayerShell
 
 from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery, \
-    get_interface, update_image, bt_service_enabled, bt_on, bt_name, is_command, list_sinks
+    get_interface, update_image, bt_service_enabled, bt_on, bt_name, is_command, list_sinks, toggle_mute
 
 from nwg_panel.common import dependencies
 
@@ -350,7 +350,12 @@ class PopupWindow(Gtk.Window):
                 update_image(self.vol_image, icon_name, self.icon_size, self.icons_path)
                 self.vol_icon_name = icon_name
 
-            inner_hbox.pack_start(self.vol_image, False, False, 6)
+            eb = Gtk.EventBox()
+            eb.connect("enter_notify_event", self.on_enter_notify_event)
+            eb.connect("leave_notify_event", self.on_leave_notify_event)
+            eb.connect("button-press-event", toggle_mute)
+            eb.add(self.vol_image)
+            inner_hbox.pack_start(eb, False, False, 6)
 
             self.vol_scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
             self.vol_scale.set_value(vol)
