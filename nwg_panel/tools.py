@@ -33,6 +33,10 @@ except:
     pass
 
 
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
+
 def temp_dir():
     if os.getenv("TMPDIR"):
         return os.getenv("TMPDIR")
@@ -315,23 +319,22 @@ def get_volume():
         # https://github.com/nwg-piotr/nwg-panel/issues/24
         try:
             element = alsamixer.Element(mixer, nwg_panel.common.defaults["master"])
-        except:
-            user_file = os.path.join(local_dir(), "defaults")
-            if os.path.isfile(user_file):
-                nwg_panel.common.defaults["master"] = load_string(user_file)
-            else:
-                nwg_panel.common.defaults["master"] = mixer.list()[0][0]
-            try:
-                element = alsamixer.Element(mixer, nwg_panel.common.defaults["master"])
-            except:
-                return 0, False
-
-        try:
             max_vol = element.get_volume_range()[1]
             vol = int(round(element.get_volume() * 100 / max_vol, 0))
             switch = element.get_switch()
         except:
-            pass
+            try:
+                element = alsamixer.Element(mixer, mixer.list()[0][0])
+                # Overwrite user-defined name if caused error
+                print("'{}' didn't work, using {} instead".format(nwg_panel.common.defaults["master"], element.name))
+                nwg_panel.common.defaults["master"] = element.name
+
+                max_vol = element.get_volume_range()[1]
+                vol = int(round(element.get_volume() * 100 / max_vol, 0))
+                switch = element.get_switch()
+            except:
+                return 0, False
+
         del mixer
 
     elif nwg_panel.common.dependencies["amixer"]:
@@ -370,10 +373,6 @@ def get_volume():
 
 
 def get_scontrol():
-    user_file = os.path.join(get_config_dir(), "scontrol")
-    if os.path.isfile(user_file):
-        return load_string(user_file)
-    
     result = cmd2string("amixer scontrols")
     return result.split()[3].split(",")[0][1:-1]
 
@@ -411,13 +410,12 @@ def set_volume(slider):
         mixer = alsamixer.Mixer()
         mixer.attach()
         mixer.load()
-
         try:
             element = alsamixer.Element(mixer, nwg_panel.common.defaults["master"])
             max_vol = element.get_volume_range()[1]
             element.set_volume_all(int(percent * max_vol / 100))
         except Exception as e:
-            print(e)
+            eprint(e)
         del mixer
     else:
         c = "amixer sset {}".format(nwg_panel.common.defaults["master"])
@@ -425,7 +423,7 @@ def set_volume(slider):
         try:
             subprocess.call(cmd.split())
         except Exception as e:
-            print(e)
+            eprint(e)
 
 
 def get_brightness():
