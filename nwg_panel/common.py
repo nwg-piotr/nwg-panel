@@ -22,6 +22,7 @@ commands = {
     "wlr-randr": False,
     "light": False,
     "playerctl": False,
+    "pactl": False,
     "systemctl": False,
     "netifaces": False
 }

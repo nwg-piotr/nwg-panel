@@ -11,7 +11,7 @@ gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, GtkLayerShell
 
 from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery, \
-    get_interface, update_image, bt_service_enabled, bt_on, bt_name, is_command, list_sinks, toggle_mute
+    get_interface, update_image, bt_service_enabled, bt_on, bt_name, eprint, list_sinks, toggle_mute
 
 from nwg_panel.common import commands
 
@@ -706,10 +706,13 @@ class SinkBox(Gtk.Box):
 
     def on_leave_notify_event(self, widget, event):
         widget.get_style_context().set_state(Gtk.StateFlags.NORMAL)
-        
+
     def switch_sink(self, w, e, sink):
-        print("Sink: '{}'".format(sink))
-        subprocess.Popen('exec pamixer --sink "{}"'.format(sink), shell=True)
+        if commands["pactl"]:
+            print("Sink: '{}'".format(sink))
+            subprocess.Popen('exec pactl set-default-sink "{}"'.format(sink), shell=True)
+        else:
+            eprint("Couldn't switch sinks, 'pactl' (libpulse) not found")
         self.hide()
 
 
