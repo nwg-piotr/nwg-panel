@@ -275,7 +275,7 @@ class PopupWindow(Gtk.Window):
         
         check_key(settings, "output-switcher", False)
         self.sinks = []
-        if is_command("pactl") and settings["output-switcher"]:
+        if is_command("pamixer") and settings["output-switcher"]:
             self.sinks = list_sinks()
             self.connect("show", self.refresh_sinks)
 
@@ -362,7 +362,7 @@ class PopupWindow(Gtk.Window):
             self.vol_scale.connect("value-changed", self.set_vol)
 
             inner_hbox.pack_start(self.vol_scale, True, True, 5)
-            if is_command("pactl") and settings["output-switcher"]:
+            if is_command("pamixer") and settings["output-switcher"]:
                 pactl_eb = Gtk.EventBox()
                 image = Gtk.Image()
                 pactl_eb.add(image)
@@ -374,7 +374,7 @@ class PopupWindow(Gtk.Window):
             
             add_sep = True
 
-        if is_command("pactl") and settings["output-switcher"]:
+        if is_command("pamixer") and settings["output-switcher"]:
             self.sink_box = SinkBox()
             pactl_eb.connect('button-press-event', self.sink_box.switch_visibility)
             v_box.pack_start(self.sink_box, False, False, 0)

@@ -312,24 +312,22 @@ def is_command(cmd):
 def get_volume():
     vol = 0
     muted = False
-    try:
-        vol = int(cmd2string("pamixer --get-volume"))
-    except Exception as e:
-        eprint(e)
-
-    try:
-        muted = subprocess.check_output("pamixer --get-mute", shell=True).decode(
-            "utf-8").strip() == "true"
-    except subprocess.CalledProcessError:
-        # the command above returns the 'disabled` status w/ CalledProcessError, exit status 1
-        pass
+    if is_command("pamixer"):
+        try:
+            vol = int(cmd2string("pamixer --get-volume"))
+        except Exception as e:
+            eprint(e)
+    
+        try:
+            muted = subprocess.check_output("pamixer --get-mute", shell=True).decode(
+                "utf-8").strip() == "true"
+        except subprocess.CalledProcessError:
+            # the command above returns the 'disabled` status w/ CalledProcessError, exit status 1
+            pass
+    else:
+        eprint("Required 'pamixer' command not found")
 
     return vol, muted
-
-
-def get_scontrol():
-    result = cmd2string("amixer scontrols")
-    return result.split()[3].split(",")[0][1:-1]
 
 
 def list_sinks():
@@ -346,38 +344,29 @@ def list_sinks():
                     sinks.append({"name": name, "desc": desc})
         except Exception as e:
             eprint(e)
+    else:
+        eprint("Required 'pamixer' command not found")
 
     return sinks
 
 
 def toggle_mute(*args):
-    vol, muted = get_volume()
-    if muted:
-        subprocess.call("pamixer -u".split())
+    if is_command("pamixer"):
+        vol, muted = get_volume()
+        if muted:
+            subprocess.call("pamixer -u".split())
+        else:
+            subprocess.call("pamixer -m".split())
     else:
-        subprocess.call("pamixer -m".split())
+        eprint("Required 'pamixer' command not found")
 
 
 def set_volume(slider):
-    percent = slider.get_value()
-    if nwg_panel.common.dependencies["pyalsa"]:
-        mixer = alsamixer.Mixer()
-        mixer.attach()
-        mixer.load()
-        try:
-            element = alsamixer.Element(mixer, nwg_panel.common.defaults["master"])
-            max_vol = element.get_volume_range()[1]
-            element.set_volume_all(int(percent * max_vol / 100))
-        except Exception as e:
-            eprint(e)
-        del mixer
+    percent = int(slider.get_value())
+    if is_command("pamixer"):
+        subprocess.call("pamixer --set-volume {}".format(percent).split())
     else:
-        c = "amixer sset {}".format(nwg_panel.common.defaults["master"])
-        cmd = "{} {}% /dev/null 2>&1".format(c, percent)
-        try:
-            subprocess.call(cmd.split())
-        except Exception as e:
-            eprint(e)
+        eprint("Required 'pamixer' command not found")
 
 
 def get_brightness():
