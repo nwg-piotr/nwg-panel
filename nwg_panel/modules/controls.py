@@ -13,14 +13,12 @@ from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, GtkLayerShell
 from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery, \
     get_interface, update_image, bt_service_enabled, bt_on, bt_name, is_command, list_sinks, toggle_mute
 
-from nwg_panel.common import dependencies
+from nwg_panel.common import commands
 
-try:
+"""try:
     import netifaces
-
-    dependencies["netifaces"] = True
 except ModuleNotFoundError:
-    pass
+    pass"""
 
 
 class Controls(Gtk.EventBox):
@@ -102,7 +100,7 @@ class Controls(Gtk.EventBox):
                 box.pack_start(self.vol_label, False, False, 0)
 
         if "net" in self.settings["components"] and self.settings["net-interface"]:
-            if dependencies["netifaces"]:
+            if commands["netifaces"]:
                 box.pack_start(self.net_image, False, False, 4)
                 if self.net_label:
                     box.pack_start(self.net_label, False, False, 0)
@@ -141,7 +139,7 @@ class Controls(Gtk.EventBox):
             except Exception as e:
                 print(e)
 
-        if "volume" in self.settings["components"] and dependencies["pyalsa"] or dependencies["amixer"]:
+        if "volume" in self.settings["components"] and commands["pamixer"]:
             try:
                 value, muted = get_volume()
                 GLib.idle_add(self.update_volume, value, muted)
@@ -275,7 +273,7 @@ class PopupWindow(Gtk.Window):
         
         check_key(settings, "output-switcher", False)
         self.sinks = []
-        if is_command("pamixer") and settings["output-switcher"]:
+        if commands["pamixer"] and settings["output-switcher"]:
             self.sinks = list_sinks()
             self.connect("show", self.refresh_sinks)
 
@@ -336,7 +334,7 @@ class PopupWindow(Gtk.Window):
             inner_hbox.pack_start(self.bri_scale, True, True, 5)
             add_sep = True
 
-        if "volume" in settings["components"] and dependencies["pyalsa"] or dependencies["amixer"]:
+        if "volume" in settings["components"] and commands["pamixer"]:
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             v_box.pack_start(inner_hbox, False, False, 6)
 
@@ -362,7 +360,7 @@ class PopupWindow(Gtk.Window):
             self.vol_scale.connect("value-changed", self.set_vol)
 
             inner_hbox.pack_start(self.vol_scale, True, True, 5)
-            if is_command("pamixer") and settings["output-switcher"]:
+            if commands["pamixer"] and settings["output-switcher"]:
                 pactl_eb = Gtk.EventBox()
                 image = Gtk.Image()
                 pactl_eb.add(image)
@@ -374,7 +372,7 @@ class PopupWindow(Gtk.Window):
             
             add_sep = True
 
-        if is_command("pamixer") and settings["output-switcher"]:
+        if commands["pamixer"] and settings["output-switcher"]:
             self.sink_box = SinkBox()
             pactl_eb.connect('button-press-event', self.sink_box.switch_visibility)
             v_box.pack_start(self.sink_box, False, False, 0)
@@ -383,7 +381,7 @@ class PopupWindow(Gtk.Window):
             sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
             v_box.pack_start(sep, True, True, 10)
 
-        if "net" in settings["components"] and dependencies["netifaces"] and settings["net-interface"]:
+        if "net" in settings["components"] and commands["netifaces"] and settings["net-interface"]:
             event_box = Gtk.EventBox()
             if "net" in settings["commands"] and settings["commands"]["net"]:
                 event_box.connect("enter_notify_event", self.on_enter_notify_event)
@@ -587,7 +585,7 @@ class PopupWindow(Gtk.Window):
 
     def refresh(self):
         if self.get_visible():
-            if "net" in self.settings["components"] and dependencies["netifaces"]:
+            if "net" in self.settings["components"] and commands["netifaces"]:
                 ip_addr = get_interface(self.settings["net-interface"])
                 icon_name = "network-wired-symbolic" if ip_addr else "network-wired-disconnected-symbolic"
 

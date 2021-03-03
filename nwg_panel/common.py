@@ -17,10 +17,13 @@ controls_list = []
 config_dir = ""
 app_dirs = []
 
-dependencies = {
-    "pyalsa": False,
-    "netifaces": False,
-    "amixer": False
+commands = {
+    "pamixer": False,
+    "wlr-randr": False,
+    "light": False,
+    "playerctl": False,
+    "systemctl": False,
+    "netifaces": False
 }
 
 icons_path = ""  # "icons_light", "icons_dark" or "" (GTK icons)

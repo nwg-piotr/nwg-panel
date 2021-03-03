@@ -1539,7 +1539,7 @@ class EditorWrapper(object):
         self.ctrl_comp_volume.set_active("volume" in settings["components"])
 
         self.ctrl_comp_switcher = builder.get_object("output-switcher")
-        self.ctrl_comp_switcher.set_sensitive(is_command("pactl"))
+        self.ctrl_comp_switcher.set_sensitive(is_command("pamixer"))
         self.ctrl_comp_switcher.set_active(settings["output-switcher"])
 
         self.ctrl_comp_net = builder.get_object("ctrl-comp-net")

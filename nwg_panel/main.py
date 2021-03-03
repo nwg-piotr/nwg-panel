@@ -167,7 +167,8 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
 def main():
     common.config_dir = get_config_dir()
-    common.defaults = get_defaults()
+    check_commands()
+    print("Dependencies check:", common.commands)
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-c",
@@ -195,12 +196,6 @@ def main():
 
     args = parser.parse_args()
 
-    try:
-        from pyalsa import alsamixer
-        common.dependencies["pyalsa"] = True
-    except:
-        print("pylsa module not found, will try amixer")
-
     global restart_cmd
     restart_cmd = "nwg-panel -c {} -s {}".format(args.config, args.style)
 
@@ -218,8 +213,6 @@ def main():
     save_string("-c {} -s {}".format(args.config, args.style), os.path.join(local_dir(), "args"))
 
     common.app_dirs = get_app_dirs()
-
-    common.dependencies["amixer"] = is_command("amixer")
 
     config_file = os.path.join(common.config_dir, args.config)
 
