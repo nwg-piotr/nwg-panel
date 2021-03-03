@@ -351,7 +351,7 @@ class PopupWindow(Gtk.Window):
             eb = Gtk.EventBox()
             eb.connect("enter_notify_event", self.on_enter_notify_event)
             eb.connect("leave_notify_event", self.on_leave_notify_event)
-            eb.connect("button-press-event", toggle_mute)
+            eb.connect("button-press-event", self.toggle_mute)
             eb.add(self.vol_image)
             inner_hbox.pack_start(eb, False, False, 6)
 
@@ -556,6 +556,10 @@ class PopupWindow(Gtk.Window):
             
     def refresh_sinks(self, *args):
         self.sinks = list_sinks()
+
+    def toggle_mute(self, e, slider):
+        toggle_mute(slider)
+        self.refresh()
 
     def custom_item(self, name, icon, cmd):
         eb = Gtk.EventBox()
