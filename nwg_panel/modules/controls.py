@@ -143,8 +143,8 @@ class Controls(Gtk.EventBox):
 
         if "volume" in self.settings["components"] and dependencies["pyalsa"] or dependencies["amixer"]:
             try:
-                value, switch = get_volume()
-                GLib.idle_add(self.update_volume, value, switch)
+                value, muted = get_volume()
+                GLib.idle_add(self.update_volume, value, muted)
             except Exception as e:
                 print(e)
 
@@ -209,8 +209,8 @@ class Controls(Gtk.EventBox):
         if self.bat_label:
             self.bat_label.set_text("{}%".format(value))
 
-    def update_volume(self, value, switch):
-        icon_name = vol_icon_name(value, switch)
+    def update_volume(self, value, muted):
+        icon_name = vol_icon_name(value, muted)
 
         if icon_name != self.vol_icon_name:
             update_image(self.vol_image, icon_name, self.settings["icon-size"], self.icons_path)
@@ -269,6 +269,9 @@ class PopupWindow(Gtk.Window):
 
         self.menu_box = None
         self.sink_box = None
+
+        self.bri_scale = None
+        self.vol_scale = None
         
         check_key(settings, "output-switcher", False)
         self.sinks = []
@@ -325,12 +328,12 @@ class PopupWindow(Gtk.Window):
 
             inner_hbox.pack_start(self.bri_image, False, False, 6)
 
-            scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
+            self.bri_scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
             value = get_brightness()
-            scale.set_value(value)
-            scale.connect("value-changed", self.set_bri)
+            self.bri_scale.set_value(value)
+            self.bri_scale.connect("value-changed", self.set_bri)
 
-            inner_hbox.pack_start(scale, True, True, 5)
+            inner_hbox.pack_start(self.bri_scale, True, True, 5)
             add_sep = True
 
         if "volume" in settings["components"] and dependencies["pyalsa"] or dependencies["amixer"]:
@@ -340,8 +343,8 @@ class PopupWindow(Gtk.Window):
             self.vol_icon_name = "view-refresh-symbolic"
             self.vol_image = Gtk.Image.new_from_icon_name(self.vol_icon_name, Gtk.IconSize.MENU)
 
-            vol, switch = get_volume()
-            icon_name = vol_icon_name(vol, switch)
+            vol, muted = get_volume()
+            icon_name = vol_icon_name(vol, muted)
 
             if icon_name != self.vol_icon_name:
                 update_image(self.vol_image, icon_name, self.icon_size, self.icons_path)
@@ -349,12 +352,11 @@ class PopupWindow(Gtk.Window):
 
             inner_hbox.pack_start(self.vol_image, False, False, 6)
 
-            scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
-            value, switch = get_volume()
-            scale.set_value(value)
-            scale.connect("value-changed", self.set_vol)
+            self.vol_scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
+            self.vol_scale.set_value(vol)
+            self.vol_scale.connect("value-changed", self.set_vol)
 
-            inner_hbox.pack_start(scale, True, True, 5)
+            inner_hbox.pack_start(self.vol_scale, True, True, 5)
             if is_command("pactl") and settings["output-switcher"]:
                 pactl_eb = Gtk.EventBox()
                 image = Gtk.Image()
@@ -610,6 +612,26 @@ class PopupWindow(Gtk.Window):
                     self.bat_icon_name = icon_name
 
                 self.bat_label.set_text("{}% {}".format(level, msg))
+                
+            if "volume" in self.settings["components"]:
+                vol, muted = get_volume()
+                icon_name = vol_icon_name(vol, muted)
+
+                if icon_name != self.vol_icon_name:
+                    update_image(self.vol_image, icon_name, self.icon_size, self.icons_path)
+                    self.vol_icon_name = icon_name
+
+                self.vol_scale.set_value(vol)
+                
+            if "brightness" in self.settings["components"]:
+                value = get_brightness()
+                icon_name = bri_icon_name(int(value))
+                if icon_name != self.bri_icon_name:
+                    update_image(self.bri_image, icon_name, self.icon_size, self.icons_path)
+                    self.bri_icon_name = icon_name
+
+                self.bri_scale.set_value(value)
+                    
 
         return True
 
@@ -621,18 +643,9 @@ class PopupWindow(Gtk.Window):
 
     def set_bri(self, slider):
         set_brightness(slider)
-        icon_name = bri_icon_name(int(slider.get_value()))
-        if icon_name != self.bri_icon_name:
-            update_image(self.bri_image, icon_name, self.icon_size, self.icons_path)
-            self.bri_icon_name = icon_name
 
     def set_vol(self, slider):
         set_volume(slider)
-        vol, switch = get_volume()
-        icon_name = vol_icon_name(vol, switch)
-        if icon_name != self.vol_icon_name:
-            update_image(self.vol_image, icon_name, self.icon_size, self.icons_path)
-            self.vol_icon_name = icon_name
 
     def close_win(self, w, e):
         self.hide()
@@ -689,7 +702,7 @@ class SinkBox(Gtk.Box):
         
     def switch_sink(self, w, e, sink):
         print("Sink: '{}'".format(sink))
-        subprocess.Popen('exec pacmd set-default-sink "{}"'.format(sink), shell=True)
+        subprocess.Popen('exec pamixer --sink "{}"'.format(sink), shell=True)
         self.hide()
 
 
@@ -703,9 +716,9 @@ def bri_icon_name(value):
     return icon_name
 
 
-def vol_icon_name(value, switch):
+def vol_icon_name(value, muted):
     icon_name = "audio-volume-muted-symbolic"
-    if switch:
+    if not muted:
         if value is not None:
             if value > 70:
                 icon_name = "audio-volume-high-symbolic"

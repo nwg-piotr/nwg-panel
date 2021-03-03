@@ -311,65 +311,20 @@ def is_command(cmd):
 
 def get_volume():
     vol = 0
-    switch = False
-    if nwg_panel.common.dependencies["pyalsa"]:
-        mixer = alsamixer.Mixer()
-        mixer.attach()
-        mixer.load()
-        # https://github.com/nwg-piotr/nwg-panel/issues/24
-        try:
-            element = alsamixer.Element(mixer, nwg_panel.common.defaults["master"])
-            max_vol = element.get_volume_range()[1]
-            vol = int(round(element.get_volume() * 100 / max_vol, 0))
-            switch = element.get_switch()
-        except:
-            try:
-                element = alsamixer.Element(mixer, mixer.list()[0][0])
-                # Overwrite user-defined name if caused error
-                print("'{}' didn't work, using {} instead".format(nwg_panel.common.defaults["master"], element.name))
-                nwg_panel.common.defaults["master"] = element.name
+    muted = False
+    try:
+        vol = int(cmd2string("pamixer --get-volume"))
+    except Exception as e:
+        eprint(e)
 
-                max_vol = element.get_volume_range()[1]
-                vol = int(round(element.get_volume() * 100 / max_vol, 0))
-                switch = element.get_switch()
-            except:
-                return 0, False
+    try:
+        muted = subprocess.check_output("pamixer --get-mute", shell=True).decode(
+            "utf-8").strip() == "true"
+    except subprocess.CalledProcessError:
+        # the command above returns the 'disabled` status w/ CalledProcessError, exit status 1
+        pass
 
-        del mixer
-
-    elif nwg_panel.common.dependencies["amixer"]:
-        # Same issue as above
-        result = cmd2string("amixer sget {}".format(nwg_panel.common.defaults["master"]))
-        if not result:
-            try:
-                nwg_panel.common.defaults["master"] = get_scontrol()
-                result = cmd2string("amixer sget {}".format(nwg_panel.common.defaults["master"]))
-            except:
-                result = None
-
-        if result:
-            lines = result.splitlines()
-            for line in lines:
-                if line.strip().startswith("Mono:"):
-                    try:
-                        vol = int(line.split()[3][1:-2])
-                        try:
-                            switch = "on" in line.split()[5]
-                        except:
-                            switch = "on" in line.split()[4]
-                        break
-                    except:
-                        pass
-
-                if line.strip().startswith("Front Left:"):
-                    try:
-                        vol = int(line.split()[4][1:-2])
-                        switch = "on" in line.split()[5]
-                        break
-                    except:
-                        pass
-
-    return vol, switch
+    return vol, muted
 
 
 def get_scontrol():
@@ -379,28 +334,19 @@ def get_scontrol():
 
 def list_sinks():
     sinks = []
-    if is_command("pactl"):
-        output = cmd2string("pactl list short sinks")
-        if output:
-            for line in output.splitlines():
-                details = line.split()
-                name = details[1]
-                if details[-1].upper() == "RUNNING":
-                    sinks.insert(0, {"name": name})
-                else:
-                    sinks.append({"name": name, "desc": "unknown"})
+    if is_command("pamixer"):
+        try:
+            output = cmd2string("pamixer --list-sinks")
+            if output:
+                lines = output.splitlines()[1:]
+                for line in lines:
+                    details = line.split()
+                    name = details[1][1:-1]
+                    desc = " ".join(details[2:])[1:-1]
+                    sinks.append({"name": name, "desc": desc})
+        except Exception as e:
+            eprint(e)
 
-    if is_command("pacmd"):
-        output = cmd2string("pacmd list-sinks").splitlines()
-        for item in sinks:
-            im_in = False
-            for line in output:
-                if item["name"] in line:
-                    im_in = True
-                if im_in and "device.description" in line:
-                    desc = line.split("=")[-1].strip()[1:-1]
-                    item["desc"] = desc
-                    break
     return sinks
 
 
