@@ -8,17 +8,12 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 gi.require_version('GtkLayerShell', '0.1')
-from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, GtkLayerShell
+from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
 from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery, \
     get_interface, update_image, bt_service_enabled, bt_on, bt_name, eprint, list_sinks, toggle_mute
 
 from nwg_panel.common import commands
-
-"""try:
-    import netifaces
-except ModuleNotFoundError:
-    pass"""
 
 
 class Controls(Gtk.EventBox):
@@ -68,7 +63,8 @@ class Controls(Gtk.EventBox):
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
 
-        self.popup_window = PopupWindow(position, alignment, settings, width, monitor=monitor, icons_path=self.icons_path)
+        self.popup_window = PopupWindow(position, alignment, settings, width, monitor=monitor,
+                                        icons_path=self.icons_path)
 
         self.connect('button-press-event', self.on_button_press)
         self.connect('enter-notify-event', self.on_enter_notify_event)
@@ -270,7 +266,7 @@ class PopupWindow(Gtk.Window):
 
         self.bri_scale = None
         self.vol_scale = None
-        
+
         check_key(settings, "output-switcher", False)
         self.sinks = []
         if commands["pamixer"] and settings["output-switcher"]:
@@ -368,8 +364,7 @@ class PopupWindow(Gtk.Window):
                 pactl_eb.connect("leave_notify_event", self.on_leave_notify_event)
                 update_image(image, "pan-down-symbolic", self.icon_size, self.icons_path)
                 inner_hbox.pack_end(pactl_eb, False, False, 5)
-                
-            
+
             add_sep = True
 
         if commands["pamixer"] and settings["output-switcher"]:
@@ -553,7 +548,7 @@ class PopupWindow(Gtk.Window):
             self.menu_box.hide()
         else:
             self.menu_box.show_all()
-            
+
     def refresh_sinks(self, *args):
         self.sinks = list_sinks()
 
@@ -619,7 +614,7 @@ class PopupWindow(Gtk.Window):
                     self.bat_icon_name = icon_name
 
                 self.bat_label.set_text("{}% {}".format(level, msg))
-                
+
             if "volume" in self.settings["components"]:
                 vol, muted = get_volume()
                 icon_name = vol_icon_name(vol, muted)
@@ -629,7 +624,7 @@ class PopupWindow(Gtk.Window):
                     self.vol_icon_name = icon_name
 
                 self.vol_scale.set_value(vol)
-                
+
             if "brightness" in self.settings["components"]:
                 value = get_brightness()
                 icon_name = bri_icon_name(int(value))
@@ -638,7 +633,6 @@ class PopupWindow(Gtk.Window):
                     self.bri_icon_name = icon_name
 
                 self.bri_scale.set_value(value)
-                    
 
         return True
 
@@ -693,7 +687,7 @@ class SinkBox(Gtk.Box):
             hbox.pack_start(label, True, True, 0)
             eb.add(vbox)
             self.pack_start(eb, False, False, 0)
-            
+
     def switch_visibility(self, *args):
         if self.get_visible():
             self.hide()

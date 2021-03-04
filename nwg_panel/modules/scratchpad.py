@@ -48,7 +48,7 @@ class Scratchpad(Gtk.Box):
         if content != self.content:
             self.content = content
             self.build_box()
-            
+
     def build_box(self):
         for item in self.get_children():
             item.destroy()
@@ -74,7 +74,7 @@ class Scratchpad(Gtk.Box):
     def on_button_press(self, eb, e, pid):
         cmd = "[pid={}] scratchpad show".format(pid)
         self.i3.command(cmd)
-    
+
     def refresh(self, tree):
         thread = threading.Thread(target=self.check_scratchpad(tree))
         thread.daemon = True

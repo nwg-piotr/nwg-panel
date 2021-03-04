@@ -23,11 +23,6 @@ except ModuleNotFoundError:
     pass
 
 try:
-    from pyalsa import alsamixer
-except:
-    pass
-
-try:
     import psutil
 except:
     pass
@@ -79,7 +74,7 @@ def get_icon(app_name):
     # Until the GTK3 version is released, let's make an exception for GIMP.
     if "GIMP" in app_name.upper():
         return "gimp"
-    
+
     for d in nwg_panel.common.app_dirs:
         path = os.path.join(d, "{}.desktop".format(app_name))
         content = None
@@ -192,7 +187,7 @@ def load_string(path):
             return data
     except:
         return ""
-    
+
 
 def load_autotiling():
     autotiling = []
@@ -306,7 +301,7 @@ def get_volume():
             vol = int(cmd2string("pamixer --get-volume"))
         except Exception as e:
             eprint(e)
-    
+
         try:
             muted = subprocess.check_output("pamixer --get-mute", shell=True).decode(
                 "utf-8").strip() == "true"
@@ -399,18 +394,18 @@ def get_battery():
 
 
 def seconds2string(seconds):
-    min, sec = divmod(seconds, 60)
-    hrs, min = divmod(min, 60)
+    minutes, sec = divmod(seconds, 60)
+    hrs, minutes = divmod(minutes, 60)
 
     hrs = str(hrs)
     if len(hrs) < 2:
         hrs = "0{}".format(hrs)
-    
-    min = str(min)
-    if len(min) < 2:
-        min = "0{}".format(min)
 
-    return "{}:{}".format(hrs, min)
+    minutes = str(minutes)
+    if len(minutes) < 2:
+        minutes = "0{}".format(minutes)
+
+    return "{}:{}".format(hrs, minutes)
 
 
 def list_interfaces():
@@ -484,7 +479,7 @@ def update_image(image, icon_name, icon_size, icons_path=""):
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, icon_size, icon_size)
             if image:
                 image.set_from_pixbuf(pixbuf)
-        
+
 
 def create_pixbuf(icon_name, icon_size, icons_path=""):
     # In case a full path was given
@@ -534,7 +529,8 @@ def bt_on():
 
 def bt_name():
     try:
-        output = subprocess.check_output("bluetoothctl show | awk '/Name/{print $2}'", shell=True).decode("utf-8").strip()
+        output = subprocess.check_output("bluetoothctl show | awk '/Name/{print $2}'", shell=True).decode(
+            "utf-8").strip()
         return output
     except:
         return "undetected"
