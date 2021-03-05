@@ -23,11 +23,6 @@ except ModuleNotFoundError:
     pass
 
 try:
-    from pyalsa import alsamixer
-except:
-    pass
-
-try:
     import psutil
 except:
     pass
@@ -79,7 +74,7 @@ def get_icon(app_name):
     # Until the GTK3 version is released, let's make an exception for GIMP.
     if "GIMP" in app_name.upper():
         return "gimp"
-    
+
     for d in nwg_panel.common.app_dirs:
         path = os.path.join(d, "{}.desktop".format(app_name))
         content = None
@@ -131,28 +126,6 @@ def get_config_dir():
         os.mkdir(folder)
 
     return config_dir
-
-
-def get_defaults():
-    file = os.path.join(local_dir(), "defaults")
-    if os.path.isfile(file):
-        defaults = load_json(file)
-        missing = False
-        if "master" not in defaults:
-            defaults["master"] = "Master"
-            missing = True
-            
-        if missing:
-            save_json(defaults, file)
-
-        return defaults
-    else:
-        defaults = {
-            "master": "Master"
-        }
-        save_json(defaults, file)
-
-        return defaults
 
 
 def copy_files(src_dir, dst_dir, restore=False):
@@ -214,7 +187,7 @@ def load_string(path):
             return data
     except:
         return ""
-    
+
 
 def load_autotiling():
     autotiling = []
@@ -245,7 +218,7 @@ def list_outputs(sway=False, silent=False):
     elif os.getenv('WAYLAND_DISPLAY') is not None:
         if not silent:
             print("Running on Wayland, but not sway")
-        if is_command("wlr-randr"):
+        if nwg_panel.common.commands["wlr-randr"]:
             lines = subprocess.check_output("wlr-randr", shell=True).decode("utf-8").strip().splitlines()
             if lines:
                 name, w, h, x, y = None, None, None, None, None
@@ -309,139 +282,99 @@ def is_command(cmd):
         return False
 
 
+def check_commands():
+    for key in nwg_panel.common.commands:
+        nwg_panel.common.commands[key] = is_command(key)
+
+    try:
+        import netifaces
+        nwg_panel.common.commands["netifaces"] = True
+    except ModuleNotFoundError:
+        pass
+
+
 def get_volume():
     vol = 0
-    switch = False
-    if nwg_panel.common.dependencies["pyalsa"]:
-        mixer = alsamixer.Mixer()
-        mixer.attach()
-        mixer.load()
-        # https://github.com/nwg-piotr/nwg-panel/issues/24
+    muted = False
+    if nwg_panel.common.commands["pamixer"]:
         try:
-            element = alsamixer.Element(mixer, nwg_panel.common.defaults["master"])
-            max_vol = element.get_volume_range()[1]
-            vol = int(round(element.get_volume() * 100 / max_vol, 0))
-            switch = element.get_switch()
-        except:
-            try:
-                element = alsamixer.Element(mixer, mixer.list()[0][0])
-                # Overwrite user-defined name if caused error
-                print("'{}' didn't work, using {} instead".format(nwg_panel.common.defaults["master"], element.name))
-                nwg_panel.common.defaults["master"] = element.name
+            vol = int(cmd2string("pamixer --get-volume"))
+        except Exception as e:
+            eprint(e)
 
-                max_vol = element.get_volume_range()[1]
-                vol = int(round(element.get_volume() * 100 / max_vol, 0))
-                switch = element.get_switch()
-            except:
-                return 0, False
+        try:
+            muted = subprocess.check_output("pamixer --get-mute", shell=True).decode(
+                "utf-8").strip() == "true"
+        except subprocess.CalledProcessError:
+            # the command above returns the 'disabled` status w/ CalledProcessError, exit status 1
+            pass
+    else:
+        eprint("Couldn't get volume, 'pamixer' not found")
 
-        del mixer
-
-    elif nwg_panel.common.dependencies["amixer"]:
-        # Same issue as above
-        result = cmd2string("amixer sget {}".format(nwg_panel.common.defaults["master"]))
-        if not result:
-            try:
-                nwg_panel.common.defaults["master"] = get_scontrol()
-                result = cmd2string("amixer sget {}".format(nwg_panel.common.defaults["master"]))
-            except:
-                result = None
-
-        if result:
-            lines = result.splitlines()
-            for line in lines:
-                if line.strip().startswith("Mono:"):
-                    try:
-                        vol = int(line.split()[3][1:-2])
-                        try:
-                            switch = "on" in line.split()[5]
-                        except:
-                            switch = "on" in line.split()[4]
-                        break
-                    except:
-                        pass
-
-                if line.strip().startswith("Front Left:"):
-                    try:
-                        vol = int(line.split()[4][1:-2])
-                        switch = "on" in line.split()[5]
-                        break
-                    except:
-                        pass
-
-    return vol, switch
-
-
-def get_scontrol():
-    result = cmd2string("amixer scontrols")
-    return result.split()[3].split(",")[0][1:-1]
+    return vol, muted
 
 
 def list_sinks():
     sinks = []
-    if is_command("pactl"):
-        output = cmd2string("pactl list short sinks")
-        if output:
-            for line in output.splitlines():
-                details = line.split()
-                name = details[1]
-                if details[-1].upper() == "RUNNING":
-                    sinks.insert(0, {"name": name})
-                else:
-                    sinks.append({"name": name, "desc": "unknown"})
+    if nwg_panel.common.commands["pamixer"]:
+        try:
+            output = cmd2string("pamixer --list-sinks")
+            if output:
+                lines = output.splitlines()[1:]
+                for line in lines:
+                    details = line.split()
+                    name = details[1][1:-1]
+                    desc = " ".join(details[2:])[1:-1]
+                    sinks.append({"name": name, "desc": desc})
+        except Exception as e:
+            eprint(e)
+    else:
+        eprint("Couldn't list sinks, 'pamixer' not found")
 
-    if is_command("pacmd"):
-        output = cmd2string("pacmd list-sinks").splitlines()
-        for item in sinks:
-            im_in = False
-            for line in output:
-                if item["name"] in line:
-                    im_in = True
-                if im_in and "device.description" in line:
-                    desc = line.split("=")[-1].strip()[1:-1]
-                    item["desc"] = desc
-                    break
     return sinks
 
 
-def set_volume(slider):
-    percent = slider.get_value()
-    if nwg_panel.common.dependencies["pyalsa"]:
-        mixer = alsamixer.Mixer()
-        mixer.attach()
-        mixer.load()
-        try:
-            element = alsamixer.Element(mixer, nwg_panel.common.defaults["master"])
-            max_vol = element.get_volume_range()[1]
-            element.set_volume_all(int(percent * max_vol / 100))
-        except Exception as e:
-            eprint(e)
-        del mixer
+def toggle_mute(*args):
+    if nwg_panel.common.commands["pamixer"]:
+        vol, muted = get_volume()
+        if muted:
+            subprocess.call("pamixer -u".split())
+        else:
+            subprocess.call("pamixer -m".split())
     else:
-        c = "amixer sset {}".format(nwg_panel.common.defaults["master"])
-        cmd = "{} {}% /dev/null 2>&1".format(c, percent)
-        try:
-            subprocess.call(cmd.split())
-        except Exception as e:
-            eprint(e)
+        eprint("Couldn't toggle mute, 'pamixer' not found")
+
+
+def set_volume(slider):
+    percent = int(slider.get_value())
+    if nwg_panel.common.commands["pamixer"]:
+        subprocess.call("pamixer --set-volume {}".format(percent).split())
+    else:
+        eprint("Couldn't set volume, 'pamixer' not found")
 
 
 def get_brightness():
     brightness = 0
-    try:
-        output = cmd2string("light -G")
-        brightness = int(round(float(output), 0))
-    except:
-        pass
+    if nwg_panel.common.commands["light"]:
+        try:
+            output = cmd2string("light -G")
+            brightness = int(round(float(output), 0))
+        except:
+            pass
+    else:
+        eprint("Couldn't get brightness, 'light' not found")
 
     return brightness
 
 
 def set_brightness(slider):
-    value = slider.get_value()
-    res = subprocess.call("{} {}".format("light -S", value), shell=True)
-    if res != 0:
-        print("Couldn't set brightness, is 'light' installed?")
+    value = int(slider.get_value())
+    if value == 0:
+        value = 1
+    if nwg_panel.common.commands["light"]:
+        subprocess.call("{} {}".format("light -S", value).split())
+    else:
+        eprint("Required 'light' command not found")
 
 
 def get_battery():
@@ -461,18 +394,18 @@ def get_battery():
 
 
 def seconds2string(seconds):
-    min, sec = divmod(seconds, 60)
-    hrs, min = divmod(min, 60)
+    minutes, sec = divmod(seconds, 60)
+    hrs, minutes = divmod(minutes, 60)
 
     hrs = str(hrs)
     if len(hrs) < 2:
         hrs = "0{}".format(hrs)
-    
-    min = str(min)
-    if len(min) < 2:
-        min = "0{}".format(min)
 
-    return "{}:{}".format(hrs, min)
+    minutes = str(minutes)
+    if len(minutes) < 2:
+        minutes = "0{}".format(minutes)
+
+    return "{}:{}".format(hrs, minutes)
 
 
 def list_interfaces():
@@ -494,7 +427,7 @@ def get_interface(name):
 
 def player_status():
     status = "install playerctl"
-    if is_command("playerctl"):
+    if nwg_panel.common.commands["playerctl"]:
         try:
             status = cmd2string("playerctl status 2>&1")
         except:
@@ -546,7 +479,7 @@ def update_image(image, icon_name, icon_size, icons_path=""):
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, icon_size, icon_size)
             if image:
                 image.set_from_pixbuf(pixbuf)
-        
+
 
 def create_pixbuf(icon_name, icon_size, icons_path=""):
     # In case a full path was given
@@ -596,7 +529,8 @@ def bt_on():
 
 def bt_name():
     try:
-        output = subprocess.check_output("bluetoothctl show | awk '/Name/{print $2}'", shell=True).decode("utf-8").strip()
+        output = subprocess.check_output("bluetoothctl show | awk '/Name/{print $2}'", shell=True).decode(
+            "utf-8").strip()
         return output
     except:
         return "undetected"
@@ -604,7 +538,7 @@ def bt_name():
 
 def bt_service_enabled():
     result, enabled, active = False, False, False
-    if is_command("systemctl"):
+    if nwg_panel.common.commands["systemctl"]:
         try:
             enabled = subprocess.check_output("systemctl is-enabled bluetooth.service", shell=True).decode(
                 "utf-8").strip() == "enabled"

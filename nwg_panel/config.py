@@ -87,8 +87,8 @@ SKELETON_PANEL: dict = {
         "interval": 1
     },
     "scratchpad": {
-          "css-name": "",
-          "icon-size": 16
+        "css-name": "",
+        "icon-size": 16
     }
 }
 
@@ -481,7 +481,7 @@ class EditorWrapper(object):
             self.config.append(self.panel)
             self.panel_idx = self.config.index(self.panel)
             save_json(self.config, self.file)
-            
+
         self.check_defaults()
 
     def set_panel(self):
@@ -1043,7 +1043,7 @@ class EditorWrapper(object):
             settings["numbers"] = val.split()
 
         save_json(self.config, self.file)
-        
+
     def edit_scratchpad(self, *args):
         self.load_panel()
         self.edited = "scratchpad"
@@ -1071,7 +1071,7 @@ class EditorWrapper(object):
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(grid)
-        
+
     def update_scratchpad(self, *args):
         settings = self.panel["scratchpad"]
         settings["css-name"] = self.scratchpad_css_name.get_text()
@@ -1539,7 +1539,7 @@ class EditorWrapper(object):
         self.ctrl_comp_volume.set_active("volume" in settings["components"])
 
         self.ctrl_comp_switcher = builder.get_object("output-switcher")
-        self.ctrl_comp_switcher.set_sensitive(is_command("pactl"))
+        self.ctrl_comp_switcher.set_sensitive(is_command("pamixer"))
         self.ctrl_comp_switcher.set_active(settings["output-switcher"])
 
         self.ctrl_comp_net = builder.get_object("ctrl-comp-net")
@@ -1616,7 +1616,7 @@ class EditorWrapper(object):
         else:
             if "volume" in settings["components"]:
                 settings["components"].remove("volume")
-                
+
         settings["output-switcher"] = self.ctrl_comp_switcher.get_active()
 
         if self.ctrl_comp_net.get_active():

@@ -8,19 +8,12 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 gi.require_version('GtkLayerShell', '0.1')
-from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, GtkLayerShell
+from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
 from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery, \
-    get_interface, update_image, bt_service_enabled, bt_on, bt_name, is_command, list_sinks
+    get_interface, update_image, bt_service_enabled, bt_on, bt_name, eprint, list_sinks, toggle_mute
 
-from nwg_panel.common import dependencies
-
-try:
-    import netifaces
-
-    dependencies["netifaces"] = True
-except ModuleNotFoundError:
-    pass
+from nwg_panel.common import commands
 
 
 class Controls(Gtk.EventBox):
@@ -70,7 +63,8 @@ class Controls(Gtk.EventBox):
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
 
-        self.popup_window = PopupWindow(position, alignment, settings, width, monitor=monitor, icons_path=self.icons_path)
+        self.popup_window = PopupWindow(position, alignment, settings, width, monitor=monitor,
+                                        icons_path=self.icons_path)
 
         self.connect('button-press-event', self.on_button_press)
         self.connect('enter-notify-event', self.on_enter_notify_event)
@@ -102,7 +96,7 @@ class Controls(Gtk.EventBox):
                 box.pack_start(self.vol_label, False, False, 0)
 
         if "net" in self.settings["components"] and self.settings["net-interface"]:
-            if dependencies["netifaces"]:
+            if commands["netifaces"]:
                 box.pack_start(self.net_image, False, False, 4)
                 if self.net_label:
                     box.pack_start(self.net_label, False, False, 0)
@@ -141,10 +135,10 @@ class Controls(Gtk.EventBox):
             except Exception as e:
                 print(e)
 
-        if "volume" in self.settings["components"] and dependencies["pyalsa"] or dependencies["amixer"]:
+        if "volume" in self.settings["components"] and commands["pamixer"]:
             try:
-                value, switch = get_volume()
-                GLib.idle_add(self.update_volume, value, switch)
+                value, muted = get_volume()
+                GLib.idle_add(self.update_volume, value, muted)
             except Exception as e:
                 print(e)
 
@@ -209,8 +203,8 @@ class Controls(Gtk.EventBox):
         if self.bat_label:
             self.bat_label.set_text("{}%".format(value))
 
-    def update_volume(self, value, switch):
-        icon_name = vol_icon_name(value, switch)
+    def update_volume(self, value, muted):
+        icon_name = vol_icon_name(value, muted)
 
         if icon_name != self.vol_icon_name:
             update_image(self.vol_image, icon_name, self.settings["icon-size"], self.icons_path)
@@ -269,10 +263,13 @@ class PopupWindow(Gtk.Window):
 
         self.menu_box = None
         self.sink_box = None
-        
+
+        self.bri_scale = None
+        self.vol_scale = None
+
         check_key(settings, "output-switcher", False)
         self.sinks = []
-        if is_command("pactl") and settings["output-switcher"]:
+        if commands["pamixer"] and settings["output-switcher"]:
             self.sinks = list_sinks()
             self.connect("show", self.refresh_sinks)
 
@@ -325,37 +322,41 @@ class PopupWindow(Gtk.Window):
 
             inner_hbox.pack_start(self.bri_image, False, False, 6)
 
-            scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
+            self.bri_scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
             value = get_brightness()
-            scale.set_value(value)
-            scale.connect("value-changed", self.set_bri)
+            self.bri_scale.set_value(value)
+            self.bri_scale.connect("value-changed", self.set_bri)
 
-            inner_hbox.pack_start(scale, True, True, 5)
+            inner_hbox.pack_start(self.bri_scale, True, True, 5)
             add_sep = True
 
-        if "volume" in settings["components"] and dependencies["pyalsa"] or dependencies["amixer"]:
+        if "volume" in settings["components"] and commands["pamixer"]:
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             v_box.pack_start(inner_hbox, False, False, 6)
 
             self.vol_icon_name = "view-refresh-symbolic"
             self.vol_image = Gtk.Image.new_from_icon_name(self.vol_icon_name, Gtk.IconSize.MENU)
 
-            vol, switch = get_volume()
-            icon_name = vol_icon_name(vol, switch)
+            vol, muted = get_volume()
+            icon_name = vol_icon_name(vol, muted)
 
             if icon_name != self.vol_icon_name:
                 update_image(self.vol_image, icon_name, self.icon_size, self.icons_path)
                 self.vol_icon_name = icon_name
 
-            inner_hbox.pack_start(self.vol_image, False, False, 6)
+            eb = Gtk.EventBox()
+            eb.connect("enter_notify_event", self.on_enter_notify_event)
+            eb.connect("leave_notify_event", self.on_leave_notify_event)
+            eb.connect("button-press-event", self.toggle_mute)
+            eb.add(self.vol_image)
+            inner_hbox.pack_start(eb, False, False, 6)
 
-            scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
-            value, switch = get_volume()
-            scale.set_value(value)
-            scale.connect("value-changed", self.set_vol)
+            self.vol_scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
+            self.vol_scale.set_value(vol)
+            self.vol_scale.connect("value-changed", self.set_vol)
 
-            inner_hbox.pack_start(scale, True, True, 5)
-            if is_command("pactl") and settings["output-switcher"]:
+            inner_hbox.pack_start(self.vol_scale, True, True, 5)
+            if commands["pamixer"] and settings["output-switcher"]:
                 pactl_eb = Gtk.EventBox()
                 image = Gtk.Image()
                 pactl_eb.add(image)
@@ -363,11 +364,10 @@ class PopupWindow(Gtk.Window):
                 pactl_eb.connect("leave_notify_event", self.on_leave_notify_event)
                 update_image(image, "pan-down-symbolic", self.icon_size, self.icons_path)
                 inner_hbox.pack_end(pactl_eb, False, False, 5)
-                
-            
+
             add_sep = True
 
-        if is_command("pactl") and settings["output-switcher"]:
+        if commands["pamixer"] and settings["output-switcher"]:
             self.sink_box = SinkBox()
             pactl_eb.connect('button-press-event', self.sink_box.switch_visibility)
             v_box.pack_start(self.sink_box, False, False, 0)
@@ -376,7 +376,7 @@ class PopupWindow(Gtk.Window):
             sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
             v_box.pack_start(sep, True, True, 10)
 
-        if "net" in settings["components"] and dependencies["netifaces"] and settings["net-interface"]:
+        if "net" in settings["components"] and commands["netifaces"] and settings["net-interface"]:
             event_box = Gtk.EventBox()
             if "net" in settings["commands"] and settings["commands"]["net"]:
                 event_box.connect("enter_notify_event", self.on_enter_notify_event)
@@ -548,9 +548,13 @@ class PopupWindow(Gtk.Window):
             self.menu_box.hide()
         else:
             self.menu_box.show_all()
-            
+
     def refresh_sinks(self, *args):
         self.sinks = list_sinks()
+
+    def toggle_mute(self, e, slider):
+        toggle_mute(slider)
+        self.refresh()
 
     def custom_item(self, name, icon, cmd):
         eb = Gtk.EventBox()
@@ -580,7 +584,7 @@ class PopupWindow(Gtk.Window):
 
     def refresh(self):
         if self.get_visible():
-            if "net" in self.settings["components"] and dependencies["netifaces"]:
+            if "net" in self.settings["components"] and commands["netifaces"]:
                 ip_addr = get_interface(self.settings["net-interface"])
                 icon_name = "network-wired-symbolic" if ip_addr else "network-wired-disconnected-symbolic"
 
@@ -611,6 +615,25 @@ class PopupWindow(Gtk.Window):
 
                 self.bat_label.set_text("{}% {}".format(level, msg))
 
+            if "volume" in self.settings["components"]:
+                vol, muted = get_volume()
+                icon_name = vol_icon_name(vol, muted)
+
+                if icon_name != self.vol_icon_name:
+                    update_image(self.vol_image, icon_name, self.icon_size, self.icons_path)
+                    self.vol_icon_name = icon_name
+
+                self.vol_scale.set_value(vol)
+
+            if "brightness" in self.settings["components"]:
+                value = get_brightness()
+                icon_name = bri_icon_name(int(value))
+                if icon_name != self.bri_icon_name:
+                    update_image(self.bri_image, icon_name, self.icon_size, self.icons_path)
+                    self.bri_icon_name = icon_name
+
+                self.bri_scale.set_value(value)
+
         return True
 
     def on_enter_notify_event(self, widget, event):
@@ -621,18 +644,9 @@ class PopupWindow(Gtk.Window):
 
     def set_bri(self, slider):
         set_brightness(slider)
-        icon_name = bri_icon_name(int(slider.get_value()))
-        if icon_name != self.bri_icon_name:
-            update_image(self.bri_image, icon_name, self.icon_size, self.icons_path)
-            self.bri_icon_name = icon_name
 
     def set_vol(self, slider):
         set_volume(slider)
-        vol, switch = get_volume()
-        icon_name = vol_icon_name(vol, switch)
-        if icon_name != self.vol_icon_name:
-            update_image(self.vol_image, icon_name, self.icon_size, self.icons_path)
-            self.vol_icon_name = icon_name
 
     def close_win(self, w, e):
         self.hide()
@@ -673,7 +687,7 @@ class SinkBox(Gtk.Box):
             hbox.pack_start(label, True, True, 0)
             eb.add(vbox)
             self.pack_start(eb, False, False, 0)
-            
+
     def switch_visibility(self, *args):
         if self.get_visible():
             self.hide()
@@ -686,10 +700,13 @@ class SinkBox(Gtk.Box):
 
     def on_leave_notify_event(self, widget, event):
         widget.get_style_context().set_state(Gtk.StateFlags.NORMAL)
-        
+
     def switch_sink(self, w, e, sink):
-        print("Sink: '{}'".format(sink))
-        subprocess.Popen('exec pacmd set-default-sink "{}"'.format(sink), shell=True)
+        if commands["pactl"]:
+            print("Sink: '{}'".format(sink))
+            subprocess.Popen('exec pactl set-default-sink "{}"'.format(sink), shell=True)
+        else:
+            eprint("Couldn't switch sinks, 'pactl' (libpulse) not found")
         self.hide()
 
 
@@ -703,9 +720,9 @@ def bri_icon_name(value):
     return icon_name
 
 
-def vol_icon_name(value, switch):
+def vol_icon_name(value, muted):
     icon_name = "audio-volume-muted-symbolic"
-    if switch:
+    if not muted:
         if value is not None:
             if value > 70:
                 icon_name = "audio-volume-high-symbolic"

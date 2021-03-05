@@ -2,10 +2,7 @@
 
 from gi.repository import Gtk
 
-import sys
 import subprocess
-
-sys.path.append('../')
 
 from nwg_panel.tools import check_key, update_image
 
