@@ -55,15 +55,17 @@ class SwayTaskbar(Gtk.Box):
 
     def build_box(self):
         self.displays_tree = self.list_tree()
+        all_workspaces = self.settings["all-workspaces"]
 
         for display in self.displays_tree:
             for desc in display.descendants():
                 if desc.type == "workspace":
                     self.ws_box = WorkspaceBox(desc, self.settings, self.autotiling)
-                    for con in desc.descendants():
-                        if con.name or con.app_id:
-                            win_box = WindowBox(con, self.settings, self.position, self.icons_path)
-                            self.ws_box.pack_start(win_box, False, False, self.settings["task-padding"])
+                    if all_workspaces or desc.find_focused() is not None:
+                        for con in desc.descendants():
+                            if con.name or con.app_id:
+                                win_box = WindowBox(con, self.settings, self.position, self.icons_path)
+                                self.ws_box.pack_start(win_box, False, False, self.settings["task-padding"])
                     self.pack_start(self.ws_box, False, False, 0)
         self.show_all()
 

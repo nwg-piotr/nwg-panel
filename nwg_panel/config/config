@@ -90,6 +90,7 @@
       "show-app-name": true,
       "show-layout": true,
       "workspace-buttons": false,
+      "all-workspaces": true,
       "all-outputs": true
     },
     "sway-workspaces": {
@@ -206,6 +207,7 @@
       "show-app-name": true,
       "show-layout": true,
       "workspace-buttons": false,
+      "all-workspaces": true,
       "all-outputs": false
     },
     "sway-workspaces": {
