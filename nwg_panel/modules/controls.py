@@ -365,12 +365,11 @@ class PopupWindow(Gtk.Window):
                 update_image(image, "pan-down-symbolic", self.icon_size, self.icons_path)
                 inner_hbox.pack_end(pactl_eb, False, False, 5)
 
-            add_sep = True
+                self.sink_box = SinkBox()
+                pactl_eb.connect('button-press-event', self.sink_box.switch_visibility)
+                v_box.pack_start(self.sink_box, False, False, 0)
 
-        if commands["pamixer"] and settings["output-switcher"]:
-            self.sink_box = SinkBox()
-            pactl_eb.connect('button-press-event', self.sink_box.switch_visibility)
-            v_box.pack_start(self.sink_box, False, False, 0)
+            add_sep = True
 
         if add_sep:
             sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
