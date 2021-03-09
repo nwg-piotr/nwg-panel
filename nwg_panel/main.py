@@ -84,7 +84,7 @@ def check_tree():
                 if item.popup_window.get_visible():
                     item.popup_window.hide()
 
-        common.ipc_data = common.i3.get_tree().ipc_data
+        common.ipc_data = tree.ipc_data
 
     return True
 
@@ -392,7 +392,7 @@ def main():
 
             window.show_all()
 
-    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 250, check_tree)
+    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 200, check_tree)
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)

@@ -29,7 +29,6 @@ class SwayTaskbar(Gtk.Box):
         self.ws_box = None
 
     def list_tree(self):
-        #i3_tree = self.i3.get_tree()
         """
         display -> workspace -> window -> app_id
                                        -> parent_layout
@@ -46,7 +45,7 @@ class SwayTaskbar(Gtk.Box):
                 if item.type == "output" and item.name == self.display_name:
                     displays_tree.append(item)
         else:
-            for item in self.i3_tree:
+            for item in self.tree:
                 if item.type == "output" and not item.name.startswith("__"):
                     displays_tree.append(item)
 
