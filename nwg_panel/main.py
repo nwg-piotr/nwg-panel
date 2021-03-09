@@ -62,19 +62,20 @@ def restart():
 
 
 def check_tree():
+    tree = common.i3.get_tree() if sway else None
+
     old = len(common.outputs)
-    common.outputs = list_outputs(sway=sway, silent=True)
+    common.outputs = list_outputs(sway=sway, tree=tree, silent=True)
     new = len(common.outputs)
     if old != 0 and old != new:
         print("Number of outputs changed")
         restart()
 
-    if sway:
+    if tree:
         # Do if tree changed
-        tree = common.i3.get_tree()
         if tree.ipc_data != common.ipc_data:
             for item in common.taskbars_list:
-                item.refresh()
+                item.refresh(tree)
 
             for item in common.scratchpads_list:
                 item.refresh(tree)
@@ -221,7 +222,8 @@ def main():
     copy_executors(os.path.join(dir_name, "executors"), os.path.join(common.config_dir, "executors"))
     copy_files(os.path.join(dir_name, "config"), common.config_dir, args.restore)
 
-    common.outputs = list_outputs(sway=sway)
+    tree = common.i3.get_tree()
+    common.outputs = list_outputs(sway=sway, tree=tree)
 
     panels = load_json(config_file)
 
@@ -390,7 +392,7 @@ def main():
 
             window.show_all()
 
-    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 150, check_tree)
+    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 250, check_tree)
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)

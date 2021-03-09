@@ -200,7 +200,7 @@ def load_autotiling():
     return autotiling
 
 
-def list_outputs(sway=False, silent=False):
+def list_outputs(sway=False, tree=None, silent=False):
     """
     Get output names and geometry from i3 tree, assign to Gdk.Display monitors.
     :return: {"name": str, "x": int, "y": int, "width": int, "height": int, "monitor": Gkd.Monitor}
@@ -209,7 +209,7 @@ def list_outputs(sway=False, silent=False):
     if sway:
         if not silent:
             print("Running on sway")
-        for item in nwg_panel.common.i3.get_tree():
+        for item in tree:
             if item.type == "output" and not item.name.startswith("__"):
                 outputs_dict[item.name] = {"x": item.rect.x,
                                            "y": item.rect.y,

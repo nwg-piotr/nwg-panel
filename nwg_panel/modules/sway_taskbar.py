@@ -19,6 +19,7 @@ class SwayTaskbar(Gtk.Box):
         self.settings = settings
         self.display_name = display_name
         self.i3 = i3
+        self.tree = i3.get_tree()
         self.displays_tree = self.list_tree()
 
         self.autotiling = load_autotiling()
@@ -28,7 +29,7 @@ class SwayTaskbar(Gtk.Box):
         self.ws_box = None
 
     def list_tree(self):
-        i3_tree = self.i3.get_tree()
+        #i3_tree = self.i3.get_tree()
         """
         display -> workspace -> window -> app_id
                                        -> parent_layout
@@ -41,11 +42,11 @@ class SwayTaskbar(Gtk.Box):
         """
         displays_tree = []
         if self.display_name:
-            for item in i3_tree:
+            for item in self.tree:
                 if item.type == "output" and item.name == self.display_name:
                     displays_tree.append(item)
         else:
-            for item in i3_tree:
+            for item in self.i3_tree:
                 if item.type == "output" and not item.name.startswith("__"):
                     displays_tree.append(item)
 
@@ -70,7 +71,8 @@ class SwayTaskbar(Gtk.Box):
                     self.pack_start(self.ws_box, False, False, 0)
         self.show_all()
 
-    def refresh(self):
+    def refresh(self, tree):
+        self.tree = tree
         for item in self.get_children():
             item.destroy()
         self.build_box()
