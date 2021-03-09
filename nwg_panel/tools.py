@@ -209,6 +209,8 @@ def list_outputs(sway=False, tree=None, silent=False):
     if sway:
         if not silent:
             print("Running on sway")
+        if not tree:
+            tree = nwg_panel.common.i3.get_tree()
         for item in tree:
             if item.type == "output" and not item.name.startswith("__"):
                 outputs_dict[item.name] = {"x": item.rect.x,
