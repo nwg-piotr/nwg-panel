@@ -300,7 +300,9 @@ def get_volume():
     muted = False
     if nwg_panel.common.commands["pamixer"]:
         try:
-            vol = int(cmd2string("pamixer --get-volume"))
+            output = cmd2string("pamixer --get-volume")
+            if output:
+                vol = int(cmd2string("pamixer --get-volume"))
         except Exception as e:
             eprint(e)
 

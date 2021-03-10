@@ -43,11 +43,13 @@ class Controls(Gtk.EventBox):
         self.bri_icon_name = "view-refresh-symbolic"
         self.bri_image = Gtk.Image.new_from_icon_name(self.bri_icon_name, Gtk.IconSize.MENU)
         self.bri_label = Gtk.Label() if settings["show-values"] else None
-        self.bri_slider = None
+        self.bri_value = 0
 
         self.vol_icon_name = "view-refresh-symbolic"
         self.vol_image = Gtk.Image.new_from_icon_name(self.vol_icon_name, Gtk.IconSize.MENU)
         self.vol_label = Gtk.Label() if settings["show-values"] else None
+        self.vol_value = 0
+        self.vol_muted = False
 
         self.bt_icon_name = "view-refresh-symbolic"
         self.bt_image = Gtk.Image.new_from_icon_name(self.bt_icon_name, Gtk.IconSize.MENU)
@@ -63,7 +65,7 @@ class Controls(Gtk.EventBox):
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
 
-        self.popup_window = PopupWindow(position, alignment, settings, width, monitor=monitor,
+        self.popup_window = PopupWindow(self, position, alignment, settings, width, monitor=monitor,
                                         icons_path=self.icons_path)
 
         self.connect('button-press-event', self.on_button_press)
@@ -190,8 +192,21 @@ class Controls(Gtk.EventBox):
             update_image(self.bri_image, icon_name, self.icon_size, self.icons_path)
             self.bri_icon_name = icon_name
 
+        self.bri_value = value
         if self.bri_label:
             self.bri_label.set_text("{}%".format(value))
+
+    def update_volume(self, value, muted):
+        icon_name = vol_icon_name(value, muted)
+
+        if icon_name != self.vol_icon_name:
+            update_image(self.vol_image, icon_name, self.settings["icon-size"], self.icons_path)
+            self.vol_icon_name = icon_name
+
+        self.vol_value = value
+        self.muted = muted
+        if self.vol_label:
+            self.vol_label.set_text("{}%".format(value))
 
     def update_battery(self, value, charging):
         icon_name = bat_icon_name(value, charging)
@@ -202,16 +217,6 @@ class Controls(Gtk.EventBox):
 
         if self.bat_label:
             self.bat_label.set_text("{}%".format(value))
-
-    def update_volume(self, value, muted):
-        icon_name = vol_icon_name(value, muted)
-
-        if icon_name != self.vol_icon_name:
-            update_image(self.vol_image, icon_name, self.settings["icon-size"], self.icons_path)
-            self.vol_icon_name = icon_name
-
-        if self.vol_label:
-            self.vol_label.set_text("{}%".format(value))
 
     def on_button_press(self, w, event):
         if not self.popup_window.get_visible():
@@ -242,13 +247,15 @@ class Controls(Gtk.EventBox):
 
 
 class PopupWindow(Gtk.Window):
-    def __init__(self, position, alignment, settings, width, monitor=None, icons_path=""):
+    def __init__(self, parent, position, alignment, settings, width, monitor=None, icons_path=""):
         Gtk.Window.__init__(self, type_hint=Gdk.WindowTypeHint.NORMAL)
         GtkLayerShell.init_for_window(self)
         if monitor:
             GtkLayerShell.set_monitor(self, monitor)
 
         check_key(settings, "css-name", "controls-window")
+        self.parent = parent
+        
         self.set_property("name", settings["css-name"])
         self.icon_size = settings["icon-size"]
         self.icons_path = icons_path
@@ -266,12 +273,14 @@ class PopupWindow(Gtk.Window):
 
         self.bri_scale = None
         self.vol_scale = None
+        
+        self.refresh()
 
         check_key(settings, "output-switcher", False)
         self.sinks = []
         if commands["pamixer"] and settings["output-switcher"]:
             self.sinks = list_sinks()
-            self.connect("show", self.refresh_sinks)
+            self.connect("show", self.refresh)
 
         eb = Gtk.EventBox()
         eb.set_above_child(False)
@@ -315,16 +324,9 @@ class PopupWindow(Gtk.Window):
             self.bri_icon_name = "view-refresh-symbolic"
             self.bri_image = Gtk.Image.new_from_icon_name(self.bri_icon_name, Gtk.IconSize.MENU)
 
-            icon_name = bri_icon_name(int(get_brightness()))
-            if icon_name != self.bri_icon_name:
-                update_image(self.bri_image, icon_name, self.icon_size, self.icons_path)
-                self.bri_icon_name = icon_name
-
             inner_hbox.pack_start(self.bri_image, False, False, 6)
 
             self.bri_scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
-            value = get_brightness()
-            self.bri_scale.set_value(value)
             self.bri_scale.connect("value-changed", self.set_bri)
 
             inner_hbox.pack_start(self.bri_scale, True, True, 5)
@@ -553,6 +555,7 @@ class PopupWindow(Gtk.Window):
 
     def toggle_mute(self, e, slider):
         toggle_mute(slider)
+        self.parent.refresh()
         self.refresh()
 
     def custom_item(self, name, icon, cmd):
@@ -581,7 +584,8 @@ class PopupWindow(Gtk.Window):
 
         return eb
 
-    def refresh(self):
+    def refresh(self, *args):
+        self.refresh_sinks()
         if self.get_visible():
             if "net" in self.settings["components"] and commands["netifaces"]:
                 ip_addr = get_interface(self.settings["net-interface"])
@@ -615,23 +619,18 @@ class PopupWindow(Gtk.Window):
                 self.bat_label.set_text("{}% {}".format(level, msg))
 
             if "volume" in self.settings["components"]:
-                vol, muted = get_volume()
-                icon_name = vol_icon_name(vol, muted)
+                if self.parent.vol_icon_name != self.vol_icon_name:
+                    update_image(self.vol_image, self.parent.vol_icon_name, self.icon_size, self.icons_path)
+                    self.vol_icon_name = self.parent.vol_icon_name
 
-                if icon_name != self.vol_icon_name:
-                    update_image(self.vol_image, icon_name, self.icon_size, self.icons_path)
-                    self.vol_icon_name = icon_name
-
-                self.vol_scale.set_value(vol)
+                self.vol_scale.set_value(self.parent.vol_value)
 
             if "brightness" in self.settings["components"]:
-                value = get_brightness()
-                icon_name = bri_icon_name(int(value))
-                if icon_name != self.bri_icon_name:
-                    update_image(self.bri_image, icon_name, self.icon_size, self.icons_path)
-                    self.bri_icon_name = icon_name
+                if self.parent.bri_icon_name != self.bri_icon_name:
+                    update_image(self.bri_image, self.parent.bri_icon_name, self.icon_size, self.icons_path)
+                    self.bri_icon_name = self.parent.bri_icon_name
 
-                self.bri_scale.set_value(value)
+                self.bri_scale.set_value(self.parent.bri_value)
 
         return True
 
@@ -643,9 +642,11 @@ class PopupWindow(Gtk.Window):
 
     def set_bri(self, slider):
         set_brightness(slider)
+        self.parent.bri_value = int(slider.get_value())
 
     def set_vol(self, slider):
         set_volume(slider)
+        self.parent.vol_value = int(slider.get_value())
 
     def close_win(self, w, e):
         self.hide()
