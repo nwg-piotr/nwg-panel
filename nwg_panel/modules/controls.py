@@ -278,13 +278,12 @@ class PopupWindow(Gtk.Window):
         self.bri_scale = None
         self.vol_scale = None
         
-        self.refresh()
+        self.connect("show", self.refresh)
 
         check_key(settings, "output-switcher", False)
         self.sinks = []
         if commands["pamixer"] and settings["output-switcher"]:
             self.sinks = list_sinks()
-            self.connect("show", self.refresh)
 
         eb = Gtk.EventBox()
         eb.set_above_child(False)
