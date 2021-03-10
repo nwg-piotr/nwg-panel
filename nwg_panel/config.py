@@ -1592,7 +1592,7 @@ class EditorWrapper(object):
 
         self.ctrl_interval = builder.get_object("interval")
         self.ctrl_interval.set_numeric(True)
-        adj = Gtk.Adjustment(value=2, lower=1, upper=60, step_increment=1, page_increment=10, page_size=1)
+        adj = Gtk.Adjustment(value=1, lower=1, upper=60, step_increment=1, page_increment=10, page_size=1)
         self.ctrl_interval.configure(adj, 1, 0)
         self.ctrl_interval.set_value(settings["interval"])
 

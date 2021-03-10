@@ -518,7 +518,7 @@ class PopupWindow(Gtk.Window):
 
                 e_box.connect('button-press-event', self.switch_menu_box)
 
-        Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
+        Gdk.threads_add_timeout(GLib.PRIORITY_LOW, 500, self.refresh)
 
     def on_window_exit(self, w, e):
         self.hide()
@@ -564,8 +564,8 @@ class PopupWindow(Gtk.Window):
         return eb
 
     def refresh(self, *args):
-        self.refresh_sinks()
         if self.get_visible():
+            self.refresh_sinks()
             if "net" in self.settings["components"] and commands["netifaces"]:
                 if self.parent.net_icon_name != self.net_icon_name:
                     update_image(self.net_image, self.parent.net_icon_name, self.icon_size, self.icons_path)
