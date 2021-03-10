@@ -35,7 +35,7 @@
         "battery": ""
       },
       "show-values": false,
-      "interval": 1,
+      "interval": 2,
       "icon-size": 16,
       "hover-opens": true,
       "leave-closes": true,
