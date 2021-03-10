@@ -200,17 +200,15 @@ class Controls(Gtk.EventBox):
             self.bri_label.set_text("{}%".format(value))
 
     def update_volume(self):
-        value, muted = get_volume()
-        icon_name = vol_icon_name(value, muted)
+        self.vol_value, self.vol_muted = get_volume()
+        icon_name = vol_icon_name(self.vol_value, self.vol_muted)
 
         if icon_name != self.vol_icon_name:
             update_image(self.vol_image, icon_name, self.settings["icon-size"], self.icons_path)
             self.vol_icon_name = icon_name
 
-        self.vol_value = value
-        self.muted = muted
         if self.vol_label:
-            self.vol_label.set_text("{}%".format(value))
+            self.vol_label.set_text("{}%".format(self.vol_value))
 
     def update_battery(self, value, charging):
         icon_name = bat_icon_name(value, charging)
@@ -339,12 +337,9 @@ class PopupWindow(Gtk.Window):
             self.vol_icon_name = "view-refresh-symbolic"
             self.vol_image = Gtk.Image.new_from_icon_name(self.vol_icon_name, Gtk.IconSize.MENU)
 
-            vol, muted = get_volume()
-            icon_name = vol_icon_name(vol, muted)
-
-            if icon_name != self.vol_icon_name:
-                update_image(self.vol_image, icon_name, self.icon_size, self.icons_path)
-                self.vol_icon_name = icon_name
+            if self.parent.vol_icon_name != self.vol_icon_name:
+                update_image(self.vol_image, self.parent.vol_icon_name, self.icon_size, self.icons_path)
+                self.vol_icon_name = self.parent.vol_icon_name
 
             eb = Gtk.EventBox()
             eb.connect("enter_notify_event", self.on_enter_notify_event)
@@ -354,7 +349,7 @@ class PopupWindow(Gtk.Window):
             inner_hbox.pack_start(eb, False, False, 6)
 
             self.vol_scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
-            self.vol_scale.set_value(vol)
+            self.vol_scale.set_value(self.parent.vol_value)
             self.vol_scale.connect("value-changed", self.set_vol)
 
             inner_hbox.pack_start(self.vol_scale, True, True, 5)
@@ -392,9 +387,8 @@ class PopupWindow(Gtk.Window):
 
             self.net_icon_name = "view-refresh-symbolic"
             self.net_image = Gtk.Image.new_from_icon_name(self.net_icon_name, Gtk.IconSize.MENU)
-            self.ip_addr = get_interface(settings["net-interface"])
 
-            icon_name = "network-wired-symbolic" if self.ip_addr else "network-wired-disconnected-symbolic"
+            icon_name = "network-wired-symbolic" if self.parent.net_ip_addr else "network-wired-disconnected-symbolic"
 
             if icon_name != self.net_icon_name:
                 update_image(self.net_image, icon_name, self.icon_size, self.icons_path)
@@ -402,7 +396,7 @@ class PopupWindow(Gtk.Window):
 
             inner_hbox.pack_start(self.net_image, False, False, 6)
 
-            self.net_label = Gtk.Label("{}: {}".format(settings["net-interface"], self.ip_addr))
+            self.net_label = Gtk.Label("{}: {}".format(settings["net-interface"], self.parent.net_ip_addr))
             inner_hbox.pack_start(self.net_label, False, True, 6)
 
             if "net" in settings["commands"] and settings["commands"]["net"]:
@@ -430,12 +424,11 @@ class PopupWindow(Gtk.Window):
 
             inner_hbox.pack_start(self.bt_image, False, False, 6)
 
-            self.bt_label = Gtk.Label(bt_name())
+            self.bt_label = Gtk.Label()
             inner_hbox.pack_start(self.bt_label, False, True, 6)
 
             if "bluetooth" in settings["commands"] and settings["commands"]["bluetooth"]:
                 img = Gtk.Image()
-                #update_image(img, "pan-end-symbolic", self.icon_size, self.icons_path)
                 inner_hbox.pack_end(img, False, True, 4)
 
             event_box.add(inner_vbox)

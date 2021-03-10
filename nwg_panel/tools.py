@@ -412,13 +412,6 @@ def seconds2string(seconds):
     return "{}:{}".format(hrs, minutes)
 
 
-def list_interfaces():
-    try:
-        return netifaces.interfaces()
-    except:
-        return []
-
-
 def get_interface(name):
     try:
         addrs = netifaces.ifaddresses(name)
