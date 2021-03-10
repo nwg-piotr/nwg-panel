@@ -39,6 +39,7 @@ class Controls(Gtk.EventBox):
         self.net_icon_name = "view-refresh-symbolic"
         self.net_image = Gtk.Image.new_from_icon_name(self.net_icon_name, Gtk.IconSize.MENU)
         self.net_label = Gtk.Label() if settings["show-values"] else None
+        self.net_ip_addr = None
 
         self.bri_icon_name = "view-refresh-symbolic"
         self.bri_image = Gtk.Image.new_from_icon_name(self.bri_icon_name, Gtk.IconSize.MENU)
@@ -54,10 +55,14 @@ class Controls(Gtk.EventBox):
         self.bt_icon_name = "view-refresh-symbolic"
         self.bt_image = Gtk.Image.new_from_icon_name(self.bt_icon_name, Gtk.IconSize.MENU)
         self.bt_label = Gtk.Label() if settings["show-values"] else None
+        self.bt_name = ""
 
         self.bat_icon_name = "view-refresh-symbolic"
         self.bat_image = Gtk.Image.new_from_icon_name(self.bat_icon_name, Gtk.IconSize.MENU)
         self.bat_label = Gtk.Label() if settings["show-values"] else None
+        self.bat_value = 0
+        self.bat_time = ""
+        self.bat_charging = False
 
         self.pan_image = Gtk.Image()
         update_image(self.pan_image, "pan-down-symbolic", self.icon_size, self.icons_path)
@@ -119,8 +124,8 @@ class Controls(Gtk.EventBox):
 
     def get_output(self):
         if "net" in self.settings["components"] and self.settings["net-interface"]:
-            ip = get_interface(self.settings["net-interface"])
-            GLib.idle_add(self.update_net, ip)
+            self.net_ip_addr = get_interface(self.settings["net-interface"])
+            GLib.idle_add(self.update_net, self.net_ip_addr)
 
         if bt_service_enabled() and "bluetooth" in self.settings["components"]:
             is_on = bt_on()
@@ -149,8 +154,8 @@ class Controls(Gtk.EventBox):
     def get_bat_output(self):
         if "battery" in self.settings["components"]:
             try:
-                value, time, charging = get_battery()
-                GLib.idle_add(self.update_battery, value, charging)
+                self.bat_value, self.bat_time, self.bat_charging = get_battery()
+                GLib.idle_add(self.update_battery, self.bat_value, self.bat_charging)
             except Exception as e:
                 print(e)
 
@@ -182,6 +187,7 @@ class Controls(Gtk.EventBox):
         if icon_name != self.bt_icon_name:
             update_image(self.bt_image, icon_name, self.icon_size, self.icons_path)
 
+        self.bt_name = name
         if self.bt_label:
             self.bt_label.set_text(name)
 
@@ -392,10 +398,9 @@ class PopupWindow(Gtk.Window):
 
             self.net_icon_name = "view-refresh-symbolic"
             self.net_image = Gtk.Image.new_from_icon_name(self.net_icon_name, Gtk.IconSize.MENU)
+            self.ip_addr = get_interface(settings["net-interface"])
 
-            ip_addr = get_interface(settings["net-interface"])
-
-            icon_name = "network-wired-symbolic" if ip_addr else "network-wired-disconnected-symbolic"
+            icon_name = "network-wired-symbolic" if self.ip_addr else "network-wired-disconnected-symbolic"
 
             if icon_name != self.net_icon_name:
                 update_image(self.net_image, icon_name, self.icon_size, self.icons_path)
@@ -403,7 +408,7 @@ class PopupWindow(Gtk.Window):
 
             inner_hbox.pack_start(self.net_image, False, False, 6)
 
-            self.net_label = Gtk.Label("{}: {}".format(settings["net-interface"], ip_addr))
+            self.net_label = Gtk.Label("{}: {}".format(settings["net-interface"], self.ip_addr))
             inner_hbox.pack_start(self.net_label, False, True, 6)
 
             if "net" in settings["commands"] and settings["commands"]["net"]:
@@ -442,7 +447,7 @@ class PopupWindow(Gtk.Window):
 
             if "bluetooth" in settings["commands"] and settings["commands"]["bluetooth"]:
                 img = Gtk.Image()
-                update_image(img, "pan-end-symbolic", self.icon_size, self.icons_path)
+                #update_image(img, "pan-end-symbolic", self.icon_size, self.icons_path)
                 inner_hbox.pack_end(img, False, True, 4)
 
             event_box.add(inner_vbox)
@@ -463,16 +468,9 @@ class PopupWindow(Gtk.Window):
             self.bat_icon_name = "view-refresh-symbolic"
             self.bat_image = Gtk.Image.new_from_icon_name(self.bat_icon_name, Gtk.IconSize.MENU)
 
-            level, msg, charging = get_battery()
-            icon_name = bat_icon_name(level, charging)
-
-            if icon_name != self.bat_icon_name:
-                update_image(self.bat_image, icon_name, self.icon_size, self.icons_path)
-                self.bat_icon_name = icon_name
-
             inner_hbox.pack_start(self.bat_image, False, False, 6)
 
-            self.bat_label = Gtk.Label("{}% {}".format(level, msg))
+            self.bat_label = Gtk.Label()
             inner_hbox.pack_start(self.bat_label, False, True, 6)
 
             if "battery" in settings["commands"] and settings["commands"]["battery"]:
@@ -554,7 +552,7 @@ class PopupWindow(Gtk.Window):
         self.sinks = list_sinks()
 
     def toggle_mute(self, e, slider):
-        toggle_mute(slider)
+        toggle_mute()
         self.parent.refresh()
         self.refresh()
 
@@ -588,35 +586,26 @@ class PopupWindow(Gtk.Window):
         self.refresh_sinks()
         if self.get_visible():
             if "net" in self.settings["components"] and commands["netifaces"]:
-                ip_addr = get_interface(self.settings["net-interface"])
-                icon_name = "network-wired-symbolic" if ip_addr else "network-wired-disconnected-symbolic"
+                if self.parent.net_icon_name != self.net_icon_name:
+                    update_image(self.net_image, self.parent.net_icon_name, self.icon_size, self.icons_path)
+                    self.net_icon_name = self.parent.net_icon_name
 
-                if icon_name != self.net_icon_name:
-                    update_image(self.net_image, icon_name, self.icon_size, self.icons_path)
-                    self.net_icon_name = icon_name
-
-                if not ip_addr:
-                    ip_addr = "disconnected"
+                ip_addr = "disconnected" if not self.parent.net_ip_addr else self.parent.net_ip_addr
                 self.net_label.set_text("{}: {}".format(self.settings["net-interface"], ip_addr))
 
             if bt_service_enabled() and "bluetooth" in self.settings["components"]:
-                icon_name = bt_icon_name(bt_on())
+                if self.parent.bt_icon_name != self.bt_icon_name:
+                    update_image(self.bt_image, self.parent.bt_icon_name, self.icon_size, self.icons_path)
+                    self.bt_icon_name = self.parent.bt_icon_name
 
-                if icon_name != self.bt_icon_name:
-                    update_image(self.bt_image, icon_name, self.icon_size, self.icons_path)
-                    self.bt_icon_name = icon_name
-
-                self.bt_label.set_text(bt_name())
+                self.bt_label.set_text(self.parent.bt_name)
 
             if "battery" in self.settings["components"]:
-                level, msg, charging = get_battery()
-                icon_name = bat_icon_name(level, charging)
+                if self.parent.bat_icon_name != self.bat_icon_name:
+                    update_image(self.bat_image, self.parent.bat_icon_name, self.icon_size, self.icons_path)
+                    self.bat_icon_name = self.parent.bat_icon_name
 
-                if icon_name != self.bat_icon_name:
-                    update_image(self.bat_image, icon_name, self.icon_size, self.icons_path)
-                    self.bat_icon_name = icon_name
-
-                self.bat_label.set_text("{}% {}".format(level, msg))
+                self.bat_label.set_text("{}% {}".format(self.parent.bat_value, self.parent.bat_time))
 
             if "volume" in self.settings["components"]:
                 if self.parent.vol_icon_name != self.vol_icon_name:
