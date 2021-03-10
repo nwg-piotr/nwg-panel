@@ -186,6 +186,7 @@ class Controls(Gtk.EventBox):
         icon_name = "bluetooth-active-symbolic" if is_on else "bluetooth-disabled-symbolic"
         if icon_name != self.bt_icon_name:
             update_image(self.bt_image, icon_name, self.icon_size, self.icons_path)
+            self.bt_icon_name = icon_name
 
         self.bt_name = name
         if self.bt_label:
@@ -268,9 +269,6 @@ class PopupWindow(Gtk.Window):
 
         self.settings = settings
         self.position = position
-
-        self.bt_icon_name = ""
-        self.bt_image = Gtk.Image()
 
         self.net_icon_name = ""
 
@@ -433,12 +431,6 @@ class PopupWindow(Gtk.Window):
 
             self.bt_icon_name = "view-refresh-symbolic"
             self.bt_image = Gtk.Image.new_from_icon_name(self.bt_icon_name, Gtk.IconSize.MENU)
-
-            icon_name = bt_icon_name(bt_on())
-
-            if icon_name != self.bt_icon_name:
-                update_image(self.bt_image, icon_name, self.icon_size, self.icons_path)
-                self.bt_icon_name = icon_name
 
             inner_hbox.pack_start(self.bt_image, False, False, 6)
 
