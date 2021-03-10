@@ -122,36 +122,29 @@ class Controls(Gtk.EventBox):
 
         box.pack_start(self.pan_image, False, False, 4)
 
-    def get_output(self):
+    def refresh_output(self):
         if "net" in self.settings["components"] and self.settings["net-interface"]:
             self.net_ip_addr = get_interface(self.settings["net-interface"])
             GLib.idle_add(self.update_net, self.net_ip_addr)
 
         if bt_service_enabled() and "bluetooth" in self.settings["components"]:
-            is_on = bt_on()
-            name = bt_name()
-            GLib.idle_add(self.update_bt, is_on, name)
+            GLib.idle_add(self.update_bt)
 
         if "brightness" in self.settings["components"]:
             try:
-                value = get_brightness()
-                if value:
-                    GLib.idle_add(self.update_brightness, value)
-                else:
-                    print("Couldn't get brightness, is 'light' installed?")
+                GLib.idle_add(self.update_brightness)
             except Exception as e:
                 print(e)
 
         if "volume" in self.settings["components"] and commands["pamixer"]:
             try:
-                value, muted = get_volume()
-                GLib.idle_add(self.update_volume, value, muted)
+                GLib.idle_add(self.update_volume)
             except Exception as e:
                 print(e)
 
         return False
 
-    def get_bat_output(self):
+    def refresh_bat_output(self):
         if "battery" in self.settings["components"]:
             try:
                 self.bat_value, self.bat_time, self.bat_charging = get_battery()
@@ -160,7 +153,7 @@ class Controls(Gtk.EventBox):
                 print(e)
 
     def refresh(self):
-        thread = threading.Thread(target=self.get_output)
+        thread = threading.Thread(target=self.refresh_output)
         thread.daemon = True
         thread.start()
 
@@ -168,7 +161,7 @@ class Controls(Gtk.EventBox):
 
     # No point in checking battery data more often that every 5 seconds
     def refresh_bat(self):
-        thread = threading.Thread(target=self.get_bat_output)
+        thread = threading.Thread(target=self.refresh_bat_output)
         thread.daemon = True
         thread.start()
         return True
@@ -182,7 +175,9 @@ class Controls(Gtk.EventBox):
         if self.net_label:
             self.net_label.set_text("{}".format(self.settings["net-interface"]))
 
-    def update_bt(self, is_on, name):
+    def update_bt(self):
+        is_on = bt_on()
+        name = bt_name()
         icon_name = "bluetooth-active-symbolic" if is_on else "bluetooth-disabled-symbolic"
         if icon_name != self.bt_icon_name:
             update_image(self.bt_image, icon_name, self.icon_size, self.icons_path)
@@ -192,7 +187,8 @@ class Controls(Gtk.EventBox):
         if self.bt_label:
             self.bt_label.set_text(name)
 
-    def update_brightness(self, value):
+    def update_brightness(self):
+        value = get_brightness()
         icon_name = bri_icon_name(value)
 
         if icon_name != self.bri_icon_name:
@@ -203,7 +199,8 @@ class Controls(Gtk.EventBox):
         if self.bri_label:
             self.bri_label.set_text("{}%".format(value))
 
-    def update_volume(self, value, muted):
+    def update_volume(self):
+        value, muted = get_volume()
         icon_name = vol_icon_name(value, muted)
 
         if icon_name != self.vol_icon_name:
