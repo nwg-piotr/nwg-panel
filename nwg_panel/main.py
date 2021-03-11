@@ -223,7 +223,7 @@ def main():
     copy_executors(os.path.join(dir_name, "executors"), os.path.join(common.config_dir, "executors"))
     copy_files(os.path.join(dir_name, "config"), common.config_dir, args.restore)
 
-    tree = common.i3.get_tree()
+    tree = common.i3.get_tree() if sway else None
     common.outputs = list_outputs(sway=sway, tree=tree)
 
     panels = load_json(config_file)
