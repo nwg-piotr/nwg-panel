@@ -10,6 +10,7 @@ if os.getenv('SWAYSOCK') is not None:
 ipc_data = None
 
 outputs = {}
+outputs_num = 0
 windows_list = []
 taskbars_list = []
 scratchpads_list = []
