@@ -168,8 +168,6 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
 def main():
     common.config_dir = get_config_dir()
-    check_commands()
-    print("Dependencies check:", common.commands)
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-c",
@@ -196,6 +194,9 @@ def main():
                         help="display version information")
 
     args = parser.parse_args()
+
+    check_commands()
+    print("Dependencies check:", common.commands)
 
     global restart_cmd
     restart_cmd = "nwg-panel -c {} -s {}".format(args.config, args.style)
