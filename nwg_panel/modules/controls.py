@@ -383,7 +383,7 @@ class PopupWindow(Gtk.Window):
             inner_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             inner_vbox.pack_start(inner_hbox, True, True, 6)
-            v_box.pack_start(event_box, True, True, 10)
+            v_box.pack_start(event_box, True, True, 0)
 
             self.net_icon_name = "view-refresh-symbolic"
             self.net_image = Gtk.Image.new_from_icon_name(self.net_icon_name, Gtk.IconSize.MENU)
@@ -417,7 +417,7 @@ class PopupWindow(Gtk.Window):
             inner_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             inner_vbox.pack_start(inner_hbox, True, True, 6)
-            v_box.pack_start(event_box, True, True, 6)
+            v_box.pack_start(event_box, True, True, 0)
 
             self.bt_icon_name = "view-refresh-symbolic"
             self.bt_image = Gtk.Image.new_from_icon_name(self.bt_icon_name, Gtk.IconSize.MENU)
@@ -429,6 +429,7 @@ class PopupWindow(Gtk.Window):
 
             if "bluetooth" in settings["commands"] and settings["commands"]["bluetooth"]:
                 img = Gtk.Image()
+                update_image(img, "pan-end-symbolic", self.icon_size, self.icons_path)
                 inner_hbox.pack_end(img, False, True, 4)
 
             event_box.add(inner_vbox)
@@ -444,7 +445,7 @@ class PopupWindow(Gtk.Window):
             inner_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             inner_vbox.pack_start(inner_hbox, True, True, 6)
-            v_box.pack_start(event_box, True, True, 6)
+            v_box.pack_start(event_box, True, True, 0)
 
             self.bat_icon_name = "view-refresh-symbolic"
             self.bat_image = Gtk.Image.new_from_icon_name(self.bat_icon_name, Gtk.IconSize.MENU)
@@ -468,7 +469,7 @@ class PopupWindow(Gtk.Window):
                 check_key(item, "icon", "")
                 check_key(item, "cmd", "")
                 c_item = self.custom_item(item["name"], item["icon"], item["cmd"])
-                v_box.pack_start(c_item, True, True, 6)
+                v_box.pack_start(c_item, True, True, 2)
 
         check_key(settings, "menu", {})
         if settings["menu"]:
@@ -507,7 +508,7 @@ class PopupWindow(Gtk.Window):
                     eb = Gtk.EventBox()
                     vb = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
                     hb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-                    vb.pack_start(hb, False, False, 6)
+                    vb.pack_start(hb, False, False, 3)
                     i = Gtk.Label(item["name"])
                     hb.pack_start(i, False, False, self.icon_size + 18)
                     eb.add(vb)
@@ -649,7 +650,7 @@ class SinkBox(Gtk.Box):
             eb.connect('button-press-event', self.switch_sink, sink["name"])
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-            vbox.pack_start(hbox, True, True, 6)
+            vbox.pack_start(hbox, True, True, 4)
             desc = sink["desc"]
             if len(desc) > 26:
                 desc = "{}\u2026".format(desc[:26])
