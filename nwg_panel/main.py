@@ -83,13 +83,14 @@ def check_tree():
         common.ipc_data = tree.ipc_data
 
     else:
-        # Trace outputs number not on sway only
+        pass
+        """ For now we seem to have no reason to trace it outside sway
         old = len(common.outputs)
         common.outputs = list_outputs(sway=sway, tree=tree, silent=True)
         new = len(common.outputs)
         if old != 0 and old != new:
             print("Number of outputs changed")
-            restart()
+            restart()"""
 
     return True
 
