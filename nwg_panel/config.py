@@ -9,7 +9,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, load_json, save_json, load_string, list_outputs, check_key, list_configs, \
-    local_dir, create_pixbuf, update_image, is_command
+    local_dir, create_pixbuf, update_image, is_command, check_commands
 
 from nwg_panel.__about__ import __version__
 
@@ -21,7 +21,7 @@ config_dir = get_config_dir()
 configs = {}
 editor = None
 selector_window = None
-outputs = list_outputs(sway=sway)
+outputs = None
 
 SKELETON_PANEL: dict = {
     "name": "",
@@ -2006,6 +2006,10 @@ def main():
     configs = list_configs(config_dir)
 
     GLib.set_prgname('nwg-panel-config')
+
+    check_commands()
+    global outputs
+    outputs = list_outputs(sway=sway)
 
     global selector_window
     selector_window = PanelSelector()
