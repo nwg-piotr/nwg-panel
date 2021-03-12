@@ -42,7 +42,11 @@ from nwg_panel import common
 
 sway = os.getenv('SWAYSOCK') is not None
 if sway:
-    from i3ipc import Connection
+    try:
+        from i3ipc import Connection
+    except ModuleNotFoundError:
+        print("'python-i3ipc' package required on sway, terminating")
+        sys.exit(1)
 
     common.i3 = Connection()
     from nwg_panel.modules.sway_taskbar import SwayTaskbar

@@ -3,9 +3,7 @@
 import os
 sway = False
 
-if os.getenv('SWAYSOCK') is not None:
-    from i3ipc import Connection
-    i3 = Connection()
+i3 = None
 
 ipc_data = None
 
