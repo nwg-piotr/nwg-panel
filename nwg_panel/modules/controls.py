@@ -11,7 +11,7 @@ gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
 from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery, \
-    get_interface, update_image, bt_service_enabled, bt_on, bt_name, eprint, list_sinks, toggle_mute
+    get_interface, update_image, bt_adr, eprint, list_sinks, toggle_mute
 
 from nwg_panel.common import commands
 
@@ -79,6 +79,7 @@ class Controls(Gtk.EventBox):
 
         self.build_box()
         self.refresh()
+
         if "battery" in settings["components"]:
             self.refresh_bat()
 
@@ -110,7 +111,7 @@ class Controls(Gtk.EventBox):
             else:
                 print("'netifaces' python module not found")
 
-        if "bluetooth" in self.settings["components"] and bt_service_enabled():
+        if "bluetooth" in self.settings["components"]:
             box.pack_start(self.bt_image, False, False, 4)
             if self.bt_label:
                 box.pack_start(self.bt_label, False, False, 0)
@@ -127,8 +128,9 @@ class Controls(Gtk.EventBox):
             self.net_ip_addr = get_interface(self.settings["net-interface"])
             GLib.idle_add(self.update_net, self.net_ip_addr)
 
-        if bt_service_enabled() and "bluetooth" in self.settings["components"]:
-            GLib.idle_add(self.update_bt)
+        adr = bt_adr()
+        if "bluetooth" in self.settings["components"]:
+            GLib.idle_add(self.update_bt, adr)
 
         if "brightness" in self.settings["components"]:
             try:
@@ -175,17 +177,15 @@ class Controls(Gtk.EventBox):
         if self.net_label:
             self.net_label.set_text("{}".format(self.settings["net-interface"]))
 
-    def update_bt(self):
-        is_on = bt_on()
-        name = bt_name()
-        icon_name = "bluetooth-active-symbolic" if is_on else "bluetooth-disabled-symbolic"
+    def update_bt(self, adr):
+        icon_name = "bluetooth-active-symbolic" if adr != "off" else "bluetooth-disabled-symbolic"
         if icon_name != self.bt_icon_name:
             update_image(self.bt_image, icon_name, self.icon_size, self.icons_path)
             self.bt_icon_name = icon_name
 
-        self.bt_name = name
+        self.bt_name = adr
         if self.bt_label:
-            self.bt_label.set_text(name)
+            self.bt_label.set_text(adr)
 
     def update_brightness(self):
         value = get_brightness()
@@ -406,7 +406,7 @@ class PopupWindow(Gtk.Window):
 
             event_box.add(inner_vbox)
 
-        if bt_service_enabled() and "bluetooth" in settings["components"]:
+        if "bluetooth" in settings["components"]:
             event_box = Gtk.EventBox()
             if "bluetooth" in settings["commands"] and settings["commands"]["bluetooth"]:
                 event_box.connect("enter_notify_event", self.on_enter_notify_event)
@@ -575,12 +575,13 @@ class PopupWindow(Gtk.Window):
                 ip_addr = "disconnected" if not self.parent.net_ip_addr else self.parent.net_ip_addr
                 self.net_label.set_text("{}: {}".format(self.settings["net-interface"], ip_addr))
 
-            if bt_service_enabled() and "bluetooth" in self.settings["components"]:
+            if "bluetooth" in self.settings["components"]:
                 if self.parent.bt_icon_name != self.bt_icon_name:
                     update_image(self.bt_image, self.parent.bt_icon_name, self.icon_size, self.icons_path)
                     self.bt_icon_name = self.parent.bt_icon_name
 
-                self.bt_label.set_text(self.parent.bt_name)
+                if self.bt_label:
+                    self.bt_label.set_text(self.parent.bt_name)
 
             if "battery" in self.settings["components"]:
                 if self.parent.bat_icon_name != self.bat_icon_name:
