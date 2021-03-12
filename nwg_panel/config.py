@@ -2008,8 +2008,20 @@ def main():
     GLib.set_prgname('nwg-panel-config')
 
     check_commands()
+
+    tree = None
+    if sway:
+        try:
+            from i3ipc import Connection
+        except ModuleNotFoundError:
+            print("'python-i3ipc' package required on sway, terminating")
+            sys.exit(1)
+
+        i3 = Connection()
+        tree = i3.get_tree()
+
     global outputs
-    outputs = list_outputs(sway=sway)
+    outputs = list_outputs(sway=sway, tree=tree)
 
     global selector_window
     selector_window = PanelSelector()
