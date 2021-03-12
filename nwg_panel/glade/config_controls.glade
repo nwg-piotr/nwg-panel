@@ -46,6 +46,7 @@
       <object class="GtkImage">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="tooltip-text" translatable="yes">Depends on `python-psutil`.</property>
         <property name="halign">start</property>
         <property name="stock">gtk-about</property>
       </object>
@@ -85,7 +86,8 @@
         <property name="can-focus">False</property>
         <property name="tooltip-text" translatable="yes">Will only work on Linux distributions, 
 which use systemd. 
-Depends on bluez', `bluez-utils`.</property>
+Depends on `python-pybluez`
+(python3-bluez / p3-bluez).</property>
         <property name="halign">start</property>
         <property name="stock">gtk-about</property>
       </object>
@@ -137,7 +139,8 @@ Depends on bluez', `bluez-utils`.</property>
         <property name="can-focus">False</property>
         <property name="tooltip-text" translatable="yes">Network interface status;
 use `ifconfig` to check names,
-e.g. `enp6s0`or `wlo1`.</property>
+e.g. `enp6s0`or `wlo1`.
+Depends on `python-netifaces`.</property>
         <property name="halign">start</property>
         <property name="stock">gtk-about</property>
       </object>
