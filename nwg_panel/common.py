@@ -19,13 +19,13 @@ config_dir = ""
 app_dirs = []
 
 commands = {
-    "pamixer": False,
-    "wlr-randr": False,
     "light": False,
-    "playerctl": False,
+    "pamixer": False,
     "pactl": False,
-    "systemctl": False,
-    "netifaces": False
+    "playerctl": False,
+    "netifaces": False,
+    "pybluez": False,
+    "wlr-randr": False
 }
 
 icons_path = ""  # "icons_light", "icons_dark" or "" (GTK icons)

@@ -5,7 +5,6 @@ import sys
 import json
 import subprocess
 import stat
-import bluetooth
 
 import gi
 
@@ -17,6 +16,11 @@ from gi.repository import Gtk, Gdk, GdkPixbuf
 from shutil import copyfile
 
 import nwg_panel.common
+
+try:
+    import bluetooth
+except ModuleNotFoundError:
+    pass
 
 try:
     import netifaces
@@ -292,6 +296,12 @@ def check_commands():
     try:
         import netifaces
         nwg_panel.common.commands["netifaces"] = True
+    except ModuleNotFoundError:
+        pass
+
+    try:
+        import bluetooth
+        nwg_panel.common.commands["pybluez"] = True
     except ModuleNotFoundError:
         pass
 

@@ -111,7 +111,7 @@ class Controls(Gtk.EventBox):
             else:
                 print("'netifaces' python module not found")
 
-        if "bluetooth" in self.settings["components"]:
+        if "bluetooth" in self.settings["components"] and commands["pybluez"]:
             box.pack_start(self.bt_image, False, False, 4)
             if self.bt_label:
                 box.pack_start(self.bt_label, False, False, 0)
@@ -128,9 +128,10 @@ class Controls(Gtk.EventBox):
             self.net_ip_addr = get_interface(self.settings["net-interface"])
             GLib.idle_add(self.update_net, self.net_ip_addr)
 
-        adr = bt_adr()
-        if "bluetooth" in self.settings["components"]:
-            GLib.idle_add(self.update_bt, adr)
+        if commands["pybluez"]:
+            adr = bt_adr()
+            if "bluetooth" in self.settings["components"]:
+                GLib.idle_add(self.update_bt, adr)
 
         if "brightness" in self.settings["components"]:
             try:
@@ -277,7 +278,7 @@ class PopupWindow(Gtk.Window):
 
         check_key(settings, "output-switcher", False)
         self.sinks = []
-        if commands["pamixer"] and settings["output-switcher"]:
+        if commands["pamixer"] and settings["output-switcher"] and commands["pamixer"]:
             self.sinks = list_sinks()
 
         eb = Gtk.EventBox()
@@ -406,7 +407,7 @@ class PopupWindow(Gtk.Window):
 
             event_box.add(inner_vbox)
 
-        if "bluetooth" in settings["components"]:
+        if "bluetooth" in settings["components"] and commands["pybluez"]:
             event_box = Gtk.EventBox()
             if "bluetooth" in settings["commands"] and settings["commands"]["bluetooth"]:
                 event_box.connect("enter_notify_event", self.on_enter_notify_event)
@@ -531,7 +532,8 @@ class PopupWindow(Gtk.Window):
             self.menu_box.show_all()
 
     def refresh_sinks(self, *args):
-        self.sinks = list_sinks()
+        if  commands["pamixer"]:
+            self.sinks = list_sinks()
 
     def toggle_mute(self, e, slider):
         toggle_mute()
@@ -575,7 +577,7 @@ class PopupWindow(Gtk.Window):
                 ip_addr = "disconnected" if not self.parent.net_ip_addr else self.parent.net_ip_addr
                 self.net_label.set_text("{}: {}".format(self.settings["net-interface"], ip_addr))
 
-            if "bluetooth" in self.settings["components"]:
+            if "bluetooth" in self.settings["components"] and commands["pybluez"]:
                 if self.parent.bt_icon_name != self.bt_icon_name:
                     update_image(self.bt_image, self.parent.bt_icon_name, self.icon_size, self.icons_path)
                     self.bt_icon_name = self.parent.bt_icon_name
@@ -590,7 +592,7 @@ class PopupWindow(Gtk.Window):
 
                 self.bat_label.set_text("{}% {}".format(self.parent.bat_value, self.parent.bat_time))
 
-            if "volume" in self.settings["components"]:
+            if "volume" in self.settings["components"] and commands["pamixer"]:
                 if self.parent.vol_icon_name != self.vol_icon_name:
                     update_image(self.vol_image, self.parent.vol_icon_name, self.icon_size, self.icons_path)
                     self.vol_icon_name = self.parent.vol_icon_name
@@ -643,22 +645,23 @@ class SinkBox(Gtk.Box):
     def refresh(self):
         for item in self.get_children():
             item.destroy()
-        self.sinks = list_sinks()
-        for sink in self.sinks:
-            eb = Gtk.EventBox()
-            eb.connect("enter_notify_event", self.on_enter_notify_event)
-            eb.connect("leave_notify_event", self.on_leave_notify_event)
-            eb.connect('button-press-event', self.switch_sink, sink["name"])
-            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-            vbox.pack_start(hbox, True, True, 4)
-            desc = sink["desc"]
-            if len(desc) > 26:
-                desc = "{}\u2026".format(desc[:26])
-            label = Gtk.Label(desc)
-            hbox.pack_start(label, True, True, 0)
-            eb.add(vbox)
-            self.pack_start(eb, False, False, 0)
+        if commands["pamixer"]:
+            self.sinks = list_sinks()
+            for sink in self.sinks:
+                eb = Gtk.EventBox()
+                eb.connect("enter_notify_event", self.on_enter_notify_event)
+                eb.connect("leave_notify_event", self.on_leave_notify_event)
+                eb.connect('button-press-event', self.switch_sink, sink["name"])
+                vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+                hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+                vbox.pack_start(hbox, True, True, 4)
+                desc = sink["desc"]
+                if len(desc) > 26:
+                    desc = "{}\u2026".format(desc[:26])
+                label = Gtk.Label(desc)
+                hbox.pack_start(label, True, True, 0)
+                eb.add(vbox)
+                self.pack_start(eb, False, False, 0)
 
     def switch_visibility(self, *args):
         if self.get_visible():
