@@ -84,9 +84,7 @@
       <object class="GtkImage">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="tooltip-text" translatable="yes">Will only work on Linux distributions, 
-which use systemd. 
-Depends on `python-pybluez`
+        <property name="tooltip-text" translatable="yes">Depends on `python-pybluez`
 (python3-bluez / p3-bluez).</property>
         <property name="halign">start</property>
         <property name="stock">gtk-about</property>
