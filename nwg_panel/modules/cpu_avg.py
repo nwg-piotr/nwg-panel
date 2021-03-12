@@ -38,7 +38,7 @@ class CpuAvg(Gtk.EventBox):
             val = psutil.cpu_percent(interval=1)
             self.avg = self.avg + val
             self.cnt += 1
-            val = "{}%".format(round(self.avg / self.cnt, 1))
+            val = "{:.2f}%".format(round(self.avg / self.cnt, 2))
             GLib.idle_add(self.update_widget, val, str(self.cnt))
         except Exception as e:
             print(e)

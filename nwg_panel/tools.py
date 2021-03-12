@@ -18,6 +18,11 @@ from shutil import copyfile
 import nwg_panel.common
 
 try:
+    import bluetooth
+except ModuleNotFoundError:
+    pass
+
+try:
     import netifaces
 except ModuleNotFoundError:
     pass
@@ -294,6 +299,12 @@ def check_commands():
     except ModuleNotFoundError:
         pass
 
+    try:
+        import bluetooth
+        nwg_panel.common.commands["pybluez"] = True
+    except ModuleNotFoundError:
+        pass
+
 
 def get_volume():
     vol = 0
@@ -515,43 +526,12 @@ def create_pixbuf(icon_name, icon_size, icons_path=""):
             return pixbuf
 
 
-def bt_on():
+def bt_adr():
     try:
-        output = subprocess.check_output("bluetoothctl show | awk '/Powered/{print $2}'", shell=True).decode(
-            "utf-8").strip()
-        return output == "yes"
+        adr = bluetooth.read_local_bdaddr()
+        return adr[0]
     except:
-        return False
-
-
-def bt_name():
-    try:
-        output = subprocess.check_output("bluetoothctl show | awk '/Name/{print $2}'", shell=True).decode(
-            "utf-8").strip()
-        return output
-    except:
-        return "undetected"
-
-
-def bt_service_enabled():
-    result, enabled, active = False, False, False
-    if nwg_panel.common.commands["systemctl"]:
-        try:
-            enabled = subprocess.check_output("systemctl is-enabled bluetooth.service", shell=True).decode(
-                "utf-8").strip() == "enabled"
-        except subprocess.CalledProcessError:
-            # the command above returns the 'disabled` status w/ CalledProcessError, exit status 1
-            pass
-
-        try:
-            active = subprocess.check_output("systemctl is-active bluetooth.service", shell=True).decode(
-                "utf-8").strip() == "active"
-        except subprocess.CalledProcessError:
-            pass
-
-        result = enabled and active
-
-    return result
+        return "off"
 
 
 def list_configs(config_dir):

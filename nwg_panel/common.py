@@ -3,13 +3,12 @@
 import os
 sway = False
 
-if os.getenv('SWAYSOCK') is not None:
-    from i3ipc import Connection
-    i3 = Connection()
+i3 = None
 
 ipc_data = None
 
 outputs = {}
+outputs_num = 0
 windows_list = []
 taskbars_list = []
 scratchpads_list = []
@@ -18,13 +17,13 @@ config_dir = ""
 app_dirs = []
 
 commands = {
-    "pamixer": False,
-    "wlr-randr": False,
     "light": False,
-    "playerctl": False,
+    "pamixer": False,
     "pactl": False,
-    "systemctl": False,
-    "netifaces": False
+    "playerctl": False,
+    "netifaces": False,
+    "pybluez": False,
+    "wlr-randr": False
 }
 
 icons_path = ""  # "icons_light", "icons_dark" or "" (GTK icons)

@@ -42,7 +42,11 @@ from nwg_panel import common
 
 sway = os.getenv('SWAYSOCK') is not None
 if sway:
-    from i3ipc import Connection
+    try:
+        from i3ipc import Connection
+    except ModuleNotFoundError:
+        print("'python-i3ipc' package required on sway, terminating")
+        sys.exit(1)
 
     common.i3 = Connection()
     from nwg_panel.modules.sway_taskbar import SwayTaskbar
@@ -63,17 +67,13 @@ def restart():
 
 def check_tree():
     tree = common.i3.get_tree() if sway else None
-
-    old = len(common.outputs)
-    common.outputs = list_outputs(sway=sway, tree=tree, silent=True)
-    new = len(common.outputs)
-    if old != 0 and old != new:
-        print("Number of outputs changed")
-        restart()
-
     if tree:
         # Do if tree changed
         if tree.ipc_data != common.ipc_data:
+            if len(common.i3.get_outputs()) != common.outputs_num:
+                print("Number of outputs changed")
+                restart()
+            
             for item in common.taskbars_list:
                 item.refresh(tree)
 
@@ -85,6 +85,16 @@ def check_tree():
                     item.popup_window.hide()
 
         common.ipc_data = tree.ipc_data
+
+    else:
+        pass
+        """ For now we seem to have no reason to trace it outside sway
+        old = len(common.outputs)
+        common.outputs = list_outputs(sway=sway, tree=tree, silent=True)
+        new = len(common.outputs)
+        if old != 0 and old != new:
+            print("Number of outputs changed")
+            restart()"""
 
     return True
 
@@ -393,6 +403,11 @@ def main():
 
             window.show_all()
 
+    if sway:
+        common.outputs_num = len(common.i3.get_outputs())
+    else:
+        common.outputs = list_outputs(sway=sway, tree=tree, silent=True)
+        common.outputs_num = len(common.outputs)
     Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 200, check_tree)
 
     signal.signal(signal.SIGINT, signal_handler)
