@@ -569,7 +569,7 @@ class PopupWindow(Gtk.Window):
     def refresh(self, *args):
         if self.get_visible():
             self.refresh_sinks()
-            if "net" in self.settings["components"] and commands["netifaces"]:
+            if "net" in self.settings["components"] and commands["netifaces"] and self.settings["net-interface"]:
                 if self.parent.net_icon_name != self.net_icon_name:
                     update_image(self.net_image, self.parent.net_icon_name, self.icon_size, self.icons_path)
                     self.net_icon_name = self.parent.net_icon_name
