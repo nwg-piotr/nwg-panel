@@ -2,27 +2,32 @@
 
 import threading
 
-from gi.repository import Gtk
+from gi.repository import Gtk, GdkPixbuf
 
 import nwg_panel.common
-from nwg_panel.tools import check_key
+from nwg_panel.tools import check_key, get_icon, update_image
 
 
 class SwayWorkspaces(Gtk.Box):
-    def __init__(self, settings, i3):
+    def __init__(self, settings, i3, icons_path):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.settings = settings
         self.i3 = i3
         self.ws_num2box = {}
         self.name_label = Gtk.Label("")
+        self.win_id = ""
+        self.icon = Gtk.Image()
+        self.icons_path = icons_path
         self.build_box()
 
     def build_box(self):
         check_key(self.settings, "numbers", [1, 2, 3, 4, 5, 6, 7, 8])
+        check_key(self.settings, "show-icon", True)
+        check_key(self.settings, "image-size", 16)
         check_key(self.settings, "show-name", True)
         check_key(self.settings, "name-length", 40)
 
-        ws_num, win_name = self.find_focused()
+        ws_num, win_name, win_id = self.find_focused()
 
         for num in self.settings["numbers"]:
             eb = Gtk.EventBox()
@@ -44,10 +49,18 @@ class SwayWorkspaces(Gtk.Box):
             else:
                 eb.set_property("name", "task-box")
 
-        if self.settings["show-name"]:
-            self.pack_start(self.name_label, False, False, 6)
+        self.pack_start(self.icon, False, False, 6)
 
-        self.show_all()
+        if self.settings["show-icon"]:
+            if not self.icon.get_visible():
+                self.icon.show()
+            self.update_icon(win_id, win_name)
+        else:
+            if self.icon.get_visible():
+                self.icon.hide()
+
+        if self.settings["show-name"]:
+            self.pack_start(self.name_label, False, False, 0)
 
     def on_click(self, w, e, num):
         nwg_panel.common.i3.command("workspace number {}".format(num))
@@ -59,7 +72,7 @@ class SwayWorkspaces(Gtk.Box):
         widget.get_style_context().set_state(Gtk.StateFlags.NORMAL)
         
     def highlight_active(self):
-        ws_num, win_name = self.find_focused()
+        ws_num, win_name, win_id = self.find_focused()
         if ws_num > 0:
             for num in self.settings["numbers"]:
                 if num == str(ws_num):
@@ -67,7 +80,31 @@ class SwayWorkspaces(Gtk.Box):
                 else:
                     self.ws_num2box[num].set_property("name", "task-box")
 
+            if self.settings["show-icon"]:
+                self.update_icon(win_id, win_name)
+
         self.name_label.set_text(win_name)
+    
+    def update_icon(self, win_id, win_name):
+        if win_id and win_name:
+            icon_from_desktop = get_icon(win_id)
+            if icon_from_desktop:
+                if "/" not in icon_from_desktop and not icon_from_desktop.endswith(
+                        ".svg") and not icon_from_desktop.endswith(".png"):
+                    update_image(self.icon, icon_from_desktop, self.settings["image-size"], self.icons_path)
+                else:
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop, self.settings["image-size"],
+                                                                    self.settings["image-size"])
+                    self.icon.set_from_pixbuf(pixbuf)
+            else:
+                image = Gtk.Image()
+                update_image(image, win_id, self.settings["image-size"], self.icons_path)
+            
+            if not self.icon.get_visible():
+                self.icon.show()
+        else:
+            if self.icon.get_visible():
+                self.icon.hide()
     
     def refresh(self):
         thread = threading.Thread(target=self.highlight_active)
@@ -80,6 +117,7 @@ class SwayWorkspaces(Gtk.Box):
         workspaces = self.i3.get_workspaces()
         ws_num = -1
         win_name = ""
+        win_id = ""    # app_id if available, else window_class
 
         for ws in workspaces:
             if ws.focused:
@@ -89,6 +127,11 @@ class SwayWorkspaces(Gtk.Box):
             f = self.i3.get_tree().find_focused()
             if f.type == "con" and f.name and str(f.parent.workspace().num) in self.settings["numbers"]:
                 win_name = f.name[:self.settings["name-length"]]
+                
+                if f.app_id:
+                    win_id = f.app_id
+                elif f.window_class:
+                    win_id = f.window_class
 
             for item in tree.descendants():
                 if item.type == "workspace":
@@ -96,4 +139,9 @@ class SwayWorkspaces(Gtk.Box):
                         if str(node.workspace().num) in self.settings["numbers"] and node.focused:
                             win_name = node.name
 
-        return ws_num, win_name
+                            if node.app_id:
+                                win_id = node.app_id
+                            elif node.window_class:
+                                win_id = node.window_class
+
+        return ws_num, win_name, win_id
