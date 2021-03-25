@@ -67,7 +67,11 @@ SKELETON_PANEL: dict = {
         "all-workspaces": True,
         "all-outputs": False
     },
-    "sway-workspaces": {"numbers": ["1", "2", "3", "4", "5", "6", "7", "8"]},
+    "sway-workspaces": {
+        "numbers": ["1", "2", "3", "4", "5", "6", "7", "8"],
+        "show-name": True,
+        "name-length": 40
+    },
     "clock": {
         "format": "%a, %d. %b  %H:%M:%S",
         "tooltip-text": "",
@@ -1024,7 +1028,9 @@ class EditorWrapper(object):
         check_key(self.panel, "sway-workspaces", {})
         settings = self.panel["sway-workspaces"]
         defaults = {
-            "numbers": [1, 2, 3, 4, 5, 6, 7, 8]
+            "numbers": [1, 2, 3, 4, 5, 6, 7, 8],
+            "show-name": True,
+            "name-length": 40
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1040,6 +1046,15 @@ class EditorWrapper(object):
         self.eb_workspaces_menu.set_text(text.strip())
         self.eb_workspaces_menu.connect("changed", validate_workspaces)
 
+        self.ws_show_name = builder.get_object("show-name")
+        self.ws_show_name.set_active(settings["show-name"])
+
+        self.ws_name_length = builder.get_object("name-length")
+        self.ws_name_length.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=1, upper=256, step_increment=1, page_increment=10, page_size=1)
+        self.ws_name_length.configure(adj, 1, 0)
+        self.ws_name_length.set_value(settings["name-length"])
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(grid)
@@ -1050,6 +1065,12 @@ class EditorWrapper(object):
         val = self.eb_workspaces_menu.get_text()
         if val:
             settings["numbers"] = val.split()
+
+        val = self.ws_show_name.get_active()
+        if val is not None:
+            settings["show-name"] = val
+
+        settings["name-length"] = int(self.ws_name_length.get_value())
 
         save_json(self.config, self.file)
 
