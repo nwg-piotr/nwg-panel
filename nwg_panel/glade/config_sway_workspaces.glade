@@ -118,7 +118,7 @@ of workspaces to show</property>
       </packing>
     </child>
     <child>
-      <object class="GtkSpinButton" id="icon-size">
+      <object class="GtkSpinButton" id="image-size">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
       </object>

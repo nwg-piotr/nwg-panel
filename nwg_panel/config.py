@@ -69,6 +69,8 @@ SKELETON_PANEL: dict = {
     },
     "sway-workspaces": {
         "numbers": ["1", "2", "3", "4", "5", "6", "7", "8"],
+        "show-icon": True,
+        "image-size": 16,
         "show-name": True,
         "name-length": 40
     },
@@ -1029,6 +1031,8 @@ class EditorWrapper(object):
         settings = self.panel["sway-workspaces"]
         defaults = {
             "numbers": [1, 2, 3, 4, 5, 6, 7, 8],
+            "show-icon": True,
+            "image-size": 16,
             "show-name": True,
             "name-length": 40
         }
@@ -1046,9 +1050,18 @@ class EditorWrapper(object):
         self.eb_workspaces_menu.set_text(text.strip())
         self.eb_workspaces_menu.connect("changed", validate_workspaces)
 
+        self.ws_show_icon = builder.get_object("show-icon")
+        self.ws_show_icon.set_active(settings["show-icon"])
+
         self.ws_show_name = builder.get_object("show-name")
         self.ws_show_name.set_active(settings["show-name"])
 
+        self.ws_image_size = builder.get_object("image-size")
+        self.ws_image_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
+        self.ws_image_size.configure(adj, 1, 0)
+        self.ws_image_size.set_value(settings["image-size"])
+        
         self.ws_name_length = builder.get_object("name-length")
         self.ws_name_length.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=1, upper=256, step_increment=1, page_increment=10, page_size=1)
@@ -1066,9 +1079,15 @@ class EditorWrapper(object):
         if val:
             settings["numbers"] = val.split()
 
+        val = self.ws_show_icon.get_active()
+        if val is not None:
+            settings["show-icon"] = val
+        
         val = self.ws_show_name.get_active()
         if val is not None:
             settings["show-name"] = val
+
+        settings["image-size"] = int(self.ws_image_size.get_value())
 
         settings["name-length"] = int(self.ws_name_length.get_value())
 
