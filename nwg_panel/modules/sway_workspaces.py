@@ -123,7 +123,7 @@ class SwayWorkspaces(Gtk.Box):
             if ws.focused:
                 ws_num = ws.num
 
-        if self.settings["show-name"]:
+        if self.settings["show-name"] or self.settings["show-icon"]:
             f = self.i3.get_tree().find_focused()
             if f.type == "con" and f.name and str(f.parent.workspace().num) in self.settings["numbers"]:
                 win_name = f.name[:self.settings["name-length"]]
