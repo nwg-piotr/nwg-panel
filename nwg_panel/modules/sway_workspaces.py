@@ -14,28 +14,38 @@ class SwayWorkspaces(Gtk.Box):
         self.settings = settings
         self.i3 = i3
         self.ws_num2box = {}
+        self.name_label = Gtk.Label("")
         self.build_box()
 
     def build_box(self):
         check_key(self.settings, "numbers", [1, 2, 3, 4, 5, 6, 7, 8])
-        f = self.focused_ws()
+        check_key(self.settings, "show-name", True)
+        check_key(self.settings, "name-length", 40)
+
+        ws_num, win_name = self.find_focused()
+
         for num in self.settings["numbers"]:
             eb = Gtk.EventBox()
-            box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-            eb.add(box)
-            self.pack_start(eb, False, False, 0)
-            lbl = Gtk.Label(str(num))
-            self.ws_num2box[num] = eb
-            box.pack_start(lbl, False, False, 6)
             eb.connect("enter_notify_event", self.on_enter_notify_event)
             eb.connect("leave_notify_event", self.on_leave_notify_event)
             eb.connect("button-press-event", self.on_click, num)
-            
-            self.pack_start(box, False, False, 0)
-            if num == str(f):
+            self.pack_start(eb, False, False, 0)
+
+            box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            eb.add(box)
+
+            lbl = Gtk.Label(str(num))
+            self.ws_num2box[num] = eb
+
+            box.pack_start(lbl, False, False, 6)
+
+            if num == str(ws_num):
                 eb.set_property("name", "task-box-focused")
             else:
                 eb.set_property("name", "task-box")
+
+        if self.settings["show-name"]:
+            box.pack_start(self.name_label, False, False, 0)
 
         self.show_all()
 
@@ -49,13 +59,15 @@ class SwayWorkspaces(Gtk.Box):
         widget.get_style_context().set_state(Gtk.StateFlags.NORMAL)
         
     def highlight_active(self):
-        f = self.focused_ws()
-        if f > 0:
+        ws_num, win_name = self.find_focused()
+        if ws_num > 0:
             for num in self.settings["numbers"]:
-                if num == str(f):
+                if num == str(ws_num):
                     self.ws_num2box[num].set_property("name", "task-box-focused")
                 else:
                     self.ws_num2box[num].set_property("name", "task-box")
+
+        self.name_label.set_text(win_name)
     
     def refresh(self):
         thread = threading.Thread(target=self.highlight_active)
@@ -63,10 +75,18 @@ class SwayWorkspaces(Gtk.Box):
         thread.start()
         return True
 
-    def focused_ws(self):
+    def find_focused(self):
         workspaces = self.i3.get_workspaces()
+        ws_num = -1
+        win_name = ""
+
         for ws in workspaces:
             if ws.focused:
-                return ws.num
+                ws_num = ws.num
 
-        return -1
+        if self.settings["show-name"]:
+            f = self.i3.get_tree().find_focused()
+            if f.type == "con" and f.name and str(f.parent.workspace().num) in self.settings["numbers"]:
+                win_name = f.name[:self.settings["name-length"]]
+
+        return ws_num, win_name
