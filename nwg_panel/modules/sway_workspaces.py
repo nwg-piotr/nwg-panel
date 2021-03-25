@@ -84,7 +84,6 @@ class SwayWorkspaces(Gtk.Box):
         for ws in workspaces:
             if ws.focused:
                 ws_num = ws.num
-                workspace = ws
 
         if self.settings["show-name"]:
             f = self.i3.get_tree().find_focused()
