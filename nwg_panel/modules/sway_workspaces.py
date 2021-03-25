@@ -45,7 +45,7 @@ class SwayWorkspaces(Gtk.Box):
                 eb.set_property("name", "task-box")
 
         if self.settings["show-name"]:
-            box.pack_start(self.name_label, False, False, 0)
+            self.pack_start(self.name_label, False, False, 6)
 
         self.show_all()
 
@@ -76,6 +76,7 @@ class SwayWorkspaces(Gtk.Box):
         return True
 
     def find_focused(self):
+        tree = self.i3.get_tree()
         workspaces = self.i3.get_workspaces()
         ws_num = -1
         win_name = ""
@@ -88,5 +89,11 @@ class SwayWorkspaces(Gtk.Box):
             f = self.i3.get_tree().find_focused()
             if f.type == "con" and f.name and str(f.parent.workspace().num) in self.settings["numbers"]:
                 win_name = f.name[:self.settings["name-length"]]
+
+            for item in tree.descendants():
+                if item.type == "workspace":
+                    for node in item.floating_nodes:
+                        if str(node.workspace().num) in self.settings["numbers"] and node.focused:
+                            win_name = node.name
 
         return ws_num, win_name
