@@ -5,8 +5,8 @@ button {
     margin: 2px
 }
 
-/* WindowBox in SwayTaskBar is a custom widget, that needs this and the next name
-   to highlight currently focused task */
+/* SwayTaskBar and SwayWorkspaces use custom widgets, that need this and the next name
+   to highlight currently focused task / workspace. */
 #task-box {
     padding-left: 4px;
     padding-right: 4px

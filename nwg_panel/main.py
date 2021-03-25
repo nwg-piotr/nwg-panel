@@ -79,6 +79,9 @@ def check_tree():
 
             for item in common.scratchpads_list:
                 item.refresh(tree)
+                
+            for item in common.workspaces_list:
+                item.refresh()
 
             for item in common.controls_list:
                 if item.popup_window.get_visible():
@@ -124,8 +127,9 @@ def instantiate_content(panel, container, content_list, icons_path=""):
         if item == "sway-workspaces":
             if sway:
                 if "sway-workspaces" in panel:
-                    workspaces = SwayWorkspaces(panel["sway-workspaces"])
+                    workspaces = SwayWorkspaces(panel["sway-workspaces"], common.i3)
                     container.pack_start(workspaces, False, False, panel["items-padding"])
+                    common.workspaces_list.append(workspaces)
                 else:
                     print("'sway-workspaces' not defined in this panel instance")
             else:
