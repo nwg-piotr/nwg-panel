@@ -70,7 +70,7 @@ of workspaces to show</property>
       </packing>
     </child>
     <child>
-      <object class="GtkSpinButton">
+      <object class="GtkSpinButton" id="name-length">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
       </object>
@@ -80,7 +80,7 @@ of workspaces to show</property>
       </packing>
     </child>
     <child>
-      <object class="GtkCheckButton">
+      <object class="GtkCheckButton" id="show-name">
         <property name="label" translatable="yes">Show focused window</property>
         <property name="visible">True</property>
         <property name="can-focus">True</property>
