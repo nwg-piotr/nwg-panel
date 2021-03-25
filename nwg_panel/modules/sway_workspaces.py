@@ -45,7 +45,7 @@ class SwayWorkspaces(Gtk.Box):
                 eb.set_property("name", "task-box")
 
         if self.settings["show-name"]:
-            box.pack_start(self.name_label, False, False, 0)
+            self.pack_start(self.name_label, False, False, 6)
 
         self.show_all()
 
