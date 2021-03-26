@@ -71,10 +71,12 @@ class SwayWorkspaces(Gtk.Box):
                 else:
                     self.ws_num2box[num].set_property("name", "task-box")
 
-            if self.settings["show-icon"]:
+            if self.settings["show-icon"] and win_id != self.win_id:
                 self.update_icon(win_id, win_name)
+                self.win_id = win_id
 
-        self.name_label.set_text(win_name)
+        if self.settings["show-name"]:
+            self.name_label.set_text(win_name)
     
     def update_icon(self, win_id, win_name):
         if win_id and win_name:
