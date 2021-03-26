@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import threading
-
 from gi.repository import Gtk, GdkPixbuf
 
 import nwg_panel.common
@@ -49,15 +47,8 @@ class SwayWorkspaces(Gtk.Box):
             else:
                 eb.set_property("name", "task-box")
 
-        self.pack_start(self.icon, False, False, 6)
-
         if self.settings["show-icon"]:
-            if not self.icon.get_visible():
-                self.icon.show()
-            self.update_icon(win_id, win_name)
-        else:
-            if self.icon.get_visible():
-                self.icon.hide()
+            self.pack_start(self.icon, False, False, 6)
 
         if self.settings["show-name"]:
             self.pack_start(self.name_label, False, False, 0)
@@ -71,7 +62,7 @@ class SwayWorkspaces(Gtk.Box):
     def on_leave_notify_event(self, widget, event):
         widget.get_style_context().set_state(Gtk.StateFlags.NORMAL)
         
-    def highlight_active(self):
+    def refresh(self):
         ws_num, win_name, win_id = self.find_focused()
         if ws_num > 0:
             for num in self.settings["numbers"]:
@@ -105,12 +96,6 @@ class SwayWorkspaces(Gtk.Box):
         else:
             if self.icon.get_visible():
                 self.icon.hide()
-    
-    def refresh(self):
-        thread = threading.Thread(target=self.highlight_active)
-        thread.daemon = True
-        thread.start()
-        return True
 
     def find_focused(self):
         tree = self.i3.get_tree()
@@ -122,6 +107,7 @@ class SwayWorkspaces(Gtk.Box):
         for ws in workspaces:
             if ws.focused:
                 ws_num = ws.num
+                break
 
         if self.settings["show-name"] or self.settings["show-icon"]:
             f = self.i3.get_tree().find_focused()
