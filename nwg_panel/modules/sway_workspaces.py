@@ -52,15 +52,6 @@ class SwayWorkspaces(Gtk.Box):
 
         if self.settings["show-name"]:
             self.pack_start(self.name_label, False, False, 0)
-
-    def on_click(self, w, e, num):
-        nwg_panel.common.i3.command("workspace number {}".format(num))
-
-    def on_enter_notify_event(self, widget, event):
-        widget.get_style_context().set_state(Gtk.StateFlags.SELECTED)
-
-    def on_leave_notify_event(self, widget, event):
-        widget.get_style_context().set_state(Gtk.StateFlags.NORMAL)
         
     def refresh(self):
         ws_num, win_name, win_id = self.find_focused()
@@ -133,3 +124,12 @@ class SwayWorkspaces(Gtk.Box):
                                 win_id = node.window_class
 
         return ws_num, win_name, win_id
+
+    def on_click(self, w, e, num):
+        nwg_panel.common.i3.command("workspace number {}".format(num))
+
+    def on_enter_notify_event(self, widget, event):
+        widget.get_style_context().set_state(Gtk.StateFlags.SELECTED)
+
+    def on_leave_notify_event(self, widget, event):
+        widget.get_style_context().set_state(Gtk.StateFlags.NORMAL)
