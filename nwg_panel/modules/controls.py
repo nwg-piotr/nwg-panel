@@ -274,7 +274,9 @@ class PopupWindow(Gtk.Window):
         self.bri_scale = None
         self.vol_scale = None
         
-        self.connect("show", self.refresh)
+        self.src_tag = 0
+        
+        self.connect("show", self.on_window_show)
 
         check_key(settings, "output-switcher", False)
         self.sinks = []
@@ -285,6 +287,7 @@ class PopupWindow(Gtk.Window):
         eb.set_above_child(False)
         if settings["leave-closes"]:
             self.connect("leave_notify_event", self.on_window_exit)
+            self.connect("enter_notify_event", self.on_window_enter)
 
         outer_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         eb.add(outer_vbox)
@@ -523,7 +526,16 @@ class PopupWindow(Gtk.Window):
         Gdk.threads_add_timeout(GLib.PRIORITY_LOW, 500, self.refresh)
 
     def on_window_exit(self, w, e):
-        self.hide()
+        self.src_tag = GLib.timeout_add_seconds(1, self.hide)
+        
+    def on_window_enter(self, *args):
+        if self.src_tag > 0:
+            GLib.Source.remove(self.src_tag)
+            self.src_tag = 0
+            
+    def on_window_show(self, *args):
+        self.src_tag = 0
+        self.refresh
 
     def switch_menu_box(self, widget, event):
         if self.menu_box.get_visible():

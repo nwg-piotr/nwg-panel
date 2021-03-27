@@ -69,8 +69,13 @@ SKELETON_PANEL: dict = {
     },
     "sway-workspaces": {
         "numbers": ["1", "2", "3", "4", "5", "6", "7", "8"],
+        "show-icon": True,
+        "image-size": 16,
         "show-name": True,
-        "name-length": 40
+        "name-length": 40,
+        "mark-autotiling": True,
+        "mark-content": True,
+        "show-layout": True
     },
     "clock": {
         "format": "%a, %d. %b  %H:%M:%S",
@@ -1029,8 +1034,13 @@ class EditorWrapper(object):
         settings = self.panel["sway-workspaces"]
         defaults = {
             "numbers": [1, 2, 3, 4, 5, 6, 7, 8],
+            "show-icon": True,
+            "image-size": 16,
             "show-name": True,
-            "name-length": 40
+            "name-length": 40,
+            "mark-autotiling": True,
+            "mark-content": True,
+            "show-layout": True
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1046,14 +1056,32 @@ class EditorWrapper(object):
         self.eb_workspaces_menu.set_text(text.strip())
         self.eb_workspaces_menu.connect("changed", validate_workspaces)
 
+        self.ws_show_icon = builder.get_object("show-icon")
+        self.ws_show_icon.set_active(settings["show-icon"])
+
         self.ws_show_name = builder.get_object("show-name")
         self.ws_show_name.set_active(settings["show-name"])
 
+        self.ws_image_size = builder.get_object("image-size")
+        self.ws_image_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
+        self.ws_image_size.configure(adj, 1, 0)
+        self.ws_image_size.set_value(settings["image-size"])
+        
         self.ws_name_length = builder.get_object("name-length")
         self.ws_name_length.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=1, upper=256, step_increment=1, page_increment=10, page_size=1)
         self.ws_name_length.configure(adj, 1, 0)
         self.ws_name_length.set_value(settings["name-length"])
+
+        self.ws_mark_autotiling = builder.get_object("mark-autotiling")
+        self.ws_mark_autotiling.set_active(settings["mark-autotiling"])
+
+        self.ws_mark_content = builder.get_object("mark-content")
+        self.ws_mark_content.set_active(settings["mark-content"])
+
+        self.ws_show_layout = builder.get_object("show-layout")
+        self.ws_show_layout.set_active(settings["show-layout"])
 
         for item in self.scrolled_window.get_children():
             item.destroy()
@@ -1066,11 +1094,29 @@ class EditorWrapper(object):
         if val:
             settings["numbers"] = val.split()
 
+        val = self.ws_show_icon.get_active()
+        if val is not None:
+            settings["show-icon"] = val
+        
         val = self.ws_show_name.get_active()
         if val is not None:
             settings["show-name"] = val
 
+        settings["image-size"] = int(self.ws_image_size.get_value())
+
         settings["name-length"] = int(self.ws_name_length.get_value())
+
+        val = self.ws_mark_autotiling.get_active()
+        if val is not None:
+            settings["mark-autotiling"] = val
+
+        val = self.ws_mark_content.get_active()
+        if val is not None:
+            settings["mark-content"] = val
+
+        val = self.ws_show_layout.get_active()
+        if val is not None:
+            settings["show-layout"] = val
 
         save_json(self.config, self.file)
 
