@@ -72,7 +72,9 @@ SKELETON_PANEL: dict = {
         "show-icon": True,
         "image-size": 16,
         "show-name": True,
-        "name-length": 40
+        "name-length": 40,
+        "mark-autotiling": True,
+        "mark-content": True
     },
     "clock": {
         "format": "%a, %d. %b  %H:%M:%S",
@@ -1034,7 +1036,9 @@ class EditorWrapper(object):
             "show-icon": True,
             "image-size": 16,
             "show-name": True,
-            "name-length": 40
+            "name-length": 40,
+            "mark-autotiling": True,
+            "mark-content": True
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1068,6 +1072,12 @@ class EditorWrapper(object):
         self.ws_name_length.configure(adj, 1, 0)
         self.ws_name_length.set_value(settings["name-length"])
 
+        self.ws_mark_autotiling = builder.get_object("mark-autotiling")
+        self.ws_mark_autotiling.set_active(settings["mark-autotiling"])
+
+        self.ws_mark_content = builder.get_object("mark-content")
+        self.ws_mark_content.set_active(settings["mark-content"])
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(grid)
@@ -1090,6 +1100,14 @@ class EditorWrapper(object):
         settings["image-size"] = int(self.ws_image_size.get_value())
 
         settings["name-length"] = int(self.ws_name_length.get_value())
+
+        val = self.ws_mark_autotiling.get_active()
+        if val is not None:
+            settings["mark-autotiling"] = val
+
+        val = self.ws_mark_content.get_active()
+        if val is not None:
+            settings["mark-content"] = val
 
         save_json(self.config, self.file)
 
