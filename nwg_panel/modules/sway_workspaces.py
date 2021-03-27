@@ -3,7 +3,7 @@
 from gi.repository import Gtk, GdkPixbuf
 
 import nwg_panel.common
-from nwg_panel.tools import check_key, get_icon, update_image
+from nwg_panel.tools import check_key, get_icon, update_image,load_autotiling
 
 
 class SwayWorkspaces(Gtk.Box):
@@ -12,10 +12,12 @@ class SwayWorkspaces(Gtk.Box):
         self.settings = settings
         self.i3 = i3
         self.ws_num2box = {}
+        self.ws_num2lbl = {}
         self.name_label = Gtk.Label("")
         self.win_id = ""
         self.icon = Gtk.Image()
         self.icons_path = icons_path
+        self.autotiling = load_autotiling()
         self.build_box()
 
     def build_box(self):
@@ -24,8 +26,10 @@ class SwayWorkspaces(Gtk.Box):
         check_key(self.settings, "image-size", 16)
         check_key(self.settings, "show-name", True)
         check_key(self.settings, "name-length", 40)
+        check_key(self.settings, "mark-autotiling", True)
+        check_key(self.settings, "mark-content", True)
 
-        ws_num, win_name, win_id = self.find_focused()
+        ws_num, win_name, win_id, non_empty = self.find_details()
 
         for num in self.settings["numbers"]:
             eb = Gtk.EventBox()
@@ -37,8 +41,18 @@ class SwayWorkspaces(Gtk.Box):
             box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             eb.add(box)
 
-            lbl = Gtk.Label(str(num))
+            if self.settings["mark-autotiling"]:
+                try:
+                    at = int(num) in self.autotiling
+                except:
+                    at = False
+                autotiling = "a" if at in self.autotiling else ""
+                lbl = Gtk.Label("{}{}".format(autotiling, str(num)))
+            else:
+                lbl = Gtk.Label("{}".format(str(num)))
+            
             self.ws_num2box[num] = eb
+            self.ws_num2lbl[num] = lbl
 
             box.pack_start(lbl, False, False, 6)
 
@@ -54,9 +68,26 @@ class SwayWorkspaces(Gtk.Box):
             self.pack_start(self.name_label, False, False, 0)
         
     def refresh(self):
-        ws_num, win_name, win_id = self.find_focused()
+        ws_num, win_name, win_id, non_empty = self.find_details()
         if ws_num > 0:
             for num in self.settings["numbers"]:
+                # mark non-empty WS with a dot
+                if self.settings["mark-content"]:
+                    try:
+                        int_num = int(num)
+                    except:
+                        int_num = 0
+                    lbl = self.ws_num2lbl[num]
+                    text = lbl.get_text()
+                    if int_num in non_empty:
+                        if not text.endswith("."):
+                            text += "."
+                            lbl.set_text(text)
+                    else:
+                        if text.endswith("."):
+                            text = text[0:-1]
+                            lbl.set_text(text)
+
                 if num == str(ws_num):
                     self.ws_num2box[num].set_property("name", "task-box-focused")
                 else:
@@ -90,7 +121,7 @@ class SwayWorkspaces(Gtk.Box):
             if self.icon.get_visible():
                 self.icon.hide()
 
-    def find_focused(self):
+    def find_details(self):
         tree = self.i3.get_tree()
         workspaces = self.i3.get_workspaces()
         ws_num = -1
@@ -103,6 +134,7 @@ class SwayWorkspaces(Gtk.Box):
                 break
 
         if self.settings["show-name"] or self.settings["show-icon"]:
+            non_empty = []
             f = self.i3.get_tree().find_focused()
             if f.type == "con" and f.name and str(f.parent.workspace().num) in self.settings["numbers"]:
                 win_name = f.name[:self.settings["name-length"]]
@@ -114,6 +146,15 @@ class SwayWorkspaces(Gtk.Box):
 
             for item in tree.descendants():
                 if item.type == "workspace":
+                    # find non-empty workspaces
+                    if self.settings["mark-content"]:
+                        tasks_num = 0
+                        for d in item.descendants():
+                            if d.type == "con" and d.name:
+                                tasks_num += 1
+                        if tasks_num > 0:
+                            non_empty.append(item.num)
+                    
                     for node in item.floating_nodes:
                         if str(node.workspace().num) in self.settings["numbers"] and node.focused:
                             win_name = node.name
@@ -123,7 +164,7 @@ class SwayWorkspaces(Gtk.Box):
                             elif node.window_class:
                                 win_id = node.window_class
 
-        return ws_num, win_name, win_id
+        return ws_num, win_name, win_id, non_empty
 
     def on_click(self, w, e, num):
         nwg_panel.common.i3.command("workspace number {}".format(num))

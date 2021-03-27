@@ -288,7 +288,6 @@ class PopupWindow(Gtk.Window):
         if settings["leave-closes"]:
             self.connect("leave_notify_event", self.on_window_exit)
             self.connect("enter_notify_event", self.on_window_enter)
-            
 
         outer_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         eb.add(outer_vbox)
