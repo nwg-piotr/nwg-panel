@@ -74,7 +74,8 @@ SKELETON_PANEL: dict = {
         "show-name": True,
         "name-length": 40,
         "mark-autotiling": True,
-        "mark-content": True
+        "mark-content": True,
+        "show-layout": True
     },
     "clock": {
         "format": "%a, %d. %b  %H:%M:%S",
@@ -1038,7 +1039,8 @@ class EditorWrapper(object):
             "show-name": True,
             "name-length": 40,
             "mark-autotiling": True,
-            "mark-content": True
+            "mark-content": True,
+            "show-layout": True
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1078,6 +1080,9 @@ class EditorWrapper(object):
         self.ws_mark_content = builder.get_object("mark-content")
         self.ws_mark_content.set_active(settings["mark-content"])
 
+        self.ws_show_layout = builder.get_object("show-layout")
+        self.ws_show_layout.set_active(settings["show-layout"])
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(grid)
@@ -1108,6 +1113,10 @@ class EditorWrapper(object):
         val = self.ws_mark_content.get_active()
         if val is not None:
             settings["mark-content"] = val
+
+        val = self.ws_show_layout.get_active()
+        if val is not None:
+            settings["show-layout"] = val
 
         save_json(self.config, self.file)
 
