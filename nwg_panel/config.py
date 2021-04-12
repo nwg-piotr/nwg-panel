@@ -21,7 +21,7 @@ config_dir = get_config_dir()
 configs = {}
 editor = None
 selector_window = None
-outputs = None
+outputs = {}
 
 SKELETON_PANEL: dict = {
     "name": "",
@@ -538,7 +538,10 @@ class EditorWrapper(object):
         self.cb_output = builder.get_object("output")
         for key in outputs:
             self.cb_output.append(key, key)
-        if self.panel["output"] and self.panel["output"] in outputs:
+
+        self.cb_output.append("All", "All")
+
+        if self.panel["output"] and (self.panel["output"] in outputs or self.panel["output"] == "All"):
             self.cb_output.set_active_id(self.panel["output"])
 
         screen_width, screen_height = None, None
