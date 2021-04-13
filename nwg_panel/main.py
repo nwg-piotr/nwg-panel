@@ -251,6 +251,27 @@ def main():
     except Exception as e:
         print(e)
 
+    # Mirror bars to all outputs #48 (if panel["output"] == "All")
+    to_remove = []
+    to_append = []
+    for panel in panels:
+        check_key(panel, "output", "")
+
+        clones = []
+        if panel["output"] == "All" and len(common.outputs) > 1:
+            to_remove.append(panel)
+            for key in common.outputs.keys():
+                clone = panel.copy()
+                clone["output"] = key
+                clones.append(clone)
+                
+            to_append = to_append + clones
+        
+    for item in to_remove:
+        panels.remove(item)
+        
+    panels = panels + to_append
+
     for panel in panels:
         check_key(panel, "icons", "")
         icons_path = ""
@@ -258,8 +279,6 @@ def main():
             icons_path = os.path.join(common.config_dir, "icons_light")
         elif panel["icons"] == "dark":
             icons_path = os.path.join(common.config_dir, "icons_dark")
-
-        check_key(panel, "output", "")
 
         # This is to allow width "auto" value. Actually all non-numeric values will be removed.
         if "width" in panel and not isinstance(panel["width"], int):
@@ -380,7 +399,7 @@ def main():
 
             check_key(panel, "layer", "top")
             o = panel["output"] if "output" in panel else "undefined"
-            print("Display: {}, position: {}, layer: {}, width: {}, height: {}".format(o, panel["position"],
+            print("Output: {}, position: {}, layer: {}, width: {}, height: {}".format(o, panel["position"],
                                                                                        panel["layer"], panel["width"],
                                                                                        panel["height"]))
 
