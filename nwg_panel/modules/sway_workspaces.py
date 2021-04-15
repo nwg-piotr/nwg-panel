@@ -32,7 +32,8 @@ class SwayWorkspaces(Gtk.Box):
         check_key(self.settings, "mark-content", True)
         check_key(self.settings, "show-layout", True)
 
-        ws_num, win_name, win_id, non_empty, win_layout = self.find_details()
+        if self.i3.get_tree().find_focused():
+            ws_num, win_name, win_id, non_empty, win_layout = self.find_details()
 
         for num in self.settings["numbers"]:
             eb = Gtk.EventBox()
@@ -74,56 +75,58 @@ class SwayWorkspaces(Gtk.Box):
             self.pack_start(self.layout_icon, False, False, 6)
         
     def refresh(self):
-        ws_num, win_name, win_id, non_empty, win_layout = self.find_details()
-        if ws_num > 0:
-            for num in self.settings["numbers"]:
-                # mark non-empty WS with a dot
-                if self.settings["mark-content"]:
-                    try:
-                        int_num = int(num)
-                    except:
-                        int_num = 0
-                    lbl = self.ws_num2lbl[num]
-                    text = lbl.get_text()
-                    if int_num in non_empty:
-                        if not text.endswith("."):
-                            text += "."
-                            lbl.set_text(text)
+        if self.i3.get_tree().find_focused():
+            ws_num, win_name, win_id, non_empty, win_layout = self.find_details()
+
+            if ws_num > 0:
+                for num in self.settings["numbers"]:
+                    # mark non-empty WS with a dot
+                    if self.settings["mark-content"]:
+                        try:
+                            int_num = int(num)
+                        except:
+                            int_num = 0
+                        lbl = self.ws_num2lbl[num]
+                        text = lbl.get_text()
+                        if int_num in non_empty:
+                            if not text.endswith("."):
+                                text += "."
+                                lbl.set_text(text)
+                        else:
+                            if text.endswith("."):
+                                text = text[0:-1]
+                                lbl.set_text(text)
+
+                    if num == str(ws_num):
+                        self.ws_num2box[num].set_property("name", "task-box-focused")
                     else:
-                        if text.endswith("."):
-                            text = text[0:-1]
-                            lbl.set_text(text)
+                        self.ws_num2box[num].set_property("name", "task-box")
 
-                if num == str(ws_num):
-                    self.ws_num2box[num].set_property("name", "task-box-focused")
-                else:
-                    self.ws_num2box[num].set_property("name", "task-box")
+                if self.settings["show-icon"] and win_id != self.win_id:
+                    self.update_icon(win_id, win_name)
+                    self.win_id = win_id
 
-            if self.settings["show-icon"] and win_id != self.win_id:
-                self.update_icon(win_id, win_name)
-                self.win_id = win_id
-
-        if self.settings["show-name"]:
-            self.name_label.set_text(win_name)
+            if self.settings["show-name"]:
+                self.name_label.set_text(win_name)
             
-        if self.settings["show-layout"]:
-            if win_name:
-                if win_layout == "splith":
-                    update_image(self.layout_icon, "go-next-symbolic", self.settings["image-size"], self.icons_path)
-                elif win_layout == "splitv":
-                    update_image(self.layout_icon, "go-down-symbolic", self.settings["image-size"], self.icons_path)
-                elif win_layout == "tabbed":
-                    update_image(self.layout_icon, "view-dual-symbolic", self.settings["image-size"], self.icons_path)
-                elif win_layout == "stacked":
-                    update_image(self.layout_icon, "view-paged-symbolic", self.settings["image-size"], self.icons_path)
+            if self.settings["show-layout"]:
+                if win_name:
+                    if win_layout == "splith":
+                        update_image(self.layout_icon, "go-next-symbolic", self.settings["image-size"], self.icons_path)
+                    elif win_layout == "splitv":
+                        update_image(self.layout_icon, "go-down-symbolic", self.settings["image-size"], self.icons_path)
+                    elif win_layout == "tabbed":
+                        update_image(self.layout_icon, "view-dual-symbolic", self.settings["image-size"], self.icons_path)
+                    elif win_layout == "stacked":
+                        update_image(self.layout_icon, "view-paged-symbolic", self.settings["image-size"], self.icons_path)
+                    else:
+                        update_image(self.layout_icon, "window-pop-out-symbolic", self.settings["image-size"], self.icons_path)
+                        
+                    if not self.layout_icon.get_visible():
+                        self.layout_icon.show()
                 else:
-                    update_image(self.layout_icon, "window-new-symbolic", self.settings["image-size"], self.icons_path)
-                    
-                if not self.layout_icon.get_visible():
-                    self.layout_icon.show()
-            else:
-                if self.layout_icon.get_visible():
-                    self.layout_icon.hide()
+                    if self.layout_icon.get_visible():
+                        self.layout_icon.hide()
     
     def update_icon(self, win_id, win_name):
         if win_id and win_name:
@@ -152,7 +155,6 @@ class SwayWorkspaces(Gtk.Box):
         ws_num = -1
         win_name = ""
         win_id = ""    # app_id if available, else window_class
-        win_pid = None
         layout = None
 
         for ws in workspaces:
@@ -165,13 +167,11 @@ class SwayWorkspaces(Gtk.Box):
             f = self.i3.get_tree().find_focused()
             if f.type == "con" and f.name and str(f.parent.workspace().num) in self.settings["numbers"]:
                 win_name = f.name[:self.settings["name-length"]]
-                
+
                 if f.app_id:
                     win_id = f.app_id
                 elif f.window_class:
                     win_id = f.window_class
-
-                win_pid = f.pid
 
             for item in tree.descendants():
                 if item.type == "workspace":
@@ -183,7 +183,7 @@ class SwayWorkspaces(Gtk.Box):
                                 tasks_num += 1
                         if tasks_num > 0:
                             non_empty.append(item.num)
-                    
+
                     for node in item.floating_nodes:
                         if str(node.workspace().num) in self.settings["numbers"] and node.focused:
                             win_name = node.name
@@ -192,8 +192,9 @@ class SwayWorkspaces(Gtk.Box):
                                 win_id = node.app_id
                             elif node.window_class:
                                 win_id = node.window_class
-                            layout = node.parent.layout
-                            win_pid = node.pid
+                            layout = "floating"
+
+                            non_empty.append(node.workspace().num)
 
             if not layout:
                 layout = f.parent.layout

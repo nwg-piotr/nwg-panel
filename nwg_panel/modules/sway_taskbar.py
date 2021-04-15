@@ -65,7 +65,7 @@ class SwayTaskbar(Gtk.Box):
                     if all_workspaces or desc.find_focused() is not None:
                         for con in desc.descendants():
                             if con.name or con.app_id:
-                                win_box = WindowBox(con, self.settings, self.position, self.icons_path)
+                                win_box = WindowBox(con, self.settings, self.position, self.icons_path, floating=con in desc.floating_nodes)
                                 self.ws_box.pack_start(win_box, False, False, self.settings["task-padding"])
                     self.pack_start(self.ws_box, False, False, 0)
         self.show_all()
@@ -97,7 +97,7 @@ class WorkspaceBox(Gtk.Box):
 
 
 class WindowBox(Gtk.EventBox):
-    def __init__(self, con, settings, position, icons_path):
+    def __init__(self, con, settings, position, icons_path, floating=False):
         self.position = position
         self.settings = settings
         Gtk.EventBox.__init__(self)
@@ -152,6 +152,7 @@ class WindowBox(Gtk.EventBox):
                 self.set_tooltip_text(name)
 
         check_key(settings, "show-layout", True)
+
         if settings["show-layout"] and con.parent.layout:
             if con.parent.layout == "splith":
                 image = Gtk.Image()
@@ -165,9 +166,10 @@ class WindowBox(Gtk.EventBox):
             elif con.parent.layout == "stacked":
                 image = Gtk.Image()
                 update_image(image, "view-paged-symbolic", 16, icons_path)
-            else:
+
+            if floating:
                 image = Gtk.Image()
-                update_image(image, "window-new-symbolic", 16, icons_path)
+                update_image(image, "window-pop-out-symbolic", 16, icons_path)
 
             self.box.pack_start(image, False, False, 4)
 
