@@ -152,7 +152,6 @@ class SwayWorkspaces(Gtk.Box):
         ws_num = -1
         win_name = ""
         win_id = ""    # app_id if available, else window_class
-        win_pid = None
         layout = None
 
         for ws in workspaces:
@@ -171,8 +170,6 @@ class SwayWorkspaces(Gtk.Box):
                         win_id = f.app_id
                     elif f.window_class:
                         win_id = f.window_class
-
-                    win_pid = f.pid
 
                 for item in tree.descendants():
                     if item.type == "workspace":
@@ -194,7 +191,6 @@ class SwayWorkspaces(Gtk.Box):
                                 elif node.window_class:
                                     win_id = node.window_class
                                 layout = node.parent.layout
-                                win_pid = node.pid
 
                 if not layout:
                     layout = f.parent.layout
