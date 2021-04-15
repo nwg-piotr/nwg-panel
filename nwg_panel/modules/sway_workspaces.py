@@ -163,40 +163,41 @@ class SwayWorkspaces(Gtk.Box):
         non_empty = []
         if self.settings["show-name"] or self.settings["show-icon"]:
             f = self.i3.get_tree().find_focused()
-            if f.type == "con" and f.name and str(f.parent.workspace().num) in self.settings["numbers"]:
-                win_name = f.name[:self.settings["name-length"]]
-                
-                if f.app_id:
-                    win_id = f.app_id
-                elif f.window_class:
-                    win_id = f.window_class
+            if f:
+                if f.type == "con" and f.name and str(f.parent.workspace().num) in self.settings["numbers"]:
+                    win_name = f.name[:self.settings["name-length"]]
 
-                win_pid = f.pid
+                    if f.app_id:
+                        win_id = f.app_id
+                    elif f.window_class:
+                        win_id = f.window_class
 
-            for item in tree.descendants():
-                if item.type == "workspace":
-                    # find non-empty workspaces
-                    if self.settings["mark-content"]:
-                        tasks_num = 0
-                        for d in item.descendants():
-                            if d.type == "con" and d.name:
-                                tasks_num += 1
-                        if tasks_num > 0:
-                            non_empty.append(item.num)
-                    
-                    for node in item.floating_nodes:
-                        if str(node.workspace().num) in self.settings["numbers"] and node.focused:
-                            win_name = node.name
+                    win_pid = f.pid
 
-                            if node.app_id:
-                                win_id = node.app_id
-                            elif node.window_class:
-                                win_id = node.window_class
-                            layout = node.parent.layout
-                            win_pid = node.pid
+                for item in tree.descendants():
+                    if item.type == "workspace":
+                        # find non-empty workspaces
+                        if self.settings["mark-content"]:
+                            tasks_num = 0
+                            for d in item.descendants():
+                                if d.type == "con" and d.name:
+                                    tasks_num += 1
+                            if tasks_num > 0:
+                                non_empty.append(item.num)
 
-            if not layout:
-                layout = f.parent.layout
+                        for node in item.floating_nodes:
+                            if str(node.workspace().num) in self.settings["numbers"] and node.focused:
+                                win_name = node.name
+
+                                if node.app_id:
+                                    win_id = node.app_id
+                                elif node.window_class:
+                                    win_id = node.window_class
+                                layout = node.parent.layout
+                                win_pid = node.pid
+
+                if not layout:
+                    layout = f.parent.layout
 
         return ws_num, win_name, win_id, non_empty, layout
 
