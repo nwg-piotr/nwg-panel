@@ -36,6 +36,8 @@ from nwg_panel.modules.playerctl import Playerctl
 from nwg_panel.modules.cpu_avg import CpuAvg
 from nwg_panel.modules.scratchpad import Scratchpad
 
+from nwg_panel.modules.menu_start import MenuStart
+
 dir_name = os.path.dirname(__file__)
 
 from nwg_panel import common
@@ -330,6 +332,8 @@ def main():
             check_key(panel, "modules-left", [])
             check_key(panel, "modules-center", [])
             check_key(panel, "modules-right", [])
+            
+            check_key(panel, "menu-start", False)
 
             # This is to allow the "auto" value. Actually all non-numeric values will be removed.
             if "homogeneous" in panel and not isinstance(panel["homogeneous"], bool):
@@ -360,6 +364,11 @@ def main():
                 common.controls_list.append(cc)
                 left_box.pack_start(cc, False, False, 0)
 
+            if panel["menu-start"]:
+                settings = {}
+                ms = MenuStart(settings, icons_path=icons_path)
+                left_box.pack_start(ms, False, False, 0)
+            
             instantiate_content(panel, left_box, panel["modules-left"], icons_path=icons_path)
 
             center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
