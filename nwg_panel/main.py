@@ -75,13 +75,13 @@ def check_tree():
             if len(common.i3.get_outputs()) != common.outputs_num:
                 print("Number of outputs changed")
                 restart()
-            
+
             for item in common.taskbars_list:
                 item.refresh(tree)
 
             for item in common.scratchpads_list:
                 item.refresh(tree)
-                
+
             for item in common.workspaces_list:
                 item.refresh()
 
@@ -266,12 +266,12 @@ def main():
                 clone = panel.copy()
                 clone["output"] = key
                 clones.append(clone)
-                
+
             to_append = to_append + clones
-        
+
     for item in to_remove:
         panels.remove(item)
-        
+
     panels = panels + to_append
 
     for panel in panels:
@@ -332,7 +332,7 @@ def main():
             check_key(panel, "modules-left", [])
             check_key(panel, "modules-center", [])
             check_key(panel, "modules-right", [])
-            
+
             check_key(panel, "menu-start", False)
 
             # This is to allow the "auto" value. Actually all non-numeric values will be removed.
@@ -365,10 +365,16 @@ def main():
                 left_box.pack_start(cc, False, False, 0)
 
             if panel["menu-start"]:
-                settings = {}
+                settings = {
+                    "output": panel["output"],
+                    "position": panel["position"],
+                    "alignment": "left",
+                    "margin-left": 6,
+                    "margin-bottom": 6
+                }
                 ms = MenuStart(settings, icons_path=icons_path)
                 left_box.pack_start(ms, False, False, 0)
-            
+
             instantiate_content(panel, left_box, panel["modules-left"], icons_path=icons_path)
 
             center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
@@ -409,8 +415,8 @@ def main():
             check_key(panel, "layer", "top")
             o = panel["output"] if "output" in panel else "undefined"
             print("Output: {}, position: {}, layer: {}, width: {}, height: {}".format(o, panel["position"],
-                                                                                       panel["layer"], panel["width"],
-                                                                                       panel["height"]))
+                                                                                      panel["layer"], panel["width"],
+                                                                                      panel["height"]))
 
             if monitor:
                 GtkLayerShell.set_monitor(window, monitor)
