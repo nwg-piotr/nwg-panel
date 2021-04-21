@@ -370,7 +370,8 @@ def main():
                     "position": panel["position"],
                     "alignment": "left",
                     "margin-left": 6,
-                    "margin-bottom": 6
+                    "margin-bottom": 6,
+                    "autohide": True
                 }
                 ms = MenuStart(settings, icons_path=icons_path)
                 left_box.pack_start(ms, False, False, 0)

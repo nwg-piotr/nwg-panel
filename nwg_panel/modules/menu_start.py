@@ -52,5 +52,8 @@ class MenuStart(Gtk.Button):
         if self.settings["margin-bottom"]:
             cmd += " -mb {}".format(self.settings["margin-bottom"])
 
+        if self.settings["autohide"]:
+            cmd += " -d"
+
         print("Executing '{}'".format(cmd))
         subprocess.Popen('exec {}'.format(cmd), shell=True)
