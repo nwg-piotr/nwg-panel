@@ -7,75 +7,189 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xml:space="preserve"
-   width="48"
-   height="48"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    version="1.1"
-   style="clip-rule:evenodd;fill-rule:evenodd;image-rendering:optimizeQuality;shape-rendering:geometricPrecision;text-rendering:geometricPrecision"
-   viewBox="0 0 1268.7499 1268.7499"
-   id="svg17"
+   id="svg8"
+   inkscape:version="1.0.2 (e86c870879, 2021-01-15, custom)"
    sodipodi:docname="nwg-shell.svg"
-   inkscape:version="1.0.2 (e86c870879, 2021-01-15, custom)"><metadata
-   id="metadata21"><rdf:RDF><cc:Work
-       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
-         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><sodipodi:namedview
-   pagecolor="#ffffff"
-   bordercolor="#666666"
-   borderopacity="1"
-   objecttolerance="10"
-   gridtolerance="10"
-   guidetolerance="10"
-   inkscape:pageopacity="0"
-   inkscape:pageshadow="2"
-   inkscape:window-width="1360"
-   inkscape:window-height="719"
-   id="namedview19"
-   showgrid="false"
-   units="px"
-   inkscape:zoom="9.4401039"
-   inkscape:cx="22.607833"
-   inkscape:cy="20.391725"
-   inkscape:window-x="0"
-   inkscape:window-y="0"
-   inkscape:window-maximized="1"
-   inkscape:current-layer="svg17" />
- <defs
-   id="defs4">
-  <style
-   type="text/css"
-   id="style2">
-   <![CDATA[
-    .fil0 {fill:#00AAD4}
-    .fil1 {fill:#FF8800}
-   ]]>
-  </style>
- </defs>
- <path
-   id="path13-6"
-   style="clip-rule:evenodd;opacity:0.3;fill:#000000;fill-rule:evenodd;stroke-width:3.26052;image-rendering:optimizeQuality;shape-rendering:geometricPrecision;text-rendering:geometricPrecision"
-   d="m 171.96896,598.67013 c 6.52106,-117.37814 42.38691,-228.23527 101.07647,-316.26887 61.95009,-94.55461 146.7239,-169.5462 251.0609,-205.411744 0,65.210084 0,133.680664 0,198.890734 0,68.47058 0,133.68066 0,198.89073 -45.64744,22.82353 -81.51328,68.47058 -94.5554,123.89915 -48.90797,0 -94.55541,0 -136.94231,0 -42.38691,0 -81.51328,0 -120.63966,0 z m 352.13737,639.05877 c -104.337,-39.1261 -192.37134,-120.6386 -251.0609,-215.1933 -58.68956,-91.29408 -94.55541,-205.41172 -101.07647,-322.78985 39.12638,3.2605 78.25275,3.2605 120.63966,6.521 42.3869,3.26051 88.03434,3.26051 136.94231,6.52101 13.04212,58.68907 48.90796,104.33612 94.5554,127.15965 0,68.47058 0,133.68066 0,198.89079 0,68.4705 0,133.6806 0,198.8907 z M 1166.431,751.91381 c -19.5632,169.5462 -94.5554,313.00839 -202.153,404.30249 -97.81589,88.0336 -221.71608,127.1596 -342.35573,107.5966 0,-68.4706 0,-136.9411 0,-205.4117 0,-68.47061 0,-136.94119 0,-208.67228 48.90796,-13.04201 91.29487,-58.68907 110.85806,-120.63864 61.95009,3.2605 130.42125,6.52101 198.89237,9.78151 74.9922,3.26051 149.9845,6.52101 234.7583,13.04202 z M 621.92227,54.16599 c 123.90018,-9.781512 244.53984,35.865541 345.61633,127.15965 104.337,97.81512 179.3292,244.53779 198.8924,417.34449 -81.5133,0 -159.7661,0 -234.7583,0 -68.47112,0 -136.94228,0 -198.89237,0 C 713.21714,536.72056 674.09077,487.813 621.92227,471.51048 c 0,-68.47058 0,-140.20166 0,-208.67224 0,-68.47058 0,-136.94116 0,-208.67225 z" /><g
-   id="Warstwa_x0020_1"
-   transform="matrix(3.2605312,0,0,3.2605038,-34.125643,-27.694864)">
+   inkscape:export-filename="/home/sgs/Bilder/nwg-10-sgs.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
   <metadata
-   id="CorelCorpID_0Corel-Layer" />
+     id="metadata1634">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1906"
+     inkscape:window-height="1006"
+     id="namedview1632"
+     showgrid="false"
+     inkscape:zoom="26.375"
+     inkscape:cx="8.9846668"
+     inkscape:cy="9.4597156"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0" />
+  <defs
+     id="defs2">
+    <rect
+       x="280.6113"
+       y="505.7515"
+       width="82.542252"
+       height="34.655735"
+       id="rect1407" />
+    <filter
+       inkscape:label="Ridged Border"
+       inkscape:menu="Bevels"
+       inkscape:menu-tooltip="Ridged border with inner bevel"
+       style="color-interpolation-filters:sRGB;"
+       id="filter2289">
+      <feMorphology
+         radius="4.3"
+         in="SourceAlpha"
+         result="result91"
+         id="feMorphology2275" />
+      <feComposite
+         operator="out"
+         in="SourceGraphic"
+         in2="result91"
+         id="feComposite2277" />
+      <feGaussianBlur
+         result="result0"
+         stdDeviation="1.2"
+         id="feGaussianBlur2279" />
+      <feDiffuseLighting
+         diffuseConstant="1"
+         id="feDiffuseLighting2283">
+        <feDistantLight
+           elevation="66"
+           azimuth="225"
+           id="feDistantLight2281" />
+      </feDiffuseLighting>
+      <feBlend
+         mode="multiply"
+         in2="SourceGraphic"
+         id="feBlend2285" />
+      <feComposite
+         operator="in"
+         in2="SourceAlpha"
+         id="feComposite2287" />
+    </filter>
+    <filter
+       inkscape:label="Ridged Border"
+       inkscape:menu="Bevels"
+       inkscape:menu-tooltip="Ridged border with inner bevel"
+       style="color-interpolation-filters:sRGB;"
+       id="filter2305">
+      <feMorphology
+         radius="4.3"
+         in="SourceAlpha"
+         result="result91"
+         id="feMorphology2291" />
+      <feComposite
+         operator="out"
+         in="SourceGraphic"
+         in2="result91"
+         id="feComposite2293" />
+      <feGaussianBlur
+         result="result0"
+         stdDeviation="1.2"
+         id="feGaussianBlur2295" />
+      <feDiffuseLighting
+         diffuseConstant="1"
+         id="feDiffuseLighting2299">
+        <feDistantLight
+           elevation="66"
+           azimuth="225"
+           id="feDistantLight2297" />
+      </feDiffuseLighting>
+      <feBlend
+         mode="multiply"
+         in2="SourceGraphic"
+         id="feBlend2301" />
+      <feComposite
+         operator="in"
+         in2="SourceAlpha"
+         id="feComposite2303" />
+    </filter>
+    <filter
+       inkscape:label="Ridged Border"
+       inkscape:menu="Bevels"
+       inkscape:menu-tooltip="Ridged border with inner bevel"
+       style="color-interpolation-filters:sRGB;"
+       id="filter2321">
+      <feMorphology
+         radius="4.3"
+         in="SourceAlpha"
+         result="result91"
+         id="feMorphology2307" />
+      <feComposite
+         operator="out"
+         in="SourceGraphic"
+         in2="result91"
+         id="feComposite2309" />
+      <feGaussianBlur
+         result="result0"
+         stdDeviation="1.2"
+         id="feGaussianBlur2311" />
+      <feDiffuseLighting
+         diffuseConstant="1"
+         id="feDiffuseLighting2315">
+        <feDistantLight
+           elevation="66"
+           azimuth="225"
+           id="feDistantLight2313" />
+      </feDiffuseLighting>
+      <feBlend
+         mode="multiply"
+         in2="SourceGraphic"
+         id="feBlend2317" />
+      <feComposite
+         operator="in"
+         in2="SourceAlpha"
+         id="feComposite2319" />
+    </filter>
+  </defs>
   <g
-   id="_1822077261776">
-   <path
-   class="fil0"
-   d="m 189,17 c 38,-3 75,11 106,39 32,30 55,75 61,128 -25,0 -49,0 -72,0 -21,0 -42,0 -61,0 -6,-19 -18,-34 -34,-39 0,-21 0,-43 0,-64 0,-21 0,-42 0,-64 z"
-   id="path7" />
-   <path
-   class="fil1"
-   d="m 356,231 c -6,52 -29,96 -62,124 -30,27 -68,39 -105,33 0,-21 0,-42 0,-63 0,-21 0,-42 0,-64 15,-4 28,-18 34,-37 19,1 40,2 61,3 23,1 46,2 72,4 z"
-   id="path9" />
-   <path
-   class="fil0"
-   d="M 159,380 C 127,368 100,343 82,314 64,286 53,251 51,215 c 12,1 24,1 37,2 13,1 27,1 42,2 4,18 15,32 29,39 0,21 0,41 0,61 0,21 0,41 0,61 z"
-   id="path11" />
-   <path
-   class="fil1"
-   d="m 51,184 c 2,-36 13,-70 31,-97 19,-29 45,-52 77,-63 0,20 0,41 0,61 0,21 0,41 0,61 -14,7 -25,21 -29,38 -15,0 -29,0 -42,0 -13,0 -25,0 -37,0 z"
-   id="path13" />
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-85.333325)">
+    <text
+       xml:space="preserve"
+       id="text1405"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect1407);fill:#000000;fill-opacity:1;stroke:none;" />
+    <path
+       style="fill:#42c1ff;fill-opacity:1;stroke:none;stroke-width:0.182697;stroke-linecap:round;stroke-linejoin:bevel;filter:url(#filter2289)"
+       d="m 12.884496,94.45832 c -0.09575,2.555873 -1.20362,3.663688 -3.759496,3.759381 v 2.615619 h 3.9075 L 15.5,98.427225 V 94.45832 Z"
+       id="path863" />
+    <path
+       style="fill:#42c1ff;fill-opacity:1;stroke:none;stroke-width:0.182697;stroke-linecap:round;stroke-linejoin:bevel;filter:url(#filter2305)"
+       d="M 6.875,88.44895 7.4339006,92.752249 3.1155109,92.208321 V 94.45832 H 0.5 v 3.968912 l 2.4675,2.406088 H 6.875 V 98.217818 C 4.3191304,98.12206 3.2113087,97.014193 3.1156218,94.45832 L 7.446264,93.857499 6.875,98.217701 h 2.25 L 8.5118163,93.857499 12.884496,94.45832 v -2.25 H 15.5 v -3.968908 l -2.4675,-2.40609 H 9.125 v 2.615504 c 2.555869,0.09574 3.663691,1.203618 3.759378,3.759494 L 8.4994531,92.752249 9.125,88.448949 Z"
+       id="path861" />
+    <path
+       style="fill:#42c1ff;fill-opacity:1;stroke:none;stroke-width:0.182697;stroke-linecap:round;stroke-linejoin:bevel;filter:url(#filter2321)"
+       d="M 2.9675,85.833323 0.5,88.239413 v 3.968908 H 3.1155109 C 3.211257,89.652452 4.319124,88.544631 6.875,88.44895 v -2.615627 z"
+       id="rect1723" />
   </g>
- </g>
 </svg>
