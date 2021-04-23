@@ -15,7 +15,7 @@ class MenuStart(Gtk.Button):
         self.set_property("name", "button-start")
 
         check_key(settings, "icon", "dialog-error")
-        check_key(settings, "icon-size", 20)
+        check_key(settings, "icon-size", 24)
 
         image = Gtk.Image()
         update_image(image, "nwg-shell", settings["icon-size"], icons_path)
