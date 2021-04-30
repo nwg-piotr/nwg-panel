@@ -7,9 +7,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="16"
-   height="16"
-   viewBox="0 0 16 16"
+   width="48"
+   height="48"
+   viewBox="0 0 48 48"
    version="1.1"
    id="svg8"
    inkscape:version="1.0.2 (e86c870879, 2021-01-15, custom)"
@@ -25,7 +25,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -38,13 +38,13 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1906"
-     inkscape:window-height="1006"
+     inkscape:window-width="1914"
+     inkscape:window-height="1074"
      id="namedview1632"
      showgrid="false"
-     inkscape:zoom="26.375"
-     inkscape:cx="8.9846668"
-     inkscape:cy="9.4597156"
+     inkscape:zoom="4.2593221"
+     inkscape:cx="28.786268"
+     inkscape:cy="27.610191"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
@@ -62,7 +62,7 @@
        inkscape:label="Ridged Border"
        inkscape:menu="Bevels"
        inkscape:menu-tooltip="Ridged border with inner bevel"
-       style="color-interpolation-filters:sRGB;"
+       style="color-interpolation-filters:sRGB"
        id="filter2289">
       <feMorphology
          radius="4.3"
@@ -99,7 +99,7 @@
        inkscape:label="Ridged Border"
        inkscape:menu="Bevels"
        inkscape:menu-tooltip="Ridged border with inner bevel"
-       style="color-interpolation-filters:sRGB;"
+       style="color-interpolation-filters:sRGB"
        id="filter2305">
       <feMorphology
          radius="4.3"
@@ -136,7 +136,7 @@
        inkscape:label="Ridged Border"
        inkscape:menu="Bevels"
        inkscape:menu-tooltip="Ridged border with inner bevel"
-       style="color-interpolation-filters:sRGB;"
+       style="color-interpolation-filters:sRGB"
        id="filter2321">
       <feMorphology
          radius="4.3"
@@ -175,21 +175,17 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-85.333325)">
+    <path
+       id="rect1723-3-6"
+       style="opacity:0.5;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.535911;stroke-linecap:round;stroke-linejoin:bevel;stroke-opacity:1"
+       d="M 10.738,88.833328 3.5,95.891193 v 11.642127 h 7.672165 C 11.45302,100.03611 14.702763,96.786499 22.2,96.505835 v -7.672507 z m 11.462,7.672507 1.639442,12.623005 -12.667277,-1.59552 v 6.6 H 3.5 v 11.64214 l 7.238,7.05786 H 22.2 v -7.67215 C 14.702783,124.88028 11.453172,121.63055 11.172491,114.13332 L 23.875707,112.37091 22.2,125.16083 h 6.6 l -1.798672,-12.78992 12.826527,1.76241 v -6.6 H 47.5 V 95.89119 L 40.262,88.833325 H 28.8 v 7.672146 c 7.497215,0.280838 10.746827,3.530619 11.027509,11.027849 L 26.965062,109.12884 28.8,96.505832 Z M 39.827855,114.13332 C 39.546989,121.63055 36.297237,124.88014 28.8,125.16083 v 7.67249 h 11.462 l 7.238,-7.05789 v -11.64211 z" />
     <text
        xml:space="preserve"
        id="text1405"
        style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect1407);fill:#000000;fill-opacity:1;stroke:none;" />
     <path
-       style="fill:#42c1ff;fill-opacity:1;stroke:none;stroke-width:0.182697;stroke-linecap:round;stroke-linejoin:bevel;filter:url(#filter2289)"
-       d="m 12.884496,94.45832 c -0.09575,2.555873 -1.20362,3.663688 -3.759496,3.759381 v 2.615619 h 3.9075 L 15.5,98.427225 V 94.45832 Z"
-       id="path863" />
-    <path
-       style="fill:#42c1ff;fill-opacity:1;stroke:none;stroke-width:0.182697;stroke-linecap:round;stroke-linejoin:bevel;filter:url(#filter2305)"
-       d="M 6.875,88.44895 7.4339006,92.752249 3.1155109,92.208321 V 94.45832 H 0.5 v 3.968912 l 2.4675,2.406088 H 6.875 V 98.217818 C 4.3191304,98.12206 3.2113087,97.014193 3.1156218,94.45832 L 7.446264,93.857499 6.875,98.217701 h 2.25 L 8.5118163,93.857499 12.884496,94.45832 v -2.25 H 15.5 v -3.968908 l -2.4675,-2.40609 H 9.125 v 2.615504 c 2.555869,0.09574 3.663691,1.203618 3.759378,3.759494 L 8.4994531,92.752249 9.125,88.448949 Z"
-       id="path861" />
-    <path
-       style="fill:#42c1ff;fill-opacity:1;stroke:none;stroke-width:0.182697;stroke-linecap:round;stroke-linejoin:bevel;filter:url(#filter2321)"
-       d="M 2.9675,85.833323 0.5,88.239413 v 3.968908 H 3.1155109 C 3.211257,89.652452 4.319124,88.544631 6.875,88.44895 v -2.615627 z"
-       id="rect1723" />
+       id="rect1723-3"
+       style="fill:#ee6000;fill-opacity:1;stroke:none;stroke-width:0.535911;stroke-linecap:round;stroke-linejoin:bevel;stroke-opacity:1"
+       d="M 9.238,87.333328 2,94.391193 V 106.03332 H 9.6721653 C 9.9530203,98.536109 13.202763,95.286499 20.7,95.005835 V 87.333328 Z M 20.7,95.005835 22.339442,107.62884 9.6721653,106.03332 v 6.6 H 2 v 11.64214 l 7.238,7.05786 H 20.7 v -7.67215 C 13.202783,123.38028 9.9531722,120.13055 9.6724906,112.63332 L 22.375707,110.87091 20.7,123.66083 h 6.6 l -1.798672,-12.78992 12.826527,1.76241 v -6.6 H 46 V 94.39119 L 38.762,87.333325 H 27.3 v 7.672146 c 7.497215,0.280838 10.746827,3.530614 11.027509,11.027849 L 25.465062,107.62884 27.3,95.005832 Z M 38.327855,112.63332 C 38.046989,120.13055 34.797237,123.38014 27.3,123.66083 v 7.67249 H 38.762 L 46,124.27543 v -11.64211 z" />
   </g>
 </svg>

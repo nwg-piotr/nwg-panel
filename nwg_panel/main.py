@@ -369,8 +369,8 @@ def main():
                     "output": panel["output"],
                     "position": panel["position"],
                     "alignment": "left",
-                    "margin-left": 6,
-                    "margin-bottom": 6,
+                    "margin-left": 0,
+                    "margin-bottom": 0,
                     "autohide": True
                 }
                 ms = MenuStart(settings, icons_path=icons_path)
