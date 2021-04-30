@@ -42,10 +42,10 @@ class MenuStart(Gtk.Button):
             cmd += " -o {}".format(self.settings["output"])
         
         if self.settings["position"]:
-            cmd += " -p {}".format(self.settings["position"])
+            cmd += " -va {}".format(self.settings["position"])
 
         if self.settings["alignment"]:
-            cmd += " -a {}".format(self.settings["alignment"])
+            cmd += " -ha {}".format(self.settings["alignment"])
 
         if self.settings["margin-left"]:
             cmd += " -ml {}".format(self.settings["margin-left"])
