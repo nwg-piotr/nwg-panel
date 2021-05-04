@@ -333,20 +333,16 @@ def main():
                     "cmd-shutdown": "systemctl -i poweroff",
                     "autohide": True,
                     "file-manager": "thunar",
-                    "horizontal-align": "left",
                     "height": 0,
                     "icon-size-large": 32,
                     "icon-size-small": 16,
-                    "lang": "",
+                    "icon-size-button": 16,
                     "margin-bottom": 0,
                     "margin-left": 0,
                     "margin-right": 0,
                     "margin-top": 0,
-                    "output": panel["output"],
                     "padding": 2,
-                    "styling": "",
                     "terminal": "alacritty",
-                    "vertical-align": panel["position"],
                     "width": 0
                 }
                 for key in defaults:
@@ -395,7 +391,7 @@ def main():
                 left_box.pack_start(cc, False, False, 0)
 
             if panel["menu-start"] == "left":
-                ms = MenuStart(panel["menu-start-settings"], icons_path=icons_path)
+                ms = MenuStart(panel, icons_path=icons_path)
                 left_box.pack_start(ms, False, False, 0)
 
             instantiate_content(panel, left_box, panel["modules-left"], icons_path=icons_path)
