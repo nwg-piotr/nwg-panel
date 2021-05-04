@@ -323,6 +323,38 @@ def main():
                 controls_settings = panel["controls-settings"]
                 check_key(controls_settings, "show-values", False)
 
+            check_key(panel, "menu-start", "off")
+            if panel["menu-start"]:
+                check_key(panel, "menu-start-settings", {})
+                defaults = {
+                    "cmd-lock": "swaylock -f -c 000000",
+                    "cmd-logout": "swaymsg exit",
+                    "cmd-restart": "systemctl reboot",
+                    "cmd-shutdown": "systemctl -i poweroff",
+                    "autohide": True,
+                    "file-manager": "thunar",
+                    "horizontal-align": "left",
+                    "height": 0,
+                    "icon-size-large": 32,
+                    "icon-size-small": 16,
+                    "lang": "",
+                    "margin-bottom": 0,
+                    "margin-left": 0,
+                    "margin-right": 0,
+                    "margin-top": 0,
+                    "output": panel["output"],
+                    "padding": 2,
+                    "styling": "",
+                    "terminal": "alacritty",
+                    "vertical-align": panel["position"],
+                    "width": 0
+                }
+                for key in defaults:
+                    check_key(panel["menu-start-settings"], key, defaults[key])
+            
+            if panel["menu-start"] != "off":
+                panel["menu-start-settings"]["horizontal-align"] = panel["menu-start"]
+
             Gtk.Widget.set_size_request(window, w, h)
 
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -332,8 +364,6 @@ def main():
             check_key(panel, "modules-left", [])
             check_key(panel, "modules-center", [])
             check_key(panel, "modules-right", [])
-
-            check_key(panel, "menu-start", False)
 
             # This is to allow the "auto" value. Actually all non-numeric values will be removed.
             if "homogeneous" in panel and not isinstance(panel["homogeneous"], bool):
@@ -364,16 +394,8 @@ def main():
                 common.controls_list.append(cc)
                 left_box.pack_start(cc, False, False, 0)
 
-            if panel["menu-start"]:
-                settings = {
-                    "output": panel["output"],
-                    "position": panel["position"],
-                    "alignment": "left",
-                    "margin-left": 0,
-                    "margin-bottom": 0,
-                    "autohide": True
-                }
-                ms = MenuStart(settings, icons_path=icons_path)
+            if panel["menu-start"] == "left":
+                ms = MenuStart(panel["menu-start-settings"], icons_path=icons_path)
                 left_box.pack_start(ms, False, False, 0)
 
             instantiate_content(panel, left_box, panel["modules-left"], icons_path=icons_path)
@@ -390,6 +412,10 @@ def main():
             inner_box.pack_start(helper_box, False, True, 0)
             check_key(panel, "modules-right", [])
             instantiate_content(panel, right_box, panel["modules-right"], icons_path=icons_path)
+
+            if panel["menu-start"] == "right":
+                ms = MenuStart(panel["menu-start-settings"], icons_path=icons_path)
+                right_box.pack_end(ms, False, False, 0)
 
             if panel["controls"] and panel["controls"] == "right":
                 monitor = None

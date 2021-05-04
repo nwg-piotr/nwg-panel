@@ -23,38 +23,53 @@ class MenuStart(Gtk.Button):
 
         self.connect("clicked", self.on_click)
 
-        check_key(settings, "css-name", "")
-        if settings["css-name"]:
-            self.set_property("name", settings["css-name"])
-
         self.show()
 
     def on_click(self, button):
-        cmd = "nwg-panel-plugin-menu"
-        """settings = {
-            "output": panel["output"],
-            "position": panel["position"],
-            "alignment": "left",
-            "margin-left": 6,
-            "margin-bottom": 6
-        }"""
-        if self.settings["output"]:
-            cmd += " -o {}".format(self.settings["output"])
-        
-        if self.settings["position"]:
-            cmd += " -va {}".format(self.settings["position"])
+        cmd = "nwg-menu"
 
-        if self.settings["alignment"]:
-            cmd += " -ha {}".format(self.settings["alignment"])
-
-        if self.settings["margin-left"]:
-            cmd += " -ml {}".format(self.settings["margin-left"])
-
-        if self.settings["margin-bottom"]:
-            cmd += " -mb {}".format(self.settings["margin-bottom"])
-
+        if self.settings["cmd-lock"] != "swaylock -f -c 000000":
+            cmd += " -cmd-lock '{}'".format(self.settings["cmd-lock"])
+        if self.settings["cmd-logout"] != "swaymsg exit":
+            cmd += " -cmd-logout '{}'".format(self.settings["cmd-logout"])
+        if self.settings["cmd-restart"] != "systemctl reboot":
+            cmd += " -cmd-restart '{}'".format(self.settings["cmd-restart"])
+        if self.settings["cmd-shutdown"] != "systemctl -i poweroff":
+            cmd += " -cmd-shutdown '{}'".format(self.settings["cmd-shutdown"])
         if self.settings["autohide"]:
             cmd += " -d"
+        if self.settings["file-manager"] != "thunar":
+            cmd += " -fm {}".format(self.settings["file-manager"])
+        if self.settings["horizontal-align"] != "left":
+            cmd += " -ha {}".format(self.settings["horizontal-align"])
+        if self.settings["height"] > 0:
+            cmd += " -height {}".format(self.settings["height"])
+        if self.settings["icon-size-large"] != 32:
+            cmd += " -isl {}".format(self.settings["icon-size-large"])
+        if self.settings["icon-size-small"] != 16:
+            cmd += " -iss {}".format(self.settings["icon-size-small"])
+        if self.settings["lang"]:
+            cmd += " -lang {}".format(self.settings["lang"])
+        if self.settings["margin-bottom"] > 0:
+            cmd += " -mb {}".format(self.settings["margin-bottom"])
+        if self.settings["margin-left"] > 0:
+            cmd += " -ml {}".format(self.settings["margin-left"])
+        if self.settings["margin-right"] > 0:
+            cmd += " -mr {}".format(self.settings["margin-right"])
+        if self.settings["margin-top"] > 0:
+            cmd += " -mt {}".format(self.settings["margin-top"])
+        if self.settings["output"]:
+            cmd += " -o {}".format(self.settings["output"])
+        if self.settings["padding"] != 2:
+            cmd += " -padding {}".format(self.settings["padding"])
+        if self.settings["styling"]:
+            cmd += " -s {}".format(self.settings["styling"])
+        if self.settings["terminal"] != "alacritty":
+            cmd += " -term {}".format(self.settings["terminal"])
+        if self.settings["vertical-align"] != "bottom":
+            cmd += " -va {}".format(self.settings["vertical-align"])
+        if self.settings["width"] > 0:
+            cmd += " -width {}".format(self.settings["width"])
 
         print("Executing '{}'".format(cmd))
         subprocess.Popen('exec {}'.format(cmd), shell=True)

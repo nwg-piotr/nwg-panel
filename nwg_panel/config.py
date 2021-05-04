@@ -29,6 +29,7 @@ SKELETON_PANEL: dict = {
     "layer": "bottom",
     "position": "top",
     "controls": "off",
+    "menu-start": "off",
     "width": "auto",
     "height": 0,
     "margin-top": 0,
@@ -53,6 +54,29 @@ SKELETON_PANEL: dict = {
         "net-interface": "",
         "custom-items": [{"name": "Panel settings", "icon": "nwg-panel", "cmd": "nwg-panel-config"}],
         "menu": {"name": "unnamed", "icon": "", "items": []}
+    },
+    "menu-settings": {
+        "cmd-lock": "swaylock -f -c 000000",
+        "cmd-logout": "swaymsg exit",
+        "cmd-restart": "systemctl reboot",
+        "cmd-shutdown": "systemctl -i poweroff",
+        "autohide": True,
+        "file-manager": "thunar",
+        "horizontal-align": "left",
+        "height": 0,
+        "icon-size-large": 32,
+        "icon-size-small": 16,
+        "lang": "",
+        "margin-bottom": 0,
+        "margin-left": 0,
+        "margin-right": 0,
+        "margin-top": 0,
+        "output": "",
+        "padding": 2,
+        "styling": "",
+        "terminal": "alacritty",
+        "vertical-align": "",
+        "width": 0
     },
     "sway-taskbar": {
         "workspace-menu": ["1", "2", "3", "4", "5", "6", "7", "8"],
@@ -508,7 +532,8 @@ class EditorWrapper(object):
             "output": "",
             "layer": "bottom",
             "position": "top",
-            "controls": False,
+            "controls": "off",
+            "menu-start": "off",
             "width": "auto",
             "height": 0,
             "margin-top": 0,
@@ -562,6 +587,17 @@ class EditorWrapper(object):
                 self.cb_controls.set_active_id("left")
             else:
                 self.cb_controls.set_active_id("off")
+
+        self.cb_menu = builder.get_object("menu")
+        if not self.panel["menu-start"]:
+            self.cb_menu.set_active_id("off")
+        else:
+            if self.panel["menu-start"] == "right":
+                self.cb_menu.set_active_id("right")
+            elif self.panel["menu-start"] == "left":
+                self.cb_menu.set_active_id("left")
+            else:
+                self.cb_menu.set_active_id("off")
 
         self.cb_layer = builder.get_object("layer")
         self.cb_layer.set_active_id(self.panel["layer"])
@@ -666,6 +702,13 @@ class EditorWrapper(object):
                 self.panel["controls"] = val
             else:
                 self.panel["controls"] = "off"
+
+        val = self.cb_menu.get_active_id()
+        if val:
+            if val in ["left", "right"]:
+                self.panel["menu-start"] = val
+            else:
+                self.panel["menu-start"] = "off"
 
         val = self.cb_layer.get_active_id()
         if val:

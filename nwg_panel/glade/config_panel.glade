@@ -2,7 +2,7 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <!-- n-columns=2 n-rows=14 -->
+  <!-- n-columns=2 n-rows=15 -->
   <object class="GtkGrid" id="grid">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -108,14 +108,80 @@
       </packing>
     </child>
     <child>
-      <object class="GtkSpinButton" id="spacing">
+      <object class="GtkComboBoxText" id="controls">
         <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="width-chars">4</property>
+        <property name="can-focus">False</property>
+        <items>
+          <item id="right" translatable="yes">on the rigth</item>
+          <item id="left" translatable="yes">on the left</item>
+          <item id="off" translatable="yes">off</item>
+        </items>
       </object>
       <packing>
         <property name="left-attach">1</property>
-        <property name="top-attach">11</property>
+        <property name="top-attach">4</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="halign">start</property>
+        <property name="label" translatable="yes">Controls</property>
+      </object>
+      <packing>
+        <property name="left-attach">0</property>
+        <property name="top-attach">4</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="halign">start</property>
+        <property name="label" translatable="yes">CSS name</property>
+      </object>
+      <packing>
+        <property name="left-attach">0</property>
+        <property name="top-attach">14</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkEntry" id="css-name">
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="width-chars">20</property>
+      </object>
+      <packing>
+        <property name="left-attach">1</property>
+        <property name="top-attach">14</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="halign">start</property>
+        <property name="label" translatable="yes">Icon set</property>
+      </object>
+      <packing>
+        <property name="left-attach">0</property>
+        <property name="top-attach">13</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkComboBoxText" id="icons">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <items>
+          <item id="light" translatable="yes">custom light</item>
+          <item id="dark" translatable="yes">custom dark</item>
+          <item id="gtk" translatable="yes">GTK</item>
+        </items>
+      </object>
+      <packing>
+        <property name="left-attach">1</property>
+        <property name="top-attach">13</property>
       </packing>
     </child>
     <child>
@@ -124,6 +190,29 @@
         <property name="can-focus">False</property>
         <property name="halign">start</property>
         <property name="label" translatable="yes">Spacing</property>
+      </object>
+      <packing>
+        <property name="left-attach">0</property>
+        <property name="top-attach">12</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSpinButton" id="spacing">
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="width-chars">4</property>
+      </object>
+      <packing>
+        <property name="left-attach">1</property>
+        <property name="top-attach">12</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="halign">start</property>
+        <property name="label" translatable="yes">Vertical padding</property>
       </object>
       <packing>
         <property name="left-attach">0</property>
@@ -138,7 +227,7 @@
       </object>
       <packing>
         <property name="left-attach">1</property>
-        <property name="top-attach">10</property>
+        <property name="top-attach">11</property>
       </packing>
     </child>
     <child>
@@ -146,7 +235,7 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="halign">start</property>
-        <property name="label" translatable="yes">Vertical padding</property>
+        <property name="label" translatable="yes">Horizontal padding</property>
       </object>
       <packing>
         <property name="left-attach">0</property>
@@ -161,7 +250,7 @@
       </object>
       <packing>
         <property name="left-attach">1</property>
-        <property name="top-attach">9</property>
+        <property name="top-attach">10</property>
       </packing>
     </child>
     <child>
@@ -169,7 +258,7 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="halign">start</property>
-        <property name="label" translatable="yes">Horizontal padding</property>
+        <property name="label" translatable="yes">Bottom margin</property>
       </object>
       <packing>
         <property name="left-attach">0</property>
@@ -184,7 +273,7 @@
       </object>
       <packing>
         <property name="left-attach">1</property>
-        <property name="top-attach">8</property>
+        <property name="top-attach">9</property>
       </packing>
     </child>
     <child>
@@ -192,7 +281,7 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="halign">start</property>
-        <property name="label" translatable="yes">Bottom margin</property>
+        <property name="label" translatable="yes">Top margin</property>
       </object>
       <packing>
         <property name="left-attach">0</property>
@@ -207,7 +296,7 @@
       </object>
       <packing>
         <property name="left-attach">1</property>
-        <property name="top-attach">7</property>
+        <property name="top-attach">8</property>
       </packing>
     </child>
     <child>
@@ -215,7 +304,7 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="halign">start</property>
-        <property name="label" translatable="yes">Top margin</property>
+        <property name="label" translatable="yes">Height</property>
       </object>
       <packing>
         <property name="left-attach">0</property>
@@ -231,7 +320,7 @@
       </object>
       <packing>
         <property name="left-attach">1</property>
-        <property name="top-attach">6</property>
+        <property name="top-attach">7</property>
       </packing>
     </child>
     <child>
@@ -239,7 +328,7 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="halign">start</property>
-        <property name="label" translatable="yes">Height</property>
+        <property name="label" translatable="yes">Width</property>
       </object>
       <packing>
         <property name="left-attach">0</property>
@@ -279,7 +368,7 @@
       </object>
       <packing>
         <property name="left-attach">1</property>
-        <property name="top-attach">5</property>
+        <property name="top-attach">6</property>
       </packing>
     </child>
     <child>
@@ -287,7 +376,7 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="halign">start</property>
-        <property name="label" translatable="yes">Width</property>
+        <property name="label" translatable="yes">Menu Start</property>
       </object>
       <packing>
         <property name="left-attach">0</property>
@@ -295,80 +384,18 @@
       </packing>
     </child>
     <child>
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="halign">start</property>
-        <property name="label" translatable="yes">Controls</property>
-      </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">4</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkComboBoxText" id="controls">
+      <object class="GtkComboBoxText" id="menu">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <items>
-          <item id="right" translatable="yes">to the rigth</item>
-          <item id="left" translatable="yes">to the left</item>
+          <item id="left" translatable="yes">on the left</item>
+          <item id="right" translatable="yes">on the rigth</item>
           <item id="off" translatable="yes">off</item>
         </items>
       </object>
       <packing>
         <property name="left-attach">1</property>
-        <property name="top-attach">4</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkComboBoxText" id="icons">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <items>
-          <item id="light" translatable="yes">custom light</item>
-          <item id="dark" translatable="yes">custom dark</item>
-          <item id="gtk" translatable="yes">GTK</item>
-        </items>
-      </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">12</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="halign">start</property>
-        <property name="label" translatable="yes">Icon set</property>
-      </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">12</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="halign">start</property>
-        <property name="label" translatable="yes">CSS name</property>
-      </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">13</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkEntry" id="css-name">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="width-chars">20</property>
-      </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">13</property>
+        <property name="top-attach">5</property>
       </packing>
     </child>
   </object>
