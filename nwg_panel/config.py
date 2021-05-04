@@ -55,27 +55,23 @@ SKELETON_PANEL: dict = {
         "custom-items": [{"name": "Panel settings", "icon": "nwg-panel", "cmd": "nwg-panel-config"}],
         "menu": {"name": "unnamed", "icon": "", "items": []}
     },
-    "menu-settings": {
+    "menu-start-settings": {
         "cmd-lock": "swaylock -f -c 000000",
         "cmd-logout": "swaymsg exit",
         "cmd-restart": "systemctl reboot",
         "cmd-shutdown": "systemctl -i poweroff",
         "autohide": True,
         "file-manager": "thunar",
-        "horizontal-align": "left",
         "height": 0,
         "icon-size-large": 32,
         "icon-size-small": 16,
-        "lang": "",
+        "icon-size-button": 16,
         "margin-bottom": 0,
         "margin-left": 0,
         "margin-right": 0,
         "margin-top": 0,
-        "output": "",
         "padding": 2,
-        "styling": "",
         "terminal": "alacritty",
-        "vertical-align": "",
         "width": 0
     },
     "sway-taskbar": {
@@ -448,6 +444,9 @@ class EditorWrapper(object):
         btn = builder.get_object("btn-controls")
         btn.connect("clicked", self.controls_menu)
 
+        btn = builder.get_object("btn-menu-start")
+        btn.connect("clicked", self.edit_menu_start)
+        
         btn = builder.get_object("btn-clock")
         btn.connect("clicked", self.edit_clock)
 
@@ -784,6 +783,8 @@ class EditorWrapper(object):
             save_json(self.config, self.file)
         elif self.edited == "controls":
             self.update_controls()
+        elif self.edited == "menu-start":
+            self.update_menu_start()
         elif self.edited == "custom-items":
             save_json(self.config, self.file)
         elif self.edited == "user-menu":
@@ -1166,6 +1167,165 @@ class EditorWrapper(object):
 
         save_json(self.config, self.file)
 
+    def edit_menu_start(self, *args):
+        self.load_panel()
+        self.edited = "menu-start"
+        check_key(self.panel, "menu-start-settings", {})
+        settings = self.panel["menu-start-settings"]
+        defaults = {
+            "cmd-lock": "swaylock -f -c 000000",
+            "cmd-logout": "swaymsg exit",
+            "cmd-restart": "systemctl reboot",
+            "cmd-shutdown": "systemctl -i poweroff",
+            "autohide": True,
+            "file-manager": "thunar",
+            "height": 0,
+            "icon-size-large": 32,
+            "icon-size-small": 16,
+            "icon-size-button": 16,
+            "margin-bottom": 0,
+            "margin-left": 0,
+            "margin-right": 0,
+            "margin-top": 0,
+            "padding": 2,
+            "terminal": "alacritty",
+            "width": 0
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_menu_start.glade"))
+        grid = builder.get_object("grid")
+
+        self.ms_window_width = builder.get_object("width")
+        self.ms_window_width.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=1921, step_increment=1, page_increment=10, page_size=1)
+        self.ms_window_width.configure(adj, 1, 0)
+        self.ms_window_width.set_value(settings["width"])
+
+        self.ms_window_height = builder.get_object("height")
+        self.ms_window_height.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=2161, step_increment=1, page_increment=10, page_size=1)
+        self.ms_window_height.configure(adj, 1, 0)
+        self.ms_window_height.set_value(settings["height"])
+
+        self.ms_icon_size_large = builder.get_object("icon-size-large")
+        self.ms_icon_size_large.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=16, upper=129, step_increment=1, page_increment=10, page_size=1)
+        self.ms_icon_size_large.configure(adj, 1, 0)
+        self.ms_icon_size_large.set_value(settings["icon-size-large"])
+
+        self.ms_icon_size_small = builder.get_object("icon-size-small")
+        self.ms_icon_size_small.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=16, upper=129, step_increment=1, page_increment=10, page_size=1)
+        self.ms_icon_size_small.configure(adj, 1, 0)
+        self.ms_icon_size_small.set_value(settings["icon-size-small"])
+
+        self.ms_icon_size_button = builder.get_object("icon-size-button")
+        self.ms_icon_size_button.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
+        self.ms_icon_size_button.configure(adj, 1, 0)
+        self.ms_icon_size_button.set_value(settings["icon-size-button"])
+
+        self.ms_padding = builder.get_object("padding")
+        self.ms_padding.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=100, step_increment=1, page_increment=10, page_size=1)
+        self.ms_padding.configure(adj, 1, 0)
+        self.ms_padding.set_value(settings["padding"])
+
+        self.ms_margin_bottom = builder.get_object("margin-bottom")
+        self.ms_margin_bottom.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=400, step_increment=1, page_increment=10, page_size=1)
+        self.ms_margin_bottom.configure(adj, 1, 0)
+        self.ms_margin_bottom.set_value(settings["margin-bottom"])
+
+        self.ms_margin_left = builder.get_object("margin-left")
+        self.ms_margin_left.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=400, step_increment=1, page_increment=10, page_size=1)
+        self.ms_margin_left.configure(adj, 1, 0)
+        self.ms_margin_left.set_value(settings["margin-left"])
+
+        self.ms_margin_top = builder.get_object("margin-top")
+        self.ms_margin_top.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=400, step_increment=1, page_increment=10, page_size=1)
+        self.ms_margin_top.configure(adj, 1, 0)
+        self.ms_margin_top.set_value(settings["margin-top"])
+
+        self.ms_margin_right = builder.get_object("margin-right")
+        self.ms_margin_right.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=400, step_increment=1, page_increment=10, page_size=1)
+        self.ms_margin_right.configure(adj, 1, 0)
+        self.ms_margin_right.set_value(settings["margin-right"])
+
+        self.ms_cmd_lock = builder.get_object("cmd-lock")
+        self.ms_cmd_lock.set_text(settings["cmd-lock"])
+
+        self.ms_cmd_logout = builder.get_object("cmd-logout")
+        self.ms_cmd_logout.set_text(settings["cmd-logout"])
+
+        self.ms_cmd_restart = builder.get_object("cmd-restart")
+        self.ms_cmd_restart.set_text(settings["cmd-restart"])
+
+        self.ms_cmd_shutdown = builder.get_object("cmd-shutdown")
+        self.ms_cmd_shutdown.set_text(settings["cmd-shutdown"])
+
+        self.ms_file_manager = builder.get_object("file-manager")
+        self.ms_file_manager.set_text(settings["file-manager"])
+
+        self.ms_terminal = builder.get_object("terminal")
+        self.ms_terminal.set_text(settings["terminal"])
+
+        self.ms_autohide = builder.get_object("autohide")
+        self.ms_autohide.set_active(settings["autohide"])
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(grid)
+        
+    def update_menu_start(self):
+        settings = self.panel["menu-start-settings"]
+
+        settings["width"] = int(self.ms_window_width.get_value())
+        settings["height"] = int(self.ms_window_height.get_value())
+        settings["icon-size-large"] = int(self.ms_icon_size_large.get_value())
+        settings["icon-size-small"] = int(self.ms_icon_size_small.get_value())
+        settings["icon-size-button"] = int(self.ms_icon_size_button.get_value())
+        settings["padding"] = int(self.ms_padding.get_value())
+        settings["margin-bottom"] = int(self.ms_margin_bottom.get_value())
+        settings["margin-left"] = int(self.ms_margin_left.get_value())
+        settings["margin-top"] = int(self.ms_margin_top.get_value())
+        settings["margin-right"] = int(self.ms_margin_right.get_value())
+
+        val = self.ms_cmd_lock.get_text()
+        if val:
+            settings["cmd-lock"] = val
+
+        val = self.ms_cmd_logout.get_text()
+        if val:
+            settings["cmd-logout"] = val
+
+        val = self.ms_cmd_restart.get_text()
+        if val:
+            settings["cmd-restart"] = val
+
+        val = self.ms_cmd_shutdown.get_text()
+        if val:
+            settings["cmd-shutdown"] = val
+
+        val = self.ms_file_manager.get_text()
+        if val:
+            settings["file-manager"] = val
+
+        val = self.ms_terminal.get_text()
+        if val:
+            settings["terminal"] = val
+
+        val = self.ms_autohide.get_active()
+        if val is not None:
+            settings["autohide"] = val
+
+        save_json(self.config, self.file)
+    
     def edit_scratchpad(self, *args):
         self.load_panel()
         self.edited = "scratchpad"
