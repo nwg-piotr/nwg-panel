@@ -9,7 +9,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, load_json, save_json, load_string, list_outputs, check_key, list_configs, \
-    local_dir, create_pixbuf, update_image, is_command, check_commands
+    local_dir, create_pixbuf, update_image, is_command, check_commands, cmd2string
 
 from nwg_panel.__about__ import __version__
 
@@ -134,6 +134,7 @@ class PanelSelector(Gtk.Window):
         self.to_delete = []
         self.connect("key-release-event", handle_keyboard)
         self.connect('destroy', Gtk.main_quit)
+        self.plugin_menu_start = is_command("nwg-menu")
 
         self.outer_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.add(self.outer_box)
@@ -147,10 +148,12 @@ class PanelSelector(Gtk.Window):
             ver = __version__
         except:
             ver = ""
-        label.set_text("nwg-panel {}".format(ver))
+        label.set_markup('nwg-panel {} <a href="https://github.com/nwg-piotr/nwg-panel">GitHub</a>'.format(ver))
         ivbox.pack_start(label, True, False, 0)
+
         label = Gtk.Label()
-        label.set_markup('see on <a href="https://github.com/nwg-piotr/nwg-panel">GitHub</a>')
+        status = cmd2string("nwg-menu -v") if self.plugin_menu_start else "not installed"
+        label.set_markup('MenuStart plugin: {} <a href="https://github.com/nwg-piotr/nwg-menu">GitHub</a>'.format(status))
         ivbox.pack_start(label, True, False, 0)
 
         self.scrolled_window = Gtk.ScrolledWindow()
@@ -341,7 +344,7 @@ class PanelSelector(Gtk.Window):
 
     def on_edit_button(self, button, file, panel_idx):
         global editor
-        editor = EditorWrapper(self, file, panel_idx)
+        editor = EditorWrapper(self, file, panel_idx, self.plugin_menu_start)
         editor.edit_panel()
 
     def move_up(self, btn, panels, panel):
@@ -365,7 +368,7 @@ class PanelSelector(Gtk.Window):
         idx = config.index(panel)
         save_json(config, file)
         global editor
-        editor = EditorWrapper(self, file, idx)
+        editor = EditorWrapper(self, file, idx, self.plugin_menu_start)
         editor.set_panel()
         editor.edit_panel()
 
@@ -407,7 +410,7 @@ def update_icon(gtk_entry, icons):
 
 
 class EditorWrapper(object):
-    def __init__(self, parent, file, panel_idx):
+    def __init__(self, parent, file, panel_idx, plugin_menu_start):
         self.file = file
         self.panel_idx = panel_idx
         self.config = {}
@@ -445,7 +448,11 @@ class EditorWrapper(object):
         btn.connect("clicked", self.controls_menu)
 
         btn = builder.get_object("btn-menu-start")
-        btn.connect("clicked", self.edit_menu_start)
+        if plugin_menu_start:
+            btn.connect("clicked", self.edit_menu_start)
+        else:
+            btn.set_sensitive(False)
+            btn.set_tooltip_text("Plugin not found")
         
         btn = builder.get_object("btn-clock")
         btn.connect("clicked", self.edit_clock)
