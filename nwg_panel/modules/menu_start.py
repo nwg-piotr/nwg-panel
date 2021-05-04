@@ -12,14 +12,14 @@ class MenuStart(Gtk.Button):
         Gtk.Button.__init__(self)
         self.set_always_show_image(True)
         self.panel = panel
+        check_key(panel, "menu-start-settings", {})
         self.settings = panel["menu-start-settings"]
         self.set_property("name", "button-start")
 
-        check_key(self.settings, "icon", "dialog-error")
-        check_key(self.settings, "icon-size", 16)
+        check_key(self.settings, "icon-size-button", 16)
 
         image = Gtk.Image()
-        update_image(image, "nwg-shell", self.settings["icon-size"], icons_path)
+        update_image(image, "nwg-shell", self.settings["icon-size-button"], icons_path)
         self.set_image(image)
 
         self.connect("clicked", self.on_click)
