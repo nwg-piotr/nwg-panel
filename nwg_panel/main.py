@@ -36,6 +36,8 @@ from nwg_panel.modules.playerctl import Playerctl
 from nwg_panel.modules.cpu_avg import CpuAvg
 from nwg_panel.modules.scratchpad import Scratchpad
 
+from nwg_panel.modules.menu_start import MenuStart
+
 dir_name = os.path.dirname(__file__)
 
 from nwg_panel import common
@@ -73,13 +75,13 @@ def check_tree():
             if len(common.i3.get_outputs()) != common.outputs_num:
                 print("Number of outputs changed")
                 restart()
-            
+
             for item in common.taskbars_list:
                 item.refresh(tree)
 
             for item in common.scratchpads_list:
                 item.refresh(tree)
-                
+
             for item in common.workspaces_list:
                 item.refresh()
 
@@ -264,12 +266,12 @@ def main():
                 clone = panel.copy()
                 clone["output"] = key
                 clones.append(clone)
-                
+
             to_append = to_append + clones
-        
+
     for item in to_remove:
         panels.remove(item)
-        
+
     panels = panels + to_append
 
     for panel in panels:
@@ -321,6 +323,34 @@ def main():
                 controls_settings = panel["controls-settings"]
                 check_key(controls_settings, "show-values", False)
 
+            check_key(panel, "menu-start", "off")
+            if panel["menu-start"]:
+                check_key(panel, "menu-start-settings", {})
+                defaults = {
+                    "cmd-lock": "swaylock -f -c 000000",
+                    "cmd-logout": "swaymsg exit",
+                    "cmd-restart": "systemctl reboot",
+                    "cmd-shutdown": "systemctl -i poweroff",
+                    "autohide": True,
+                    "file-manager": "thunar",
+                    "height": 0,
+                    "icon-size-large": 32,
+                    "icon-size-small": 16,
+                    "icon-size-button": 16,
+                    "margin-bottom": 0,
+                    "margin-left": 0,
+                    "margin-right": 0,
+                    "margin-top": 0,
+                    "padding": 2,
+                    "terminal": "alacritty",
+                    "width": 0
+                }
+                for key in defaults:
+                    check_key(panel["menu-start-settings"], key, defaults[key])
+            
+            if panel["menu-start"] != "off":
+                panel["menu-start-settings"]["horizontal-align"] = panel["menu-start"]
+
             Gtk.Widget.set_size_request(window, w, h)
 
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -360,6 +390,10 @@ def main():
                 common.controls_list.append(cc)
                 left_box.pack_start(cc, False, False, 0)
 
+            if panel["menu-start"] == "left":
+                ms = MenuStart(panel, icons_path=icons_path)
+                left_box.pack_start(ms, False, False, 0)
+
             instantiate_content(panel, left_box, panel["modules-left"], icons_path=icons_path)
 
             center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
@@ -374,6 +408,10 @@ def main():
             inner_box.pack_start(helper_box, False, True, 0)
             check_key(panel, "modules-right", [])
             instantiate_content(panel, right_box, panel["modules-right"], icons_path=icons_path)
+
+            if panel["menu-start"] == "right":
+                ms = MenuStart(panel["menu-start-settings"], icons_path=icons_path)
+                right_box.pack_end(ms, False, False, 0)
 
             if panel["controls"] and panel["controls"] == "right":
                 monitor = None
@@ -400,8 +438,8 @@ def main():
             check_key(panel, "layer", "top")
             o = panel["output"] if "output" in panel else "undefined"
             print("Output: {}, position: {}, layer: {}, width: {}, height: {}".format(o, panel["position"],
-                                                                                       panel["layer"], panel["width"],
-                                                                                       panel["height"]))
+                                                                                      panel["layer"], panel["width"],
+                                                                                      panel["height"]))
 
             if monitor:
                 GtkLayerShell.set_monitor(window, monitor)
