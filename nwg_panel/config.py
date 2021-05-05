@@ -1780,6 +1780,7 @@ class EditorWrapper(object):
             "output-switcher": False,
             "interval": 1,
             "window-width": 0,
+            "window-margin": 0,
             "icon-size": 16,
             "hover-opens": True,
             "leave-closes": True,
@@ -1864,6 +1865,12 @@ class EditorWrapper(object):
         self.ctrl_window_width.configure(adj, 1, 0)
         self.ctrl_window_width.set_value(settings["window-width"])
 
+        self.ctrl_window_margin = builder.get_object("window-margin")
+        self.ctrl_window_margin.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=1920, step_increment=1, page_increment=10, page_size=1)
+        self.ctrl_window_margin.configure(adj, 1, 0)
+        self.ctrl_window_margin.set_value(settings["window-margin"])
+
         self.ctrl_icon_size = builder.get_object("icon-size")
         self.ctrl_icon_size.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
@@ -1936,6 +1943,7 @@ class EditorWrapper(object):
         settings["css-name"] = self.ctrl_css_name.get_text()
 
         settings["window-width"] = int(self.ctrl_window_width.get_value())
+        settings["window-margin"] = int(self.ctrl_window_margin.get_value())
         settings["icon-size"] = int(self.ctrl_icon_size.get_value())
         settings["interval"] = int(self.ctrl_interval.get_value())
 
