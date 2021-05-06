@@ -322,6 +322,7 @@ def main():
             if "controls-settings" in panel:
                 controls_settings = panel["controls-settings"]
                 check_key(controls_settings, "show-values", False)
+                check_key(controls_settings, "window-margin", 0)
 
             check_key(panel, "menu-start", "off")
             if panel["menu-start"]:
