@@ -242,6 +242,10 @@ class Controls(Gtk.EventBox):
                     self.popup_window.menu_box.hide()
         else:
             self.get_style_context().set_state(Gtk.StateFlags.SELECTED)
+
+        # cancel popup window close, as it's probably unwanted ATM
+        self.popup_window.on_window_enter()
+
         return True
 
     def on_leave_notify_event(self, widget, event):
@@ -487,7 +491,7 @@ class PopupWindow(Gtk.Window):
             e_box.add(box)
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             box.pack_start(inner_hbox, True, True, 6)
-            v_box.pack_start(e_box, True, True, 6)
+            v_box.pack_start(e_box, True, True, 0)
 
             img = Gtk.Image()
             update_image(img, template["icon"], self.icon_size, self.icons_path)
@@ -526,13 +530,16 @@ class PopupWindow(Gtk.Window):
         Gdk.threads_add_timeout(GLib.PRIORITY_LOW, 500, self.refresh)
 
     def on_window_exit(self, w, e):
-        self.src_tag = GLib.timeout_add_seconds(1, self.hide)
+        if self.get_visible():
+            self.src_tag = GLib.timeout_add_seconds(1, self.hide)
+        return True
         
     def on_window_enter(self, *args):
         if self.src_tag > 0:
             GLib.Source.remove(self.src_tag)
             self.src_tag = 0
-            
+        return True
+
     def on_window_show(self, *args):
         self.src_tag = 0
         self.refresh
@@ -622,9 +629,11 @@ class PopupWindow(Gtk.Window):
 
     def on_enter_notify_event(self, widget, event):
         widget.get_style_context().set_state(Gtk.StateFlags.SELECTED)
+        return True
 
     def on_leave_notify_event(self, widget, event):
         widget.get_style_context().set_state(Gtk.StateFlags.NORMAL)
+        return True
 
     def set_bri(self, slider):
         set_brightness(slider)
