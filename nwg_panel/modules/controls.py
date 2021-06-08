@@ -536,8 +536,11 @@ class PopupWindow(Gtk.Window):
         
     def on_window_enter(self, *args):
         if self.src_tag > 0:
-            GLib.Source.remove(self.src_tag)
-            self.src_tag = 0
+            try:
+                GLib.Source.remove(self.src_tag)
+                self.src_tag = 0
+            except:
+                pass
         return True
 
     def on_window_show(self, *args):
