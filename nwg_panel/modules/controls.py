@@ -531,16 +531,17 @@ class PopupWindow(Gtk.Window):
 
     def on_window_exit(self, w, e):
         if self.get_visible():
-            self.src_tag = GLib.timeout_add_seconds(1, self.hide)
+            self.src_tag = GLib.timeout_add_seconds(1, self.hide_and_clear_tag)
         return True
-        
+
+    def hide_and_clear_tag(self):
+        self.hide()
+        self.src_tag = 0
+
     def on_window_enter(self, *args):
         if self.src_tag > 0:
-            try:
-                GLib.Source.remove(self.src_tag)
-                self.src_tag = 0
-            except:
-                pass
+            GLib.Source.remove(self.src_tag)
+            self.src_tag = 0
         return True
 
     def on_window_show(self, *args):
