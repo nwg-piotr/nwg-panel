@@ -20,7 +20,7 @@ class Playerctl(Gtk.EventBox):
         self.settings = settings
         self.icons_path = icons_path
         Gtk.EventBox.__init__(self)
-        check_key(settings, "interval", 1)
+        check_key(settings, "interval", 20)
         check_key(settings, "label-css-name", "")
         check_key(settings, "button-css-name", "")
         check_key(settings, "icon-size", 16)
@@ -49,7 +49,7 @@ class Playerctl(Gtk.EventBox):
         self.refresh()
 
         if settings["interval"] > 0:
-            Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
+            Gdk.threads_add_timeout(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
 
     def update_widget(self, status, metadata):
         if status in ["Playing", "Paused"]:

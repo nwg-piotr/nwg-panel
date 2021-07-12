@@ -470,7 +470,7 @@ def main():
     else:
         common.outputs = list_outputs(sway=sway, tree=tree, silent=True)
         common.outputs_num = len(common.outputs)
-    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 200, check_tree)
+    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 20, check_tree)
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
