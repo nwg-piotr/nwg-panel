@@ -20,6 +20,9 @@ class CpuAvg(Gtk.EventBox):
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
+
+        self.set_property("name", "root-executor")
+
         self.label = Gtk.Label()
         self.label.set_property("name", "executor-label")
 
