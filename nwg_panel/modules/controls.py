@@ -34,6 +34,8 @@ class Controls(Gtk.EventBox):
         check_key(settings, "components", ["net", "brightness", "volume", "battery"])
         check_key(settings, "net-interface", "")
 
+        self.set_property("name", "controls-label")
+
         self.icon_size = settings["icon-size"]
 
         self.net_icon_name = "view-refresh-symbolic"

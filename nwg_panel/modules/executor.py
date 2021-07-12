@@ -41,9 +41,9 @@ class Executor(Gtk.EventBox):
         update_image(self.image, "view-refresh-symbolic", self.settings["icon-size"], self.icons_path)
 
         if settings["css-name"]:
-            self.label.set_property("name", settings["css-name"])
+            self.set_property("name", settings["css-name"])
         else:
-            self.label.set_property("name", "executor-label")
+            self.set_property("name", "executor")
 
         if settings["tooltip-text"]:
             self.set_tooltip_text(settings["tooltip-text"])

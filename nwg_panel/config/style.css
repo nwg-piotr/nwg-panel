@@ -46,7 +46,7 @@ button {
 }
 
 /* Executors usually behave better in monospace fonts */
-#executor-label {
+#executor label {
     font-family: monospace
 }
 
