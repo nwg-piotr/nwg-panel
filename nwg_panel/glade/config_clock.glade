@@ -6,8 +6,8 @@
   <object class="GtkGrid" id="grid">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="row-spacing">10</property>
-    <property name="column-spacing">10</property>
+    <property name="row-spacing">12</property>
+    <property name="column-spacing">12</property>
     <child>
       <object class="GtkLabel">
         <property name="visible">True</property>
@@ -17,7 +17,7 @@
       </object>
       <packing>
         <property name="left-attach">0</property>
-        <property name="top-attach">9</property>
+        <property name="top-attach">10</property>
       </packing>
     </child>
     <child>
@@ -27,11 +27,33 @@
       </object>
       <packing>
         <property name="left-attach">1</property>
-        <property name="top-attach">9</property>
+        <property name="top-attach">10</property>
       </packing>
     </child>
     <child>
       <object class="GtkEntry" id="css-name">
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+      </object>
+      <packing>
+        <property name="left-attach">1</property>
+        <property name="top-attach">9</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="halign">start</property>
+        <property name="label" translatable="yes">CSS name</property>
+      </object>
+      <packing>
+        <property name="left-attach">0</property>
+        <property name="top-attach">9</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkEntry" id="root-css-name">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
       </object>
@@ -45,7 +67,7 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="halign">start</property>
-        <property name="label" translatable="yes">CSS name</property>
+        <property name="label" translatable="yes">Root CSS name</property>
       </object>
       <packing>
         <property name="left-attach">0</property>

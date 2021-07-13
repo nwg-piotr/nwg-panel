@@ -30,11 +30,11 @@ class Controls(Gtk.EventBox):
         check_key(settings, "icon-size", 16)
         check_key(settings, "hover-opens", True)
         check_key(settings, "leave-closes", True)
-        check_key(settings, "css-name", "controls-label")
+        check_key(settings, "root-css-name", "controls-overview")
         check_key(settings, "components", ["net", "brightness", "volume", "battery"])
         check_key(settings, "net-interface", "")
 
-        self.set_property("name", "controls-label")
+        self.set_property("name", settings["root-css-name"])
 
         self.icon_size = settings["icon-size"]
 

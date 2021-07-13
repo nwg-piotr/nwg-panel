@@ -50,6 +50,7 @@ SKELETON_PANEL: dict = {
         "icon-size": 16,
         "hover-opens": True,
         "leave-closes": True,
+        "root-css-name": "controls-overview",
         "css-name": "controls-window",
         "net-interface": "",
         "custom-items": [{"name": "Panel settings", "icon": "nwg-panel", "cmd": "nwg-panel-config"}],
@@ -105,6 +106,7 @@ SKELETON_PANEL: dict = {
         "on-right-click": "",
         "on-scroll-up": "",
         "on-scroll-down": "",
+        "root-css-name": "root-clock",
         "css-name": "clock",
         "interval": 1
     },
@@ -952,6 +954,7 @@ class EditorWrapper(object):
             "on-right-click": "",
             "on-scroll-up": "",
             "on-scroll-down": "",
+            "root-css-name": "root-clock",
             "css-name": "clock",
             "interval": 1
         }
@@ -982,6 +985,9 @@ class EditorWrapper(object):
         self.eb_on_scroll_down = builder.get_object("on-scroll-down")
         self.eb_on_scroll_down.set_text(settings["on-scroll-down"])
 
+        self.eb_root_css_name_clock = builder.get_object("root-css-name")
+        self.eb_root_css_name_clock.set_text(settings["root-css-name"])
+
         self.eb_css_name_clock = builder.get_object("css-name")
         self.eb_css_name_clock.set_text(settings["css-name"])
 
@@ -1006,6 +1012,7 @@ class EditorWrapper(object):
 
         settings["on-scroll-up"] = self.eb_on_scroll_up.get_text()
         settings["on-scroll-down"] = self.eb_on_scroll_down.get_text()
+        settings["root-css-name"] = self.eb_root_css_name_clock.get_text()
         settings["css-name"] = self.eb_css_name_clock.get_text()
 
         val = self.sb_interval.get_value()
@@ -1400,6 +1407,7 @@ class EditorWrapper(object):
             "on-right-click": "",
             "on-scroll-up": "",
             "on-scroll-down": "",
+            "root-css-name": "",
             "css-name": "",
             "icon-placement": "left",
             "icon-size": 16,
@@ -1435,6 +1443,9 @@ class EditorWrapper(object):
 
         self.executor_on_scroll_down = builder.get_object("on-scroll-down")
         self.executor_on_scroll_down.set_text(settings["on-scroll-down"])
+
+        self.executor_root_css_name = builder.get_object("root-css-name")
+        self.executor_root_css_name.set_text(settings["root-css-name"])
 
         self.executor_css_name = builder.get_object("css-name")
         self.executor_css_name.set_text(settings["css-name"])
@@ -1473,6 +1484,7 @@ class EditorWrapper(object):
             settings["on-right-click"] = self.executor_on_right_click.get_text()
             settings["on-scroll-up"] = self.executor_on_scroll_up.get_text()
             settings["on-scroll-down"] = self.executor_on_scroll_down.get_text()
+            settings["root-css-name"] = self.executor_root_css_name.get_text()
             settings["css-name"] = self.executor_css_name.get_text()
             val = self.executor_icon_placement.get_active_id()
             if val:
@@ -1784,6 +1796,7 @@ class EditorWrapper(object):
             "icon-size": 16,
             "hover-opens": True,
             "leave-closes": True,
+            "root-css-name": "controls-overview",
             "css-name": "controls-window",
             "net-interface": "",
             "custom-items": [
@@ -1855,6 +1868,9 @@ class EditorWrapper(object):
         self.ctrl_cdm_battery = builder.get_object("ctrl-cmd-battery")
         check_key(settings["commands"], "battery", "")
         self.ctrl_cdm_battery.set_text(settings["commands"]["battery"])
+
+        self.ctrl_root_css_name = builder.get_object("root-css-name")
+        self.ctrl_root_css_name.set_text(settings["root-css-name"])
 
         self.ctrl_css_name = builder.get_object("css-name")
         self.ctrl_css_name.set_text(settings["css-name"])
@@ -1940,6 +1956,7 @@ class EditorWrapper(object):
         settings["net-interface"] = self.ctrl_net_name.get_text()
         settings["commands"]["bluetooth"] = self.ctrl_cdm_bluetooth.get_text()
         settings["commands"]["battery"] = self.ctrl_cdm_battery.get_text()
+        settings["root-css-name"] = self.ctrl_root_css_name.get_text()
         settings["css-name"] = self.ctrl_css_name.get_text()
 
         settings["window-width"] = int(self.ctrl_window_width.get_value())
