@@ -24,6 +24,7 @@ class Clock(Gtk.EventBox):
         self.add(self.box)
         self.label = Gtk.Label("")
 
+        check_key(settings, "root-css-name", "root-clock")
         check_key(settings, "css-name", "clock")
         check_key(settings, "tooltip-text", "")
         check_key(settings, "on-left-click", "")
@@ -34,8 +35,8 @@ class Clock(Gtk.EventBox):
 
         check_key(settings, "interval", 1)
 
-        if "css-name" in settings:
-            self.label.set_property("name", settings["css-name"])
+        self.set_property("name", settings["root-css-name"])
+        self.label.set_property("name", settings["css-name"])
 
         if settings["tooltip-text"]:
             self.set_tooltip_text(settings["tooltip-text"])

@@ -28,7 +28,8 @@ class Executor(Gtk.EventBox):
 
         check_key(settings, "script", "")
         check_key(settings, "interval", 0)
-        check_key(settings, "css-name", "")
+        check_key(settings, "root-css-name", "root-executor")
+        check_key(settings, "css-name", "executor-label")
         check_key(settings, "icon-placement", "left")
         check_key(settings, "icon-size", 16)
         check_key(settings, "tooltip-text", "")
@@ -40,10 +41,8 @@ class Executor(Gtk.EventBox):
 
         update_image(self.image, "view-refresh-symbolic", self.settings["icon-size"], self.icons_path)
 
-        if settings["css-name"]:
-            self.label.set_property("name", settings["css-name"])
-        else:
-            self.label.set_property("name", "executor-label")
+        self.set_property("name", settings["root-css-name"])
+        self.label.set_property("name", settings["css-name"])
 
         if settings["tooltip-text"]:
             self.set_tooltip_text(settings["tooltip-text"])
