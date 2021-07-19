@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
+import os
 from gi.repository import Gtk, Gdk, GdkPixbuf
 
-from nwg_panel.tools import check_key, get_icon, update_image, load_autotiling
+from nwg_panel.tools import check_key, get_icon, update_image, load_autotiling, get_config_dir
 import nwg_panel.common
 
 
@@ -131,8 +132,12 @@ class WindowBox(Gtk.EventBox):
                     image = Gtk.Image()
                     update_image(image, icon_from_desktop, settings["image-size"], icons_path)
                 else:
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop, settings["image-size"],
+                    try:
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop, settings["image-size"],
                                                                     settings["image-size"])
+                    except:
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                            os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), settings["image-size"], settings["image-size"])
                     image = Gtk.Image.new_from_pixbuf(pixbuf)
 
                 self.box.pack_start(image, False, False, 4)
