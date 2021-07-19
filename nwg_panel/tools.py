@@ -75,6 +75,8 @@ def get_app_dirs():
 
 
 def get_icon(app_name):
+    if not app_name:
+        return ""
     # GIMP returns "app_id": null and for some reason "class": "Gimp-2.10" instead of just "gimp".
     # Until the GTK3 version is released, let's make an exception for GIMP.
     if "GIMP" in app_name.upper():
@@ -456,7 +458,7 @@ def player_metadata():
 
 def update_image(image, icon_name, icon_size, icons_path=""):
     # In case a full path was given
-    if icon_name.startswith("/"):
+    if icon_name and icon_name.startswith("/"):
         try:
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_name, icon_size, icon_size)
             image.set_from_pixbuf(pixbuf)
