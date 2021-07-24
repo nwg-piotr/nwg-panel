@@ -112,7 +112,7 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <items>
-          <item id="right" translatable="yes">on the rigth</item>
+          <item id="right" translatable="yes">on the right</item>
           <item id="left" translatable="yes">on the left</item>
           <item id="off" translatable="yes">off</item>
         </items>
@@ -389,7 +389,7 @@
         <property name="can-focus">False</property>
         <items>
           <item id="left" translatable="yes">on the left</item>
-          <item id="right" translatable="yes">on the rigth</item>
+          <item id="right" translatable="yes">on the right</item>
           <item id="off" translatable="yes">off</item>
         </items>
       </object>
