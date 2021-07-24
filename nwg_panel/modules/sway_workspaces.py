@@ -186,7 +186,7 @@ class SwayWorkspaces(Gtk.Box):
 
                     for node in item.floating_nodes:
                         if str(node.workspace().num) in self.settings["numbers"] and node.focused:
-                            win_name = node.name
+                            win_name = node.name[:self.settings["name-length"]]
 
                             if node.app_id:
                                 win_id = node.app_id
