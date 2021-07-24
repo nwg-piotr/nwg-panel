@@ -1,5 +1,13 @@
 #!/usr/bin/python3
 
+"""
+GTK3-based panel for sway Wayland compositor
+Project: https://github.com/nwg-piotr/nwg-panel
+Author's email: nwg.piotr@gmail.com
+Copyright (c) 2021 Piotr Miller & Contributors
+License: MIT
+"""
+
 import sys
 import signal
 import gi
