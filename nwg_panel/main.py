@@ -214,7 +214,7 @@ def main():
     parser.add_argument("-v",
                         "--version",
                         action="version",
-                        version="%(prog)s {}".format(__version__),
+                        version="%(prog)s version {}".format(__version__),
                         help="display version information")
 
     args = parser.parse_args()
