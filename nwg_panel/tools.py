@@ -98,7 +98,7 @@ def get_icon_name(app_name):
         # See: https://github.com/nwg-piotr/nwg-panel/issues/64
         elif os.path.isdir(d):
             for file in os.listdir(d):
-                if app_name in file.split("."):
+                if app_name.lower() in file.lower().split("."):
                     content = load_text_file(os.path.join(d, file))
                     for line in content.splitlines():
                         if line.upper().startswith("ICON"):
