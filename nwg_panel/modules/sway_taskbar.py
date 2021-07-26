@@ -3,7 +3,7 @@
 import os
 from gi.repository import Gtk, Gdk, GdkPixbuf
 
-from nwg_panel.tools import check_key, get_icon, update_image, load_autotiling, get_config_dir
+from nwg_panel.tools import check_key, get_icon_name, update_image, load_autotiling, get_config_dir
 import nwg_panel.common
 
 
@@ -125,26 +125,29 @@ class WindowBox(Gtk.EventBox):
         if settings["show-app-icon"]:
             name = con.app_id if con.app_id else con.window_class
 
-            icon_from_desktop = get_icon(name)
-            if icon_from_desktop:
-                if "/" not in icon_from_desktop and not icon_from_desktop.endswith(
-                        ".svg") and not icon_from_desktop.endswith(".png"):
-                    image = Gtk.Image()
-                    update_image(image, icon_from_desktop, settings["image-size"], icons_path)
-                else:
-                    try:
-                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop, settings["image-size"],
-                                                                    settings["image-size"])
-                    except:
-                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                            os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), settings["image-size"], settings["image-size"])
-                    image = Gtk.Image.new_from_pixbuf(pixbuf)
+            image = Gtk.Image()
+            icon_theme = Gtk.IconTheme.get_default()
+            try:
+                # This should work if your icon theme provides the icon, or if it's placed in /usr/share/pixmaps
+                pixbuf = icon_theme.load_icon(name, settings["image-size"], Gtk.IconLookupFlags.FORCE_SIZE)
+                image.set_from_pixbuf(pixbuf)
+            except:
+                # If the above failed, let's search .desktop files to find the icon name
+                icon_from_desktop = get_icon_name(name)
+                if icon_from_desktop:
+                    if "/" not in icon_from_desktop and not icon_from_desktop.endswith(
+                            ".svg") and not icon_from_desktop.endswith(".png"):
+                        update_image(image, icon_from_desktop, settings["image-size"], icons_path)
+                    else:
+                        try:
+                            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop, settings["image-size"],
+                                                                        settings["image-size"])
+                        except:
+                            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                                os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), settings["image-size"], settings["image-size"])
+                        image.set_from_pixbuf(pixbuf)
 
-                self.box.pack_start(image, False, False, 4)
-            else:
-                image = Gtk.Image()
-                update_image(image, name, settings["image-size"], icons_path)
-                self.box.pack_start(image, False, False, 4)
+            self.box.pack_start(image, False, False, 4)
 
         if con.name:
             check_key(settings, "show-app-name", True)

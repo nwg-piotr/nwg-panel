@@ -3,7 +3,7 @@
 from gi.repository import Gtk, GdkPixbuf
 
 import nwg_panel.common
-from nwg_panel.tools import check_key, get_icon, update_image,load_autotiling
+from nwg_panel.tools import check_key, get_icon_name, update_image,load_autotiling
 
 
 class SwayWorkspaces(Gtk.Box):
@@ -130,7 +130,7 @@ class SwayWorkspaces(Gtk.Box):
     
     def update_icon(self, win_id, win_name):
         if win_id and win_name:
-            icon_from_desktop = get_icon(win_id)
+            icon_from_desktop = get_icon_name(win_id)
             if icon_from_desktop:
                 if "/" not in icon_from_desktop and not icon_from_desktop.endswith(
                         ".svg") and not icon_from_desktop.endswith(".png"):

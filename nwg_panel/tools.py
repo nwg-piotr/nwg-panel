@@ -74,7 +74,7 @@ def get_app_dirs():
     return desktop_dirs
 
 
-def get_icon(app_name):
+def get_icon_name(app_name):
     if not app_name:
         return ""
     # GIMP returns "app_id": null and for some reason "class": "Gimp-2.10" instead of just "gimp".
@@ -83,6 +83,7 @@ def get_icon(app_name):
         return "gimp"
 
     for d in nwg_panel.common.app_dirs:
+        # This will work if the .desktop file name is app_id.desktop or wm_class.desktop
         path = os.path.join(d, "{}.desktop".format(app_name))
         content = None
         if os.path.isfile(path):
@@ -93,6 +94,15 @@ def get_icon(app_name):
             for line in content.splitlines():
                 if line.upper().startswith("ICON"):
                     return line.split("=")[1]
+        # Support for "reverse DNS" .desktop file names
+        # See: https://github.com/nwg-piotr/nwg-panel/issues/64
+        elif os.path.isdir(d):
+            for file in os.listdir(d):
+                if app_name in file.split("."):
+                    content = load_text_file(os.path.join(d, file))
+                    for line in content.splitlines():
+                        if line.upper().startswith("ICON"):
+                            return line.split("=")[1]
 
 
 def local_dir():
