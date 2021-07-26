@@ -94,15 +94,16 @@ def get_icon_name(app_name):
             for line in content.splitlines():
                 if line.upper().startswith("ICON"):
                     return line.split("=")[1]
-        # Support for "reverse DNS" .desktop file names
-        # See: https://github.com/nwg-piotr/nwg-panel/issues/64
+        # Search .desktop files that use "reverse DNS"-style names
+        # see: https://github.com/nwg-piotr/nwg-panel/issues/64
         elif os.path.isdir(d):
-            for file in os.listdir(d):
-                if app_name.lower() in file.lower().split("."):
-                    content = load_text_file(os.path.join(d, file))
-                    for line in content.splitlines():
-                        if line.upper().startswith("ICON"):
-                            return line.split("=")[1]
+            for path in os.listdir(d):
+                if os.path.isfile(path) and app_name.lower() in path.lower().split("."):
+                    content = load_text_file(os.path.join(d, path))
+                    if content:
+                        for line in content.splitlines():
+                            if line.upper().startswith("ICON"):
+                                return line.split("=")[1]
 
 
 def local_dir():
