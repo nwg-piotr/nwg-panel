@@ -97,9 +97,9 @@ def get_icon_name(app_name):
         # Search .desktop files that use "reverse DNS"-style names
         # see: https://github.com/nwg-piotr/nwg-panel/issues/64
         elif os.path.isdir(d):
-            for path in os.listdir(d):
-                if os.path.isfile(path) and app_name.lower() in path.lower().split("."):
-                    content = load_text_file(os.path.join(d, path))
+            for filename in os.listdir(d):
+                if os.path.isfile(os.path.join(d, filename)) and app_name.lower() in filename.lower().split("."):
+                    content = load_text_file(os.path.join(d, filename))
                     if content:
                         for line in content.splitlines():
                             if line.upper().startswith("ICON"):
