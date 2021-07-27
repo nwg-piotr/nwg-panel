@@ -8,6 +8,8 @@ import stat
 
 import gi
 
+import nwg_panel.common
+
 gi.require_version('GdkPixbuf', '2.0')
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -74,7 +76,25 @@ def get_app_dirs():
     return desktop_dirs
 
 
-def get_icon(app_name):
+def map_odd_desktop_files():
+    name2icon_dict = {}
+    for d in nwg_panel.common.app_dirs:
+        if os.path.exists(d):
+            for path in os.listdir(d):
+                if os.path.isfile(os.path.join(d, path)):
+                    if path.count(".") > 1:
+                        content = load_text_file(os.path.join(d, path))
+                        for line in content.splitlines():
+                            if line.startswith("[") and not line == "[Desktop Entry]":
+                                break
+                            if line.upper().startswith("ICON="):
+                                icon = line.split("=")[1]
+                                name2icon_dict[path] = icon
+                                break
+    return name2icon_dict
+
+
+def get_icon_name(app_name):
     if not app_name:
         return ""
     # GIMP returns "app_id": null and for some reason "class": "Gimp-2.10" instead of just "gimp".
@@ -83,16 +103,23 @@ def get_icon(app_name):
         return "gimp"
 
     for d in nwg_panel.common.app_dirs:
+        # This will work if the .desktop file name is app_id.desktop or wm_class.desktop
         path = os.path.join(d, "{}.desktop".format(app_name))
         content = None
         if os.path.isfile(path):
             content = load_text_file(path)
         elif os.path.isfile(path.lower()):
-            content = load_text_file(path.lower())
+            content = load_text_file(path)
         if content:
             for line in content.splitlines():
                 if line.upper().startswith("ICON"):
                     return line.split("=")[1]
+
+    # Search .desktop files that use "reverse DNS"-style names
+    # see: https://github.com/nwg-piotr/nwg-panel/issues/64
+    for key in nwg_panel.common.name2icon_dict.keys():
+        if app_name in key.split("."):
+            return nwg_panel.common.name2icon_dict[key]
 
 
 def local_dir():

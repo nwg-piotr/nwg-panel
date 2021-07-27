@@ -6,7 +6,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
-from nwg_panel.tools import check_key, get_icon, update_image
+from nwg_panel.tools import check_key, get_icon_name, update_image
 
 
 class Scratchpad(Gtk.Box):
@@ -36,9 +36,9 @@ class Scratchpad(Gtk.Box):
             if aid:
                 pid = node.pid
                 if node.app_id:
-                    icon = get_icon(node.app_id)
+                    icon = get_icon_name(node.app_id)
                 elif node.window_class:
-                    icon = get_icon(node.window_class)
+                    icon = get_icon_name(node.window_class)
                 else:
                     icon = "icon-missing"
 
