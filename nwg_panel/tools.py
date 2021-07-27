@@ -8,7 +8,7 @@ import stat
 
 import gi
 
-import common
+import nwg_panel.common
 
 gi.require_version('GdkPixbuf', '2.0')
 gi.require_version('Gtk', '3.0')
