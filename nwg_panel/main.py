@@ -239,6 +239,7 @@ def main():
     save_string("-c {} -s {}".format(args.config, args.style), os.path.join(local_dir(), "args"))
 
     common.app_dirs = get_app_dirs()
+    common.name2icon_dict = map_odd_desktop_files()
 
     config_file = os.path.join(common.config_dir, args.config)
 

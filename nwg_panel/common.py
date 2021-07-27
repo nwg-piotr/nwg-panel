@@ -16,6 +16,7 @@ workspaces_list = []
 controls_list = []
 config_dir = ""
 app_dirs = []
+name2icon_dict = {}
 
 commands = {
     "light": False,
