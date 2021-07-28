@@ -109,7 +109,7 @@ def get_icon_name(app_name):
         if os.path.isfile(path):
             content = load_text_file(path)
         elif os.path.isfile(path.lower()):
-            content = load_text_file(path)
+            content = load_text_file(path.lower())
         if content:
             for line in content.splitlines():
                 if line.upper().startswith("ICON"):

@@ -3,7 +3,7 @@
 import os
 from gi.repository import Gtk, Gdk, GdkPixbuf
 
-from nwg_panel.tools import check_key, get_icon_name, update_image, load_autotiling, get_config_dir
+from nwg_panel.tools import check_key, get_icon_name, update_image, load_autotiling, get_config_dir, eprint
 import nwg_panel.common
 
 
@@ -134,6 +134,10 @@ class WindowBox(Gtk.EventBox):
             except:
                 # If the above failed, let's search .desktop files to find the icon name
                 icon_from_desktop = get_icon_name(name)
+                # trim extension, if any
+                if len(icon_from_desktop) > 4 and icon_from_desktop[-4] == ".":
+                    icon_from_desktop = icon_from_desktop[:-4]
+
                 if icon_from_desktop:
                     if "/" not in icon_from_desktop and not icon_from_desktop.endswith(
                             ".svg") and not icon_from_desktop.endswith(".png"):
