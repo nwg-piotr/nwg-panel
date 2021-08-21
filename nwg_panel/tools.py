@@ -82,15 +82,20 @@ def map_odd_desktop_files():
         if os.path.exists(d):
             for path in os.listdir(d):
                 if os.path.isfile(os.path.join(d, path)):
-                    if path.count(".") > 1:
-                        content = load_text_file(os.path.join(d, path))
-                        for line in content.splitlines():
-                            if line.startswith("[") and not line == "[Desktop Entry]":
-                                break
-                            if line.upper().startswith("ICON="):
-                                icon = line.split("=")[1]
-                                name2icon_dict[path] = icon
-                                break
+                    if path.endswith(".desktop") and path.count(".") > 1:
+                        try:
+                            content = load_text_file(os.path.join(d, path))
+                        except Exception as e:
+                            eprint(e)
+                        if content:
+                            for line in content.splitlines():
+                                if line.startswith("[") and not line == "[Desktop Entry]":
+                                    break
+                                if line.upper().startswith("ICON="):
+                                    icon = line.split("=")[1]
+                                    name2icon_dict[path] = icon
+                                    break
+
     return name2icon_dict
 
 
@@ -115,7 +120,7 @@ def get_icon_name(app_name):
                 if line.upper().startswith("ICON"):
                     return line.split("=")[1]
 
-    # Search .desktop files that use "reverse DNS"-style names
+    # Search the dictionary made of .desktop files that use "reverse DNS"-style names, prepared on startup.
     # see: https://github.com/nwg-piotr/nwg-panel/issues/64
     for key in nwg_panel.common.name2icon_dict.keys():
         if app_name in key.split("."):

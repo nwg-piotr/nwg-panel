@@ -132,23 +132,23 @@ class WindowBox(Gtk.EventBox):
                 pixbuf = icon_theme.load_icon(name, settings["image-size"], Gtk.IconLookupFlags.FORCE_SIZE)
                 image.set_from_pixbuf(pixbuf)
             except:
-                # If the above failed, let's search .desktop files to find the icon name
+                # If the above fails, let's search .desktop files to find the icon name
                 icon_from_desktop = get_icon_name(name)
-                # trim extension, if any
-                if len(icon_from_desktop) > 4 and icon_from_desktop[-4] == ".":
-                    icon_from_desktop = icon_from_desktop[:-4]
-
                 if icon_from_desktop:
-                    if "/" not in icon_from_desktop and not icon_from_desktop.endswith(
-                            ".svg") and not icon_from_desktop.endswith(".png"):
+                    # trim extension, if given and the definition is not a path
+                    if "/" not in icon_from_desktop and len(icon_from_desktop) > 4 and icon_from_desktop[-4] == ".":
+                        icon_from_desktop = icon_from_desktop[:-4]
+
+                    if "/" not in icon_from_desktop:
                         update_image(image, icon_from_desktop, settings["image-size"], icons_path)
                     else:
                         try:
                             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop, settings["image-size"],
-                                                                        settings["image-size"])
+                                                                            settings["image-size"])
                         except:
                             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                                os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), settings["image-size"], settings["image-size"])
+                                os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), settings["image-size"],
+                                settings["image-size"])
                         image.set_from_pixbuf(pixbuf)
 
             self.box.pack_start(image, False, False, 4)
