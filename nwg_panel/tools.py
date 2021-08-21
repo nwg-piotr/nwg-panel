@@ -568,11 +568,14 @@ def bt_adr():
 
 def list_configs(config_dir):
     configs = {}
+    # allow to store json files other than panel config files in the config directory
+    # (prevents from crash w/ nwg-drawer>=0.1.7 and future nwg-menu versions)
+    exclusions = [os.path.join(config_dir, "preferred-apps.json")]
     entries = os.listdir(config_dir)
     entries.sort()
     for entry in entries:
         path = os.path.join(config_dir, entry)
-        if os.path.isfile(path):
+        if os.path.isfile(path) and path not in exclusions and not path.endswith(".css"):
             try:
                 with open(path, 'r') as f:
                     config = json.load(f)
