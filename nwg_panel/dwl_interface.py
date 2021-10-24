@@ -46,7 +46,7 @@ def main():
         print("Couldn't detect cache directory")
         sys.exit(1)
     else:
-        output_file = os.path.join(cache_dir, "dwl-data")
+        output_file = os.path.join(cache_dir, "nwg-dwl-data")
 
     # Run autostart script if present
     config_dir = get_config_dir()
