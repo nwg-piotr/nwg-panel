@@ -24,7 +24,8 @@ setup(
     entry_points={
         'gui_scripts': [
             'nwg-panel = nwg_panel.main:main',
-            'nwg-panel-config = nwg_panel.config:main'
+            'nwg-panel-config = nwg_panel.config:main',
+            'nwg-dwl-interface = nwg_panel.dwl_interface:main'
         ]
     }
 )
