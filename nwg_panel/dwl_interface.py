@@ -72,8 +72,9 @@ def main():
             change = True
 
         if parts[1] == "title":
-            if len(parts) == 3:
-                if "title" not in data[output] or data[output]["title"] != parts[2]:
+            if len(parts) >= 3:
+                title = ' '.join(parts[2:])
+                if "title" not in data[output] or data[output]["title"] != title:
                     data[output]["title"] = parts[2]
                     change = True
             else:
