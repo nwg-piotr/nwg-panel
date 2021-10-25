@@ -73,21 +73,21 @@ def main():
 
         if parts[1] == "title":
             if len(parts) == 3:
-                if data[output]["title"] != parts[2]:
+                if "title" not in data[output] or data[output]["title"] != parts[2]:
                     data[output]["title"] = parts[2]
                     change = True
             else:
-                if data[output]["title"] != "":
+                if "title" not in data[output] or data[output]["title"] != "":
                     data[output]["title"] = ""
                     change = True
 
         elif parts[1] == "tags":
             tags = line.split("{} tags".format(output))[1].strip()
-            if data[output]["tags"] != tags:
+            if "tags" not in data[output] or data[output]["tags"] != tags:
                 data[output]["tags"] = tags
 
         elif parts[1] == "layout":
-            if data[output]["layout"] != parts[2]:
+            if "layout" not in data[output] or data[output]["layout"] != parts[2]:
                 data[output]["layout"] = parts[2]
                 change = True
 
