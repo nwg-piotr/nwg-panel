@@ -589,3 +589,12 @@ def list_configs(config_dir):
                 pass
 
     return configs
+
+
+def get_cache_dir():
+    if os.getenv("XDG_CACHE_HOME"):
+        return os.getenv("XDG_CACHE_HOME")
+    elif os.getenv("HOME") and os.path.isdir(os.path.join(os.getenv("HOME"), ".cache")):
+        return os.path.join(os.getenv("HOME"), ".cache")
+    else:
+        return None

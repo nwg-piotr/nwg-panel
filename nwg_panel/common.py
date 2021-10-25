@@ -15,8 +15,10 @@ scratchpads_list = []
 workspaces_list = []
 controls_list = []
 config_dir = ""
+dwl_data_file = None
 app_dirs = []
 name2icon_dict = {}
+dwl_data = {}
 
 commands = {
     "light": False,

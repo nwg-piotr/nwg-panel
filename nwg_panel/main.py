@@ -7,7 +7,7 @@ Author's email: nwg.piotr@gmail.com
 Copyright (c) 2021 Piotr Miller & Contributors
 License: MIT
 """
-
+import os
 import sys
 import signal
 import gi
@@ -63,6 +63,7 @@ if sway:
     from nwg_panel.modules.sway_workspaces import SwayWorkspaces
 
 restart_cmd = ""
+dwl_timestamp = 0.0
 
 
 def signal_handler(sig, frame):
@@ -108,6 +109,17 @@ def check_tree():
         if old != 0 and old != new:
             print("Number of outputs changed")
             restart()"""
+
+    return True
+
+
+def check_dwl_data():
+    global dwl_timestamp
+    ts = os.path.getmtime(common.dwl_data_file)
+    if ts > dwl_timestamp:
+        common.dwl_data = load_json(common.dwl_data_file)
+        print(common.dwl_data)
+        dwl_timestamp = ts
 
     return True
 
@@ -189,9 +201,22 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             cpu_avg = CpuAvg()
             container.pack_start(cpu_avg, False, False, panel["items-padding"])
 
+        if item == "dwl-tags":
+            print("dwl-tags module found in {}".format(panel["output"]))
+            print("dwl data file: {}".format(common.dwl_data_file))
+            if os.path.isfile(common.dwl_data_file):
+                common.dwl_data = load_json(common.dwl_data_file)
+                print("dwl data:", common.dwl_data)
+                Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 200, check_dwl_data)
+
 
 def main():
     common.config_dir = get_config_dir()
+    cache_dir = get_cache_dir()
+    if cache_dir:
+        common.dwl_data_file = os.path.join(cache_dir, "nwg-dwl-data")
+    else:
+        print("Couldn't determine cache directory")
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-c",
