@@ -87,7 +87,7 @@ def main():
                 data[output]["tags"] = tags
 
         elif parts[1] == "layout":
-            if data[output]["layout"] != parts[2]
+            if data[output]["layout"] != parts[2]:
                 data[output]["layout"] = parts[2]
                 change = True
 
