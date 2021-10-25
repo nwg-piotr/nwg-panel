@@ -70,8 +70,11 @@ def main():
         if output not in data:
             data[output] = {}
 
-        if parts[1] == "title" and len(parts) == 3:
-            data[output]["title"] = parts[2]
+        if parts[1] == "title":
+            if len(parts) == 3:
+                data[output]["title"] = parts[2]
+            else:
+                data[output]["title"] = ""
 
         if parts[1] == "tags":
             data[output]["tags"] = line.split("{} tags".format(output))[1].strip()
