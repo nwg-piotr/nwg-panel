@@ -82,12 +82,12 @@ def main():
         elif parts[1] == "layout":
             data[output]["layout"] = parts[2]
 
-        #if old_data != data:
-        with open(output_file, 'w') as fp:
-            json.dump(data, fp, indent=4)
-        print(data)
+        if json.dumps(data, sort_keys=True) != json.dumps(old_data, sort_keys=True):
+            with open(output_file, 'w') as fp:
+                json.dump(data, fp, indent=4)
+            print(data)
 
-            #old_data = data.copy()
+            old_data = data.copy()
 
 
 if __name__ == '__main__':
