@@ -38,7 +38,6 @@ def get_config_dir():
 
 def main():
     data = {}
-    old_data = {}
 
     # Determine output file location
     cache_dir = get_cache_dir()
@@ -63,31 +62,39 @@ def main():
         os.remove(output_file)
 
     # read stdin, parse data, save in json format
+    change = False
     for line in fileinput.input():
         parts = line.split()
 
         output = parts[0]
         if output not in data:
             data[output] = {}
+            change = True
 
         if parts[1] == "title":
             if len(parts) == 3:
-                data[output]["title"] = parts[2]
+                if data[output]["title"] != parts[2]:
+                    data[output]["title"] = parts[2]
+                    change = True
             else:
-                data[output]["title"] = ""
+                if data[output]["title"] != "":
+                    data[output]["title"] = ""
+                    change = True
 
-        if parts[1] == "tags":
-            data[output]["tags"] = line.split("{} tags".format(output))[1].strip()
+        elif parts[1] == "tags":
+            tags = line.split("{} tags".format(output))[1].strip()
+            if data[output]["tags"] != tags:
+                data[output]["tags"] = tags
 
         elif parts[1] == "layout":
-            data[output]["layout"] = parts[2]
+            if data[output]["layout"] != parts[2]
+                data[output]["layout"] = parts[2]
+                change = True
 
-        if json.dumps(data, sort_keys=True) != json.dumps(old_data, sort_keys=True):
+        if change:
             with open(output_file, 'w') as fp:
                 json.dump(data, fp, indent=4)
             print(data)
-
-            old_data = data.copy()
 
 
 if __name__ == '__main__':
