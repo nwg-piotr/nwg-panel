@@ -81,6 +81,11 @@ def main():
                     data[output]["title"] = ""
                     change = True
 
+        elif parts[1] == "selmon":
+            if "selmon" not in data[output] or data[output]["selmon"] != parts[2]:
+                data[output]["selmon"] = parts[2]
+                change = True
+
         elif parts[1] == "tags":
             tags = line.split("{} tags".format(output))[1].strip()
             if "tags" not in data[output] or data[output]["tags"] != tags:
