@@ -16,7 +16,30 @@ import os
 import sys
 import json
 
-from nwg_panel.tools import list_outputs
+
+def is_command(cmd):
+    cmd = cmd.split()[0]  # strip arguments
+    cmd = "command -v {}".format(cmd)
+    try:
+        is_cmd = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
+        if is_cmd:
+            return True
+
+    except subprocess.CalledProcessError:
+        return False
+
+
+def check_outputs():
+    print("Detected outputs:")
+    outputs = []
+    if is_command("wlr-randr"):
+        lines = subprocess.check_output("wlr-randr", shell=True).decode("utf-8").strip().splitlines()
+        for line in lines:
+            if not line.startswith(" "):
+                name = line.split()[0]
+                print(name)
+                outputs.append(name)
+    return outputs
 
 
 def get_cache_dir():
