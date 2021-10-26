@@ -120,7 +120,7 @@ def check_dwl_data(*args):
     global dwl_timestamp
     timestamp = datetime.now()
     diff = (timestamp - dwl_timestamp).total_seconds() * 1000
-    if diff > 500:
+    if diff > 50:
         common.dwl_data = load_json(common.dwl_data_file)
         if common.dwl_data:
             print(common.dwl_data, diff)
