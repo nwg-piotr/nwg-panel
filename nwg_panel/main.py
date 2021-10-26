@@ -126,7 +126,7 @@ def check_dwl_data(*args):
             print(common.dwl_data, diff)
             for item in common.dwl_instances:
                 item.refresh(common.dwl_data)
-    dwl_timestamp = datetime.now()
+        dwl_timestamp = datetime.now()
 
     return True
 
