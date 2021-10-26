@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-import common
-from nwg_panel.tools import check_key, update_image
+# from nwg_panel.tools import check_key, update_image
 
 import gi
 
