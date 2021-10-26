@@ -65,7 +65,7 @@ if sway:
     from nwg_panel.modules.sway_workspaces import SwayWorkspaces
 
 restart_cmd = ""
-dwl_timestamp = 0.0
+dwl_timestamp = None
 
 
 def signal_handler(sig, frame):
@@ -119,15 +119,14 @@ def check_tree():
 def check_dwl_data(*args):
     global dwl_timestamp
     timestamp = datetime.now()
-    diff = timestamp - dwl_timestamp
-    """if ts > dwl_timestamp:
+    diff = (timestamp - dwl_timestamp).total_seconds() * 1000
+    if diff > 500:
         common.dwl_data = load_json(common.dwl_data_file)
         if common.dwl_data:
-            print(common.dwl_data)"""
-    print(">>> ", diff)
-
-    #for item in common.dwl_instances:
-    #    item.refresh(common.dwl_data)
+            print(common.dwl_data, diff)
+            for item in common.dwl_instances:
+                item.refresh(common.dwl_data)
+    dwl_timestamp = datetime.now()
 
     return True
 
@@ -262,6 +261,9 @@ def main():
 
     global restart_cmd
     restart_cmd = "nwg-panel -c {} -s {}".format(args.config, args.style)
+
+    global dwl_timestamp
+    dwl_timestamp = datetime.now()
 
     # Try and kill already running instance if any
     pid_file = os.path.join(temp_dir(), "nwg-panel.pid")
