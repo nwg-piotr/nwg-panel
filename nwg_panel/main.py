@@ -43,6 +43,7 @@ from nwg_panel.modules.controls import Controls
 from nwg_panel.modules.playerctl import Playerctl
 from nwg_panel.modules.cpu_avg import CpuAvg
 from nwg_panel.modules.scratchpad import Scratchpad
+from nwg_panel.modules.dwl_tags import DwlTags
 
 from nwg_panel.modules.menu_start import MenuStart
 
@@ -126,12 +127,16 @@ def check_dwl_data():
             print(common.dwl_data)
             dwl_timestamp = ts
 
+        for item in common.dwl_instances:
+            item.refresh(common.dwl_data)
+
     return True
 
 
 def instantiate_content(panel, container, content_list, icons_path=""):
     check_key(panel, "position", "top")
     check_key(panel, "items-padding", 0)
+
     for item in content_list:
         if item == "sway-taskbar":
             if "sway-taskbar" in panel:
@@ -213,6 +218,10 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 common.dwl_data = load_json(common.dwl_data_file)
                 print("dwl data:", common.dwl_data)
                 Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 200, check_dwl_data)
+
+            dwl_tags = DwlTags(panel["output"], common.dwl_data)
+            common.dwl_instances.append(dwl_tags)
+            container.pack_start(dwl_tags, False, False, panel["items-padding"])
 
 
 def main():

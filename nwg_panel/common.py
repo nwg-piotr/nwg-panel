@@ -16,6 +16,7 @@ workspaces_list = []
 controls_list = []
 config_dir = ""
 dwl_data_file = None
+dwl_instances = []
 app_dirs = []
 name2icon_dict = {}
 dwl_data = {}
