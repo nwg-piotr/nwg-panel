@@ -115,11 +115,16 @@ def check_tree():
 
 def check_dwl_data():
     global dwl_timestamp
-    ts = os.path.getmtime(common.dwl_data_file)
+    try:
+        ts = os.path.getmtime(common.dwl_data_file)
+    except Exception as e:
+        ts = 0
+        print("Exception getting timestamp: {}".format(e))
     if ts > dwl_timestamp:
         common.dwl_data = load_json(common.dwl_data_file)
-        print(common.dwl_data)
-        dwl_timestamp = ts
+        if common.dwl_data:
+            print(common.dwl_data)
+            dwl_timestamp = ts
 
     return True
 

@@ -201,8 +201,8 @@ def load_json(path):
         with open(path, 'r') as f:
             return json.load(f)
     except Exception as e:
-        print(e)
-        sys.exit(1)
+        print("Error loading json: {}".format(e))
+        return None
 
 
 def save_json(src_dict, path):
