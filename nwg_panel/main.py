@@ -116,7 +116,7 @@ def check_tree():
     return True
 
 
-def check_dwl_data():
+def check_dwl_data(*args):
     global dwl_timestamp
     timestamp = datetime.now()
     diff = timestamp - dwl_timestamp
