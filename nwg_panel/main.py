@@ -68,9 +68,12 @@ dwl_timestamp = 0.0
 
 
 def signal_handler(sig, frame):
-    desc = {2: "SIGINT", 15: "SIGTERM"}
-    print("Terminated with {}".format(desc[sig]))
-    Gtk.main_quit()
+    desc = {2: "SIGINT", 15: "SIGTERM", 10: "SIGUSR1"}
+    if sig == 2 or sig == 15:
+        print("Terminated with {}".format(desc[sig]))
+        Gtk.main_quit()
+    elif sig == 10:
+        print("SIGUSR1 received")
 
 
 def restart():
@@ -522,6 +525,7 @@ def main():
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGUSR1, signal_handler)
 
     Gtk.main()
 
