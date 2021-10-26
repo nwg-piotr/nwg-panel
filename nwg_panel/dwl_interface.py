@@ -100,7 +100,7 @@ def main():
         if change:
             with open(output_file, 'w') as fp:
                 json.dump(data, fp, indent=4)
-            subprocess.Popen("pkill -usr1 nwg-panel", shell=True)
+            subprocess.Popen("pkill -f -usr1 nwg-panel", shell=True)
 
 
 if __name__ == '__main__':
