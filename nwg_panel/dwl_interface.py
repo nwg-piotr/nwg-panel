@@ -29,7 +29,7 @@ def is_command(cmd):
         return False
 
 
-def check_outputs():
+def list_outputs():
     print("Detected outputs:")
     outputs = []
     if is_command("wlr-randr"):
