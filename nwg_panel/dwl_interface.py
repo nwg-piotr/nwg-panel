@@ -16,6 +16,8 @@ import os
 import sys
 import json
 
+from nwg_panel.tools import list_outputs
+
 
 def get_cache_dir():
     if os.getenv("XDG_CACHE_HOME"):
@@ -37,6 +39,12 @@ def get_config_dir():
 
 
 def main():
+    outputs = list_outputs()
+    if outputs:
+        print("Detected {} outputs:".format(len(outputs)))
+        for key in outputs:
+            print(key)
+
     data = {}
 
     # Determine output file location
