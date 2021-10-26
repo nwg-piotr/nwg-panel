@@ -12,6 +12,7 @@ import sys
 import signal
 import gi
 import argparse
+from datetime import datetime
 
 from nwg_panel.__about__ import __version__
 
@@ -72,8 +73,6 @@ def signal_handler(sig, frame):
     if sig == 2 or sig == 15:
         print("Terminated with {}".format(desc[sig]))
         Gtk.main_quit()
-    elif sig == 10:
-        print("SIGUSR1 received")
 
 
 def restart():
@@ -119,19 +118,16 @@ def check_tree():
 
 def check_dwl_data():
     global dwl_timestamp
-    try:
-        ts = os.path.getmtime(common.dwl_data_file)
-    except Exception as e:
-        ts = 0
-        print("Exception getting timestamp: {}".format(e))
-    if ts > dwl_timestamp:
+    timestamp = datetime.now()
+    diff = timestamp - dwl_timestamp
+    """if ts > dwl_timestamp:
         common.dwl_data = load_json(common.dwl_data_file)
         if common.dwl_data:
-            print(common.dwl_data)
-            dwl_timestamp = ts
+            print(common.dwl_data)"""
+    print(">>> ", diff)
 
-        for item in common.dwl_instances:
-            item.refresh(common.dwl_data)
+    #for item in common.dwl_instances:
+    #    item.refresh(common.dwl_data)
 
     return True
 
@@ -525,7 +521,7 @@ def main():
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-    signal.signal(signal.SIGUSR1, signal_handler)
+    signal.signal(signal.SIGUSR1, check_dwl_data)
 
     Gtk.main()
 
