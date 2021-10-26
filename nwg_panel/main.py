@@ -215,7 +215,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             if os.path.isfile(common.dwl_data_file):
                 common.dwl_data = load_json(common.dwl_data_file)
                 print("dwl data:", common.dwl_data)
-                Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 200, check_dwl_data)
+                #Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 200, check_dwl_data)
 
             dwl_tags = DwlTags(panel["output"], common.dwl_data)
             common.dwl_instances.append(dwl_tags)
