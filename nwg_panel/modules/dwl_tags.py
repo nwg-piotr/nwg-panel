@@ -21,7 +21,8 @@ class DwlTags(Gtk.EventBox):
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
         self.label = Gtk.Label()
-        self.box.pack_start(self.label, False, False, 4)
+        self.tag_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        self.box.pack_end(self.label, False, False, 4)
         self.show_all()
         self.refresh(dwl_data)
 
@@ -34,7 +35,26 @@ class DwlTags(Gtk.EventBox):
                 non_empty_output_tags = int(tags[0])
                 active_output_tag = int(tags[1])
                 current_win_on_output_tags = int(tags[2])
-                print(tags)
+
+                if self.tag_box:
+                    self.tag_box.destroy()
+                    self.tag_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+                    self.box.pack_start(self.tag_box, False, False, 4)
+
+                cnt = 1
+                for item in self.tags:
+                    label = Gtk.Label()
+                    self.tag_box.pack_start(label, False, False, 1)
+                    label.set_text(item)
+
+                    print("{} & {} == {}".format(cnt, non_empty_output_tags, cnt & non_empty_output_tags))
+                    if cnt & non_empty_output_tags == 0:
+                        label.set_property('name', "dwl-tag-free")
+                    else:
+                        label.set_property('name', "dwl-tag-occupied")
+                    cnt += 1
+                self.tag_box.show_all()
+
                 layout = data["layout"]
                 title = data["title"]
                 if len(title) > self.title_limit:
