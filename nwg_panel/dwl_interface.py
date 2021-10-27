@@ -177,7 +177,7 @@ def main():
                 json.dump(data, fp, indent=4)
 
             #subprocess.Popen("pkill -f -usr1 nwg-panel", shell=True)
-            os.system("pkill -f -usr1 nwg-panel")
+            os.system("pkill -usr1 nwg-panel")
             cnt = 0
 
 
