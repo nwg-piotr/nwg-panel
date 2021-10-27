@@ -118,7 +118,7 @@ def check_tree():
 
 def check_dwl_data(*args):
     print("SIGUSR1")
-    global dwl_timestamp
+    """global dwl_timestamp
     timestamp = datetime.now()
     diff = (timestamp - dwl_timestamp).total_seconds() * 1000
     if diff > 50:
@@ -127,7 +127,12 @@ def check_dwl_data(*args):
             print(diff)
             for item in common.dwl_instances:
                 item.refresh(common.dwl_data)
-        dwl_timestamp = datetime.now()
+        dwl_timestamp = datetime.now()"""
+
+    common.dwl_data = load_json(common.dwl_data_file)
+    if common.dwl_data:
+        for item in common.dwl_instances:
+            item.refresh(common.dwl_data)
 
     return True
 
