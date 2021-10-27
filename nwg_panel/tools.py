@@ -262,7 +262,7 @@ def list_outputs(sway=False, tree=None, silent=False):
         if nwg_panel.common.commands["wlr-randr"]:
             lines = subprocess.check_output("wlr-randr", shell=True).decode("utf-8").strip().splitlines()
             if lines:
-                name, w, h, x, y = None, None, None, None, None
+                name, w, h, x, y, transform = None, None, None, None, None, None
                 for line in lines:
                     if not line.startswith(" "):
                         name = line.split()[0]
@@ -270,16 +270,28 @@ def list_outputs(sway=False, tree=None, silent=False):
                         w_h = line.split()[0].split('x')
                         w = int(w_h[0])
                         h = int(w_h[1])
+                    elif "Transform" in line:
+                        transform = line.split()[1].strip()
                     elif "Position" in line:
                         x_y = line.split()[1].split(',')
                         x = int(x_y[0])
                         y = int(x_y[1])
-                        if name is not None and w is not None and h is not None and x is not None and y is not None:
+                    if name is not None and w is not None and h is not None and x is not None and y is not None \
+                            and transform is not None:
+                        if transform == "normal":
+                            outputs_dict[name] = {'name': name,
+                                                      'x': x,
+                                                      'y': y,
+                                                      'width': w,
+                                                      'height': h,
+                                                      'transform': transform}
+                        else:
                             outputs_dict[name] = {'name': name,
                                                   'x': x,
                                                   'y': y,
-                                                  'width': w,
-                                                  'height': h}
+                                                  'width': h,
+                                                  'height': w,
+                                                  'transform': transform}
         else:
             print("'wlr-randr' command not found, terminating")
             sys.exit(1)
