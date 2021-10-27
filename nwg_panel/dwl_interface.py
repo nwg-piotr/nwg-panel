@@ -169,15 +169,12 @@ def main():
                 data[output]["layout"] = parts[2]
 
         cnt += 1
-        print(cnt)
 
         if cnt == num_lines:
-            print("cnt == num_lines")
             with open(output_file, 'w') as fp:
                 json.dump(data, fp, indent=4)
 
             subprocess.Popen("pkill -f -usr1 nwg-panel", shell=True)
-            #os.system("pkill -f -usr1 nwg-panel")
             cnt = 0
 
 
