@@ -4,6 +4,7 @@ import os
 import sys
 import subprocess
 import gi
+import signal
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
@@ -123,6 +124,15 @@ SKELETON_PANEL: dict = {
         "icon-size": 16
     }
 }
+
+
+def signal_handler(sig, frame):
+    desc = {2: "SIGINT", 15: "SIGTERM", 10: "SIGUSR1"}
+    if sig == 2 or sig == 15:
+        print("Terminated with {}".format(desc[sig]))
+        Gtk.main_quit()
+    else:
+        print("{} signal received".format(sig))
 
 
 def handle_keyboard(window, event):
@@ -2330,6 +2340,10 @@ def main():
 
     global selector_window
     selector_window = PanelSelector()
+
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGUSR1, signal_handler)
 
     Gtk.main()
 
