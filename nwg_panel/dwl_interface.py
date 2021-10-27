@@ -138,6 +138,7 @@ def main():
 
     # read stdin, parse data, save in json format
     cnt = 0
+    print("num_lines = {}".format(num_lines))
     for line in fileinput.input():
         parts = line.split()
 
@@ -151,28 +152,34 @@ def main():
                 if "title" not in data[output] or data[output]["title"] != title:
                     data[output]["title"] = title
                     cnt += 1
+                    print(cnt)
             else:
                 if "title" not in data[output] or data[output]["title"] != "":
                     data[output]["title"] = ""
                     cnt += 1
+                    print(cnt)
 
         elif parts[1] == "selmon":
             if "selmon" not in data[output] or data[output]["selmon"] != parts[2]:
                 data[output]["selmon"] = parts[2]
                 cnt += 1
+                print(cnt)
 
         elif parts[1] == "tags":
             tags = line.split("{} tags".format(output))[1].strip()
             if "tags" not in data[output] or data[output]["tags"] != tags:
                 data[output]["tags"] = tags
                 cnt += 1
+                print(cnt)
 
         elif parts[1] == "layout":
             if "layout" not in data[output] or data[output]["layout"] != parts[2]:
                 data[output]["layout"] = parts[2]
                 cnt += 1
+                print(cnt)
 
         if cnt == num_lines:
+            print("cnt == num_lines")
             with open(output_file, 'w') as fp:
                 json.dump(data, fp, indent=4)
 
