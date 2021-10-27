@@ -30,7 +30,7 @@ def is_command(cmd):
 
 
 def list_outputs():
-    print("Detected outputs:")
+    print("Checking outputs...")
     outputs = []
     if is_command("wlr-randr"):
         lines = subprocess.check_output("wlr-randr", shell=True).decode("utf-8").strip().splitlines()
@@ -39,6 +39,8 @@ def list_outputs():
                 name = line.split()[0]
                 print(name)
                 outputs.append(name)
+    else:
+        print("Missing wlr-randr dependency")
     return outputs
 
 
@@ -63,10 +65,11 @@ def get_config_dir():
 
 def main():
     outputs = list_outputs()
-    if outputs:
-        print("Detected {} outputs:".format(len(outputs)))
-        for key in outputs:
-            print(key)
+    if len(outputs) > 0:
+        num_lines = len(outputs) * 4
+    else:
+        print("No output detected, terminating")
+        sys.exit(1)
 
     data = {}
 
