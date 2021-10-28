@@ -44,6 +44,7 @@ class DwlTags(Gtk.EventBox):
                     self.box.pack_start(self.tag_box, False, False, 4)
 
                 cnt = 1
+                win_on_tags = []
                 for item in self.tags:
                     tag_wrapper = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
                     label = Gtk.Label()
@@ -57,13 +58,23 @@ class DwlTags(Gtk.EventBox):
                         label.set_property('name', "dwl-tag-occupied")
                     else:
                         label.set_property('name', "dwl-tag-free")
+
+                    if self.byte_dict[cnt] & current_win_on_output_tags != 0:
+                        win_on_tags.append(str(cnt))
+
                     cnt += 1
                 self.tag_box.show_all()
 
                 layout = data["layout"]
+
                 title = data["title"]
                 if len(title) > self.title_limit:
                     title = title[:self.title_limit - 1]
+
+                s = ", ".join(win_on_tags) if len(win_on_tags) > 1 else ""
+                if s:
+                    title = "{} ({})".format(title, s)
+
                 # selmon = data["selmon"] == "1"
                 print("{} {} {}".format(tags_string, layout, title))
                 self.label.set_text("{} {}".format(layout, title))
