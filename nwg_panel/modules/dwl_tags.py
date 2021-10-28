@@ -36,6 +36,7 @@ class DwlTags(Gtk.EventBox):
                 non_empty_output_tags = int(tags[0])
                 selected_output_tag = int(tags[1])
                 current_win_on_output_tags = int(tags[2])
+                urgent_tags = int(tags[3])
 
                 if self.tag_box:
                     self.tag_box.destroy()
@@ -58,6 +59,9 @@ class DwlTags(Gtk.EventBox):
                         label.set_property('name', "dwl-tag-occupied")
                     else:
                         label.set_property('name', "dwl-tag-free")
+
+                    if self.byte_dict[cnt] & urgent_tags != 0:
+                        label.set_property('name', "dwl-tag-urgent")
 
                     if self.byte_dict[cnt] & current_win_on_output_tags != 0:
                         win_on_tags.append(str(cnt))
