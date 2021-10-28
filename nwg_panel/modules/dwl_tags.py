@@ -71,6 +71,7 @@ class DwlTags(Gtk.EventBox):
                 if len(title) > self.title_limit:
                     title = title[:self.title_limit - 1]
 
+                # title suffix to add if win present on more than 1 tag
                 s = ", ".join(win_on_tags) if len(win_on_tags) > 1 else ""
                 if s:
                     title = "{} ({})".format(title, s)
