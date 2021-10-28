@@ -16,6 +16,7 @@ class DwlTags(Gtk.EventBox):
 
         # move to settings later
         self.tags = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+        self.byte_dict = {1: 1, 2: 2, 3: 4, 4: 8, 5: 16, 6: 32, 7: 64, 8: 128, 9: 256}
         self.title_limit = 55
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
@@ -33,25 +34,29 @@ class DwlTags(Gtk.EventBox):
                 tags_string = data["tags"]
                 tags = tags_string.split()
                 non_empty_output_tags = int(tags[0])
-                active_output_tag = int(tags[1])
+                selected_output_tag = int(tags[1])
                 current_win_on_output_tags = int(tags[2])
 
                 if self.tag_box:
                     self.tag_box.destroy()
                     self.tag_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+                    self.tag_box.set_property('name', 'dwl-tag-box')
                     self.box.pack_start(self.tag_box, False, False, 4)
 
                 cnt = 1
                 for item in self.tags:
+                    tag_wrapper = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
                     label = Gtk.Label()
-                    self.tag_box.pack_start(label, False, False, 1)
+                    tag_wrapper.pack_start(label, False, False, 0)
+                    if self.byte_dict[cnt] == selected_output_tag:
+                        tag_wrapper.set_property('name', "dwl-tag-selected")
+                    self.tag_box.pack_start(tag_wrapper, False, False, 1)
                     label.set_text(item)
 
-                    print("{} & {} == {}".format(cnt, non_empty_output_tags, cnt & non_empty_output_tags))
-                    if cnt & non_empty_output_tags == 0:
-                        label.set_property('name', "dwl-tag-free")
-                    else:
+                    if self.byte_dict[cnt] & non_empty_output_tags != 0:
                         label.set_property('name', "dwl-tag-occupied")
+                    else:
+                        label.set_property('name', "dwl-tag-free")
                     cnt += 1
                 self.tag_box.show_all()
 
@@ -61,7 +66,7 @@ class DwlTags(Gtk.EventBox):
                     title = title[:self.title_limit - 1]
                 # selmon = data["selmon"] == "1"
                 print("{} {} {}".format(tags_string, layout, title))
-                self.label.set_text("{} {} {}".format(tags_string, layout, title))
+                self.label.set_text("{} {}".format(layout, title))
             except KeyError:
                 print("No data found for output {}".format(self.output))
 
