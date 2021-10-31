@@ -15,7 +15,6 @@ import fileinput
 import os
 import sys
 import json
-from time import sleep
 
 
 def is_command(cmd):
