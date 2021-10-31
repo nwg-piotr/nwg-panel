@@ -15,6 +15,7 @@ import fileinput
 import os
 import sys
 import json
+from time import sleep
 
 
 def is_command(cmd):
@@ -90,6 +91,8 @@ def main():
         if os.path.isfile(autostart):
             print("Running {}".format(autostart))
             subprocess.Popen(autostart, shell=True)
+
+        sleep(2)
 
     # remove stale data file, if any
     if os.path.isfile(output_file):
