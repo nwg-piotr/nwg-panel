@@ -90,9 +90,8 @@ def main():
         autostart = os.path.join(config_dir, "autostart-dwl.sh")
         if os.path.isfile(autostart):
             print("Running {}".format(autostart))
-            subprocess.Popen(autostart, shell=True)
-
-        sleep(2)
+            #subprocess.Popen(autostart, shell=True)
+            os.system(autostart)
 
     # remove stale data file, if any
     if os.path.isfile(output_file):
