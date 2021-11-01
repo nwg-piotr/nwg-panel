@@ -91,7 +91,7 @@ def main():
             print("Running {}".format(autostart))
             #subprocess.Popen(autostart, shell=True)
             os.system(autostart)
-            subprocess.Popen("nwg-panel -c config-dwl", shell=True)
+            os.system("nwg-panel -c config-dwl")
 
     # remove stale data file, if any
     if os.path.isfile(output_file):
