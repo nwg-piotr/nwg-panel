@@ -93,7 +93,7 @@ def main():
             #subprocess.Popen(autostart, shell=True)
             os.system(autostart)
 
-    sleep(3)
+    sleep(10)
 
     # remove stale data file, if any
     if os.path.isfile(output_file):
