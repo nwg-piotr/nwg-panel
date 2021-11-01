@@ -92,6 +92,8 @@ def main():
             print("Running {}".format(autostart))
             os.system(autostart)
 
+        sleep(1)
+
     # remove stale data file, if any
     if os.path.isfile(output_file):
         os.remove(output_file)
