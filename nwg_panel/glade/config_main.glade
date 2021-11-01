@@ -165,6 +165,19 @@
                   </packing>
                 </child>
                 <child>
+                  <object class="GtkButton" id="btn-dwl-tags">
+                    <property name="label" translatable="yes">Dwl Tags</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">11</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkButton" id="btn-executors">
                     <property name="label" translatable="yes">Executors</property>
                     <property name="visible">True</property>
@@ -174,7 +187,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">11</property>
+                    <property name="position">12</property>
                   </packing>
                 </child>
                 <child>
@@ -187,7 +200,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">12</property>
+                    <property name="position">13</property>
                   </packing>
                 </child>
               </object>
