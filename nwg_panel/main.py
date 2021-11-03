@@ -63,15 +63,17 @@ if sway:
     from nwg_panel.modules.sway_workspaces import SwayWorkspaces
 
 restart_cmd = ""
+sig_dwl = 0
 
 
 def signal_handler(sig, frame):
+    global sig_dwl
     desc = {2: "SIGINT", 15: "SIGTERM", 10: "SIGUSR1"}
     if sig == 2 or sig == 15:
         print("Terminated with {}".format(desc[sig]))
         Gtk.main_quit()
-    else:
-        print(sig, "received")
+    elif sig == sig_dwl:
+        refresh_dwl()
 
 
 def restart():
@@ -116,7 +118,6 @@ def check_tree():
 
 
 def refresh_dwl(*args):
-    print("refresh_dwl, len(common.dwl_instances) = ", len(common.dwl_instances))
     if len(common.dwl_instances) > 0:
         dwl_data = load_json(common.dwl_data_file)
         if dwl_data:
@@ -256,11 +257,18 @@ def main():
 
     args = parser.parse_args()
 
-    # signal handlers
+    global sig_dwl
+    sig_dwl = args.sigdwl
+
+    """# signal handlers
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
     # Will do nothing if no dwl-tags instance found
-    signal.signal(args.sigdwl, refresh_dwl)
+    signal.signal(args.sigdwl, refresh_dwl)"""
+
+    catchable_sigs = set(signal.Signals) - {signal.SIGKILL, signal.SIGSTOP}
+    for sig in catchable_sigs:
+        signal.signal(sig, signal_handler)
 
     check_commands()
     print("Dependencies check:", common.commands)
