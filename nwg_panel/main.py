@@ -65,7 +65,6 @@ if sway:
     from nwg_panel.modules.sway_workspaces import SwayWorkspaces
 
 restart_cmd = ""
-dwl_timestamp = None
 
 
 def signal_handler(sig, frame):
@@ -118,13 +117,12 @@ def check_tree():
     return True
 
 
-def check_dwl_data(*args):
-    dwl_data = load_json(common.dwl_data_file)
-    if dwl_data:
-        for item in common.dwl_instances:
-            item.refresh(dwl_data)
-
-    return True
+def refresh_dwl(*args):
+    if len(common.dwl_instances) > 0:
+        dwl_data = load_json(common.dwl_data_file)
+        if dwl_data:
+            for item in common.dwl_instances:
+                item.refresh(dwl_data)
 
 
 def instantiate_content(panel, container, content_list, icons_path=""):
@@ -259,14 +257,17 @@ def main():
 
     args = parser.parse_args()
 
+    # signal handlers
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    # Will do nothing if no dwl-tags instance found
+    signal.signal(args.sigdwl, refresh_dwl)
+
     check_commands()
     print("Dependencies check:", common.commands)
 
     global restart_cmd
     restart_cmd = "nwg-panel -c {} -s {}".format(args.config, args.style)
-
-    global dwl_timestamp
-    dwl_timestamp = datetime.now()
 
     # Try and kill already running instance if any
     pid_file = os.path.join(temp_dir(), "nwg-panel.pid")
@@ -523,12 +524,6 @@ def main():
         common.outputs = list_outputs(sway=sway, tree=tree, silent=True)
         common.outputs_num = len(common.outputs)
     Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 200, check_tree)
-
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
-
-    if os.path.isfile(common.dwl_data_file):
-        signal.signal(args.sigdwl, check_dwl_data)
 
     Gtk.main()
 
