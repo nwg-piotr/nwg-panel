@@ -203,18 +203,18 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             container.pack_start(cpu_avg, False, False, panel["items-padding"])
 
         if item == "dwl-tags":
-            #if os.path.isfile(common.dwl_data_file):
-            if "dwl-tags" not in panel:
-                panel["dwl-tags"] = {}
+            if os.path.isfile(common.dwl_data_file):
+                if "dwl-tags" not in panel:
+                    panel["dwl-tags"] = {}
 
-            dwl_tags = DwlTags(panel["output"], panel["dwl-tags"])
-            common.dwl_instances.append(dwl_tags)
-            container.pack_start(dwl_tags, False, False, panel["items-padding"])
-            dwl_data = load_json(common.dwl_data_file)
-            if dwl_data:
-                dwl_tags.refresh(dwl_data)
-            #else:
-            #    print("{} data file not found".format(common.dwl_data_file))
+                dwl_tags = DwlTags(panel["output"], panel["dwl-tags"])
+                common.dwl_instances.append(dwl_tags)
+                container.pack_start(dwl_tags, False, False, panel["items-padding"])
+                dwl_data = load_json(common.dwl_data_file)
+                if dwl_data:
+                    dwl_tags.refresh(dwl_data)
+            else:
+                print("{} data file not found".format(common.dwl_data_file))
 
 
 def main():

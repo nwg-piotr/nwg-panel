@@ -15,7 +15,6 @@ import fileinput
 import os
 import sys
 import json
-import argparse
 from time import sleep
 
 
@@ -66,13 +65,7 @@ def get_config_dir():
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-s",
-                        "--signal",
-                        type=int,
-                        default=10,
-                        help="signal to refresh dwl-tags module; default: 10 (SIGUSR1)")
-    args = parser.parse_args()
+    refresh_signal = os.getenv("SIG") if os.getenv("SIG") else 10
 
     outputs = list_outputs()
     if len(outputs) > 0:
@@ -145,7 +138,7 @@ def main():
             with open(output_file, 'w') as fp:
                 json.dump(data, fp, indent=4)
 
-            subprocess.Popen("pkill -f -{} nwg-panel".format(args.signal), shell=True)
+            subprocess.Popen("pkill -f -{} nwg-panel".format(refresh_signal), shell=True)
             cnt = 0
 
 
