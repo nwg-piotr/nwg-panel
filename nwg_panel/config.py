@@ -2385,11 +2385,7 @@ def main():
     global selector_window
     selector_window = PanelSelector()
 
-    """signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
-    signal.signal(signal.SIGUSR1, signal_handler)"""
-
-    catchable_sigs = set(signal.Signals - {signal.SIGKILL, signal.SIGSTOP})
+    catchable_sigs = set(signal.Signals) - {signal.SIGKILL, signal.SIGSTOP}
     for sig in catchable_sigs:
         signal.signal(sig, signal_handler)
 
