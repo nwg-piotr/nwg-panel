@@ -7,12 +7,10 @@ Author's email: nwg.piotr@gmail.com
 Copyright (c) 2021 Piotr Miller & Contributors
 License: MIT
 """
-import os
 import sys
 import signal
 import gi
 import argparse
-from datetime import datetime
 
 from nwg_panel.__about__ import __version__
 
