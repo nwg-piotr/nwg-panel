@@ -125,8 +125,7 @@ SKELETON_PANEL: dict = {
     },
     "dwl-tags": {
         "tag-names": "1 2 3 4 5 6 7 8 9",
-        "title-limit": 55,
-        "signal": 10
+        "title-limit": 55
     }
 }
 
@@ -2386,9 +2385,13 @@ def main():
     global selector_window
     selector_window = PanelSelector()
 
-    signal.signal(signal.SIGINT, signal_handler)
+    """signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-    signal.signal(signal.SIGUSR1, signal_handler)
+    signal.signal(signal.SIGUSR1, signal_handler)"""
+
+    catchable_sigs = set(signal.Signals - {signal.SIGKILL, signal.SIGSTOP})
+    for sig in catchable_sigs:
+        signal.signal(sig, signal_handler)
 
     Gtk.main()
 
