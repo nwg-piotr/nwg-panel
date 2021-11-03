@@ -116,7 +116,7 @@ def check_tree():
 
 
 def refresh_dwl(*args):
-    print(refresh_dwl)
+    print("refresh_dwl, len(common.dwl_instances = ", len(common.dwl_instances))
     if len(common.dwl_instances) > 0:
         dwl_data = load_json(common.dwl_data_file)
         if dwl_data:
