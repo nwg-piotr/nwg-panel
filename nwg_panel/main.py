@@ -7,6 +7,7 @@ Author's email: nwg.piotr@gmail.com
 Copyright (c) 2021 Piotr Miller & Contributors
 License: MIT
 """
+import os
 import sys
 import signal
 import gi
@@ -72,6 +73,8 @@ def signal_handler(sig, frame):
     if sig == 2 or sig == 15:
         print("Terminated with {}".format(desc[sig]))
         Gtk.main_quit()
+    else:
+        pass
 
 
 def restart():
@@ -237,6 +240,11 @@ def main():
                         type=str,
                         default="style.css",
                         help="css filename (in {}/)".format(common.config_dir))
+
+    parser.add_argument("-sigdwl",
+                        type=int,
+                        default=10,
+                        help="signal to refresh dwl-tags module; default: 10 (SIGUSR1)")
 
     parser.add_argument("-r",
                         "--restore",
@@ -518,7 +526,9 @@ def main():
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-    signal.signal(signal.SIGUSR1, check_dwl_data)
+
+    if os.path.isfile(common.dwl_data_file):
+        signal.signal(args.sigdwl, check_dwl_data)
 
     Gtk.main()
 

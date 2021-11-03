@@ -122,17 +122,20 @@ SKELETON_PANEL: dict = {
     "scratchpad": {
         "css-name": "",
         "icon-size": 16
+    },
+    "dwl-tags": {
+        "tag-names": "1 2 3 4 5 6 7 8 9",
+        "title-limit": 55,
+        "signal": 10
     }
 }
 
 
 def signal_handler(sig, frame):
-    desc = {2: "SIGINT", 15: "SIGTERM", 10: "SIGUSR1"}
+    desc = {2: "SIGINT", 15: "SIGTERM"}
     if sig == 2 or sig == 15:
         print("Terminated with {}".format(desc[sig]))
         Gtk.main_quit()
-    else:
-        print("{} signal received".format(sig))
 
 
 def handle_keyboard(window, event):
@@ -487,6 +490,9 @@ class EditorWrapper(object):
         btn = builder.get_object("btn-buttons")
         btn.connect("clicked", self.select_button)
 
+        btn = builder.get_object("btn-dwl-tags")
+        btn.connect("clicked", self.edit_dwl_tags)
+
         btn = builder.get_object("btn-close")
         btn.connect("clicked", self.quit)
 
@@ -804,6 +810,8 @@ class EditorWrapper(object):
             self.update_controls()
         elif self.edited == "menu-start":
             self.update_menu_start()
+        elif self.edited == "dwl-tags":
+            self.update_dwl_tags()
         elif self.edited == "custom-items":
             save_json(self.config, self.file)
         elif self.edited == "user-menu":
@@ -1382,6 +1390,41 @@ class EditorWrapper(object):
         settings = self.panel["scratchpad"]
         settings["css-name"] = self.scratchpad_css_name.get_text()
         settings["icon-size"] = int(self.scratchpad_icon_size.get_value())
+
+        save_json(self.config, self.file)
+
+    def edit_dwl_tags(self, *args):
+        self.load_panel()
+        self.edited = "dwl-tags"
+        check_key(self.panel, "dwl-tags", {})
+        settings = self.panel["dwl-tags"]
+        defaults = {
+            "tag-names": "1 2 3 4 5 6 7 8 9",
+            "title-limit": 55
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_dwl_tags.glade"))
+        grid = builder.get_object("grid")
+
+        self.dwl_tag_names = builder.get_object("tag-names")
+        self.dwl_tag_names.set_text(settings["tag-names"])
+
+        self.dwl_tags_title_limit = builder.get_object("title-limit")
+        self.dwl_tags_title_limit.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=1, upper=256, step_increment=1, page_increment=10, page_size=1)
+        self.dwl_tags_title_limit.configure(adj, 1, 0)
+        self.dwl_tags_title_limit.set_value(settings["title-limit"])
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(grid)
+
+    def update_dwl_tags(self, *args):
+        settings = self.panel["dwl-tags"]
+        settings["tag-names"] = self.dwl_tag_names.get_text()
+        settings["title-limit"] = int(self.dwl_tags_title_limit.get_value())
 
         save_json(self.config, self.file)
 

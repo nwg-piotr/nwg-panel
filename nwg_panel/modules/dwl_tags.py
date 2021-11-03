@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from nwg_panel.tools import check_key, load_json
+from nwg_panel.tools import check_key
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -14,7 +14,6 @@ class DwlTags(Gtk.EventBox):
         Gtk.EventBox.__init__(self)
         check_key(settings, "tag-names", "1 2 3 4 5 6 7 8 9")
         check_key(settings, "title-limit", 55)
-        check_key(settings, "signal", 10)
 
         self.output = output
         self.settings = settings
@@ -89,4 +88,3 @@ class DwlTags(Gtk.EventBox):
                 self.label.set_text("{} {}".format(layout, title))
             except KeyError:
                 print("No data found for output {}".format(self.output))
-

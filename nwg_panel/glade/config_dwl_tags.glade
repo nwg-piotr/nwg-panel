@@ -2,7 +2,7 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <!-- n-columns=3 n-rows=4 -->
+  <!-- n-columns=3 n-rows=3 -->
   <object class="GtkGrid" id="grid">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -34,41 +34,6 @@ command. See README.</property>
       <packing>
         <property name="left-attach">1</property>
         <property name="top-attach">0</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel" id="signal">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="halign">start</property>
-        <property name="label" translatable="yes">Signal</property>
-      </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">3</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkSpinButton" id="signal-number">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-      </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">3</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkImage">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="tooltip-text" translatable="yes">Number of the signal to trigger module refresh. 
-Default: 10 (SIGUSR1).</property>
-        <property name="stock">gtk-about</property>
-      </object>
-      <packing>
-        <property name="left-attach">2</property>
-        <property name="top-attach">3</property>
       </packing>
     </child>
     <child>
@@ -108,8 +73,7 @@ Default: 10 (SIGUSR1).</property>
         <property name="name">3</property>
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="tooltip-text" translatable="yes">Space-separated names 
-for tags 1 - 9</property>
+        <property name="tooltip-text" translatable="yes">Space-separated names  for tags 1 - 9</property>
         <property name="double-buffered">False</property>
         <property name="stock">gtk-about</property>
       </object>
