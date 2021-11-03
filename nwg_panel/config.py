@@ -136,6 +136,8 @@ def signal_handler(sig, frame):
     if sig == 2 or sig == 15:
         print("Terminated with {}".format(desc[sig]))
         Gtk.main_quit()
+    else:
+        print("{} signal received".format(sig))
 
 
 def handle_keyboard(window, event):
