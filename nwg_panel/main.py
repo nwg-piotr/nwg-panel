@@ -71,7 +71,7 @@ def signal_handler(sig, frame):
         print("Terminated with {}".format(desc[sig]))
         Gtk.main_quit()
     else:
-        pass
+        print(sig, "received")
 
 
 def restart():
@@ -116,6 +116,7 @@ def check_tree():
 
 
 def refresh_dwl(*args):
+    print(refresh_dwl)
     if len(common.dwl_instances) > 0:
         dwl_data = load_json(common.dwl_data_file)
         if dwl_data:
