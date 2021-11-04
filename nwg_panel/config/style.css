@@ -1,6 +1,6 @@
 /***** SUGGESTED TO CHANGE CAREFULLY *****/
 
-/* Recommended if panel "height"  unset or smaller then your theme default button height */
+/* Recommended if panel "height" unset or smaller then your theme default button height */
 button {
     margin: 2px
 }
@@ -11,6 +11,7 @@ button {
     padding-left: 4px;
     padding-right: 4px
 }
+
 #task-box-focused {
     background-color: rgba (255, 255, 255, 0.12);
     padding-left: 4px;
@@ -59,4 +60,39 @@ button {
 /* Sample executor-weather uses "css-name": "weather" */
 #weather {
     font-size: 16px
+}
+
+/* dwl-tags module */
+#dwl-tag-box {
+	padding-top: 4px;
+	padding-bottom: 4px
+}
+
+#dwl-tag-occupied {
+	font-family: monospace;
+	color: #eee;
+    background-color: #006699;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+#dwl-tag-free {
+	font-family: monospace;
+	color: #eee;
+    background-color: rgba (32, 50, 90, 1.0);
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+#dwl-tag-urgent {
+	font-family: monospace;
+	color: #eee;
+    background-color: #ee6600;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+#dwl-tag-selected {
+	border: solid 2px;
+	border-color: #81a1c1
 }
