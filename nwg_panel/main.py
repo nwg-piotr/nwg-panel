@@ -7,7 +7,6 @@ Author's email: nwg.piotr@gmail.com
 Copyright (c) 2021 Piotr Miller & Contributors
 License: MIT
 """
-
 import sys
 import signal
 import gi
@@ -43,6 +42,7 @@ from nwg_panel.modules.controls import Controls
 from nwg_panel.modules.playerctl import Playerctl
 from nwg_panel.modules.cpu_avg import CpuAvg
 from nwg_panel.modules.scratchpad import Scratchpad
+from nwg_panel.modules.dwl_tags import DwlTags
 
 from nwg_panel.modules.menu_start import MenuStart
 
@@ -63,12 +63,17 @@ if sway:
     from nwg_panel.modules.sway_workspaces import SwayWorkspaces
 
 restart_cmd = ""
+sig_dwl = 0
 
 
 def signal_handler(sig, frame):
-    desc = {2: "SIGINT", 15: "SIGTERM"}
-    print("Terminated with {}".format(desc[sig]))
-    Gtk.main_quit()
+    global sig_dwl
+    desc = {2: "SIGINT", 15: "SIGTERM", 10: "SIGUSR1"}
+    if sig == 2 or sig == 15:
+        print("Terminated with {}".format(desc[sig]))
+        Gtk.main_quit()
+    elif sig == sig_dwl:
+        refresh_dwl()
 
 
 def restart():
@@ -112,9 +117,18 @@ def check_tree():
     return True
 
 
+def refresh_dwl(*args):
+    if len(common.dwl_instances) > 0:
+        dwl_data = load_json(common.dwl_data_file)
+        if dwl_data:
+            for item in common.dwl_instances:
+                item.refresh(dwl_data)
+
+
 def instantiate_content(panel, container, content_list, icons_path=""):
     check_key(panel, "position", "top")
     check_key(panel, "items-padding", 0)
+
     for item in content_list:
         if item == "sway-taskbar":
             if "sway-taskbar" in panel:
@@ -189,9 +203,28 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             cpu_avg = CpuAvg()
             container.pack_start(cpu_avg, False, False, panel["items-padding"])
 
+        if item == "dwl-tags":
+            if os.path.isfile(common.dwl_data_file):
+                if "dwl-tags" not in panel:
+                    panel["dwl-tags"] = {}
+
+                dwl_tags = DwlTags(panel["output"], panel["dwl-tags"])
+                common.dwl_instances.append(dwl_tags)
+                container.pack_start(dwl_tags, False, False, panel["items-padding"])
+                dwl_data = load_json(common.dwl_data_file)
+                if dwl_data:
+                    dwl_tags.refresh(dwl_data)
+            else:
+                print("{} data file not found".format(common.dwl_data_file))
+
 
 def main():
     common.config_dir = get_config_dir()
+    cache_dir = get_cache_dir()
+    if cache_dir:
+        common.dwl_data_file = os.path.join(cache_dir, "nwg-dwl-data")
+    else:
+        print("Couldn't determine cache directory")
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-c",
@@ -206,6 +239,11 @@ def main():
                         default="style.css",
                         help="css filename (in {}/)".format(common.config_dir))
 
+    parser.add_argument("-sigdwl",
+                        type=int,
+                        default=10,
+                        help="signal to refresh dwl-tags module; default: 10 (SIGUSR1)")
+
     parser.add_argument("-r",
                         "--restore",
                         action="store_true",
@@ -218,6 +256,19 @@ def main():
                         help="display version information")
 
     args = parser.parse_args()
+
+    global sig_dwl
+    sig_dwl = args.sigdwl
+
+    """# signal handlers
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    # Will do nothing if no dwl-tags instance found
+    signal.signal(args.sigdwl, refresh_dwl)"""
+
+    catchable_sigs = set(signal.Signals) - {signal.SIGKILL, signal.SIGSTOP}
+    for sig in catchable_sigs:
+        signal.signal(sig, signal_handler)
 
     check_commands()
     print("Dependencies check:", common.commands)
@@ -480,9 +531,6 @@ def main():
         common.outputs = list_outputs(sway=sway, tree=tree, silent=True)
         common.outputs_num = len(common.outputs)
     Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 200, check_tree)
-
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
 
     Gtk.main()
 
