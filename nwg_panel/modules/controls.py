@@ -741,18 +741,18 @@ def vol_icon_name(value, muted):
 def bat_icon_name(value, is_charging):
     icon_name = "battery-empty-symbolic"
     if is_charging:
-        if value > 95:
+        if value > 90:
             icon_name = "battery-full-charging-symbolic"
-        elif value > 50:
+        elif value > 40:
             icon_name = "battery-good-charging-symbolic"
-        elif value > 20:
+        elif value > 19:
             icon_name = "battery-low-charging-symbolic"
     else:
-        if value > 95:
+        if value > 90:
             icon_name = "battery-full-symbolic"
-        elif value > 50:
+        elif value > 40:
             icon_name = "battery-good-symbolic"
-        elif value > 20:
+        elif value > 19:
             icon_name = "battery-low-symbolic"
 
     return icon_name
