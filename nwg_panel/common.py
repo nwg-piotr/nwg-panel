@@ -22,6 +22,7 @@ name2icon_dict = {}
 
 commands = {
     "light": False,
+    "brightnessctl": False,
     "pamixer": False,
     "pactl": False,
     "playerctl": False,

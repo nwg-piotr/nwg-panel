@@ -422,8 +422,15 @@ def get_brightness():
             brightness = int(round(float(output), 0))
         except:
             pass
+    elif nwg_panel.common.commands["brightnessctl"]:
+        try:
+            output = cmd2string("brightnessctl g")
+            b = int(output) * 100 / 255
+            brightness = int(round(float(b), 0))
+        except:
+            pass
     else:
-        eprint("Couldn't get brightness, 'light' not found")
+        eprint("Couldn't get brightness, is 'light' or 'brightnessctl' installed?")
 
     return brightness
 
@@ -434,8 +441,12 @@ def set_brightness(slider):
         value = 1
     if nwg_panel.common.commands["light"]:
         subprocess.call("{} {}".format("light -S", value).split())
+    elif nwg_panel.common.commands["brightnessctl"]:
+        subprocess.call("{} {}%".format("brightnessctl s", value).split(),
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.STDOUT)
     else:
-        eprint("Required 'light' command not found")
+        eprint("Either 'light' or 'brightnessctl' package required")
 
 
 def get_battery():
