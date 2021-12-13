@@ -280,11 +280,11 @@ def list_outputs(sway=False, tree=None, silent=False):
                             and transform is not None:
                         if transform == "normal":
                             outputs_dict[name] = {'name': name,
-                                                      'x': x,
-                                                      'y': y,
-                                                      'width': w,
-                                                      'height': h,
-                                                      'transform': transform}
+                                                  'x': x,
+                                                  'y': y,
+                                                  'width': w,
+                                                  'height': h,
+                                                  'transform': transform}
                         else:
                             outputs_dict[name] = {'name': name,
                                                   'x': x,
@@ -422,8 +422,15 @@ def get_brightness():
             brightness = int(round(float(output), 0))
         except:
             pass
+    elif nwg_panel.common.commands["brightnessctl"]:
+        try:
+            output = cmd2string("brightnessctl g")
+            b = int(output) * 100 / 255
+            brightness = int(round(float(b), 0))
+        except:
+            pass
     else:
-        eprint("Couldn't get brightness, 'light' not found")
+        eprint("Couldn't get brightness, is 'light' or 'brightnessctl' installed?")
 
     return brightness
 
@@ -434,24 +441,47 @@ def set_brightness(slider):
         value = 1
     if nwg_panel.common.commands["light"]:
         subprocess.call("{} {}".format("light -S", value).split())
+    elif nwg_panel.common.commands["brightnessctl"]:
+        subprocess.call("{} {}%".format("brightnessctl s", value).split(),
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.STDOUT)
     else:
-        eprint("Required 'light' command not found")
+        eprint("Either 'light' or 'brightnessctl' package required")
 
 
 def get_battery():
+    percent, time, charging = 0, "", False
+    success = False
     try:
         b = psutil.sensors_battery()
-        percent = int(round(b.percent, 0))
-        charging = b.power_plugged
-        seconds = b.secsleft
-        if seconds != psutil.POWER_TIME_UNLIMITED and seconds != psutil.POWER_TIME_UNKNOWN:
-            time = seconds2string(seconds)
-        else:
-            time = ""
-
-        return percent, time, charging
+        if b:
+            percent = int(round(b.percent, 0))
+            charging = b.power_plugged
+            seconds = b.secsleft
+            if seconds != psutil.POWER_TIME_UNLIMITED and seconds != psutil.POWER_TIME_UNKNOWN:
+                time = seconds2string(seconds)
+            else:
+                time = ""
+            success = True
     except:
-        return 0, "", False
+        pass
+
+    if not success and nwg_panel.common.commands["upower"]:
+        lines = subprocess.check_output(
+            "upower -i $(upower -e | grep devices/battery) | grep --color=never -E 'state|to\ full|to\ empty|percentage'",
+            shell=True).decode("utf-8").strip().splitlines()
+        for line in lines:
+            if "state:" in line:
+                charging = line.split(":")[1].strip() == "charging"
+            elif "time to" in line:
+                time = line.split(":")[1].strip()
+            elif "percentage:" in line:
+                try:
+                    percent = int(line.split(":")[1].strip()[:-1])
+                except:
+                    pass
+
+    return percent, time, charging
 
 
 def seconds2string(seconds):

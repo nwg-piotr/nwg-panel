@@ -22,12 +22,14 @@ name2icon_dict = {}
 
 commands = {
     "light": False,
+    "brightnessctl": False,
     "pamixer": False,
     "pactl": False,
     "playerctl": False,
     "netifaces": False,
     "pybluez": False,
-    "wlr-randr": False
+    "wlr-randr": False,
+    "upower": False
 }
 
 icons_path = ""  # "icons_light", "icons_dark" or "" (GTK icons)
