@@ -20,11 +20,6 @@ from shutil import copyfile
 import nwg_panel.common
 
 try:
-    import bluetooth
-except ModuleNotFoundError:
-    pass
-
-try:
     import netifaces
 except ModuleNotFoundError:
     pass
@@ -342,12 +337,6 @@ def check_commands():
     try:
         import netifaces
         nwg_panel.common.commands["netifaces"] = True
-    except ModuleNotFoundError:
-        pass
-
-    try:
-        import bluetooth
-        nwg_panel.common.commands["pybluez"] = True
     except ModuleNotFoundError:
         pass
 
