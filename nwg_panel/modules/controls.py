@@ -11,7 +11,7 @@ gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
 from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery, \
-    get_interface, update_image, bt_adr, eprint, list_sinks, toggle_mute
+    get_interface, update_image, bt_info, eprint, list_sinks, toggle_mute
 
 from nwg_panel.common import commands
 
@@ -130,10 +130,10 @@ class Controls(Gtk.EventBox):
             self.net_ip_addr = get_interface(self.settings["net-interface"])
             GLib.idle_add(self.update_net, self.net_ip_addr)
 
-        if commands["pybluez"]:
-            adr = bt_adr()
+        if commands["btmgmt"]:
+            name, powered = bt_info()
             if "bluetooth" in self.settings["components"]:
-                GLib.idle_add(self.update_bt, adr)
+                GLib.idle_add(self.update_bt, name, powered)
 
         if "brightness" in self.settings["components"]:
             try:
@@ -180,15 +180,15 @@ class Controls(Gtk.EventBox):
         if self.net_label:
             self.net_label.set_text("{}".format(self.settings["net-interface"]))
 
-    def update_bt(self, adr):
-        icon_name = "bluetooth-active-symbolic" if adr != "off" else "bluetooth-disabled-symbolic"
+    def update_bt(self, name, powered):
+        icon_name = "bluetooth-active-symbolic" if powered else "bluetooth-disabled-symbolic"
         if icon_name != self.bt_icon_name:
             update_image(self.bt_image, icon_name, self.icon_size, self.icons_path)
             self.bt_icon_name = icon_name
 
-        self.bt_name = adr
+        self.bt_name = name
         if self.bt_label:
-            self.bt_label.set_text(adr)
+            self.bt_label.set_text(name)
 
     def update_brightness(self):
         value = get_brightness()

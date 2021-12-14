@@ -28,6 +28,7 @@ commands = {
     "playerctl": False,
     "netifaces": False,
     "pybluez": False,
+    "btmgmt": False,
     "wlr-randr": False,
     "upower": False
 }
