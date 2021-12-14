@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import os
 sway = False
 
 i3 = None
