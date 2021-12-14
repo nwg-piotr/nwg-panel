@@ -605,12 +605,21 @@ def create_pixbuf(icon_name, icon_size, icons_path=""):
             return pixbuf
 
 
-def bt_adr():
+def bt_info():
+    name, powered = "", False
     try:
-        adr = bluetooth.read_local_bdaddr()
-        return adr[0]
+        info = subprocess.check_output("btmgmt info", shell=True).decode("utf-8").strip().splitlines()
+        for line in info:
+            if "current settings" in line:
+                if "powered" in line:
+                    powered = True
+                continue
+            if "name" in line and "short" not in line:
+                name = line.split("name")[1].strip()
     except:
-        return "off"
+        pass
+
+    return name, powered
 
 
 def list_configs(config_dir):

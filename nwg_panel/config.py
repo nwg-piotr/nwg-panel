@@ -1903,7 +1903,11 @@ class EditorWrapper(object):
         self.ctrl_comp_net.set_active("net" in settings["components"])
 
         self.ctrl_comp_bluetooth = builder.get_object("ctrl-comp-bluetooth")
-        self.ctrl_comp_bluetooth.set_active("bluetooth" in settings["components"])
+        if is_command("btmgmt"):
+            self.ctrl_comp_bluetooth.set_active("bluetooth" in settings["components"])
+        else:
+            self.ctrl_comp_bluetooth.set_active(False)
+            self.ctrl_comp_bluetooth.set_sensitive(False)
 
         self.ctrl_comp_battery = builder.get_object("ctrl-comp-battery")
         self.ctrl_comp_battery.set_active("battery" in settings["components"])
