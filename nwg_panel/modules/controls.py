@@ -113,7 +113,7 @@ class Controls(Gtk.EventBox):
             else:
                 print("'netifaces' python module not found")
 
-        if "bluetooth" in self.settings["components"] and commands["pybluez"]:
+        if "bluetooth" in self.settings["components"] and commands["btmgmt"]:
             box.pack_start(self.bt_image, False, False, 4)
             if self.bt_label:
                 box.pack_start(self.bt_label, False, False, 0)
@@ -416,7 +416,7 @@ class PopupWindow(Gtk.Window):
 
             event_box.add(inner_vbox)
 
-        if "bluetooth" in settings["components"] and commands["pybluez"]:
+        if "bluetooth" in settings["components"] and commands["btmgmt"]:
             event_box = Gtk.EventBox()
             if "bluetooth" in settings["commands"] and settings["commands"]["bluetooth"]:
                 event_box.connect("enter_notify_event", self.on_enter_notify_event)
@@ -602,7 +602,7 @@ class PopupWindow(Gtk.Window):
                 ip_addr = "disconnected" if not self.parent.net_ip_addr else self.parent.net_ip_addr
                 self.net_label.set_text("{}: {}".format(self.settings["net-interface"], ip_addr))
 
-            if "bluetooth" in self.settings["components"] and commands["pybluez"]:
+            if "bluetooth" in self.settings["components"] and commands["btmgmt"]:
                 if self.parent.bt_icon_name != self.bt_icon_name:
                     update_image(self.bt_image, self.parent.bt_icon_name, self.icon_size, self.icons_path)
                     self.bt_icon_name = self.parent.bt_icon_name
