@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import os
 sway = False
 
 i3 = None
@@ -27,7 +26,6 @@ commands = {
     "pactl": False,
     "playerctl": False,
     "netifaces": False,
-    "pybluez": False,
     "btmgmt": False,
     "wlr-randr": False,
     "upower": False
