@@ -659,7 +659,7 @@ class PopupWindow(Gtk.Window):
 
     def launch(self, w, e, cmd):
         print("Executing '{}'".format(cmd))
-        subprocess.Popen('exec {}'.format(cmd), shell=True)
+        subprocess.Popen('{}'.format(cmd), shell=True)
         self.hide()
 
 
