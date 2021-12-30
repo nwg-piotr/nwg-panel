@@ -126,7 +126,7 @@ def local_dir():
     local_dir = os.path.join(os.path.join(os.getenv("HOME"), ".local/share/nwg-panel"))
     if not os.path.isdir(local_dir):
         print("Creating '{}'".format(local_dir))
-        os.mkdir(local_dir)
+        os.makedirs(local_dir, exist_ok=True)
 
     return local_dir
 
@@ -141,23 +141,23 @@ def get_config_dir():
     config_dir = os.path.join(config_home, "nwg-panel")
     if not os.path.isdir(config_dir):
         print("Creating '{}'".format(config_dir))
-        os.mkdir(config_dir)
+        os.makedirs(config_dir, exist_ok=True)
 
     # Icon folders to store user-defined icon replacements
     folder = os.path.join(config_dir, "icons_light")
     if not os.path.isdir(folder):
         print("Creating '{}'".format(folder))
-        os.mkdir(folder)
+        os.makedirs(folder, exist_ok=True)
 
     folder = os.path.join(config_dir, "icons_dark")
     if not os.path.isdir(os.path.join(folder)):
         print("Creating '{}'".format(folder))
-        os.mkdir(folder)
+        os.makedirs(folder, exist_ok=True)
 
     folder = os.path.join(config_dir, "executors")
     if not os.path.isdir(os.path.join(folder)):
         print("Creating '{}'".format(folder))
-        os.mkdir(folder)
+        os.makedirs(folder, exist_ok=True)
 
     return config_dir
 
