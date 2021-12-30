@@ -186,10 +186,12 @@ class WindowBox(Gtk.EventBox):
             self.box.pack_start(image, False, False, 4)
 
     def on_enter_notify_event(self, widget, event):
-        self.get_style_context().set_state(Gtk.StateFlags.SELECTED)
+        widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
+        widget.set_state_flags(Gtk.StateFlags.SELECTED, clear=False)
 
     def on_leave_notify_event(self, widget, event):
-        self.get_style_context().set_state(Gtk.StateFlags.NORMAL)
+        widget.unset_state_flags(Gtk.StateFlags.DROP_ACTIVE)
+        widget.unset_state_flags(Gtk.StateFlags.SELECTED)
 
     def on_click(self, widget, event, at_widget):
         if event.button == 1:

@@ -205,7 +205,9 @@ class SwayWorkspaces(Gtk.Box):
         nwg_panel.common.i3.command("workspace number {}".format(num))
 
     def on_enter_notify_event(self, widget, event):
-        widget.get_style_context().set_state(Gtk.StateFlags.SELECTED)
+        widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
+        widget.set_state_flags(Gtk.StateFlags.SELECTED, clear=False)
 
     def on_leave_notify_event(self, widget, event):
-        widget.get_style_context().set_state(Gtk.StateFlags.NORMAL)
+        widget.unset_state_flags(Gtk.StateFlags.DROP_ACTIVE)
+        widget.unset_state_flags(Gtk.StateFlags.SELECTED)

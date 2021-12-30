@@ -243,7 +243,8 @@ class Controls(Gtk.EventBox):
                 if self.popup_window.menu_box:
                     self.popup_window.menu_box.hide()
         else:
-            self.get_style_context().set_state(Gtk.StateFlags.SELECTED)
+            widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
+            widget.set_state_flags(Gtk.StateFlags.SELECTED, clear=False)
 
         # cancel popup window close, as it's probably unwanted ATM
         self.popup_window.on_window_enter()
@@ -251,7 +252,8 @@ class Controls(Gtk.EventBox):
         return True
 
     def on_leave_notify_event(self, widget, event):
-        self.get_style_context().set_state(Gtk.StateFlags.NORMAL)
+        widget.unset_state_flags(Gtk.StateFlags.DROP_ACTIVE)
+        widget.unset_state_flags(Gtk.StateFlags.SELECTED)
         return True
 
 
@@ -634,11 +636,13 @@ class PopupWindow(Gtk.Window):
         return True
 
     def on_enter_notify_event(self, widget, event):
-        widget.get_style_context().set_state(Gtk.StateFlags.SELECTED)
+        widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
+        widget.set_state_flags(Gtk.StateFlags.SELECTED, clear=False)
         return True
 
     def on_leave_notify_event(self, widget, event):
-        widget.get_style_context().set_state(Gtk.StateFlags.NORMAL)
+        widget.unset_state_flags(Gtk.StateFlags.DROP_ACTIVE)
+        widget.unset_state_flags(Gtk.StateFlags.SELECTED)
         return True
 
     def set_bri(self, slider):
@@ -698,10 +702,12 @@ class SinkBox(Gtk.Box):
             self.show_all()
 
     def on_enter_notify_event(self, widget, event):
-        widget.get_style_context().set_state(Gtk.StateFlags.SELECTED)
+        widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
+        widget.set_state_flags(Gtk.StateFlags.SELECTED, clear=False)
 
     def on_leave_notify_event(self, widget, event):
-        widget.get_style_context().set_state(Gtk.StateFlags.NORMAL)
+        widget.unset_state_flags(Gtk.StateFlags.DROP_ACTIVE)
+        widget.unset_state_flags(Gtk.StateFlags.SELECTED)
 
     def switch_sink(self, w, e, sink):
         if commands["pactl"]:
