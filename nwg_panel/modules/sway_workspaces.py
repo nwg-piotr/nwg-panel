@@ -3,7 +3,7 @@
 from gi.repository import Gtk, GdkPixbuf
 
 import nwg_panel.common
-from nwg_panel.tools import check_key, get_icon_name, update_image,load_autotiling
+from nwg_panel.tools import check_key, get_icon_name, update_image, load_autotiling
 
 
 class SwayWorkspaces(Gtk.Box):
@@ -13,7 +13,7 @@ class SwayWorkspaces(Gtk.Box):
         self.i3 = i3
         self.ws_num2box = {}
         self.ws_num2lbl = {}
-        self.name_label = Gtk.Label("")
+        self.name_label = Gtk.Label()
         self.win_id = ""
         self.win_pid = None
         self.icon = Gtk.Image()
@@ -39,7 +39,7 @@ class SwayWorkspaces(Gtk.Box):
             eb = Gtk.EventBox()
             eb.connect("enter_notify_event", self.on_enter_notify_event)
             eb.connect("leave_notify_event", self.on_leave_notify_event)
-            eb.connect("button-press-event", self.on_click, num)
+            eb.connect("button-release-event", self.on_click, num)
             self.pack_start(eb, False, False, 0)
 
             box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
@@ -54,7 +54,7 @@ class SwayWorkspaces(Gtk.Box):
                 lbl = Gtk.Label("{}{}".format(autotiling, str(num)))
             else:
                 lbl = Gtk.Label("{}".format(str(num)))
-            
+
             self.ws_num2box[num] = eb
             self.ws_num2lbl[num] = lbl
 
@@ -70,10 +70,10 @@ class SwayWorkspaces(Gtk.Box):
 
         if self.settings["show-name"]:
             self.pack_start(self.name_label, False, False, 0)
-            
+
         if self.settings["show-layout"]:
             self.pack_start(self.layout_icon, False, False, 6)
-        
+
     def refresh(self):
         if self.i3.get_tree().find_focused():
             ws_num, win_name, win_id, non_empty, win_layout = self.find_details()
@@ -108,7 +108,7 @@ class SwayWorkspaces(Gtk.Box):
 
             if self.settings["show-name"]:
                 self.name_label.set_text(win_name)
-            
+
             if self.settings["show-layout"]:
                 if win_name:
                     if win_layout == "splith":
@@ -116,18 +116,21 @@ class SwayWorkspaces(Gtk.Box):
                     elif win_layout == "splitv":
                         update_image(self.layout_icon, "go-down-symbolic", self.settings["image-size"], self.icons_path)
                     elif win_layout == "tabbed":
-                        update_image(self.layout_icon, "view-dual-symbolic", self.settings["image-size"], self.icons_path)
+                        update_image(self.layout_icon, "view-dual-symbolic", self.settings["image-size"],
+                                     self.icons_path)
                     elif win_layout == "stacked":
-                        update_image(self.layout_icon, "view-paged-symbolic", self.settings["image-size"], self.icons_path)
+                        update_image(self.layout_icon, "view-paged-symbolic", self.settings["image-size"],
+                                     self.icons_path)
                     else:
-                        update_image(self.layout_icon, "window-pop-out-symbolic", self.settings["image-size"], self.icons_path)
-                        
+                        update_image(self.layout_icon, "window-pop-out-symbolic", self.settings["image-size"],
+                                     self.icons_path)
+
                     if not self.layout_icon.get_visible():
                         self.layout_icon.show()
                 else:
                     if self.layout_icon.get_visible():
                         self.layout_icon.hide()
-    
+
     def update_icon(self, win_id, win_name):
         if win_id and win_name:
             icon_from_desktop = get_icon_name(win_id)
@@ -142,7 +145,7 @@ class SwayWorkspaces(Gtk.Box):
             else:
                 image = Gtk.Image()
                 update_image(image, win_id, self.settings["image-size"], self.icons_path)
-            
+
             if not self.icon.get_visible():
                 self.icon.show()
         else:
@@ -154,7 +157,7 @@ class SwayWorkspaces(Gtk.Box):
         workspaces = self.i3.get_workspaces()
         ws_num = -1
         win_name = ""
-        win_id = ""    # app_id if available, else window_class
+        win_id = ""  # app_id if available, else window_class
         layout = None
 
         for ws in workspaces:
@@ -185,14 +188,15 @@ class SwayWorkspaces(Gtk.Box):
                             non_empty.append(item.num)
 
                     for node in item.floating_nodes:
-                        if str(node.workspace().num) in self.settings["numbers"] and node.focused:
-                            win_name = node.name[:self.settings["name-length"]]
+                        if str(node.workspace().num) in self.settings["numbers"]:
+                            if node.focused:
+                                win_name = node.name[:self.settings["name-length"]]
 
-                            if node.app_id:
-                                win_id = node.app_id
-                            elif node.window_class:
-                                win_id = node.window_class
-                            layout = "floating"
+                                if node.app_id:
+                                    win_id = node.app_id
+                                elif node.window_class:
+                                    win_id = node.window_class
+                                layout = "floating"
 
                             non_empty.append(node.workspace().num)
 
@@ -201,7 +205,7 @@ class SwayWorkspaces(Gtk.Box):
 
         return ws_num, win_name, win_id, non_empty, layout
 
-    def on_click(self, w, e, num):
+    def on_click(self, event_box, event_button, num):
         nwg_panel.common.i3.command("workspace number {}".format(num))
 
     def on_enter_notify_event(self, widget, event):
