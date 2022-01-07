@@ -13,7 +13,7 @@ class SwayWorkspaces(Gtk.Box):
         self.i3 = i3
         self.ws_num2box = {}
         self.ws_num2lbl = {}
-        self.name_label = Gtk.Label("")
+        self.name_label = Gtk.Label()
         self.win_id = ""
         self.win_pid = None
         self.icon = Gtk.Image()
@@ -39,7 +39,7 @@ class SwayWorkspaces(Gtk.Box):
             eb = Gtk.EventBox()
             eb.connect("enter_notify_event", self.on_enter_notify_event)
             eb.connect("leave_notify_event", self.on_leave_notify_event)
-            eb.connect("button-press-event", self.on_click, num)
+            eb.connect("button-release-event", self.on_click, num)
             self.pack_start(eb, False, False, 0)
 
             box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
@@ -204,7 +204,7 @@ class SwayWorkspaces(Gtk.Box):
 
         return ws_num, win_name, win_id, non_empty, layout
 
-    def on_click(self, w, e, num):
+    def on_click(self, event_box, event_button, num):
         nwg_panel.common.i3.command("workspace number {}".format(num))
 
     def on_enter_notify_event(self, widget, event):
