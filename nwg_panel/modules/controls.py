@@ -308,8 +308,7 @@ class PopupWindow(Gtk.Window):
         v_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         outer_hbox.pack_start(v_box, True, True, 20)
 
-        GtkLayerShell.set_layer(self, GtkLayerShell.Layer.TOP)
-        # GtkLayerShell.set_keyboard_interactivity(self, True)
+        GtkLayerShell.set_layer(self, GtkLayerShell.Layer.OVERLAY)
         GtkLayerShell.set_margin(self, GtkLayerShell.Edge.TOP, settings["window-margin"])
         GtkLayerShell.set_margin(self, GtkLayerShell.Edge.BOTTOM, settings["window-margin"])
         GtkLayerShell.set_margin(self, GtkLayerShell.Edge.RIGHT, settings["window-margin"])
