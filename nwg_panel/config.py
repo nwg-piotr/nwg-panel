@@ -9,7 +9,7 @@ import signal
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
-from nwg_panel.tools import get_config_dir, load_json, save_json, load_string, list_outputs, check_key, list_configs, \
+from nwg_panel.tools import get_config_dir, local_dir, load_json, save_json, load_string, list_outputs, check_key, list_configs, \
     local_dir, create_pixbuf, update_image, is_command, check_commands, cmd2string
 
 from nwg_panel.__about__ import __version__
@@ -1446,6 +1446,11 @@ class EditorWrapper(object):
         item = Gtk.MenuItem.new_with_label("Add new")
         menu.append(item)
         item.connect("activate", self.edit_executor, "executor-unnamed_{}".format(len(executors) + 1), True)
+        f = os.path.join(local_dir(), "executors.json")
+        if os.path.isfile(f):
+            item = Gtk.MenuItem.new_with_label("Import")
+            item.connect("activate", self.import_executor, self.window, f)
+        menu.append(item)
         menu.show_all()
         menu.popup_at_widget(btn, Gdk.Gravity.EAST, Gdk.Gravity.WEST, None)
 
@@ -1581,6 +1586,54 @@ class EditorWrapper(object):
                 pass
 
         save_json(self.config, self.file)
+
+    def import_executor(self, item, parent, file):
+        """l = {}
+        for item in self.panel["modules-right"]:
+            l[item] = self.panel[item]
+        save_json(l, file)"""
+
+        executors = load_json(file)
+        for key in executors:
+            print(key, executors[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/executor_import.glade"))
+        grid = builder.get_object("grid")
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(grid)
+
+        combo = builder.get_object("select")
+        for key in executors:
+            combo.append(key, key)
+        combo.connect("changed", self.ie_update_labels, executors)
+
+        self.ie_script = builder.get_object("script")
+        self.ie_interval = builder.get_object("interval")
+        self.ie_icon_size = builder.get_object("icon-size")
+        self.ie_on_left_click = builder.get_object("on-left-click")
+        self.ie_on_middle_click = builder.get_object("on-middle-click")
+        self.ie_on_right_click = builder.get_object("on-right-click")
+        self.ie_on_scroll_up = builder.get_object("on-scroll-up")
+        self.ie_on_scroll_down = builder.get_object("on-scroll-down")
+        self.ie_tooltip_text = builder.get_object("tooltip-text")
+        self.ie_icon_placement = builder.get_object("icon-placement")
+        self.ie_css_name = builder.get_object("css-name")
+
+    def ie_update_labels(self, combo, executors):
+        executor = combo.get_active_text()
+        self.ie_script.set_text(executors[executor]["script"])
+        self.ie_interval.set_text(str(executors[executor]["interval"]))
+        self.ie_icon_size.set_text(str(executors[executor]["icon-size"]))
+        self.ie_on_left_click.set_text(executors[executor]["on-left-click"])
+        self.ie_on_middle_click.set_text(executors[executor]["on-middle-click"])
+        self.ie_on_right_click.set_text(executors[executor]["on-right-click"])
+        self.ie_on_scroll_up.set_text(executors[executor]["on-scroll-up"])
+        self.ie_on_scroll_down.set_text(executors[executor]["on-scroll-down"])
+        self.ie_tooltip_text.set_text(executors[executor]["tooltip-text"])
+        self.ie_icon_placement.set_text(executors[executor]["icon-placement"])
+        self.ie_css_name.set_text(executors[executor]["css-name"])
 
     def select_button(self, btn):
         self.edited = "buttons"
