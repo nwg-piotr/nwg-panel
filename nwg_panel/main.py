@@ -315,7 +315,8 @@ def main():
         check_key(panel, "output", "")
 
         clones = []
-        if panel["output"] == "All" and len(common.outputs) > 1:
+        # fix #81
+        if panel["output"] == "All" and len(common.outputs) >= 1:
             to_remove.append(panel)
             for key in common.outputs.keys():
                 clone = panel.copy()
