@@ -14,6 +14,9 @@
         <property name="can-focus">False</property>
         <property name="halign">start</property>
         <property name="label" translatable="yes">Module :: Scratchpad</property>
+        <attributes>
+          <attribute name="weight" value="bold"/>
+        </attributes>
       </object>
       <packing>
         <property name="left-attach">0</property>
