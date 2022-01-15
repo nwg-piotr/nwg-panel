@@ -10,8 +10,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, local_dir, load_json, save_json, load_string, list_outputs, check_key, \
-    list_configs, \
-    local_dir, create_pixbuf, update_image, is_command, check_commands, cmd2string
+    list_configs, create_pixbuf, update_image, is_command, check_commands, cmd2string
 
 from nwg_panel.__about__ import __version__
 

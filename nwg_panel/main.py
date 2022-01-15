@@ -260,12 +260,6 @@ def main():
     global sig_dwl
     sig_dwl = args.sigdwl
 
-    """# signal handlers
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
-    # Will do nothing if no dwl-tags instance found
-    signal.signal(args.sigdwl, refresh_dwl)"""
-
     catchable_sigs = set(signal.Signals) - {signal.SIGKILL, signal.SIGSTOP}
     for sig in catchable_sigs:
         signal.signal(sig, signal_handler)
