@@ -9,8 +9,8 @@ import signal
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
-from nwg_panel.tools import get_config_dir, load_json, save_json, load_string, list_outputs, check_key, list_configs, \
-    local_dir, create_pixbuf, update_image, is_command, check_commands, cmd2string
+from nwg_panel.tools import get_config_dir, local_dir, load_json, save_json, load_string, list_outputs, check_key, \
+    list_configs, create_pixbuf, update_image, is_command, check_commands, cmd2string
 
 from nwg_panel.__about__ import __version__
 
@@ -169,7 +169,8 @@ class PanelSelector(Gtk.Window):
 
         label = Gtk.Label()
         status = cmd2string("nwg-menu -v") if self.plugin_menu_start else "not installed"
-        label.set_markup('MenuStart plugin: {} <a href="https://github.com/nwg-piotr/nwg-menu">GitHub</a>'.format(status))
+        label.set_markup(
+            'MenuStart plugin: {} <a href="https://github.com/nwg-piotr/nwg-menu">GitHub</a>'.format(status))
         ivbox.pack_start(label, True, False, 0)
 
         self.scrolled_window = Gtk.ScrolledWindow()
@@ -431,6 +432,9 @@ class EditorWrapper(object):
         self.panel_idx = panel_idx
         self.config = {}
         self.panel = {}
+        self.executors_base = {}
+        self.executors_file = os.path.join(local_dir(), "executors.json")
+        self.executors_base = load_json(self.executors_file) if os.path.isfile(self.executors_file) else {}
         builder = Gtk.Builder()
         builder.add_from_file(os.path.join(dir_name, "glade/config_main.glade"))
 
@@ -442,7 +446,7 @@ class EditorWrapper(object):
         self.window.connect("key-release-event", handle_keyboard)
         self.window.connect("show", self.hide_parent, parent)
 
-        Gtk.Widget.set_size_request(self.window, 840, 1)
+        Gtk.Widget.set_size_request(self.window, 720, 1)
 
         self.known_modules = ["clock", "playerctl", "sway-taskbar", "sway-workspaces", "scratchpad"]
 
@@ -469,7 +473,7 @@ class EditorWrapper(object):
         else:
             btn.set_sensitive(False)
             btn.set_tooltip_text("Plugin not found")
-        
+
         btn = builder.get_object("btn-clock")
         btn.connect("clicked", self.edit_clock)
 
@@ -1147,7 +1151,7 @@ class EditorWrapper(object):
         adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
         self.ws_image_size.configure(adj, 1, 0)
         self.ws_image_size.set_value(settings["image-size"])
-        
+
         self.ws_name_length = builder.get_object("name-length")
         self.ws_name_length.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=1, upper=256, step_increment=1, page_increment=10, page_size=1)
@@ -1177,7 +1181,7 @@ class EditorWrapper(object):
         val = self.ws_show_icon.get_active()
         if val is not None:
             settings["show-icon"] = val
-        
+
         val = self.ws_show_name.get_active()
         if val is not None:
             settings["show-name"] = val
@@ -1314,7 +1318,7 @@ class EditorWrapper(object):
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(grid)
-        
+
     def update_menu_start(self):
         settings = self.panel["menu-start-settings"]
 
@@ -1358,7 +1362,7 @@ class EditorWrapper(object):
             settings["autohide"] = val
 
         save_json(self.config, self.file)
-    
+
     def edit_scratchpad(self, *args):
         self.load_panel()
         self.edited = "scratchpad"
@@ -1446,6 +1450,11 @@ class EditorWrapper(object):
         item = Gtk.MenuItem.new_with_label("Add new")
         menu.append(item)
         item.connect("activate", self.edit_executor, "executor-unnamed_{}".format(len(executors) + 1), True)
+        if self.executors_base:
+            item = Gtk.MenuItem.new_with_label("Database")
+            item.connect("activate", self.import_executor)
+            menu.append(item)
+
         menu.show_all()
         menu.popup_at_widget(btn, Gdk.Gravity.EAST, Gdk.Gravity.WEST, None)
 
@@ -1520,11 +1529,32 @@ class EditorWrapper(object):
         self.executor_interval.set_value(settings["interval"])
 
         self.executor_remove = builder.get_object("remove")
-        self.executor_remove.set_sensitive(name in self.panel)
+
+        self.executor_save_to_db_btn = builder.get_object("save-to-database")
+        self.executor_save_to_db_btn.connect("clicked", self.check_and_save_to_db, name, settings)
+        if new:
+            self.executor_remove.set_visible(False)
+            self.executor_save_to_db_btn.set_visible(False)
 
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(grid)
+
+    def check_and_save_to_db(self, btn, name, settings):
+        if name not in self.executors_base:
+            self.save_executor_to_db(btn, name, settings)
+        else:
+            menu = Gtk.Menu()
+            item = Gtk.MenuItem.new_with_label("Replace '{}' in database".format(name))
+            item.connect("activate", self.save_executor_to_db, name, settings)
+            menu.append(item)
+            menu.set_reserve_toggle_size(False)
+            menu.show_all()
+            menu.popup_at_widget(btn, Gdk.Gravity.NORTH, Gdk.Gravity.SOUTH, None)
+
+    def save_executor_to_db(self, widget, name, settings):
+        self.executors_base[name] = settings
+        save_json(self.executors_base, self.executors_file)
 
     def update_executor(self):
         config_key = "executor-{}".format(self.executor_name.get_text())
@@ -1581,6 +1611,97 @@ class EditorWrapper(object):
                 pass
 
         save_json(self.config, self.file)
+
+    def import_executor(self, item):
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/executor_import.glade"))
+        grid = builder.get_object("grid")
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(grid)
+
+        self.ie_combo = builder.get_object("select")
+        for key in self.executors_base:
+            self.ie_combo.append(key, key)
+        self.ie_combo.connect("changed", self.ie_on_combo_changed, self.executors_base)
+
+        self.ie_script = builder.get_object("script")
+        self.ie_interval = builder.get_object("interval")
+        self.ie_icon_size = builder.get_object("icon-size")
+        self.ie_on_left_click = builder.get_object("on-left-click")
+        self.ie_on_middle_click = builder.get_object("on-middle-click")
+        self.ie_on_right_click = builder.get_object("on-right-click")
+        self.ie_on_scroll_up = builder.get_object("on-scroll-up")
+        self.ie_on_scroll_down = builder.get_object("on-scroll-down")
+        self.ie_tooltip_text = builder.get_object("tooltip-text")
+        self.ie_icon_placement = builder.get_object("icon-placement")
+        self.ie_css_name = builder.get_object("css-name")
+
+        self.ie_btn_delete = builder.get_object("btn-delete")
+        self.ie_btn_delete.connect("clicked", self.ie_show_btn_delete_menu)
+        self.ie_btn_import = builder.get_object("btn-import")
+        self.ie_btn_import.set_label("Add to '{}'".format(self.panel["name"]))
+        self.ie_btn_import.connect("clicked", self.ie_on_import_btn)
+
+    def ie_on_import_btn(self, btn):
+        executor = self.ie_combo.get_active_text()
+        if executor not in self.panel:
+            self.ie_add_executor(btn, executor)
+        else:
+            self.ie_show_btn_import_menu(btn)
+
+    def ie_show_btn_import_menu(self, btn):
+        executor = self.ie_combo.get_active_text()
+        menu = Gtk.Menu()
+        item = Gtk.MenuItem.new_with_label("Replace '{}' in '{}'".format(executor, self.panel["name"]))
+        item.connect("activate", self.ie_add_executor, executor)
+        menu.append(item)
+        menu.set_reserve_toggle_size(False)
+        menu.show_all()
+        menu.popup_at_widget(btn, Gdk.Gravity.NORTH, Gdk.Gravity.SOUTH, None)
+
+    def ie_show_btn_delete_menu(self, btn):
+        executor = self.ie_combo.get_active_text()
+        menu = Gtk.Menu()
+        item = Gtk.MenuItem.new_with_label("Delete '{}' from database".format(executor))
+        item.connect("activate", self.ie_remove_executor, executor)
+        menu.append(item)
+        menu.set_reserve_toggle_size(False)
+        menu.show_all()
+        menu.popup_at_widget(btn, Gdk.Gravity.NORTH, Gdk.Gravity.SOUTH, None)
+
+    def ie_add_executor(self, widget, executor):
+        self.panel[executor] = self.executors_base[executor].copy()
+        save_json(self.config, self.file)
+
+    def ie_remove_executor(self, item, executor):
+        del self.executors_base[executor]
+        self.ie_combo.remove_all()
+        for key in self.executors_base:
+            self.ie_combo.append(key, key)
+        for label in [self.ie_script, self.ie_interval, self.ie_icon_size, self.ie_on_left_click,
+                      self.ie_on_middle_click, self.ie_on_right_click, self.ie_on_scroll_up, self.ie_on_scroll_down,
+                      self.ie_tooltip_text, self.ie_icon_placement, self.ie_css_name]:
+            label.set_text("")
+        save_json(self.executors_base, self.executors_file)
+
+    def ie_on_combo_changed(self, combo, executors):
+        executor = combo.get_active_text()
+        if executor:
+            self.ie_script.set_text(executors[executor]["script"])
+            self.ie_interval.set_text(str(executors[executor]["interval"]))
+            self.ie_icon_size.set_text(str(executors[executor]["icon-size"]))
+            self.ie_on_left_click.set_text(executors[executor]["on-left-click"])
+            self.ie_on_middle_click.set_text(executors[executor]["on-middle-click"])
+            self.ie_on_right_click.set_text(executors[executor]["on-right-click"])
+            self.ie_on_scroll_up.set_text(executors[executor]["on-scroll-up"])
+            self.ie_on_scroll_down.set_text(executors[executor]["on-scroll-down"])
+            self.ie_tooltip_text.set_text(executors[executor]["tooltip-text"])
+            self.ie_icon_placement.set_text(executors[executor]["icon-placement"])
+            self.ie_css_name.set_text(executors[executor]["css-name"])
+
+            self.ie_btn_delete.set_sensitive(True)
+            self.ie_btn_import.set_sensitive(True)
 
     def select_button(self, btn):
         self.edited = "buttons"

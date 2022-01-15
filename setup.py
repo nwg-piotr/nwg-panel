@@ -8,12 +8,12 @@ def read(f_name):
 
 setup(
     name='nwg-panel',
-    version='0.5.6',
+    version='0.5.7',
     description='GTK3-based panel for sway window manager',
     packages=find_packages(),
     include_package_data=True,
     package_data={
-        "": ["config/*", "icons_dark/*", "icons_light/*", "executors/*"]
+        "": ["config/*", "icons_dark/*", "icons_light/*", "executors/*", "local/*"]
     },
     url='https://github.com/nwg-piotr/nwg-panel',
     license='MIT',

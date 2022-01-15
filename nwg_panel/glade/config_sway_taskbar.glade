@@ -217,15 +217,15 @@ context menu out of them.</property>
         <property name="can-focus">False</property>
         <property name="halign">start</property>
         <property name="label" translatable="yes">Module :: SwayTaskbar</property>
+        <attributes>
+          <attribute name="weight" value="bold"/>
+        </attributes>
       </object>
       <packing>
         <property name="left-attach">0</property>
         <property name="top-attach">0</property>
         <property name="width">3</property>
       </packing>
-    </child>
-    <child>
-      <placeholder/>
     </child>
     <child>
       <placeholder/>

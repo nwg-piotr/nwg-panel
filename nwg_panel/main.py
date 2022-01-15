@@ -260,12 +260,6 @@ def main():
     global sig_dwl
     sig_dwl = args.sigdwl
 
-    """# signal handlers
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
-    # Will do nothing if no dwl-tags instance found
-    signal.signal(args.sigdwl, refresh_dwl)"""
-
     catchable_sigs = set(signal.Signals) - {signal.SIGKILL, signal.SIGSTOP}
     for sig in catchable_sigs:
         signal.signal(sig, signal_handler)
@@ -298,6 +292,7 @@ def main():
     copy_files(os.path.join(dir_name, "icons_dark"), os.path.join(common.config_dir, "icons_dark"))
     copy_executors(os.path.join(dir_name, "executors"), os.path.join(common.config_dir, "executors"))
     copy_files(os.path.join(dir_name, "config"), common.config_dir, args.restore)
+    copy_files(os.path.join(dir_name, "local"), local_dir())
 
     tree = common.i3.get_tree() if sway else None
     common.outputs = list_outputs(sway=sway, tree=tree)
@@ -320,7 +315,7 @@ def main():
         check_key(panel, "output", "")
 
         clones = []
-        if panel["output"] == "All" and len(common.outputs) > 1:
+        if panel["output"] == "All" and len(common.outputs) >= 1:
             to_remove.append(panel)
             for key in common.outputs.keys():
                 clone = panel.copy()
