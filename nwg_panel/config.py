@@ -1613,11 +1613,6 @@ class EditorWrapper(object):
         save_json(self.config, self.file)
 
     def import_executor(self, item):
-        """l = {}
-        for item in self.panel["modules-right"]:
-            l[item] = self.panel[item]
-        save_json(l, self.executors_file)"""
-
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/executor_import.glade"))
         grid = builder.get_object("grid")
 
