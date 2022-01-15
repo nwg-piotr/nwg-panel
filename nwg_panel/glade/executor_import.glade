@@ -37,7 +37,7 @@
         <property name="homogeneous">True</property>
         <child>
           <object class="GtkButton" id="btn-delete">
-            <property name="label" translatable="yes">Delete</property>
+            <property name="label" translatable="yes">Delete from database</property>
             <property name="visible">True</property>
             <property name="sensitive">False</property>
             <property name="can-focus">True</property>

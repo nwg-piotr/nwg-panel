@@ -447,7 +447,7 @@ class EditorWrapper(object):
         self.window.connect("key-release-event", handle_keyboard)
         self.window.connect("show", self.hide_parent, parent)
 
-        Gtk.Widget.set_size_request(self.window, 840, 1)
+        Gtk.Widget.set_size_request(self.window, 720, 1)
 
         self.known_modules = ["clock", "playerctl", "sway-taskbar", "sway-workspaces", "scratchpad"]
 
@@ -1530,11 +1530,32 @@ class EditorWrapper(object):
         self.executor_interval.set_value(settings["interval"])
 
         self.executor_remove = builder.get_object("remove")
-        self.executor_remove.set_sensitive(name in self.panel)
+
+        self.executor_save_to_db_btn = builder.get_object("save-to-database")
+        self.executor_save_to_db_btn.connect("clicked", self.check_and_save_to_db, name, settings)
+        if new:
+            self.executor_remove.set_visible(False)
+            self.executor_save_to_db_btn.set_visible(False)
 
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(grid)
+
+    def check_and_save_to_db(self, btn, name, settings):
+        if name not in self.executors_base:
+            self.save_executor_to_db(btn, name, settings)
+        else:
+            menu = Gtk.Menu()
+            item = Gtk.MenuItem.new_with_label("Replace '{}' in database".format(name))
+            item.connect("activate", self.save_executor_to_db, name, settings)
+            menu.append(item)
+            menu.set_reserve_toggle_size(False)
+            menu.show_all()
+            menu.popup_at_widget(btn, Gdk.Gravity.NORTH, Gdk.Gravity.SOUTH, None)
+
+    def save_executor_to_db(self, widget, name, settings):
+        self.executors_base[name] = settings
+        save_json(self.executors_base, self.executors_file)
 
     def update_executor(self):
         config_key = "executor-{}".format(self.executor_name.get_text())
@@ -1596,10 +1617,7 @@ class EditorWrapper(object):
         """l = {}
         for item in self.panel["modules-right"]:
             l[item] = self.panel[item]
-        save_json(l, file)"""
-
-        for key in self.executors_base:
-            print(key, self.executors_base[key])
+        save_json(l, self.executors_file)"""
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/executor_import.glade"))
         grid = builder.get_object("grid")
@@ -1628,18 +1646,25 @@ class EditorWrapper(object):
         self.ie_btn_delete = builder.get_object("btn-delete")
         self.ie_btn_delete.connect("clicked", self.ie_show_btn_delete_menu)
         self.ie_btn_import = builder.get_object("btn-import")
+        self.ie_btn_import.set_label("Add to '{}'".format(self.panel["name"]))
         self.ie_btn_import.connect("clicked", self.ie_on_import_btn)
 
     def ie_on_import_btn(self, btn):
         executor = self.ie_combo.get_active_text()
         if executor not in self.panel:
-            print("Adding to panel")
-            self.panel[executor] = self.executors_base[executor].copy()
-            print(self.panel)
-            """for key in self.executors_base[executor]:
-                self.panel[executor][key] = self.executors_base[executor][key]"""
+            self.ie_add_executor(btn, executor)
         else:
-            print("Already in panel")
+            self.ie_show_btn_import_menu(btn)
+
+    def ie_show_btn_import_menu(self, btn):
+        executor = self.ie_combo.get_active_text()
+        menu = Gtk.Menu()
+        item = Gtk.MenuItem.new_with_label("Replace '{}' in '{}'".format(executor, self.panel["name"]))
+        item.connect("activate", self.ie_add_executor, executor)
+        menu.append(item)
+        menu.set_reserve_toggle_size(False)
+        menu.show_all()
+        menu.popup_at_widget(btn, Gdk.Gravity.NORTH, Gdk.Gravity.SOUTH, None)
 
     def ie_show_btn_delete_menu(self, btn):
         executor = self.ie_combo.get_active_text()
@@ -1650,6 +1675,10 @@ class EditorWrapper(object):
         menu.set_reserve_toggle_size(False)
         menu.show_all()
         menu.popup_at_widget(btn, Gdk.Gravity.NORTH, Gdk.Gravity.SOUTH, None)
+
+    def ie_add_executor(self, widget, executor):
+        self.panel[executor] = self.executors_base[executor].copy()
+        save_json(self.config, self.file)
 
     def ie_remove_executor(self, item, executor):
         del self.executors_base[executor]

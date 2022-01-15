@@ -4,6 +4,7 @@
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkWindow" id="main-window">
     <property name="can-focus">False</property>
+    <property name="decorated">False</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
@@ -207,7 +208,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="padding">20</property>
+                <property name="padding">10</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -232,7 +233,7 @@
           <packing>
             <property name="expand">True</property>
             <property name="fill">True</property>
-            <property name="padding">20</property>
+            <property name="padding">10</property>
             <property name="position">0</property>
           </packing>
         </child>
@@ -276,7 +277,7 @@
                 </child>
                 <child>
                   <object class="GtkButton" id="btn-apply">
-                    <property name="label">Save changes</property>
+                    <property name="label">Apply</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
@@ -301,7 +302,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="padding">10</property>
+            <property name="padding">6</property>
             <property name="position">1</property>
           </packing>
         </child>
