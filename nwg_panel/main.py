@@ -292,6 +292,7 @@ def main():
     copy_files(os.path.join(dir_name, "icons_dark"), os.path.join(common.config_dir, "icons_dark"))
     copy_executors(os.path.join(dir_name, "executors"), os.path.join(common.config_dir, "executors"))
     copy_files(os.path.join(dir_name, "config"), common.config_dir, args.restore)
+    copy_files(os.path.join(dir_name, "local"), local_dir())
 
     tree = common.i3.get_tree() if sway else None
     common.outputs = list_outputs(sway=sway, tree=tree)
