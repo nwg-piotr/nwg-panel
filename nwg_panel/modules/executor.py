@@ -109,10 +109,11 @@ class Executor(Gtk.EventBox):
                             self.icon_path = new_path
                         except:
                             print("Failed setting image from {}".format(output[0].strip()))
-                        if not self.image.get_visible():
-                            self.image.show()
 
                 self.label.set_text(output[1].strip())
+                self.image.show()
+                if self.label.get_text():
+                    self.label.show()
         else:
             if self.image.get_visible():
                 self.image.hide()
