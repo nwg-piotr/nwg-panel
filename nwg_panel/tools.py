@@ -403,17 +403,19 @@ def set_volume(slider):
         eprint("Couldn't set volume, 'pamixer' not found")
 
 
-def get_brightness():
+def get_brightness(device=""):
     brightness = 0
     if nwg_panel.common.commands["light"]:
         try:
-            output = cmd2string("light -G")
+            cmd = "light -G -s {}".format(device) if device else "light -G"
+            output = cmd2string(cmd)
             brightness = int(round(float(output), 0))
         except:
             pass
     elif nwg_panel.common.commands["brightnessctl"]:
         try:
-            output = cmd2string("brightnessctl g")
+            cmd = "brightnessctl g -d {}".format(device) if device else "brightnessctl g"
+            output = cmd2string(cmd)
             b = int(output) * 100 / 255
             brightness = int(round(float(b), 0))
         except:
@@ -424,16 +426,24 @@ def get_brightness():
     return brightness
 
 
-def set_brightness(slider):
+def set_brightness(slider, device=""):
     value = int(slider.get_value())
     if value == 0:
         value = 1
     if nwg_panel.common.commands["light"]:
-        subprocess.call("{} {}".format("light -S", value).split())
+        if device:
+            subprocess.call("light -s {} -S {}".format(device, value).split())
+        else:
+            subprocess.call("light -S {}".format(value).split())
     elif nwg_panel.common.commands["brightnessctl"]:
-        subprocess.call("{} {}%".format("brightnessctl s", value).split(),
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.STDOUT)
+        if device:
+            subprocess.call("brightnessctl -d {} s {}%".format(device, value).split(),
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.STDOUT)
+        else:
+            subprocess.call("brightnessctl s {}%".format(value).split(),
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.STDOUT)
     else:
         eprint("Either 'light' or 'brightnessctl' package required")
 
