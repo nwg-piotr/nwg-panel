@@ -264,6 +264,8 @@ class PopupWindow(Gtk.Window):
         if monitor:
             GtkLayerShell.set_monitor(self, monitor)
 
+        check_key(settings, "backlight-device", "")
+
         check_key(settings, "css-name", "controls-window")
         self.parent = parent
         
@@ -645,7 +647,7 @@ class PopupWindow(Gtk.Window):
         return True
 
     def set_bri(self, slider):
-        set_brightness(slider)
+        set_brightness(slider, self.settings["backlight-device"])
         self.parent.bri_value = int(slider.get_value())
 
     def set_vol(self, slider):

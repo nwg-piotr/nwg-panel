@@ -421,10 +421,31 @@ Depends on `python-netifaces`.</property>
       </packing>
     </child>
     <child>
-      <placeholder/>
+      <object class="GtkEntry" id="backlight-device">
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="placeholder-text" translatable="yes">backlight device</property>
+      </object>
+      <packing>
+        <property name="left-attach">2</property>
+        <property name="top-attach">1</property>
+      </packing>
     </child>
     <child>
-      <placeholder/>
+      <object class="GtkImage">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="tooltip-text" translatable="yes">Backlight device path (for 'light')
+or name (for 'brightnessctl').
+Use 'light -L' or 'brightnessctl -l'
+to check available devices.</property>
+        <property name="halign">start</property>
+        <property name="stock">gtk-about</property>
+      </object>
+      <packing>
+        <property name="left-attach">3</property>
+        <property name="top-attach">1</property>
+      </packing>
     </child>
     <child>
       <placeholder/>

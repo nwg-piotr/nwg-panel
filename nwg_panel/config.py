@@ -1965,6 +1965,7 @@ class EditorWrapper(object):
             },
             "show-values": False,
             "output-switcher": False,
+            "backlight-device": "",
             "interval": 1,
             "window-width": 0,
             "window-margin": 0,
@@ -2012,6 +2013,9 @@ class EditorWrapper(object):
 
         self.ctrl_comp_brightness = builder.get_object("ctrl-comp-brightness")
         self.ctrl_comp_brightness.set_active("brightness" in settings["components"])
+
+        self.ctrl_backlight_device = builder.get_object("backlight-device")
+        self.ctrl_backlight_device.set_text(settings["backlight-device"])
 
         self.ctrl_comp_volume = builder.get_object("ctrl-comp-volume")
         self.ctrl_comp_volume.set_active("volume" in settings["components"])
@@ -2100,6 +2104,9 @@ class EditorWrapper(object):
         else:
             if "brightness" in settings["components"]:
                 settings["components"].remove("brightness")
+
+        if self.ctrl_backlight_device.get_text():
+            settings["backlight-device"] = self.ctrl_backlight_device.get_text()
 
         if self.ctrl_comp_volume.get_active():
             if "volume" not in settings["components"]:
