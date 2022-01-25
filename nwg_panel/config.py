@@ -2105,8 +2105,7 @@ class EditorWrapper(object):
             if "brightness" in settings["components"]:
                 settings["components"].remove("brightness")
 
-        if self.ctrl_backlight_device.get_text():
-            settings["backlight-device"] = self.ctrl_backlight_device.get_text()
+        settings["backlight-device"] = self.ctrl_backlight_device.get_text()
 
         if self.ctrl_comp_volume.get_active():
             if "volume" not in settings["components"]:
