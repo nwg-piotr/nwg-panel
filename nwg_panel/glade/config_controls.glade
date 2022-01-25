@@ -438,7 +438,8 @@ Depends on `python-netifaces`.</property>
         <property name="tooltip-text" translatable="yes">Backlight device path (for 'light')
 or name (for 'brightnessctl').
 Use 'light -L' or 'brightnessctl -l'
-to check available devices.</property>
+to check available devices.
+LEAVE BLANK IF EVERYTHING WORKS</property>
         <property name="halign">start</property>
         <property name="stock">gtk-about</property>
       </object>
