@@ -191,7 +191,7 @@ class Controls(Gtk.EventBox):
             self.bt_label.set_text(name)
 
     def update_brightness(self):
-        value = get_brightness()
+        value = get_brightness(device=self.settings["backlight-device"])
         icon_name = bri_icon_name(value)
 
         if icon_name != self.bri_icon_name:
