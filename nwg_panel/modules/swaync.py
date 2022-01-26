@@ -28,7 +28,7 @@ class SwayNC(Gtk.EventBox):
 
         check_key(settings, "interval", 1)
         check_key(settings, "root-css-name", "root-executor")
-        check_key(settings, "css-name", "")
+        check_key(settings, "css-name", "executor-label")
         check_key(settings, "icon-placement", "left")
         check_key(settings, "icon-size", 16)
         check_key(settings, "tooltip-text", "")

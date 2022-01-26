@@ -316,7 +316,7 @@
       </packing>
     </child>
     <child>
-      <object class="GtkCheckButton" id="remove">
+      <object class="GtkCheckButton" id="always-show-icon">
         <property name="label" translatable="yes">Always show icon</property>
         <property name="visible">True</property>
         <property name="can-focus">True</property>
