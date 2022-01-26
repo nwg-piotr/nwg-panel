@@ -43,6 +43,7 @@ from nwg_panel.modules.playerctl import Playerctl
 from nwg_panel.modules.cpu_avg import CpuAvg
 from nwg_panel.modules.scratchpad import Scratchpad
 from nwg_panel.modules.dwl_tags import DwlTags
+from nwg_panel.modules.swaync import SwayNC
 
 from nwg_panel.modules.menu_start import MenuStart
 
@@ -183,6 +184,12 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 container.pack_start(executor, False, False, panel["items-padding"])
             else:
                 print("'{}' not defined in this panel instance".format(item))
+
+        if item == "swaync":
+            if item not in panel:
+                panel[item] = {}
+            sway_nc = SwayNC(panel[item], icons_path)
+            container.pack_start(sway_nc, False, False, panel["items-padding"])
 
         if item == "clock":
             if item in panel:
