@@ -1,0 +1,8 @@
+#!/bin/bash
+
+a=$(swaync-client -c)
+
+if [ "$a" -gt "0" ]; then
+  echo bell
+  echo $a
+fi
