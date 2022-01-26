@@ -448,7 +448,13 @@ class EditorWrapper(object):
 
         Gtk.Widget.set_size_request(self.window, 820, 1)
 
-        self.known_modules = ["clock", "playerctl", "sway-taskbar", "sway-workspaces", "scratchpad"]
+        self.known_modules = ["clock",
+                              "playerctl",
+                              "sway-taskbar",
+                              "sway-workspaces",
+                              "scratchpad",
+                              "dwl-tags",
+                              "swaync"]
 
         self.scrolled_window = builder.get_object("scrolled-window")
 
