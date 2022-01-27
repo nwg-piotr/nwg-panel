@@ -75,6 +75,9 @@ class SwayNC(Gtk.EventBox):
                         update_image(self.image, "bell", self.settings["icon-size"], self.icons_path)
                         self.icon_path = "bell"
                     self.image.show()
+                else:
+                    self.image.hide()
+
                 if num > 0:
                     self.label.set_text(str(num))
                     self.label.show()
