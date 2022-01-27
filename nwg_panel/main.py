@@ -447,10 +447,11 @@ def main():
                 common.controls_list.append(cc)
                 left_box.pack_start(cc, False, False, 0)
 
-                if "swaync" not in panel:
-                    panel["swaync"] = {}
-                sway_nc = SwayNC(panel["swaync"], icons_path)
-                left_box.pack_start(sway_nc, False, False, 0)
+                if common.commands["swaync"]:
+                    if "swaync" not in panel:
+                        panel["swaync"] = {}
+                    sway_nc = SwayNC(panel["swaync"], icons_path)
+                    left_box.pack_start(sway_nc, False, False, 0)
 
             if panel["menu-start"] == "left":
                 ms = MenuStart(panel, icons_path=icons_path)
@@ -487,10 +488,11 @@ def main():
                 common.controls_list.append(cc)
                 right_box.pack_end(cc, False, False, 0)
 
-                if "swaync" not in panel:
-                    panel["swaync"] = {}
-                sway_nc = SwayNC(panel["swaync"], icons_path)
-                right_box.pack_end(sway_nc, False, False, 0)
+                if common.commands["swaync"]:
+                    if "swaync" not in panel:
+                        panel["swaync"] = {}
+                    sway_nc = SwayNC(panel["swaync"], icons_path)
+                    right_box.pack_end(sway_nc, False, False, 0)
 
             window.add(vbox)
 

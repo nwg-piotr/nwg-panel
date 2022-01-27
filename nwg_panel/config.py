@@ -496,7 +496,11 @@ class EditorWrapper(object):
         btn.connect("clicked", self.edit_scratchpad)
 
         btn = builder.get_object("btn-swaync")
-        btn.connect("clicked", self.edit_swaync)
+        if is_command("swaync"):
+            btn.connect("clicked", self.edit_swaync)
+        else:
+            btn.set_sensitive(False)
+            btn.set_tooltip_text("The 'swaync' package required")
 
         btn = builder.get_object("btn-executors")
         btn.connect("clicked", self.select_executor)

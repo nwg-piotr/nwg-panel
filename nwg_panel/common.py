@@ -28,7 +28,8 @@ commands = {
     "netifaces": False,
     "btmgmt": False,
     "wlr-randr": False,
-    "upower": False
+    "upower": False,
+    "swaync": False
 }
 
 icons_path = ""  # "icons_light", "icons_dark" or "" (GTK icons)
