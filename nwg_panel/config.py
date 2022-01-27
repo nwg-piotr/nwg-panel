@@ -1071,7 +1071,7 @@ class EditorWrapper(object):
             "root-css-name": "root-executor",
             "css-name": "executor",
             "icon-placement": "left",
-            "icon-size": 16,
+            "icon-size": 18,
             "interval": 1,
             "always-show-icon": False
         }

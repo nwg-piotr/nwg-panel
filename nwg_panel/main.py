@@ -185,12 +185,6 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             else:
                 print("'{}' not defined in this panel instance".format(item))
 
-        if item == "swaync":
-            if item not in panel:
-                panel[item] = {}
-            sway_nc = SwayNC(panel[item], icons_path)
-            container.pack_start(sway_nc, False, False, panel["items-padding"])
-
         if item == "clock":
             if item in panel:
                 clock = Clock(panel[item])
@@ -453,6 +447,11 @@ def main():
                 common.controls_list.append(cc)
                 left_box.pack_start(cc, False, False, 0)
 
+                if "swaync" not in panel:
+                    panel["swaync"] = {}
+                sway_nc = SwayNC(panel["swaync"], icons_path)
+                left_box.pack_start(sway_nc, False, False, 0)
+
             if panel["menu-start"] == "left":
                 ms = MenuStart(panel, icons_path=icons_path)
                 left_box.pack_start(ms, False, False, 0)
@@ -487,6 +486,11 @@ def main():
                               controls_width, monitor=monitor, icons_path=icons_path)
                 common.controls_list.append(cc)
                 right_box.pack_end(cc, False, False, 0)
+
+                if "swaync" not in panel:
+                    panel["swaync"] = {}
+                sway_nc = SwayNC(panel["swaync"], icons_path)
+                right_box.pack_end(sway_nc, False, False, 0)
 
             window.add(vbox)
 
