@@ -19,7 +19,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
-                <property name="spacing">7</property>
+                <property name="spacing">4</property>
                 <child>
                   <object class="GtkButton" id="btn-panel">
                     <property name="label" translatable="yes">Panel</property>
@@ -166,6 +166,19 @@
                   </packing>
                 </child>
                 <child>
+                  <object class="GtkButton" id="btn-swaync">
+                    <property name="label" translatable="yes">Notification Center</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">11</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkButton" id="btn-dwl-tags">
                     <property name="label" translatable="yes">Dwl Tags</property>
                     <property name="visible">True</property>
@@ -175,7 +188,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">11</property>
+                    <property name="position">12</property>
                   </packing>
                 </child>
                 <child>
@@ -188,7 +201,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">12</property>
+                    <property name="position">13</property>
                   </packing>
                 </child>
                 <child>
@@ -201,7 +214,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">13</property>
+                    <property name="position">14</property>
                   </packing>
                 </child>
               </object>

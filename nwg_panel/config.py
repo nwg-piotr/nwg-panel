@@ -495,6 +495,9 @@ class EditorWrapper(object):
         btn = builder.get_object("btn-scratchpad")
         btn.connect("clicked", self.edit_scratchpad)
 
+        btn = builder.get_object("btn-swaync")
+        btn.connect("clicked", self.edit_swaync)
+
         btn = builder.get_object("btn-executors")
         btn.connect("clicked", self.select_executor)
 
@@ -1049,6 +1052,36 @@ class EditorWrapper(object):
             settings["interval"] = int(val)
 
         save_json(self.config, self.file)
+
+    def edit_swaync(self, *args):
+        self.load_panel()
+        self.edited = "swaync"
+        check_key(self.panel, "swaync", {})
+        settings = self.panel["swaync"]
+
+        defaults = {
+            "tooltip-text": "Notifications",
+            "on-left-click": "swaync-client -t",
+            "on-middle-click": "",
+            "on-right-click": "",
+            "on-scroll-up": "",
+            "on-scroll-down": "",
+            "root-css-name": "root-executor",
+            "css-name": "executor",
+            "icon-placement": "left",
+            "icon-size": 16,
+            "interval": 1,
+            "always-show-icon": True
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_swaync.glade"))
+        grid = builder.get_object("grid")
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(grid)
 
     def edit_playerctl(self, *args):
         self.load_panel()
