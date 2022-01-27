@@ -3,7 +3,7 @@
     "script": "gopsuinfo -i a",
     "interval": 2,
     "tooltip-text": "CPU average load",
-    "on-left-click": "alacritty -e htop",
+    "on-left-click": "foot -e htop",
     "on-middle-click": "",
     "on-right-click": "",
     "on-scroll-up": "",

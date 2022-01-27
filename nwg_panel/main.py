@@ -405,7 +405,7 @@ def main():
                     "margin-right": 0,
                     "margin-top": 0,
                     "padding": 2,
-                    "terminal": "alacritty",
+                    "terminal": "foot",
                     "width": 0
                 }
                 for key in defaults:

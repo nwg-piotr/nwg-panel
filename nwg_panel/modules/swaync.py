@@ -37,7 +37,7 @@ class SwayNC(Gtk.EventBox):
         check_key(settings, "on-middle-click", "")
         check_key(settings, "on-scroll-up", "")
         check_key(settings, "on-scroll-down", "")
-        check_key(settings, "always-show-icon", True)
+        check_key(settings, "always-show-icon", False)
 
         update_image(self.image, "view-refresh-symbolic", self.settings["icon-size"], self.icons_path)
 
