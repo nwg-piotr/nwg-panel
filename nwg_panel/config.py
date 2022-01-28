@@ -1077,7 +1077,7 @@ class EditorWrapper(object):
             "icon-placement": "left",
             "icon-size": 18,
             "interval": 1,
-            "always-show-icon": False
+            "always-show-icon": True
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
