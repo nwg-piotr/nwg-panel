@@ -73,7 +73,7 @@ SKELETON_PANEL: dict = {
         "margin-right": 0,
         "margin-top": 0,
         "padding": 2,
-        "terminal": "alacritty",
+        "terminal": "foot",
         "width": 0
     },
     "sway-taskbar": {
@@ -448,7 +448,13 @@ class EditorWrapper(object):
 
         Gtk.Widget.set_size_request(self.window, 820, 1)
 
-        self.known_modules = ["clock", "playerctl", "sway-taskbar", "sway-workspaces", "scratchpad"]
+        self.known_modules = ["clock",
+                              "playerctl",
+                              "sway-taskbar",
+                              "sway-workspaces",
+                              "scratchpad",
+                              "dwl-tags",
+                              "swaync"]
 
         self.scrolled_window = builder.get_object("scrolled-window")
 
@@ -488,6 +494,13 @@ class EditorWrapper(object):
 
         btn = builder.get_object("btn-scratchpad")
         btn.connect("clicked", self.edit_scratchpad)
+
+        btn = builder.get_object("btn-swaync")
+        if is_command("swaync"):
+            btn.connect("clicked", self.edit_swaync)
+        else:
+            btn.set_sensitive(False)
+            btn.set_tooltip_text("The 'swaync' package required")
 
         btn = builder.get_object("btn-executors")
         btn.connect("clicked", self.select_executor)
@@ -807,6 +820,8 @@ class EditorWrapper(object):
             self.update_scratchpad()
         elif self.edited == "executor":
             self.update_executor()
+        elif self.edited == "swaync":
+            self.update_swaync()
         elif self.edited == "button":
             self.update_button()
         elif self.edited == "modules":
@@ -1044,6 +1059,99 @@ class EditorWrapper(object):
 
         save_json(self.config, self.file)
 
+    def edit_swaync(self, *args):
+        self.load_panel()
+        self.edited = "swaync"
+        check_key(self.panel, "swaync", {})
+        settings = self.panel["swaync"]
+
+        defaults = {
+            "tooltip-text": "Notifications",
+            "on-left-click": "swaync-client -t",
+            "on-middle-click": "",
+            "on-right-click": "",
+            "on-scroll-up": "",
+            "on-scroll-down": "",
+            "root-css-name": "root-executor",
+            "css-name": "executor",
+            "icon-placement": "left",
+            "icon-size": 18,
+            "interval": 1,
+            "always-show-icon": True
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_swaync.glade"))
+        grid = builder.get_object("grid")
+
+        self.nc_tooltip_text = builder.get_object("tooltip-text")
+        self.nc_tooltip_text.set_text(settings["tooltip-text"])
+
+        self.nc_on_middle_click = builder.get_object("on-middle-click")
+        self.nc_on_middle_click.set_text(settings["on-middle-click"])
+
+        self.nc_on_right_click = builder.get_object("on-right-click")
+        self.nc_on_right_click.set_text(settings["on-right-click"])
+
+        self.nc_on_scroll_up = builder.get_object("on-scroll-up")
+        self.nc_on_scroll_up.set_text(settings["on-scroll-up"])
+
+        self.nc_on_scroll_down = builder.get_object("on-scroll-down")
+        self.nc_on_scroll_down.set_text(settings["on-scroll-down"])
+
+        self.nc_root_css_name = builder.get_object("root-css-name")
+        self.nc_root_css_name.set_text(settings["root-css-name"])
+
+        self.nc_css_name = builder.get_object("css-name")
+        self.nc_css_name.set_text(settings["css-name"])
+
+        self.nc_icon_placement = builder.get_object("icon-placement")
+        self.nc_icon_placement.set_active_id(settings["icon-placement"])
+
+        self.nc_icon_size = builder.get_object("icon-size")
+        self.nc_icon_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
+        self.nc_icon_size.configure(adj, 1, 0)
+        self.nc_icon_size.set_value(settings["icon-size"])
+
+        self.nc_interval = builder.get_object("interval")
+        self.nc_interval.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=1, upper=3600, step_increment=1, page_increment=10, page_size=1)
+        self.nc_interval.configure(adj, 1, 0)
+        self.nc_interval.set_value(settings["interval"])
+
+        self.nc_always_show_icon = builder.get_object("always-show-icon")
+        self.nc_always_show_icon.set_active(settings["always-show-icon"])
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(grid)
+
+    def update_swaync(self):
+        settings = self.panel["swaync"]
+
+        settings["tooltip-text"] = self.nc_tooltip_text.get_text()
+        settings["on-middle-click"] = self.nc_on_middle_click.get_text()
+        settings["on-right-click"] = self.nc_on_right_click.get_text()
+        settings["on-scroll-up"] = self.nc_on_scroll_up.get_text()
+        settings["on-scroll-down"] = self.nc_on_scroll_down.get_text()
+        settings["root-css-name"] = self.nc_root_css_name.get_text()
+        settings["css-name"] = self.nc_css_name.get_text()
+
+        val = self.nc_interval.get_value()
+        if val is not None:
+            settings["interval"] = int(val)
+
+        if self.nc_icon_placement.get_active_id():
+            settings["icon-placement"] = self.nc_icon_placement.get_active_id()
+
+        settings["icon-size"] = int(self.nc_icon_size.get_value())
+        settings["interval"] = int(self.nc_interval.get_value())
+        settings["always-show-icon"] = self.nc_always_show_icon.get_active()
+
+        save_json(self.config, self.file)
+
     def edit_playerctl(self, *args):
         self.load_panel()
         self.edited = "playerctl"
@@ -1225,7 +1333,7 @@ class EditorWrapper(object):
             "margin-right": 0,
             "margin-top": 0,
             "padding": 2,
-            "terminal": "alacritty",
+            "terminal": "foot",
             "width": 0
         }
         for key in defaults:

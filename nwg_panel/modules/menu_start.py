@@ -61,7 +61,7 @@ class MenuStart(Gtk.Button):
             cmd += " -o {}".format(self.panel["output"])
         if self.settings["padding"] != 2:
             cmd += " -padding {}".format(self.settings["padding"])
-        if self.settings["terminal"] != "alacritty":
+        if self.settings["terminal"] != "foot":
             cmd += " -term {}".format(self.settings["terminal"])
         if self.panel["position"] != "bottom":
             cmd += " -va {}".format(self.panel["position"])
