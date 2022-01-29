@@ -1,0 +1,5 @@
+PyGObject~=3.42.0
+psutil~=5.9.0
+i3ipc~=2.2.1
+setuptools~=57.0.0
+dasbus~=1.6
