@@ -2,12 +2,13 @@ import os
 import sys
 import gi
 
-gi.require_version('Gtk', '3.0')
+gi.require_version("Gtk", "3.0")
 
 from gi.repository import Gtk, GLib, GdkPixbuf
 
 from nwg_panel.tools import check_key, get_config_dir
 from .item import StatusNotifierItem
+from .menu import Menu
 
 
 def load_icon(image, icon_name: str, icon_size, icons_path=""):
@@ -29,7 +30,7 @@ def load_icon(image, icon_name: str, icon_size, icons_path=""):
 
     except GLib.GError:
         print(
-            "tray.update_icon -> icon not found\n  icon_name: {}\n  search_path: {}".format(
+            "tray -> update_icon: icon not found\n  icon_name: {}\n  search_path: {}".format(
                 icon_name,
                 search_path
             ),
@@ -64,6 +65,7 @@ def update_status(event_box, item):
 
 class Tray(Gtk.EventBox):
     def __init__(self, settings, icons_path=""):
+        self.menu = None
         self.settings = settings
         self.icons_path = icons_path
         Gtk.EventBox.__init__(self)
@@ -105,6 +107,13 @@ class Tray(Gtk.EventBox):
             event_box.add(image)
             self.box.pack_start(event_box, False, False, 6)
             self.box.show_all()
+
+            if "Menu" in item.properties:
+                self.menu = Menu(
+                    service_name=item.service_name,
+                    object_path=item.properties["Menu"],
+                    parent_widget=event_box
+                )
 
             self.items[full_service_name] = {
                 "event_box": event_box,
