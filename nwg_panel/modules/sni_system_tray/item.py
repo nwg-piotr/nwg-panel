@@ -59,13 +59,13 @@ class StatusNotifierItem(object):
             lambda _if, changed_properties, _invalid: self.change_handler(list(changed_properties))
         )
         self.item_proxy.NewTitle.connect(
-            lambda _title: self.change_handler(["Title"])
+            lambda: self.change_handler(["Title"])
         )
         self.item_proxy.NewIcon.connect(
-            lambda _icon_name, _icon_pixmap: self.change_handler(["IconName", "IconPixmap"])
+            lambda: self.change_handler(["IconName", "IconPixmap"])
         )
         self.item_proxy.NewAttentionIcon.connect(
-            lambda _icon_name, _icon_pixmap: self.change_handler(["AttentionIconName", "AttentionIconPixmap"])
+            lambda: self.change_handler(["AttentionIconName", "AttentionIconPixmap"])
         )
         if hasattr(self.item_proxy, "NewIconThemePath"):
             self.item_proxy.NewIconThemePath.connect(
@@ -89,10 +89,15 @@ class StatusNotifierItem(object):
 
     def change_handler(self, changed_properties: list[str]):
         if len(changed_properties) > 0:
-            for name, value in changed_properties:
-                self.properties[name] = value
+            actual_changed_properties = []
+            for name in changed_properties:
+                try:
+                    self.properties[name] = getattr(self.item_proxy, name)
+                    actual_changed_properties.append(name)
+                except (AttributeError, DBusError):
+                    pass
             if self.on_updated_callback is not None:
-                self.on_updated_callback(self, changed_properties)
+                self.on_updated_callback(self, actual_changed_properties)
 
     def set_on_loaded_callback(self, callback):
         self.on_loaded_callback = callback
