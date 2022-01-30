@@ -1,6 +1,7 @@
 from dasbus.connection import SessionMessageBus
 from dasbus.client.observer import DBusObserver
 from dasbus.client.proxy import disconnect_proxy
+from dasbus.error import DBusError
 
 PROPERTIES = [
     "Id",
@@ -66,15 +67,19 @@ class StatusNotifierItem(object):
         self.item_proxy.NewAttentionIcon.connect(
             lambda _icon_name, _icon_pixmap: self.change_handler(["AttentionIconName", "AttentionIconPixmap"])
         )
-        self.item_proxy.NewIconThemePath.connect(
-            lambda _icon_theme_path: self.change_handler(["IconThemePath"])
-        )
+        if hasattr(self.item_proxy, "NewIconThemePath"):
+            self.item_proxy.NewIconThemePath.connect(
+                lambda _icon_theme_path: self.change_handler(["IconThemePath"])
+            )
         self.item_proxy.NewStatus.connect(
             lambda _status: self.change_handler(["Status"])
         )
         for name in PROPERTIES:
-            if hasattr(self.item_proxy, name):
+            try:
                 self.properties[name] = getattr(self.item_proxy, name)
+            except (AttributeError, DBusError):
+                # remote StatusNotifierItem object does not support all SNI properties
+                pass
         if self.on_loaded_callback is not None:
             self.on_loaded_callback(self)
 
