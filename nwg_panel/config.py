@@ -453,8 +453,7 @@ class EditorWrapper(object):
                               "sway-taskbar",
                               "sway-workspaces",
                               "scratchpad",
-                              "dwl-tags",
-                              "swaync"]
+                              "dwl-tags"]
 
         self.scrolled_window = builder.get_object("scrolled-window")
 
