@@ -10,31 +10,37 @@ from nwg_panel.tools import check_key, get_config_dir
 from .item import StatusNotifierItem
 
 
-def load_icon(image, icon_name, icon_size, icons_path=""):
+def load_icon(image, icon_name: str, icon_size, icons_path=""):
     icon_theme = Gtk.IconTheme.get_default()
     search_path = icon_theme.get_search_path()
-    if icons_path:
-        search_path.append(icons_path)
-        icon_theme.set_search_path(search_path)
-    if icon_theme.has_icon(icon_name):
-        pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
-    elif icon_theme.has_icon(icon_name.lower()):
-        pixbuf = icon_theme.load_icon(icon_name.lower(), icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
-    else:
-        try:
+    try:
+        if icons_path:
+            search_path.append(icons_path)
+            icon_theme.set_search_path(search_path)
+
+        if icon_theme.has_icon(icon_name):
             pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
-        except GLib.GError:
-            print(
-                "tray.update_icon -> icon not found\n  icon_name: {}\n  search_path: {}".format(
-                    icon_name,
-                    search_path
-                ),
-                file=sys.stderr
-            )
-            path = os.path.join(get_config_dir(), "icons_light/icon-missing.svg")
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, icon_size, icon_size)
+        elif icon_theme.has_icon(icon_name.lower()):
+            pixbuf = icon_theme.load_icon(icon_name.lower(), icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+        elif icon_name.startswith("/"):
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_name, icon_size, icon_size)
+        else:
+            pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+
+    except GLib.GError:
+        print(
+            "tray.update_icon -> icon not found\n  icon_name: {}\n  search_path: {}".format(
+                icon_name,
+                search_path
+            ),
+            file=sys.stderr
+        )
+        path = os.path.join(get_config_dir(), "icons_light/icon-missing.svg")
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, icon_size, icon_size)
+
     # TODO: if image height is different to icon_size, resize to match, while maintaining
     #  aspect ratio. Width can be ignored.
+
     image.set_from_pixbuf(pixbuf)
 
 
