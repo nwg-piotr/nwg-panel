@@ -1,3 +1,5 @@
+from gi.repository import Gdk
+
 from dasbus.connection import SessionMessageBus
 from dasbus.client.observer import DBusObserver
 from dasbus.client.proxy import disconnect_proxy
@@ -56,7 +58,7 @@ class StatusNotifierItem(object):
     def item_available_handler(self, _observer):
         self.item_proxy = self.session_bus.get_proxy(self.service_name, self.object_path)
         self.item_proxy.PropertiesChanged.connect(
-            lambda _if, changed_properties, _invalid: self.change_handler(list(changed_properties))
+            lambda _if, changed, invalid: self.change_handler(list(changed), invalid)
         )
         self.item_proxy.NewTitle.connect(
             lambda: self.change_handler(["Title"])
@@ -87,15 +89,22 @@ class StatusNotifierItem(object):
         disconnect_proxy(self.item_proxy)
         self.item_proxy = None
 
-    def change_handler(self, changed_properties: list[str]):
+    def change_handler(self, changed_properties: list[str], invalid_properties: list[str] = None):
+        if invalid_properties is None:
+            invalid_properties = []
+        actual_changed_properties = []
         if len(changed_properties) > 0:
-            actual_changed_properties = []
             for name in changed_properties:
                 try:
                     self.properties[name] = getattr(self.item_proxy, name)
                     actual_changed_properties.append(name)
                 except (AttributeError, DBusError):
                     pass
+        if len(invalid_properties) > 0:
+            for name in invalid_properties:
+                if name in self.properties:
+                    self.properties.pop(name)
+        if len(actual_changed_properties) > 0:
             if self.on_updated_callback is not None:
                 self.on_updated_callback(self, actual_changed_properties)
 
@@ -104,3 +113,19 @@ class StatusNotifierItem(object):
 
     def set_on_updated_callback(self, callback):
         self.on_updated_callback = callback
+
+    @property
+    def item_is_menu(self):
+        if "ItemIsMenu" in self.properties:
+            return self.properties["ItemIsMenu"]
+        else:
+            return False
+
+    def context_menu(self, event: Gdk.EventButton):
+        self.item_proxy.ContextMenu(event.x, event.y)
+
+    def activate(self, event: Gdk.EventButton):
+        self.item_proxy.Activate(event.x, event.y)
+
+    def secondary_action(self, event: Gdk.EventButton):
+        self.item_proxy.SecondaryAction(event.x, event.y)

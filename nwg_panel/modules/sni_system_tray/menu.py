@@ -11,10 +11,11 @@ from dasbus.client.observer import DBusObserver
 
 
 class Menu(object):
-    def __init__(self, service_name, object_path, parent_widget: Gtk.Widget):
+    def __init__(self, service_name, object_path, event_box, item):
         self.service_name = service_name
         self.object_path = object_path
-        self.parent_widget = parent_widget
+        self.event_box = event_box
+        self.item = item
         self.session_bus = SessionMessageBus()
         self.menu_widget: typing.Union[None, DbusmenuGtk3.Menu] = None
 
@@ -48,15 +49,23 @@ class Menu(object):
             dbus_object=self.object_path
         )
         self.menu_widget.show()
-        self.parent_widget.connect("button-press-event", self.button_press_event_handler)
+        self.event_box.connect("button-press-event", self.button_press_event_handler)
 
     def menu_unavailable_handler(self, _observer):
-        self.parent_widget.disconnect_by_func(self.button_press_event_handler)
+        self.event_box.disconnect_by_func(self.button_press_event_handler)
 
-    def button_press_event_handler(self, _w, event):
-        self.menu_widget.popup_at_widget(
-            self.parent_widget,
-            Gdk.Gravity.SOUTH,
-            Gdk.Gravity.NORTH,
-            event
-        )
+    def button_press_event_handler(self, _w, event: Gdk.EventButton):
+        if (event.button == 1 and self.item.item_is_menu) or event.button == 3:
+            if self.menu_widget is not None:
+                self.menu_widget.popup_at_widget(
+                    self.event_box,
+                    Gdk.Gravity.SOUTH,
+                    Gdk.Gravity.NORTH,
+                    event
+                )
+            else:
+                self.item.context_menu(event)
+        elif event.button == 1:
+            self.item.activate(event)
+        elif event.button == 2:
+            self.item.secondary_action(event)

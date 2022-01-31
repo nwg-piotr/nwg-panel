@@ -143,7 +143,8 @@ class Tray(Gtk.EventBox):
                 self.menu = Menu(
                     service_name=item.service_name,
                     object_path=item.properties["Menu"],
-                    parent_widget=event_box
+                    event_box=event_box,
+                    item=item
                 )
 
             self.items[full_service_name] = {
