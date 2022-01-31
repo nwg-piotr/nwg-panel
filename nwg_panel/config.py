@@ -453,7 +453,8 @@ class EditorWrapper(object):
                               "sway-taskbar",
                               "sway-workspaces",
                               "scratchpad",
-                              "dwl-tags"]
+                              "dwl-tags",
+        "tray"]
 
         self.scrolled_window = builder.get_object("scrolled-window")
 
@@ -500,6 +501,9 @@ class EditorWrapper(object):
         else:
             btn.set_sensitive(False)
             btn.set_tooltip_text("The 'swaync' package required")
+
+        btn = builder.get_object("btn-tray")
+        btn.connect("clicked", self.edit_tray)
 
         btn = builder.get_object("btn-executors")
         btn.connect("clicked", self.select_executor)
@@ -821,6 +825,8 @@ class EditorWrapper(object):
             self.update_executor()
         elif self.edited == "swaync":
             self.update_swaync()
+        elif self.edited == "tray":
+            self.update_tray()
         elif self.edited == "button":
             self.update_button()
         elif self.edited == "modules":
@@ -1148,6 +1154,56 @@ class EditorWrapper(object):
         settings["icon-size"] = int(self.nc_icon_size.get_value())
         settings["interval"] = int(self.nc_interval.get_value())
         settings["always-show-icon"] = self.nc_always_show_icon.get_active()
+
+        save_json(self.config, self.file)
+
+    def edit_tray(self, *args):
+        self.load_panel()
+        self.edited = "tray"
+        check_key(self.panel, "tray", {})
+        settings = self.panel["tray"]
+
+        defaults = {
+            "icon-size": 16,
+            "root-css-name": "tray",
+            "inner-css-name": "inner-tray",
+            "smooth-scrolling-threshold": 0
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_tray.glade"))
+        grid = builder.get_object("grid")
+
+        self.nc_icon_size = builder.get_object("icon-size")
+        self.nc_icon_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
+        self.nc_icon_size.configure(adj, 1, 0)
+        self.nc_icon_size.set_value(settings["icon-size"])
+
+        self.nc_root_css_name = builder.get_object("root-css-name")
+        self.nc_root_css_name.set_text(settings["root-css-name"])
+
+        self.nc_inner_css_name = builder.get_object("inner-css-name")
+        self.nc_inner_css_name.set_text(settings["inner-css-name"])
+
+        self.nc_smooth_scrolling_threshold = builder.get_object("smooth-scrolling-threshold")
+        self.nc_smooth_scrolling_threshold.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=3600, step_increment=1, page_increment=10, page_size=1)
+        self.nc_smooth_scrolling_threshold.configure(adj, 1, 0)
+        self.nc_smooth_scrolling_threshold.set_value(settings["smooth-scrolling-threshold"])
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(grid)
+
+    def update_tray(self):
+        settings = self.panel["tray"]
+
+        settings["icon-size"] = int(self.nc_icon_size.get_value())
+        settings["root-css-name"] = self.nc_root_css_name.get_text()
+        settings["inner-css-name"] = self.nc_inner_css_name.get_text()
+        settings["smooth-scrolling-threshold"] = int(self.nc_smooth_scrolling_threshold.get_value())
 
         save_json(self.config, self.file)
 

@@ -1,5 +1,7 @@
 /.idea
 /venv
 /nwg-panel.egg-info/
+/nwg_panel.egg-info/
 /build/
 /dist/
+__pycache__

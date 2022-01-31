@@ -50,6 +50,7 @@ from nwg_panel.modules.menu_start import MenuStart
 dir_name = os.path.dirname(__file__)
 
 from nwg_panel import common
+from nwg_panel.modules import sni_system_tray
 
 sway = os.getenv('SWAYSOCK') is not None
 if sway:
@@ -72,6 +73,7 @@ def signal_handler(sig, frame):
     desc = {2: "SIGINT", 15: "SIGTERM", 10: "SIGUSR1"}
     if sig == 2 or sig == 15:
         print("Terminated with {}".format(desc[sig]))
+        sni_system_tray.deinit_tray()
         Gtk.main_quit()
     elif sig == sig_dwl:
         refresh_dwl()
@@ -217,6 +219,14 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                     dwl_tags.refresh(dwl_data)
             else:
                 print("{} data file not found".format(common.dwl_data_file))
+
+        if item == "tray":
+            tray_settings = {}
+            if "tray" in panel:
+                tray_settings = panel["tray"]
+            tray = sni_system_tray.Tray(tray_settings, icons_path)
+            common.tray_list.append(tray)
+            container.pack_start(tray, False, False, panel["items-padding"])
 
 
 def main():
@@ -539,6 +549,9 @@ def main():
         common.outputs = list_outputs(sway=sway, tree=tree, silent=True)
         common.outputs_num = len(common.outputs)
     Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 200, check_tree)
+
+    if len(common.tray_list) > 0:
+        sni_system_tray.init_tray(common.tray_list)
 
     Gtk.main()
 

@@ -101,6 +101,19 @@
                   </packing>
                 </child>
                 <child>
+                  <object class="GtkButton" id="btn-tray">
+                    <property name="label" translatable="yes">Tray</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">5</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkButton" id="btn-menu-start">
                     <property name="label" translatable="yes">Menu Start</property>
                     <property name="visible">True</property>
