@@ -71,7 +71,7 @@
         ]
       }
     },
-    {
+    "tray": {
       "root-css-name": "tray",
       "inner-css-name": "inner-tray"
     },

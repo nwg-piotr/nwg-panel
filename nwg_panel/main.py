@@ -222,8 +222,8 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
         if item == "tray":
             tray_settings = {}
-            if "tray-settings" in panel:
-                tray_settings = panel["tray-settings"]
+            if "tray" in panel:
+                tray_settings = panel["tray"]
             tray = sni_system_tray.Tray(tray_settings, icons_path)
             common.tray_list.append(tray)
             container.pack_start(tray, False, False, panel["items-padding"])
