@@ -71,6 +71,10 @@
         ]
       }
     },
+    {
+      "root-css-name": "tray",
+      "inner-css-name": "inner-tray"
+    },
     "sway-taskbar": {
       "workspace-menu": [
         "1",

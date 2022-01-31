@@ -129,3 +129,6 @@ class StatusNotifierItem(object):
 
     def secondary_action(self, event: Gdk.EventButton):
         self.item_proxy.SecondaryAction(event.x, event.y)
+
+    def scroll(self, distance, direction):
+        self.item_proxy.Scroll(distance, direction)

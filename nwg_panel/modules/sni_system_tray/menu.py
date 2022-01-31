@@ -11,13 +11,21 @@ from dasbus.client.observer import DBusObserver
 
 
 class Menu(object):
-    def __init__(self, service_name, object_path, event_box, item):
+    def __init__(self, service_name, object_path, settings, event_box: Gtk.EventBox, item):
         self.service_name = service_name
         self.object_path = object_path
+        self.settings = settings
         self.event_box = event_box
         self.item = item
         self.session_bus = SessionMessageBus()
         self.menu_widget: typing.Union[None, DbusmenuGtk3.Menu] = None
+
+        self.distance_scrolled_x = 0
+        self.distance_scrolled_y = 0
+
+        self.event_box.connect("button-press-event", self.button_press_event_handler)
+        self.event_box.add_events(Gdk.EventMask.SCROLL_MASK | Gdk.EventMask.SMOOTH_SCROLL_MASK)
+        self.event_box.connect("scroll-event", self.scroll_event_handler)
 
         self.menu_observer = DBusObserver(
             message_bus=self.session_bus,
@@ -49,7 +57,6 @@ class Menu(object):
             dbus_object=self.object_path
         )
         self.menu_widget.show()
-        self.event_box.connect("button-press-event", self.button_press_event_handler)
 
     def menu_unavailable_handler(self, _observer):
         self.event_box.disconnect_by_func(self.button_press_event_handler)
@@ -69,3 +76,33 @@ class Menu(object):
             self.item.activate(event)
         elif event.button == 2:
             self.item.secondary_action(event)
+
+    def scroll_event_handler(self, _w, event: Gdk.EventScroll):
+        dx = 0
+        dy = 0
+        if event.direction == Gdk.ScrollDirection.UP:
+            dy = -1
+        elif event.direction == Gdk.ScrollDirection.DOWN:
+            dy = 1
+        elif event.direction == Gdk.ScrollDirection.LEFT:
+            dx = -1
+        elif event.direction == Gdk.ScrollDirection.RIGHT:
+            dx = 1
+        elif event.direction == Gdk.ScrollDirection.SMOOTH:
+            self.distance_scrolled_x += event.delta_x
+            self.distance_scrolled_y += event.delta_y
+
+            if self.distance_scrolled_x > self.settings["smooth-scrolling-threshold"]:
+                dx = max((self.distance_scrolled_x, 1.0))
+            elif self.distance_scrolled_x < self.settings["smooth-scrolling-threshold"]:
+                dx = min((self.distance_scrolled_x, -1.0))
+
+            if self.distance_scrolled_y > self.settings["smooth-scrolling-threshold"]:
+                dy = max((self.distance_scrolled_y, 1.0))
+            elif self.distance_scrolled_y > self.settings["smooth-scrolling-threshold"]:
+                dy = min((self.distance_scrolled_y, -1.0))
+
+        if dx != 0:
+            self.item.scroll(dx, "horizontal")
+        if dy != 0:
+            self.item.scroll(dy, "vertical")

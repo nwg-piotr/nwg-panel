@@ -106,12 +106,15 @@ class Tray(Gtk.EventBox):
 
         check_key(settings, "icon-size", 16)
         check_key(settings, "root-css-name", "tray")
+        check_key(settings, "inner-css-name", "inner-tray")
+        check_key(settings, "smooth-scrolling-threshold", 0)
 
         self.set_property("name", settings["root-css-name"])
 
         self.icon_size = settings["icon-size"]
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        self.box.set_property("name", settings["inner-css-name"])
         self.add(self.box)
 
         self.items = {}
@@ -143,6 +146,7 @@ class Tray(Gtk.EventBox):
                 self.menu = Menu(
                     service_name=item.service_name,
                     object_path=item.properties["Menu"],
+                    settings=self.settings,
                     event_box=event_box,
                     item=item
                 )
