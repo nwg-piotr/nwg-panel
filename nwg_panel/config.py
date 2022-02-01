@@ -503,7 +503,12 @@ class EditorWrapper(object):
             btn.set_tooltip_text("The 'swaync' package required")
 
         btn = builder.get_object("btn-tray")
-        btn.connect("clicked", self.edit_tray)
+        try:
+            import dasbus
+            btn.connect("clicked", self.edit_tray)
+        except ModuleNotFoundError:
+            btn.set_sensitive(False)
+            btn.set_tooltip_text("The 'python-dasbus' package required")
 
         btn = builder.get_object("btn-executors")
         btn.connect("clicked", self.select_executor)
