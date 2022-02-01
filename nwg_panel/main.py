@@ -30,7 +30,7 @@ from gi.repository import GtkLayerShell, GLib
 try:
     import psutil
 except ModuleNotFoundError:
-    print("You need to install python-psutil package")
+    print("You need to install python-psutil package", file=sys.stderr)
     sys.exit(1)
 
 from nwg_panel.tools import *
@@ -50,14 +50,19 @@ from nwg_panel.modules.menu_start import MenuStart
 dir_name = os.path.dirname(__file__)
 
 from nwg_panel import common
-from nwg_panel.modules import sni_system_tray
+tray_available = False
+try:
+    from nwg_panel.modules import sni_system_tray
+    tray_available = True
+except:
+    print("Couldn't load system tray, is 'python-dbus' installed?", file=sys.stderr)
 
 sway = os.getenv('SWAYSOCK') is not None
 if sway:
     try:
         from i3ipc import Connection
     except ModuleNotFoundError:
-        print("'python-i3ipc' package required on sway, terminating")
+        print("'python-i3ipc' package required on sway, terminating", file=sys.stderr)
         sys.exit(1)
 
     common.i3 = Connection()
@@ -73,7 +78,8 @@ def signal_handler(sig, frame):
     desc = {2: "SIGINT", 15: "SIGTERM", 10: "SIGUSR1"}
     if sig == 2 or sig == 15:
         print("Terminated with {}".format(desc[sig]))
-        sni_system_tray.deinit_tray()
+        if tray_available:
+            sni_system_tray.deinit_tray()
         Gtk.main_quit()
     elif sig == sig_dwl:
         refresh_dwl()
@@ -147,7 +153,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
                     container.pack_start(taskbar, False, False, panel["items-padding"])
                 else:
-                    print("'sway-taskbar' ignored")
+                    print("'sway-taskbar' ignored", file=sys.stderr)
             else:
                 print("'sway-taskbar' not defined in this panel instance")
 
@@ -171,7 +177,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 container.pack_start(scratchpad, False, False, panel["items-padding"])
                 common.scratchpads_list.append(scratchpad)
             else:
-                print("'scratchpad' ignored")
+                print("'scratchpad' ignored", file=sys.stderr)
 
         if "button-" in item:
             if item in panel:
@@ -218,9 +224,9 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 if dwl_data:
                     dwl_tags.refresh(dwl_data)
             else:
-                print("{} data file not found".format(common.dwl_data_file))
+                print("{} data file not found".format(common.dwl_data_file), file=sys.stderr)
 
-        if item == "tray":
+        if item == "tray" and tray_available:
             tray_settings = {}
             if "tray" in panel:
                 tray_settings = panel["tray"]
@@ -235,7 +241,7 @@ def main():
     if cache_dir:
         common.dwl_data_file = os.path.join(cache_dir, "nwg-dwl-data")
     else:
-        print("Couldn't determine cache directory")
+        print("Couldn't determine cache directory", file=sys.stderr)
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-c",
@@ -317,7 +323,7 @@ def main():
     try:
         provider.load_from_path(os.path.join(common.config_dir, args.style))
     except Exception as e:
-        print(e)
+        print(e, file=sys.stderr)
 
     # Mirror bars to all outputs #48 (if panel["output"] == "All")
     to_remove = []
@@ -550,7 +556,7 @@ def main():
         common.outputs_num = len(common.outputs)
     Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 200, check_tree)
 
-    if len(common.tray_list) > 0:
+    if tray_available and len(common.tray_list) > 0:
         sni_system_tray.init_tray(common.tray_list)
 
     Gtk.main()
