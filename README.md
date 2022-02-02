@@ -1,4 +1,7 @@
 # nwg-panel
+
+This application is a part of the [nwg-shell](https://github.com/nwg-piotr/nwg-shell) project.
+
 I have been using sway since 2019 and find it the most comfortable working environment, but... 
 Have you ever missed all the graphical bells and whistles in your panel, we used to have in tint2? It happens to me. 
 That's why I decided to try to code a GTK-based panel, including best features from my two favourites: 
