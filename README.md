@@ -22,7 +22,7 @@ and customizable menu *(top right in the picture)*.
 
 ### SwayNC
 
-Provides integration of the Eric Reider's [Sway Notificaion Center](https://github.com/ErikReider/SwayNotificationCenter).
+Provides integration of the Eric Reider's [Sway Notification Center](https://github.com/ErikReider/SwayNotificationCenter).
 
 ### Tray
 
