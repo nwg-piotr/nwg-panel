@@ -192,26 +192,31 @@ class Controls(Gtk.EventBox):
 
     def update_brightness(self):
         value = get_brightness(device=self.settings["backlight-device"])
-        icon_name = bri_icon_name(value)
+        if self.bri_value != value:
+            icon_name = bri_icon_name(value)
 
-        if icon_name != self.bri_icon_name:
-            update_image(self.bri_image, icon_name, self.icon_size, self.icons_path)
-            self.bri_icon_name = icon_name
+            if icon_name != self.bri_icon_name:
+                update_image(self.bri_image, icon_name, self.icon_size, self.icons_path)
+                self.bri_icon_name = icon_name
 
-        self.bri_value = value
-        if self.bri_label:
-            self.bri_label.set_text("{}%".format(value))
+            if self.bri_label:
+                self.bri_label.set_text("{}%".format(value))
+
+            self.bri_value = value
 
     def update_volume(self):
-        self.vol_value, self.vol_muted = get_volume()
-        icon_name = vol_icon_name(self.vol_value, self.vol_muted)
+        volume = get_volume()
+        if (self.vol_value, self.vol_muted != volume):
+            icon_name = vol_icon_name(*volume)
+            
+            if icon_name != self.vol_icon_name:
+                update_image(self.vol_image, icon_name, self.settings["icon-size"], self.icons_path)
+                self.vol_icon_name = icon_name
 
-        if icon_name != self.vol_icon_name:
-            update_image(self.vol_image, icon_name, self.settings["icon-size"], self.icons_path)
-            self.vol_icon_name = icon_name
+            if self.vol_label:
+                self.vol_label.set_text("{}%".format(volume[0]))
 
-        if self.vol_label:
-            self.vol_label.set_text("{}%".format(self.vol_value))
+            self.vol_value, self.vol_muted = volume
 
     def update_battery(self, value, charging):
         icon_name = bat_icon_name(value, charging)
