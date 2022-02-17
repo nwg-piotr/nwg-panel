@@ -208,7 +208,7 @@ class Controls(Gtk.EventBox):
         volume = get_volume()
         if (self.vol_value, self.vol_muted != volume):
             icon_name = vol_icon_name(*volume)
-            
+
             if icon_name != self.vol_icon_name:
                 update_image(self.vol_image, icon_name, self.settings["icon-size"], self.icons_path)
                 self.vol_icon_name = icon_name
@@ -652,12 +652,12 @@ class PopupWindow(Gtk.Window):
         return True
 
     def set_bri(self, slider):
-        set_brightness(slider, self.settings["backlight-device"])
         self.parent.bri_value = int(slider.get_value())
+        set_brightness(self.parent.bri_value, self.settings["backlight-device"])
 
     def set_vol(self, slider):
-        set_volume(slider)
         self.parent.vol_value = int(slider.get_value())
+        set_volume(self.parent.vol_value)
 
     def close_win(self, w, e):
         self.hide()

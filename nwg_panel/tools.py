@@ -395,8 +395,7 @@ def toggle_mute(*args):
         eprint("Couldn't toggle mute, 'pamixer' not found")
 
 
-def set_volume(slider):
-    percent = int(slider.get_value())
+def set_volume(percent):
     if nwg_panel.common.commands["pamixer"]:
         subprocess.call("pamixer --set-volume {}".format(percent).split())
     else:
@@ -426,22 +425,21 @@ def get_brightness(device=""):
     return brightness
 
 
-def set_brightness(slider, device=""):
-    value = int(slider.get_value())
-    if value == 0:
-        value = 1
+def set_brightness(percent, device=""):
+    if percent == 0:
+        percent = 1
     if nwg_panel.common.commands["light"]:
         if device:
-            subprocess.call("light -s {} -S {}".format(device, value).split())
+            subprocess.call("light -s {} -S {}".format(device, percent).split())
         else:
-            subprocess.call("light -S {}".format(value).split())
+            subprocess.call("light -S {}".format(percent).split())
     elif nwg_panel.common.commands["brightnessctl"]:
         if device:
-            subprocess.call("brightnessctl -d {} s {}%".format(device, value).split(),
+            subprocess.call("brightnessctl -d {} s {}%".format(device, percent).split(),
                             stdout=subprocess.DEVNULL,
                             stderr=subprocess.STDOUT)
         else:
-            subprocess.call("brightnessctl s {}%".format(value).split(),
+            subprocess.call("brightnessctl s {}%".format(percent).split(),
                             stdout=subprocess.DEVNULL,
                             stderr=subprocess.STDOUT)
     else:
