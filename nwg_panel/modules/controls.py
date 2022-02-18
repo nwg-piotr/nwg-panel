@@ -287,7 +287,9 @@ class PopupWindow(Gtk.Window):
         self.sink_box = None
 
         self.bri_scale = None
+        self.bri_scale_handler = None
         self.vol_scale = None
+        self.vol_scale_handler = None
         
         self.src_tag = 0
         
@@ -343,7 +345,7 @@ class PopupWindow(Gtk.Window):
             inner_hbox.pack_start(self.bri_image, False, False, 6)
 
             self.bri_scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
-            self.bri_scale.connect("value-changed", self.set_bri)
+            self.bri_scale_handler = self.bri_scale.connect("value-changed", self.set_bri)
 
             inner_hbox.pack_start(self.bri_scale, True, True, 5)
             add_sep = True
@@ -368,7 +370,7 @@ class PopupWindow(Gtk.Window):
 
             self.vol_scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
             self.vol_scale.set_value(self.parent.vol_value)
-            self.vol_scale.connect("value-changed", self.set_vol)
+            self.vol_scale_handler = self.vol_scale.connect("value-changed", self.set_vol)
 
             inner_hbox.pack_start(self.vol_scale, True, True, 5)
             if commands["pamixer"] and settings["output-switcher"]:
@@ -630,14 +632,16 @@ class PopupWindow(Gtk.Window):
                     update_image(self.vol_image, self.parent.vol_icon_name, self.icon_size, self.icons_path)
                     self.vol_icon_name = self.parent.vol_icon_name
 
-                self.vol_scale.set_value(self.parent.vol_value)
+                with self.vol_scale.handler_block(self.vol_scale_handler):
+                    self.vol_scale.set_value(self.parent.vol_value)
 
             if "brightness" in self.settings["components"]:
                 if self.parent.bri_icon_name != self.bri_icon_name:
                     update_image(self.bri_image, self.parent.bri_icon_name, self.icon_size, self.icons_path)
                     self.bri_icon_name = self.parent.bri_icon_name
 
-                self.bri_scale.set_value(self.parent.bri_value)
+                with self.bri_scale.handler_block(self.bri_scale_handler):
+                    self.bri_scale.set_value(self.parent.bri_value)
 
         return True
 
