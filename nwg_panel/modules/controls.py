@@ -632,6 +632,7 @@ class PopupWindow(Gtk.Window):
                     update_image(self.vol_image, self.parent.vol_icon_name, self.icon_size, self.icons_path)
                     self.vol_icon_name = self.parent.vol_icon_name
 
+                self.vol_scale.set_draw_value(False if self.parent.vol_value > 100 else True) # Dont display val out of scale
                 with self.vol_scale.handler_block(self.vol_scale_handler):
                     self.vol_scale.set_value(self.parent.vol_value)
 
