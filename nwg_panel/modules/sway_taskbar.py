@@ -81,7 +81,8 @@ class SwayTaskbar(Gtk.Box):
 class WorkspaceBox(Gtk.Box):
     def __init__(self, con, settings, autotiling):
         self.con = con
-        at_indicator = "a" if con.num in autotiling else ""
+        check_key(settings, "autotiling-indicator", "a")
+        at_indicator = settings["autotiling-indicator"] if con.num in autotiling else ""
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
 
         check_key(settings, "workspace-buttons", False)
