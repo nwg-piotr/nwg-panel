@@ -11,6 +11,7 @@ import sys
 import signal
 import gi
 import argparse
+import time
 
 from nwg_panel.__about__ import __version__
 
@@ -293,6 +294,7 @@ def main():
         try:
             pid = int(load_text_file(pid_file))
             os.kill(pid, signal.SIGINT)
+            time.sleep(0.5)
             print("Running instance killed, PID {}".format(pid))
         except:
             pass
