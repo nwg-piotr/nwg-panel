@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 
 import os
-import sys
-import subprocess
-import gi
 import signal
+import subprocess
+import sys
+
+import gi
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
@@ -454,7 +455,7 @@ class EditorWrapper(object):
                               "sway-workspaces",
                               "scratchpad",
                               "dwl-tags",
-        "tray"]
+                              "tray"]
 
         self.scrolled_window = builder.get_object("scrolled-window")
 

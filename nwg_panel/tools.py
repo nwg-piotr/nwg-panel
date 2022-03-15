@@ -250,7 +250,8 @@ def list_outputs(sway=False, tree=None, silent=False):
                 outputs_dict[item.name] = {"x": item.rect.x,
                                            "y": item.rect.y,
                                            "width": item.rect.width,
-                                           "height": item.rect.height}
+                                           "height": item.rect.height,
+                                           "monitor": None}
     elif os.getenv('WAYLAND_DISPLAY') is not None:
         if not silent:
             print("Running on Wayland, but not sway")
@@ -279,14 +280,16 @@ def list_outputs(sway=False, tree=None, silent=False):
                                                   'y': y,
                                                   'width': w,
                                                   'height': h,
-                                                  'transform': transform}
+                                                  'transform': transform,
+                                                  'monitor': None}
                         else:
                             outputs_dict[name] = {'name': name,
                                                   'x': x,
                                                   'y': y,
                                                   'width': h,
                                                   'height': w,
-                                                  'transform': transform}
+                                                  'transform': transform,
+                                                  'monitor': None}
         else:
             print("'wlr-randr' command not found, terminating")
             sys.exit(1)

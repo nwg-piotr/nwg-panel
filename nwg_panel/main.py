@@ -7,10 +7,11 @@ Author's email: nwg.piotr@gmail.com
 Copyright (c) 2021 Piotr Miller & Contributors
 License: MIT
 """
-import sys
-import signal
-import gi
 import argparse
+import signal
+import sys
+
+import gi
 
 from nwg_panel.__about__ import __version__
 
@@ -50,9 +51,11 @@ from nwg_panel.modules.menu_start import MenuStart
 dir_name = os.path.dirname(__file__)
 
 from nwg_panel import common
+
 tray_available = False
 try:
     from nwg_panel.modules import sni_system_tray
+
     tray_available = True
 except:
     print("Couldn't load system tray, is 'python-dbus' installed?", file=sys.stderr)
@@ -420,7 +423,7 @@ def main():
                 }
                 for key in defaults:
                     check_key(panel["menu-start-settings"], key, defaults[key])
-            
+
             if panel["menu-start"] != "off":
                 panel["menu-start-settings"]["horizontal-align"] = panel["menu-start"]
 
