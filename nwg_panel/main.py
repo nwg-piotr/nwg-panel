@@ -242,6 +242,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 def main():
     # Kill running instances, if any
     own_pid = os.getpid()
+    print(psutil.Process(own_pid))
     # We should never have more that 1, but just in case
     running_instances = []
 
@@ -263,6 +264,18 @@ def main():
         if p in pids:
             print("PID {} still alive, sending SIGKILL".format(p))
             os.kill(pid, signal.SIGKILL)
+
+    # If started with 'python <path>/main.py' the process won't be found by name. Let's use saved PID.
+    pid_file = os.path.join(temp_dir(), "nwg-panel.pid")
+    if os.path.isfile(pid_file):
+        try:
+            pid = int(load_text_file(pid_file))
+            os.kill(pid, signal.SIGKILL)
+            print("Running instance killed, PID {}".format(pid))
+        except:
+            pass
+
+    save_string(str(own_pid), pid_file)
 
     common.config_dir = get_config_dir()
     cache_dir = get_cache_dir()
