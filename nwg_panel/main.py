@@ -242,7 +242,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 def main():
     # Kill running instances, if any
     own_pid = os.getpid()
-    print(psutil.Process(own_pid))
+    own_process_name = psutil.Process(own_pid).name()
     # We should never have more that 1, but just in case
     running_instances = []
 
@@ -271,7 +271,7 @@ def main():
         try:
             pid = int(load_text_file(pid_file))
             os.kill(pid, signal.SIGKILL)
-            print("Running instance killed, PID {}".format(pid))
+            print("Running no name instance killed, PID {}".format(pid))
         except:
             pass
 
