@@ -251,20 +251,22 @@ def main():
             pid = proc.pid
             if pid != own_pid:
                 running_instances.append(pid)
-                # Try SIGINT, which we handle gentle
+                # The easy way: try SIGINT, which we handle gentle
                 print("Running instance found, PID {}, sending SIGINT".format(pid))
                 os.kill(pid, signal.SIGINT)
 
     # Give it half a second to die
     time.sleep(0.5)
-    # Overkill ;)
+
+    # The hard way, if something's still alive ;)
     pids = psutil.pids()
     for p in running_instances:
         if p in pids:
             print("PID {} still alive, sending SIGKILL".format(p))
             os.kill(p, signal.SIGKILL)
 
-    # If started e.g. with 'python <path>/main.py', the process won't be found by name. Let's use saved PID and SIGKILL.
+    # If started e.g. with 'python <path>/main.py', the process won't be found by name.
+    # Let's use saved PID and kill mercilessly. This should never happen in normal use.
     pid_file = os.path.join(temp_dir(), "nwg-panel.pid")
     if os.path.isfile(pid_file):
         try:
