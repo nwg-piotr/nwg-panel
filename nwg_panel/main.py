@@ -10,6 +10,7 @@ License: MIT
 import argparse
 import signal
 import sys
+import time
 
 import gi
 
@@ -239,6 +240,30 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
 
 def main():
+    # Kill running instances, if any
+    own_pid = os.getpid()
+    # We should never have more that 1, but just in case
+    running_instances = []
+
+    for proc in psutil.process_iter():
+        # kill 'nwg-panel', don't kill 'nwg-panel-config'
+        if "nwg-panel" in proc.name() and "-con" not in proc.name():
+            pid = proc.pid
+            if pid != own_pid:
+                running_instances.append(pid)
+                # Try SIGINT, which we handle gentle
+                print("Running instance found, PID {}, sending SIGINT".format(pid))
+                os.kill(pid, signal.SIGINT)
+
+    # Give it half a second to die
+    time.sleep(0.5)
+    # Overkill ;)
+    pids = psutil.pids()
+    for p in running_instances:
+        if p in pids:
+            print("PID {} still alive, sending SIGKILL".format(p))
+            os.kill(pid, signal.SIGKILL)
+
     common.config_dir = get_config_dir()
     cache_dir = get_cache_dir()
     if cache_dir:
@@ -289,17 +314,6 @@ def main():
 
     global restart_cmd
     restart_cmd = "nwg-panel -c {} -s {}".format(args.config, args.style)
-
-    # Try and kill already running instance if any
-    pid_file = os.path.join(temp_dir(), "nwg-panel.pid")
-    if os.path.isfile(pid_file):
-        try:
-            pid = int(load_text_file(pid_file))
-            os.kill(pid, signal.SIGINT)
-            print("Running instance killed, PID {}".format(pid))
-        except:
-            pass
-    save_string(str(os.getpid()), pid_file)
 
     save_string("-c {} -s {}".format(args.config, args.style), os.path.join(local_dir(), "args"))
 
