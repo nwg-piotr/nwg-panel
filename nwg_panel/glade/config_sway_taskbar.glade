@@ -2,57 +2,19 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <!-- n-columns=3 n-rows=9 -->
+  <!-- n-columns=3 n-rows=10 -->
   <object class="GtkGrid" id="grid">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="row-spacing">10</property>
     <property name="column-spacing">10</property>
     <child>
-      <object class="GtkCheckButton" id="all-outputs">
-        <property name="label" translatable="yes">All outputs</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">False</property>
-        <property name="draw-indicator">True</property>
-      </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">8</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkCheckButton" id="all-workspaces">
-        <property name="label" translatable="yes">All workspaces</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">False</property>
-        <property name="draw-indicator">True</property>
-      </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">8</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkCheckButton" id="workspace-buttons">
-        <property name="label" translatable="yes">Workspaces as buttons</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">False</property>
-        <property name="draw-indicator">True</property>
-      </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">7</property>
-      </packing>
-    </child>
-    <child>
       <object class="GtkCheckButton" id="show-layout">
         <property name="label" translatable="yes">Show layout</property>
         <property name="visible">True</property>
         <property name="can-focus">True</property>
         <property name="receives-default">False</property>
+        <property name="halign">start</property>
         <property name="draw-indicator">True</property>
       </object>
       <packing>
@@ -66,6 +28,7 @@
         <property name="visible">True</property>
         <property name="can-focus">True</property>
         <property name="receives-default">False</property>
+        <property name="halign">start</property>
         <property name="draw-indicator">True</property>
       </object>
       <packing>
@@ -79,6 +42,7 @@
         <property name="visible">True</property>
         <property name="can-focus">True</property>
         <property name="receives-default">False</property>
+        <property name="halign">start</property>
         <property name="draw-indicator">True</property>
       </object>
       <packing>
@@ -182,6 +146,7 @@
         <property name="tooltip-text" translatable="yes">Space-separated numbers of workspaces 
 you defined in sway config. We'll build the 
 context menu out of them.</property>
+        <property name="halign">start</property>
         <property name="stock">gtk-about</property>
       </object>
       <packing>
@@ -226,6 +191,79 @@ context menu out of them.</property>
         <property name="top-attach">0</property>
         <property name="width">3</property>
       </packing>
+    </child>
+    <child>
+      <object class="GtkCheckButton" id="all-outputs">
+        <property name="label" translatable="yes">All outputs</property>
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="receives-default">False</property>
+        <property name="halign">start</property>
+        <property name="draw-indicator">True</property>
+      </object>
+      <packing>
+        <property name="left-attach">0</property>
+        <property name="top-attach">9</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkCheckButton" id="all-workspaces">
+        <property name="label" translatable="yes">All workspaces</property>
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="receives-default">False</property>
+        <property name="halign">start</property>
+        <property name="draw-indicator">True</property>
+      </object>
+      <packing>
+        <property name="left-attach">1</property>
+        <property name="top-attach">9</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkCheckButton" id="workspace-buttons">
+        <property name="label" translatable="yes">Workspaces as buttons</property>
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="receives-default">False</property>
+        <property name="halign">start</property>
+        <property name="draw-indicator">True</property>
+      </object>
+      <packing>
+        <property name="left-attach">1</property>
+        <property name="top-attach">8</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkCheckButton" id="mark-autotiling">
+        <property name="label" translatable="yes">Mark autotiling</property>
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="receives-default">False</property>
+        <property name="halign">start</property>
+        <property name="draw-indicator">True</property>
+      </object>
+      <packing>
+        <property name="left-attach">1</property>
+        <property name="top-attach">7</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkCheckButton" id="mark-xwayland">
+        <property name="label" translatable="yes">Mark Xwayland</property>
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="receives-default">False</property>
+        <property name="halign">start</property>
+        <property name="draw-indicator">True</property>
+      </object>
+      <packing>
+        <property name="left-attach">0</property>
+        <property name="top-attach">8</property>
+      </packing>
+    </child>
+    <child>
+      <placeholder/>
     </child>
     <child>
       <placeholder/>

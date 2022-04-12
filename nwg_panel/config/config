@@ -95,6 +95,8 @@
       "show-layout": true,
       "workspace-buttons": false,
       "all-workspaces": true,
+      "mark-autotiling": true,
+      "mark-xwayland": true,
       "all-outputs": true
     },
     "sway-workspaces": {
@@ -212,6 +214,8 @@
       "show-layout": true,
       "workspace-buttons": false,
       "all-workspaces": true,
+      "mark-autotiling": true,
+      "mark-xwayland": true,
       "all-outputs": false
     },
     "sway-workspaces": {
