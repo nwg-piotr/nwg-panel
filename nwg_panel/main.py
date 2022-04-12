@@ -59,7 +59,7 @@ try:
 
     tray_available = True
 except:
-    print("Couldn't load system tray, is 'python-dbus' installed?", file=sys.stderr)
+    print("Couldn't load system tray, is 'python-dasbus' installed?", file=sys.stderr)
 
 sway = os.getenv('SWAYSOCK') is not None
 if sway:
