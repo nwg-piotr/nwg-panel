@@ -378,6 +378,10 @@ def main():
     panels = panels + to_append
 
     for panel in panels:
+        if panel["output"] and panel["output"] not in common.outputs:
+            print("Output '{}' not found".format(panel["output"]))
+            continue
+
         check_key(panel, "icons", "")
         icons_path = ""
         if panel["icons"] == "light":
