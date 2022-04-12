@@ -378,8 +378,14 @@ def main():
     panels = panels + to_append
 
     for panel in panels:
-        if panel["output"] and panel["output"] not in common.outputs:
-            print("Output '{}' not found".format(panel["output"]))
+        monitor = None
+        try:
+            monitor = common.outputs[panel["output"]]["monitor"]
+        except KeyError:
+            pass
+
+        if panel["output"] and not monitor:
+            print("Couldn't assign a Gdk.Monitor to output '{}'".format(panel["output"]))
             continue
 
         check_key(panel, "icons", "")
