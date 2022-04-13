@@ -16,6 +16,8 @@ class SwayTaskbar(Gtk.Box):
         check_key(settings, "workspace-menu", [1, 2, 3, 4, 5, 6, 7, 8])
         check_key(settings, "task-padding", 0)
         check_key(settings, "all-workspaces", True)
+        check_key(settings, "mark-autotiling", True)
+        check_key(settings, "mark-xwayland", True)
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=settings["workspaces-spacing"])
         self.settings = settings
         self.display_name = display_name
@@ -23,7 +25,7 @@ class SwayTaskbar(Gtk.Box):
         self.tree = i3.get_tree()
         self.displays_tree = self.list_tree()
 
-        self.autotiling = load_autotiling()
+        self.autotiling = load_autotiling() if settings["mark-autotiling"] else []
 
         self.build_box()
         self.ipc_data = {}
@@ -156,6 +158,8 @@ class WindowBox(Gtk.EventBox):
         if con.name:
             check_key(settings, "show-app-name", True)
             name = con.name[:settings["name-max-len"]] if len(con.name) > settings["name-max-len"] else con.name
+            if settings["mark-xwayland"] and not con.app_id:
+                name = "X|" + name
             if settings["show-app-name"]:
                 check_key(settings, "name-max-len", 10)
                 label = Gtk.Label(name)

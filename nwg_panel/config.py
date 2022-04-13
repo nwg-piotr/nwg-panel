@@ -88,6 +88,8 @@ SKELETON_PANEL: dict = {
         "show-layout": True,
         "workspace-buttons": True,
         "all-workspaces": True,
+        "mark-autotiling": True,
+        "mark-xwayland": True,
         "all-outputs": False
     },
     "sway-workspaces": {
@@ -879,6 +881,8 @@ class EditorWrapper(object):
             "show-layout": True,
             "workspace-buttons": True,
             "all-workspaces": True,
+            "mark-autotiling": True,
+            "mark-xwayland": True,
             "all-outputs": False
         }
         for key in defaults:
@@ -934,6 +938,12 @@ class EditorWrapper(object):
         self.ckb_all_workspaces = builder.get_object("all-workspaces")
         self.ckb_all_workspaces.set_active(settings["all-workspaces"])
 
+        self.ckb_mark_autotiling = builder.get_object("mark-autotiling")
+        self.ckb_mark_autotiling.set_active(settings["mark-autotiling"])
+
+        self.ckb_mark_xwayland = builder.get_object("mark-xwayland")
+        self.ckb_mark_xwayland.set_active(settings["mark-xwayland"])
+
         self.ckb_all_outputs = builder.get_object("all-outputs")
         self.ckb_all_outputs.set_active(settings["all-outputs"])
 
@@ -964,29 +974,21 @@ class EditorWrapper(object):
         if val is not None:
             settings["task-padding"] = int(val)
 
-        val = self.ckb_show_app_icon.get_active()
-        if val is not None:
-            settings["show-app-icon"] = val
+        settings["show-app-icon"] = self.ckb_show_app_icon.get_active()
 
-        val = self.ckb_show_app_name.get_active()
-        if val is not None:
-            settings["show-app-name"] = val
+        settings["show-app-name"] = self.ckb_show_app_name.get_active()
 
-        val = self.ckb_show_layout.get_active()
-        if val is not None:
-            settings["show-layout"] = val
+        settings["show-layout"] = self.ckb_show_layout.get_active()
 
-        val = self.workspace_buttons.get_active()
-        if val is not None:
-            settings["workspace-buttons"] = val
+        settings["workspace-buttons"] = self.workspace_buttons.get_active()
 
-        val = self.ckb_all_workspaces.get_active()
-        if val is not None:
-            settings["all-workspaces"] = val
+        settings["all-workspaces"] = self.ckb_all_workspaces.get_active()
 
-        val = self.ckb_all_outputs.get_active()
-        if val is not None:
-            settings["all-outputs"] = val
+        settings["mark-autotiling"] = self.ckb_mark_autotiling.get_active()
+
+        settings["mark-xwayland"] = self.ckb_mark_xwayland.get_active()
+
+        settings["all-outputs"] = self.ckb_all_outputs.get_active()
 
         save_json(self.config, self.file)
 
