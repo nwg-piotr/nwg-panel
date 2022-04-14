@@ -105,6 +105,7 @@ SKELETON_PANEL: dict = {
     "clock": {
         "format": "%a, %d. %b  %H:%M:%S",
         "tooltip-text": "",
+        "tooltip-date-format": False,
         "on-left-click": "",
         "on-middle-click": "",
         "on-right-click": "",
@@ -1000,6 +1001,7 @@ class EditorWrapper(object):
         defaults = {
             "format": "%a, %d. %b  %H:%M:%S",
             "tooltip-text": "",
+            "tooltip-date-format": False,
             "on-left-click": "",
             "on-middle-click": "",
             "on-right-click": "",
@@ -1020,6 +1022,9 @@ class EditorWrapper(object):
 
         self.eb_tooltip_text = builder.get_object("tooltip-text")
         self.eb_tooltip_text.set_text(settings["tooltip-text"])
+
+        self.eb_tooltip_date = builder.get_object("tooltip-date")
+        self.eb_tooltip_date.set_active(settings["tooltip-date-format"])
 
         self.eb_on_left_click = builder.get_object("on-left-click")
         self.eb_on_left_click.set_text(settings["on-left-click"])
@@ -1057,6 +1062,7 @@ class EditorWrapper(object):
 
         settings["format"] = self.eb_format.get_text()
         settings["tooltip-text"] = self.eb_tooltip_text.get_text()
+        settings["tooltip-date-format"] = self.eb_tooltip_date.get_active()
         settings["on-left-click"] = self.eb_on_left_click.get_text()
         settings["on-middle-click"] = self.eb_on_middle_click.get_text()
         settings["on-right-click"] = self.eb_on_right_click.get_text()
