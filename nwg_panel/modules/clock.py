@@ -27,6 +27,7 @@ class Clock(Gtk.EventBox):
         check_key(settings, "root-css-name", "root-clock")
         check_key(settings, "css-name", "clock")
         check_key(settings, "tooltip-text", "")
+        check_key(settings, "tooltip-date-format", False)
         check_key(settings, "on-left-click", "")
         check_key(settings, "on-right-click", "")
         check_key(settings, "on-middle-click", "")
@@ -59,8 +60,10 @@ class Clock(Gtk.EventBox):
         if settings["interval"] > 0:
             Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
 
-    def update_widget(self, output):
+    def update_widget(self, output, tooltip=""):
         self.label.set_text(output)
+        if self.settings["tooltip-date-format"] and tooltip:
+            self.set_tooltip_text(tooltip)
 
         return False
 
@@ -68,7 +71,8 @@ class Clock(Gtk.EventBox):
         now = datetime.now()
         try:
             time = now.strftime(self.settings["format"])
-            GLib.idle_add(self.update_widget, time)
+            tooltip = now.strftime(self.settings["tooltip-text"])
+            GLib.idle_add(self.update_widget, time, tooltip)
         except Exception as e:
             print(e)
 

@@ -250,6 +250,7 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="tooltip-text" translatable="yes">See 'man date' for format details</property>
+        <property name="halign">start</property>
         <property name="stock">gtk-about</property>
       </object>
       <packing>
@@ -258,7 +259,19 @@
       </packing>
     </child>
     <child>
-      <placeholder/>
+      <object class="GtkCheckButton" id="tooltip-date">
+        <property name="label" translatable="yes">date format</property>
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="receives-default">False</property>
+        <property name="tooltip-text" translatable="yes">Allow using 'date' format for tooltip text</property>
+        <property name="halign">start</property>
+        <property name="draw-indicator">True</property>
+      </object>
+      <packing>
+        <property name="left-attach">2</property>
+        <property name="top-attach">2</property>
+      </packing>
     </child>
     <child>
       <placeholder/>
