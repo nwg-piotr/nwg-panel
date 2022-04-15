@@ -71,7 +71,7 @@ class Clock(Gtk.EventBox):
         now = datetime.now()
         try:
             time = now.strftime(self.settings["format"])
-            tooltip = now.strftime(self.settings["tooltip-text"])
+            tooltip = now.strftime(self.settings["tooltip-text"]) if self.settings["tooltip-date-format"] else ""
             GLib.idle_add(self.update_widget, time, tooltip)
         except Exception as e:
             print(e)
