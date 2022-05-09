@@ -158,28 +158,11 @@ class PanelSelector(Gtk.Window):
 
         self.outer_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.add(self.outer_box)
-        ivbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        self.outer_box.pack_start(ivbox, False, False, 10)
-        logo = Gtk.Image()
-        update_image(logo, "nwg-panel", 48)
-        ivbox.pack_start(logo, True, False, 10)
-        label = Gtk.Label()
-        try:
-            ver = __version__
-        except:
-            ver = ""
-        label.set_markup('nwg-panel {} <a href="https://github.com/nwg-piotr/nwg-panel">GitHub</a>'.format(ver))
-        ivbox.pack_start(label, True, False, 0)
-
-        label = Gtk.Label()
-        status = cmd2string("nwg-menu -v") if self.plugin_menu_start else "not installed"
-        label.set_markup(
-            'MenuStart plugin: {} <a href="https://github.com/nwg-piotr/nwg-menu">GitHub</a>'.format(status))
-        ivbox.pack_start(label, True, False, 0)
 
         self.scrolled_window = Gtk.ScrolledWindow()
         self.scrolled_window.set_propagate_natural_width(True)
         self.scrolled_window.set_propagate_natural_height(True)
+        self.scrolled_window.set_property("margin-top", 12)
         max_height = 0
         for key in outputs:
             h = outputs[key]["height"]
@@ -194,14 +177,28 @@ class PanelSelector(Gtk.Window):
         self.scrolled_window.add(vbox)
 
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        vbox.pack_start(self.hbox, True, False, 20)
+        vbox.pack_start(self.hbox, True, False, 12)
         listboxes = self.build_listboxes()
-        self.hbox.pack_start(listboxes, True, True, 20)
+        self.hbox.pack_start(listboxes, True, True, 12)
 
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        self.outer_box.pack_end(hbox, False, False, 20)
+
+        logo = Gtk.Image.new_from_icon_name("nwg-panel", Gtk.IconSize.LARGE_TOOLBAR)
+        logo.set_property("margin-left", 12)
+        hbox.pack_start(logo, False, False, 0)
+        label = Gtk.Label()
+        try:
+            ver = __version__
+        except:
+            ver = ""
+        label.set_markup('<b>nwg-panel</b> v{} <a href="https://github.com/nwg-piotr/nwg-panel">GitHub</a>'.format(ver))
+        hbox.pack_start(label, False, False, 0)
+
+        self.outer_box.pack_end(hbox, False, False, 18)
+
         inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        hbox.pack_start(inner_hbox, True, True, 20)
+        hbox.pack_start(inner_hbox, True, True, 12)
+
         label = Gtk.Label()
         label.set_text("New file:")
         label.set_halign(Gtk.Align.START)
@@ -215,6 +212,10 @@ class PanelSelector(Gtk.Window):
 
         btn = Gtk.Button.new_with_label("Add/delete files")
         btn.connect("clicked", self.add_delete_files)
+        inner_hbox.pack_end(btn, False, False, 0)
+
+        btn = Gtk.Button.new_with_label("Close")
+        btn.connect("clicked", Gtk.main_quit)
         inner_hbox.pack_end(btn, False, False, 0)
 
         self.show_all()
