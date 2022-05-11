@@ -2,193 +2,205 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <!-- n-columns=3 n-rows=7 -->
-  <object class="GtkGrid" id="grid">
+  <object class="GtkFrame" id="frame">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="row-spacing">10</property>
-    <property name="column-spacing">10</property>
+    <property name="label-xalign">0.5</property>
+    <property name="shadow-type">out</property>
     <child>
-      <object class="GtkImage">
+      <!-- n-columns=3 n-rows=7 -->
+      <object class="GtkGrid" id="grid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="tooltip-text" translatable="yes">Space-separated numbers 
+        <property name="margin-start">6</property>
+        <property name="margin-end">6</property>
+        <property name="margin-top">6</property>
+        <property name="margin-bottom">6</property>
+        <property name="row-spacing">10</property>
+        <property name="column-spacing">10</property>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">Space-separated numbers 
 of workspaces to show</property>
-        <property name="double-buffered">False</property>
-        <property name="stock">gtk-about</property>
+            <property name="double-buffered">False</property>
+            <property name="halign">start</property>
+            <property name="stock">gtk-about</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="numbers">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Workspaces to show:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="show-name">
+            <property name="label" translatable="yes">Show  window name</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="show-icon">
+            <property name="label" translatable="yes">Show focused window icon</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Window name lenght limit:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="name-length">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Icon size:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="image-size">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="mark-content">
+            <property name="label" translatable="yes">Mark non-empty WS</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">5</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="mark-autotiling">
+            <property name="label" translatable="yes">Mark-autotiling</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">5</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="show-layout">
+            <property name="label" translatable="yes">Show layout</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">6</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
       </object>
-      <packing>
-        <property name="left-attach">2</property>
-        <property name="top-attach">1</property>
-      </packing>
     </child>
-    <child>
-      <object class="GtkEntry" id="numbers">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-      </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">1</property>
-      </packing>
-    </child>
-    <child>
+    <child type="label">
       <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="halign">start</property>
-        <property name="label" translatable="yes">Workspaces to show</property>
+        <property name="label" translatable="yes">Module: SwayWorkspaces</property>
       </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">1</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="halign">start</property>
-        <property name="label" translatable="yes">Module :: SwayWorkspaces</property>
-        <attributes>
-          <attribute name="weight" value="bold"/>
-        </attributes>
-      </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">0</property>
-        <property name="width">2</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkCheckButton" id="show-name">
-        <property name="label" translatable="yes">Show  window name</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">False</property>
-        <property name="draw-indicator">True</property>
-      </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">2</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkCheckButton" id="show-icon">
-        <property name="label" translatable="yes">Show focused window icon</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">False</property>
-        <property name="draw-indicator">True</property>
-      </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">2</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="halign">start</property>
-        <property name="label" translatable="yes">Window name lenght limit</property>
-      </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">4</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkSpinButton" id="name-length">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-      </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">4</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="halign">start</property>
-        <property name="label" translatable="yes">Icon size</property>
-      </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">3</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkSpinButton" id="image-size">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-      </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">3</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkCheckButton" id="mark-content">
-        <property name="label" translatable="yes">Mark non-empty WS</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">False</property>
-        <property name="draw-indicator">True</property>
-      </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">5</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkCheckButton" id="mark-autotiling">
-        <property name="label" translatable="yes">Mark-autotiling</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">False</property>
-        <property name="draw-indicator">True</property>
-      </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">5</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkCheckButton" id="show-layout">
-        <property name="label" translatable="yes">Show layout</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">False</property>
-        <property name="draw-indicator">True</property>
-      </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">6</property>
-      </packing>
-    </child>
-    <child>
-      <placeholder/>
-    </child>
-    <child>
-      <placeholder/>
-    </child>
-    <child>
-      <placeholder/>
-    </child>
-    <child>
-      <placeholder/>
-    </child>
-    <child>
-      <placeholder/>
-    </child>
-    <child>
-      <placeholder/>
-    </child>
-    <child>
-      <placeholder/>
     </child>
   </object>
 </interface>
