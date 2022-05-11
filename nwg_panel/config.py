@@ -463,66 +463,66 @@ class EditorWrapper(object):
 
         self.scrolled_window = builder.get_object("scrolled-window")
 
-        btn = builder.get_object("btn-panel")
-        btn.connect("clicked", self.edit_panel)
+        eb = builder.get_object("eb-panel")
+        eb.connect("button-press-event", self.edit_panel)
 
-        btn = builder.get_object("btn-modules-left")
-        btn.connect("clicked", self.edit_modules, "left")
+        eb = builder.get_object("eb-modules-left")
+        eb.connect("button-press-event", self.edit_modules, "left")
 
-        btn = builder.get_object("btn-modules-center")
-        btn.connect("clicked", self.edit_modules, "center")
+        eb = builder.get_object("eb-modules-center")
+        eb.connect("button-press-event", self.edit_modules, "center")
 
-        btn = builder.get_object("btn-modules-right")
-        btn.connect("clicked", self.edit_modules, "right")
+        eb = builder.get_object("eb-modules-right")
+        eb.connect("button-press-event", self.edit_modules, "right")
 
-        btn = builder.get_object("btn-controls")
-        btn.connect("clicked", self.controls_menu)
+        eb = builder.get_object("eb-controls")
+        eb.connect("button-press-event", self.controls_menu)
 
-        btn = builder.get_object("btn-menu-start")
-        if plugin_menu_start:
-            btn.connect("clicked", self.edit_menu_start)
-        else:
-            btn.set_sensitive(False)
-            btn.set_tooltip_text("Plugin not found")
-
-        btn = builder.get_object("btn-clock")
-        btn.connect("clicked", self.edit_clock)
-
-        btn = builder.get_object("btn-playerctl")
-        btn.connect("clicked", self.edit_playerctl)
-
-        btn = builder.get_object("btn-sway-taskbar")
-        btn.connect("clicked", self.edit_sway_taskbar)
-
-        btn = builder.get_object("btn-sway-workspaces")
-        btn.connect("clicked", self.edit_sway_workspaces)
-
-        btn = builder.get_object("btn-scratchpad")
-        btn.connect("clicked", self.edit_scratchpad)
-
-        btn = builder.get_object("btn-swaync")
+        eb = builder.get_object("eb-swaync")
         if is_command("swaync"):
-            btn.connect("clicked", self.edit_swaync)
+            eb.connect("button-press-event", self.edit_swaync)
         else:
-            btn.set_sensitive(False)
-            btn.set_tooltip_text("The 'swaync' package required")
+            eb.set_sensitive(False)
+            eb.set_tooltip_text("'swaync' package required")
 
-        btn = builder.get_object("btn-tray")
+        eb = builder.get_object("eb-tray")
         try:
             import dasbus
-            btn.connect("clicked", self.edit_tray)
+            eb.connect("button-press-event", self.edit_tray)
         except ModuleNotFoundError:
-            btn.set_sensitive(False)
-            btn.set_tooltip_text("The 'python-dasbus' package required")
+            eb.set_sensitive(False)
+            eb.set_tooltip_text("'python-dasbus' package required")
 
-        btn = builder.get_object("btn-executors")
-        btn.connect("clicked", self.select_executor)
+        eb = builder.get_object("eb-clock")
+        eb.connect("button-press-event", self.edit_clock)
 
-        btn = builder.get_object("btn-buttons")
-        btn.connect("clicked", self.select_button)
+        eb = builder.get_object("eb-playerctl")
+        eb.connect("button-press-event", self.edit_playerctl)
 
-        btn = builder.get_object("btn-dwl-tags")
-        btn.connect("clicked", self.edit_dwl_tags)
+        eb = builder.get_object("eb-sway-taskbar")
+        eb.connect("button-press-event", self.edit_sway_taskbar)
+
+        eb = builder.get_object("eb-sway-workspaces")
+        eb.connect("button-press-event", self.edit_sway_workspaces)
+
+        eb = builder.get_object("eb-scratchpad")
+        eb.connect("button-press-event", self.edit_scratchpad)
+
+        eb = builder.get_object("eb-dwl-tags")
+        eb.connect("button-press-event", self.edit_dwl_tags)
+
+        eb = builder.get_object("eb-executors")
+        eb.connect("button-press-event", self.select_executor)
+
+        eb = builder.get_object("eb-buttons")
+        eb.connect("button-press-event", self.select_button)
+
+        eb = builder.get_object("eb-menu-start")
+        if plugin_menu_start:
+            eb.connect("button-press-event", self.edit_menu_start)
+        else:
+            eb.set_sensitive(False)
+            eb.set_tooltip_text("'nwg-menu' package required")
 
         btn = builder.get_object("btn-close")
         btn.connect("clicked", self.quit)
@@ -609,7 +609,7 @@ class EditorWrapper(object):
         self.check_defaults()
         self.edited = "panel"
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_panel.glade"))
-        grid = builder.get_object("grid")
+        frame = builder.get_object("frame")
 
         self.eb_name = builder.get_object("name")
         self.eb_name.set_text(self.panel["name"])
@@ -727,7 +727,7 @@ class EditorWrapper(object):
 
         for item in self.scrolled_window.get_children():
             item.destroy()
-        self.scrolled_window.add(grid)
+        self.scrolled_window.add(frame)
 
     def on_auto_toggle(self, checkbutton, sb_width, cb_output):
         if not checkbutton.get_active():
@@ -891,7 +891,7 @@ class EditorWrapper(object):
             check_key(settings, key, defaults[key])
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_sway_taskbar.glade"))
-        grid = builder.get_object("grid")
+        frame = builder.get_object("frame")
 
         self.eb_workspace_menu = builder.get_object("workspace-menu")
         workspaces = settings["workspace-menu"]
@@ -951,7 +951,7 @@ class EditorWrapper(object):
 
         for item in self.scrolled_window.get_children():
             item.destroy()
-        self.scrolled_window.add(grid)
+        self.scrolled_window.add(frame)
 
     def update_sway_taskbar(self):
         settings = self.panel["sway-taskbar"]
@@ -1016,7 +1016,7 @@ class EditorWrapper(object):
             check_key(settings, key, defaults[key])
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_clock.glade"))
-        grid = builder.get_object("grid")
+        frame = builder.get_object("frame")
 
         self.eb_format = builder.get_object("format")
         self.eb_format.set_text(settings["format"])
@@ -1056,7 +1056,7 @@ class EditorWrapper(object):
 
         for item in self.scrolled_window.get_children():
             item.destroy()
-        self.scrolled_window.add(grid)
+        self.scrolled_window.add(frame)
 
     def update_clock(self):
         settings = self.panel["clock"]
@@ -1103,7 +1103,7 @@ class EditorWrapper(object):
             check_key(settings, key, defaults[key])
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_swaync.glade"))
-        grid = builder.get_object("grid")
+        frame = builder.get_object("frame")
 
         self.nc_tooltip_text = builder.get_object("tooltip-text")
         self.nc_tooltip_text.set_text(settings["tooltip-text"])
@@ -1146,7 +1146,7 @@ class EditorWrapper(object):
 
         for item in self.scrolled_window.get_children():
             item.destroy()
-        self.scrolled_window.add(grid)
+        self.scrolled_window.add(frame)
 
     def update_swaync(self):
         settings = self.panel["swaync"]
@@ -1188,7 +1188,7 @@ class EditorWrapper(object):
             check_key(settings, key, defaults[key])
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_tray.glade"))
-        grid = builder.get_object("grid")
+        frame = builder.get_object("frame")
 
         self.nc_icon_size = builder.get_object("icon-size")
         self.nc_icon_size.set_numeric(True)
@@ -1210,7 +1210,7 @@ class EditorWrapper(object):
 
         for item in self.scrolled_window.get_children():
             item.destroy()
-        self.scrolled_window.add(grid)
+        self.scrolled_window.add(frame)
 
     def update_tray(self):
         settings = self.panel["tray"]
@@ -1239,7 +1239,7 @@ class EditorWrapper(object):
             check_key(settings, key, defaults[key])
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_playerctl.glade"))
-        grid = builder.get_object("grid")
+        frame = builder.get_object("frame")
 
         self.cb_buttons_position = builder.get_object("buttons-position")
         self.cb_buttons_position.set_active_id(settings["buttons-position"])
@@ -1270,7 +1270,7 @@ class EditorWrapper(object):
 
         for item in self.scrolled_window.get_children():
             item.destroy()
-        self.scrolled_window.add(grid)
+        self.scrolled_window.add(frame)
 
     def update_playerctl(self):
         settings = self.panel["playerctl"]
@@ -1308,7 +1308,7 @@ class EditorWrapper(object):
             check_key(settings, key, defaults[key])
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_sway_workspaces.glade"))
-        grid = builder.get_object("grid")
+        frame = builder.get_object("frame")
 
         self.eb_workspaces_menu = builder.get_object("numbers")
         workspaces = settings["numbers"]
@@ -1347,7 +1347,7 @@ class EditorWrapper(object):
 
         for item in self.scrolled_window.get_children():
             item.destroy()
-        self.scrolled_window.add(grid)
+        self.scrolled_window.add(frame)
 
     def update_sway_workspaces(self):
         settings = self.panel["sway-workspaces"]
@@ -1410,7 +1410,7 @@ class EditorWrapper(object):
             check_key(settings, key, defaults[key])
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_menu_start.glade"))
-        grid = builder.get_object("grid")
+        frame = builder.get_object("frame")
 
         self.ms_window_width = builder.get_object("width")
         self.ms_window_width.set_numeric(True)
@@ -1495,7 +1495,7 @@ class EditorWrapper(object):
 
         for item in self.scrolled_window.get_children():
             item.destroy()
-        self.scrolled_window.add(grid)
+        self.scrolled_window.add(frame)
 
     def update_menu_start(self):
         settings = self.panel["menu-start-settings"]
@@ -1554,7 +1554,7 @@ class EditorWrapper(object):
             check_key(settings, key, defaults[key])
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_scratchpad.glade"))
-        grid = builder.get_object("grid")
+        frame = builder.get_object("frame")
 
         self.scratchpad_css_name = builder.get_object("css-name")
         self.scratchpad_css_name.set_text(settings["css-name"])
@@ -1567,7 +1567,7 @@ class EditorWrapper(object):
 
         for item in self.scrolled_window.get_children():
             item.destroy()
-        self.scrolled_window.add(grid)
+        self.scrolled_window.add(frame)
 
     def update_scratchpad(self, *args):
         settings = self.panel["scratchpad"]
@@ -1589,7 +1589,7 @@ class EditorWrapper(object):
             check_key(settings, key, defaults[key])
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_dwl_tags.glade"))
-        grid = builder.get_object("grid")
+        frame = builder.get_object("frame")
 
         self.dwl_tag_names = builder.get_object("tag-names")
         self.dwl_tag_names.set_text(settings["tag-names"])
@@ -1602,7 +1602,7 @@ class EditorWrapper(object):
 
         for item in self.scrolled_window.get_children():
             item.destroy()
-        self.scrolled_window.add(grid)
+        self.scrolled_window.add(frame)
 
     def update_dwl_tags(self, *args):
         settings = self.panel["dwl-tags"]
@@ -1611,7 +1611,7 @@ class EditorWrapper(object):
 
         save_json(self.config, self.file)
 
-    def select_executor(self, btn):
+    def select_executor(self, ebox, event):
         self.edited = "executors"
         menu = Gtk.Menu()
         executors = []  # Why the list? We need the number of executors.
@@ -1634,7 +1634,7 @@ class EditorWrapper(object):
             menu.append(item)
 
         menu.show_all()
-        menu.popup_at_widget(btn, Gdk.Gravity.EAST, Gdk.Gravity.WEST, None)
+        menu.popup_at_widget(ebox.get_parent(), Gdk.Gravity.EAST, Gdk.Gravity.WEST, None)
 
     def edit_executor(self, item, name, new=False):
         self.load_panel()
@@ -1658,7 +1658,7 @@ class EditorWrapper(object):
             check_key(settings, key, defaults[key])
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_executor.glade"))
-        grid = builder.get_object("grid")
+        frame = builder.get_object("frame")
 
         self.executor_name = builder.get_object("name")
         self.executor_name.set_text(name[9:])
@@ -1716,7 +1716,7 @@ class EditorWrapper(object):
 
         for item in self.scrolled_window.get_children():
             item.destroy()
-        self.scrolled_window.add(grid)
+        self.scrolled_window.add(frame)
 
     def check_and_save_to_db(self, btn, name, settings):
         if name not in self.executors_base:
@@ -1792,11 +1792,11 @@ class EditorWrapper(object):
 
     def import_executor(self, item):
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/executor_import.glade"))
-        grid = builder.get_object("grid")
+        frame = builder.get_object("frame")
 
         for item in self.scrolled_window.get_children():
             item.destroy()
-        self.scrolled_window.add(grid)
+        self.scrolled_window.add(frame)
 
         self.ie_combo = builder.get_object("select")
         for key in self.executors_base:
@@ -1881,7 +1881,7 @@ class EditorWrapper(object):
             self.ie_btn_delete.set_sensitive(True)
             self.ie_btn_import.set_sensitive(True)
 
-    def select_button(self, btn):
+    def select_button(self, ebox, event):
         self.edited = "buttons"
         menu = Gtk.Menu()
         buttons = []
@@ -1900,7 +1900,7 @@ class EditorWrapper(object):
         item.connect("activate", self.edit_button, "button-unnamed_{}".format(len(buttons) + 1),
                      True)
         menu.show_all()
-        menu.popup_at_widget(btn, Gdk.Gravity.EAST, Gdk.Gravity.WEST, None)
+        menu.popup_at_widget(ebox.get_parent(), Gdk.Gravity.EAST, Gdk.Gravity.WEST, None)
 
     def edit_button(self, item, name, new=False):
         self.load_panel()
@@ -1918,7 +1918,7 @@ class EditorWrapper(object):
             check_key(settings, key, defaults[key])
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_button.glade"))
-        grid = builder.get_object("grid")
+        frame = builder.get_object("frame")
 
         self.button_name = builder.get_object("name")
         self.button_name.set_text(name[7:])
@@ -1952,7 +1952,7 @@ class EditorWrapper(object):
 
         for item in self.scrolled_window.get_children():
             item.destroy()
-        self.scrolled_window.add(grid)
+        self.scrolled_window.add(frame)
 
     def update_button(self):
         config_key = "button-{}".format(self.button_name.get_text())
@@ -2002,7 +2002,7 @@ class EditorWrapper(object):
 
         save_json(self.config, self.file)
 
-    def edit_modules(self, item, which):
+    def edit_modules(self, ebox, event, which):
         self.load_panel()
 
         self.edited = "modules"
@@ -2020,6 +2020,7 @@ class EditorWrapper(object):
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_modules.glade"))
         modules_label = builder.get_object("label")
         modules_label.set_text("{} {}".format(modules_label.get_text(), which.capitalize()))
+        frame = builder.get_object("frame")
         self.modules_grid = builder.get_object("grid")
         self.modules_combo = builder.get_object("menu")
 
@@ -2042,7 +2043,7 @@ class EditorWrapper(object):
 
         for item in self.scrolled_window.get_children():
             item.destroy()
-        self.scrolled_window.add(self.modules_grid)
+        self.scrolled_window.add(frame)
 
     def refresh_listbox(self):
         if self.modules_grid.get_child_at(1, 2) is not None:
@@ -2110,7 +2111,7 @@ class EditorWrapper(object):
             self.modules.append(self.modules_combo.get_active_id())
             self.refresh_listbox()
 
-    def controls_menu(self, btn):
+    def controls_menu(self, ebox, event):
         menu = Gtk.Menu()
         item = Gtk.MenuItem.new_with_label("Settings")
         item.connect("activate", self.edit_controls)
@@ -2125,7 +2126,7 @@ class EditorWrapper(object):
         menu.append(item)
 
         menu.show_all()
-        menu.popup_at_widget(btn, Gdk.Gravity.EAST, Gdk.Gravity.WEST, None)
+        menu.popup_at_widget(ebox.get_parent(), Gdk.Gravity.EAST, Gdk.Gravity.WEST, None)
 
     def edit_controls(self, *args):
         self.load_panel()
@@ -2187,7 +2188,7 @@ class EditorWrapper(object):
             check_key(settings, key, defaults[key])
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_controls.glade"))
-        grid = builder.get_object("grid")
+        frame = builder.get_object("frame")
 
         self.ctrl_comp_brightness = builder.get_object("ctrl-comp-brightness")
         self.ctrl_comp_brightness.set_active("brightness" in settings["components"])
@@ -2271,7 +2272,7 @@ class EditorWrapper(object):
 
         for item in self.scrolled_window.get_children():
             item.destroy()
-        self.scrolled_window.add(grid)
+        self.scrolled_window.add(frame)
 
     def update_controls(self):
         settings = self.panel["controls-settings"]
@@ -2352,24 +2353,24 @@ class EditorWrapper(object):
         self.scrolled_window.add(custom_items_grid)
 
 
-class ControlsCustomItems(Gtk.Grid):
+class ControlsCustomItems(Gtk.Frame):
     def __init__(self, panel, config, file):
         check_key(panel, "controls-settings", {})
         self.settings = panel["controls-settings"]
-        Gtk.Grid.__init__(self)
-        self.set_column_spacing(10)
-        self.set_row_spacing(10)
+        Gtk.Frame.__init__(self)
+        self.set_label("Controls: Custom items")
+        self.grid = Gtk.Grid()
+        self.grid.set_column_spacing(10)
+        self.grid.set_row_spacing(10)
+        self.set_label_align(0.5, 0.5)
+        self.grid.set_property("margin", 6)
+        self.add(self.grid)
         check_key(self.settings, "custom-items", [])
         self.items = self.settings["custom-items"]
         self.icons = panel["icons"]
 
         self.config = config
         self.file = file
-
-        label = Gtk.Label()
-        label.set_text("Controls :: Custom items")
-        label.set_halign(Gtk.Align.START)
-        self.attach(label, 0, 0, 3, 1)
 
         self.refresh()
 
@@ -2456,9 +2457,9 @@ class ControlsCustomItems(Gtk.Grid):
 
         listbox.add(row)
 
-        if self.get_child_at(0, 1):
-            self.get_child_at(0, 1).destroy()
-        self.attach(listbox, 0, 1, 3, 1)
+        if self.grid.get_child_at(0, 1):
+            self.grid.get_child_at(0, 1).destroy()
+        self.grid.attach(listbox, 0, 1, 3, 1)
 
         self.show_all()
 
@@ -2500,13 +2501,18 @@ class ControlsCustomItems(Gtk.Grid):
         self.refresh()
 
 
-class ControlsUserMenu(Gtk.Grid):
+class ControlsUserMenu(Gtk.Frame):
     def __init__(self, panel, config, file):
         check_key(panel, "controls-settings", {})
         self.settings = panel["controls-settings"]
-        Gtk.Grid.__init__(self)
-        self.set_column_spacing(10)
-        self.set_row_spacing(10)
+        Gtk.Frame.__init__(self)
+        self.set_label("Controls: User menu")
+        self.grid = Gtk.Grid()
+        self.grid.set_column_spacing(10)
+        self.grid.set_row_spacing(10)
+        self.set_label_align(0.5, 0.5)
+        self.grid.set_property("margin", 6)
+        self.add(self.grid)
         check_key(self.settings, "menu", {})
         check_key(self.settings["menu"], "name", "unnamed")
         check_key(self.settings["menu"], "icon", "")
@@ -2519,11 +2525,6 @@ class ControlsUserMenu(Gtk.Grid):
 
         self.config = config
         self.file = file
-
-        label = Gtk.Label()
-        label.set_text("Controls :: User menu")
-        label.set_halign(Gtk.Align.START)
-        self.attach(label, 0, 0, 3, 1)
 
         self.refresh()
 
@@ -2554,7 +2555,7 @@ class ControlsUserMenu(Gtk.Grid):
         entry.connect("changed", self.update_icon, self.icons, "icon")
         hbox.pack_start(entry, False, False, 0)
 
-        self.attach(vbox, 0, 1, 3, 1)
+        self.grid.attach(vbox, 0, 1, 3, 1)
 
         listbox = Gtk.ListBox()
         listbox.set_selection_mode(Gtk.SelectionMode.NONE)
@@ -2623,9 +2624,9 @@ class ControlsUserMenu(Gtk.Grid):
 
         listbox.add(row)
 
-        if self.get_child_at(0, 2):
-            self.get_child_at(0, 2).destroy()
-        self.attach(listbox, 0, 2, 3, 1)
+        if self.grid.get_child_at(0, 2):
+            self.grid.get_child_at(0, 2).destroy()
+        self.grid.attach(listbox, 0, 2, 3, 1)
 
         self.show_all()
 
