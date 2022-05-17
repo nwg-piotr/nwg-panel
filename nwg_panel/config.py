@@ -444,7 +444,7 @@ class EditorWrapper(object):
         builder.add_from_file(os.path.join(dir_name, "glade/config_main.glade"))
 
         self.window = builder.get_object("main-window")
-        self.window.set_transient_for(parent)
+        #self.window.set_transient_for(parent)
         self.window.set_keep_above(True)
         self.window.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.window.connect('destroy', self.show_parent, parent)
@@ -2375,7 +2375,6 @@ class ControlsCustomItems(Gtk.Frame):
         self.refresh()
 
     def refresh(self):
-
         listbox = Gtk.ListBox()
         listbox.set_selection_mode(Gtk.SelectionMode.NONE)
         for i in range(len(self.items)):
@@ -2399,6 +2398,11 @@ class ControlsCustomItems(Gtk.Frame):
             update_icon(entry, self.icons)
             entry.connect("changed", self.update_icon, self.icons, i, "icon")
             hbox.pack_start(entry, False, False, 0)
+
+            btn = Gtk.Button.new_from_icon_name("edit-find-replace", Gtk.IconSize.MENU)
+            btn.set_tooltip_text("Pick an icon")
+            btn.connect("clicked", self.on_pick_btn, entry)
+            hbox.pack_start(btn, False, False, 0)
 
             entry = Gtk.Entry()
             entry.set_width_chars(15)
@@ -2462,6 +2466,10 @@ class ControlsCustomItems(Gtk.Frame):
         self.grid.attach(listbox, 0, 1, 3, 1)
 
         self.show_all()
+
+    def on_pick_btn(self, btn, entry):
+        s = cmd2string("zenity --entry")
+        print(entry.set_text(s))
 
     def update_value_from_entry(self, gtk_entry, i, key):
         self.items[i][key] = gtk_entry.get_text()
