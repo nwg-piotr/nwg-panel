@@ -2399,7 +2399,7 @@ class ControlsCustomItems(Gtk.Frame):
             entry.connect("changed", self.update_icon, self.icons, i, "icon")
             hbox.pack_start(entry, False, False, 0)
 
-            btn = Gtk.Button.new_from_icon_name("edit-find-replace", Gtk.IconSize.MENU)
+            btn = Gtk.Button.new_from_icon_name("nwg-icon-picker", Gtk.IconSize.MENU)
             btn.set_tooltip_text("Pick an icon")
             btn.connect("clicked", self.on_pick_btn, entry)
             hbox.pack_start(btn, False, False, 0)
@@ -2448,6 +2448,11 @@ class ControlsCustomItems(Gtk.Frame):
         self.new_icon.connect("changed", update_icon, self.icons)
         hbox.pack_start(self.new_icon, False, False, 0)
 
+        btn = Gtk.Button.new_from_icon_name("nwg-icon-picker", Gtk.IconSize.MENU)
+        btn.set_tooltip_text("Pick an icon")
+        btn.connect("clicked", self.on_pick_btn, self.new_icon)
+        hbox.pack_start(btn, False, False, 0)
+
         self.new_command = Gtk.Entry()
         self.new_command.set_width_chars(15)
         self.new_command.set_placeholder_text("command")
@@ -2468,7 +2473,7 @@ class ControlsCustomItems(Gtk.Frame):
         self.show_all()
 
     def on_pick_btn(self, btn, entry):
-        s = cmd2string("zenity --entry")
+        s = cmd2string("nwg-icon-picker")
         print(entry.set_text(s))
 
     def update_value_from_entry(self, gtk_entry, i, key):
