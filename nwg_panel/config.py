@@ -2474,7 +2474,7 @@ class ControlsCustomItems(Gtk.Frame):
 
     def on_pick_btn(self, btn, entry):
         s = cmd2string("nwg-icon-picker")
-        print(entry.set_text(s))
+        entry.set_text(s)
 
     def update_value_from_entry(self, gtk_entry, i, key):
         self.items[i][key] = gtk_entry.get_text()
