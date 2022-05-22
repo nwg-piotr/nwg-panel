@@ -179,6 +179,7 @@
             <property name="can-focus">False</property>
             <property name="tooltip-text" translatable="yes">Attention! Renaming an existing
 button will create a new one.</property>
+            <property name="halign">start</property>
             <property name="stock">gtk-dialog-warning</property>
           </object>
           <packing>
@@ -230,6 +231,23 @@ button will create a new one.</property>
           <packing>
             <property name="left-attach">0</property>
             <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="btn-picker">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">Pick an icon</property>
+            <property name="halign">start</property>
+            <property name="always-show-image">True</property>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">3</property>
           </packing>
         </child>
         <child>

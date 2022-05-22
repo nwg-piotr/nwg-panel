@@ -240,6 +240,37 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c",
+                        "--config",
+                        type=str,
+                        default="config",
+                        help="config filename (in {}/)".format(common.config_dir))
+
+    parser.add_argument("-s",
+                        "--style",
+                        type=str,
+                        default="style.css",
+                        help="css filename (in {}/)".format(common.config_dir))
+
+    parser.add_argument("-sigdwl",
+                        type=int,
+                        default=10,
+                        help="signal to refresh dwl-tags module; default: 10 (SIGUSR1)")
+
+    parser.add_argument("-r",
+                        "--restore",
+                        action="store_true",
+                        help="restore default config files")
+
+    parser.add_argument("-v",
+                        "--version",
+                        action="version",
+                        version="%(prog)s version {}".format(__version__),
+                        help="display version information")
+
+    args = parser.parse_args()
+
     # Kill running instances, if any
     own_pid = os.getpid()
     # We should never have more that 1, but just in case
@@ -284,37 +315,6 @@ def main():
         common.dwl_data_file = os.path.join(cache_dir, "nwg-dwl-data")
     else:
         print("Couldn't determine cache directory", file=sys.stderr)
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-c",
-                        "--config",
-                        type=str,
-                        default="config",
-                        help="config filename (in {}/)".format(common.config_dir))
-
-    parser.add_argument("-s",
-                        "--style",
-                        type=str,
-                        default="style.css",
-                        help="css filename (in {}/)".format(common.config_dir))
-
-    parser.add_argument("-sigdwl",
-                        type=int,
-                        default=10,
-                        help="signal to refresh dwl-tags module; default: 10 (SIGUSR1)")
-
-    parser.add_argument("-r",
-                        "--restore",
-                        action="store_true",
-                        help="restore default config files")
-
-    parser.add_argument("-v",
-                        "--version",
-                        action="version",
-                        version="%(prog)s version {}".format(__version__),
-                        help="display version information")
-
-    args = parser.parse_args()
 
     global sig_dwl
     sig_dwl = args.sigdwl
