@@ -2365,7 +2365,8 @@ class EditorWrapper(object):
 
 def on_pick_btn(btn, entry):
     s = cmd2string("nwg-icon-picker")
-    entry.set_text(s)
+    if s:
+        entry.set_text(s)
 
 
 class ControlsCustomItems(Gtk.Frame):
