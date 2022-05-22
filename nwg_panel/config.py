@@ -1932,6 +1932,16 @@ class EditorWrapper(object):
         update_icon(self.button_icon, self.panel["icons"])
         self.button_icon.connect("changed", update_icon, self.panel["icons"])
 
+        self.button_picker = builder.get_object("btn-picker")
+        img = Gtk.Image.new_from_icon_name("nwg-icon-picker", Gtk.IconSize.BUTTON)
+        self.button_picker.set_image(img)
+
+        if is_command("nwg-icon-picker"):
+            self.button_picker.set_tooltip_text("Pick an icon")
+            self.button_picker.connect("clicked", on_pick_btn, self.button_icon)
+        else:
+            self.button_picker.hide()
+
         self.button_label = builder.get_object("label")
         self.button_label.set_text(settings["label"])
 
