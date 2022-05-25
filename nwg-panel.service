@@ -1,0 +1,13 @@
+[Unit]
+Description=GTK3-based panel for sway window manager
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecCondition=/bin/sh -c '[ -n "$WAYLAND_DISPLAY" ]'
+ExecStart=/usr/bin/nwg-panel
+Restart=always
+
+[Install]
+WantedBy=graphical-session.target
