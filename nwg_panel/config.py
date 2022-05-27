@@ -444,7 +444,7 @@ class EditorWrapper(object):
         builder.add_from_file(os.path.join(dir_name, "glade/config_main.glade"))
 
         self.window = builder.get_object("main-window")
-        self.window.set_transient_for(parent)
+        #self.window.set_transient_for(parent)
         self.window.set_keep_above(True)
         self.window.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.window.connect('destroy', self.show_parent, parent)
@@ -1932,6 +1932,16 @@ class EditorWrapper(object):
         update_icon(self.button_icon, self.panel["icons"])
         self.button_icon.connect("changed", update_icon, self.panel["icons"])
 
+        self.button_picker = builder.get_object("btn-picker")
+        img = Gtk.Image.new_from_icon_name("nwg-icon-picker", Gtk.IconSize.BUTTON)
+        self.button_picker.set_image(img)
+
+        if is_command("nwg-icon-picker"):
+            self.button_picker.set_tooltip_text("Pick an icon")
+            self.button_picker.connect("clicked", on_pick_btn, self.button_icon)
+        else:
+            self.button_picker.hide()
+
         self.button_label = builder.get_object("label")
         self.button_label.set_text(settings["label"])
 
@@ -2353,6 +2363,12 @@ class EditorWrapper(object):
         self.scrolled_window.add(custom_items_grid)
 
 
+def on_pick_btn(btn, entry):
+    s = cmd2string("nwg-icon-picker")
+    if s:
+        entry.set_text(s)
+
+
 class ControlsCustomItems(Gtk.Frame):
     def __init__(self, panel, config, file):
         check_key(panel, "controls-settings", {})
@@ -2375,7 +2391,6 @@ class ControlsCustomItems(Gtk.Frame):
         self.refresh()
 
     def refresh(self):
-
         listbox = Gtk.ListBox()
         listbox.set_selection_mode(Gtk.SelectionMode.NONE)
         for i in range(len(self.items)):
@@ -2399,6 +2414,12 @@ class ControlsCustomItems(Gtk.Frame):
             update_icon(entry, self.icons)
             entry.connect("changed", self.update_icon, self.icons, i, "icon")
             hbox.pack_start(entry, False, False, 0)
+
+            if is_command("nwg-icon-picker"):
+                btn = Gtk.Button.new_from_icon_name("nwg-icon-picker", Gtk.IconSize.MENU)
+                btn.set_tooltip_text("Pick an icon")
+                btn.connect("clicked", on_pick_btn, entry)
+                hbox.pack_start(btn, False, False, 0)
 
             entry = Gtk.Entry()
             entry.set_width_chars(15)
@@ -2443,6 +2464,12 @@ class ControlsCustomItems(Gtk.Frame):
         update_icon(self.new_icon, self.icons)
         self.new_icon.connect("changed", update_icon, self.icons)
         hbox.pack_start(self.new_icon, False, False, 0)
+
+        if is_command("nwg-icon-picker"):
+            btn = Gtk.Button.new_from_icon_name("nwg-icon-picker", Gtk.IconSize.MENU)
+            btn.set_tooltip_text("Pick an icon")
+            btn.connect("clicked", on_pick_btn, self.new_icon)
+            hbox.pack_start(btn, False, False, 0)
 
         self.new_command = Gtk.Entry()
         self.new_command.set_width_chars(15)
