@@ -5,4 +5,4 @@
 /build/
 /dist/
 __pycache__
-#*.glade#
+*.glade#
