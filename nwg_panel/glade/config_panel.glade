@@ -60,6 +60,8 @@
             <items>
               <item id="top" translatable="yes">top</item>
               <item id="bottom" translatable="yes">bottom</item>
+              <item id="left" translatable="yes">left</item>
+              <item id="right" translatable="yes">right</item>
             </items>
           </object>
           <packing>

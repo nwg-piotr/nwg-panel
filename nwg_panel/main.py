@@ -467,8 +467,11 @@ def main():
 
             Gtk.Widget.set_size_request(window, w, h)
 
+            o = Gtk.Orientation.HORIZONTAL if panel["position"] == "top" or panel[
+                "position"] == "bottom" else Gtk.Orientation.VERTICAL
+
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            hbox = Gtk.Box(orientation=o, spacing=0)
             vbox.pack_start(hbox, True, True, panel["padding-vertical"])
 
             check_key(panel, "modules-left", [])
@@ -485,12 +488,12 @@ def main():
             else:
                 check_key(panel, "homogeneous", False)
 
-            inner_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            inner_box = Gtk.Box(orientation=o, spacing=0)
             inner_box.set_homogeneous(panel["homogeneous"])
 
             hbox.pack_start(inner_box, True, True, panel["padding-horizontal"])
 
-            left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
+            left_box = Gtk.Box(orientation=o, spacing=panel["spacing"])
             inner_box.pack_start(left_box, False, True, 0)
             if panel["controls"] and panel["controls"] == "left":
                 monitor = None
@@ -516,14 +519,14 @@ def main():
 
             instantiate_content(panel, left_box, panel["modules-left"], icons_path=icons_path)
 
-            center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
+            center_box = Gtk.Box(orientation=o, spacing=panel["spacing"])
             inner_box.pack_start(center_box, True, False, 0)
             check_key(panel, "modules-center", [])
             instantiate_content(panel, center_box, panel["modules-center"], icons_path=icons_path)
 
-            right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
+            right_box = Gtk.Box(orientation=o, spacing=panel["spacing"])
             # Damn on the guy who invented `pack_start(child, expand, fill, padding)`!
-            helper_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            helper_box = Gtk.Box(orientation=o, spacing=0)
             helper_box.pack_end(right_box, False, False, 0)
             inner_box.pack_start(helper_box, False, True, 0)
             check_key(panel, "modules-right", [])
@@ -585,8 +588,14 @@ def main():
 
             if panel["position"] == "top":
                 GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.TOP, 1)
-            else:
+                GtkLayerShell.set_layer(window, GtkLayerShell.Layer.TOP)
+            elif panel["position"] == "bottom":
                 GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.BOTTOM, 1)
+            elif panel["position"] == "left":
+                GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.LEFT, 1)
+                GtkLayerShell.set_layer(window, GtkLayerShell.Layer.BOTTOM)
+            elif panel["position"] == "right":
+                GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.RIGHT, 1)
 
             window.show_all()
 

@@ -113,7 +113,8 @@ SKELETON_PANEL: dict = {
         "on-scroll-down": "",
         "root-css-name": "root-clock",
         "css-name": "clock",
-        "interval": 1
+        "interval": 1,
+        "angle": 0.0
     },
     "playerctl": {
         "buttons-position": "left",
@@ -1010,7 +1011,8 @@ class EditorWrapper(object):
             "on-scroll-down": "",
             "root-css-name": "root-clock",
             "css-name": "clock",
-            "interval": 1
+            "interval": 1,
+            "angle": 0.0
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1054,6 +1056,9 @@ class EditorWrapper(object):
         self.sb_interval.configure(adj, 1, 0)
         self.sb_interval.set_value(settings["interval"])
 
+        self.cb_angle = builder.get_object("angle")
+        self.cb_angle.set_active_id(str(settings["angle"]))
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -1072,6 +1077,11 @@ class EditorWrapper(object):
         settings["on-scroll-down"] = self.eb_on_scroll_down.get_text()
         settings["root-css-name"] = self.eb_root_css_name_clock.get_text()
         settings["css-name"] = self.eb_css_name_clock.get_text()
+
+        try:
+            settings["angle"] = float(self.cb_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
 
         val = self.sb_interval.get_value()
         if val is not None:
@@ -1233,7 +1243,8 @@ class EditorWrapper(object):
             "chars": 30,
             "button-css-name": "",
             "label-css-name": "",
-            "interval": 1
+            "interval": 1,
+            "angle": 0.0
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1268,6 +1279,9 @@ class EditorWrapper(object):
         self.eb_label_css_name = builder.get_object("label-css-name")
         self.eb_label_css_name.set_text(settings["label-css-name"])
 
+        self.plctl_angle = builder.get_object("angle")
+        self.plctl_angle.set_active_id(str(settings["angle"]))
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -1286,6 +1300,11 @@ class EditorWrapper(object):
         settings["label-css-name"] = self.eb_label_css_name.get_text()
 
         settings["interval"] = int(self.sc_interval_playerctl.get_value())
+
+        try:
+            settings["angle"] = float(self.plctl_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
 
         save_json(self.config, self.file)
 
@@ -1652,7 +1671,8 @@ class EditorWrapper(object):
             "css-name": "",
             "icon-placement": "left",
             "icon-size": 16,
-            "interval": 1
+            "interval": 1,
+            "angle": 0.0
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1706,6 +1726,9 @@ class EditorWrapper(object):
         self.executor_interval.configure(adj, 1, 0)
         self.executor_interval.set_value(settings["interval"])
 
+        self.executor_angle = builder.get_object("angle")
+        self.executor_angle.set_active_id(str(settings["angle"]))
+
         self.executor_remove = builder.get_object("remove")
 
         self.executor_save_to_db_btn = builder.get_object("save-to-database")
@@ -1753,6 +1776,11 @@ class EditorWrapper(object):
                 settings["icon-placement"] = val
             settings["icon-size"] = int(self.executor_icon_size.get_value())
             settings["interval"] = int(self.executor_interval.get_value())
+
+            try:
+                settings["angle"] = float(self.executor_angle.get_active_id())
+            except:
+                settings["angle"] = 0.0
 
             self.panel[config_key] = settings
         else:

@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
-from gi.repository import GLib
-
 import subprocess
 import threading
 
-from nwg_panel.tools import check_key, update_image
-
 import gi
+from gi.repository import GLib
+
+from nwg_panel.tools import check_key, update_image
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -38,6 +37,12 @@ class Executor(Gtk.EventBox):
         check_key(settings, "on-middle-click", "")
         check_key(settings, "on-scroll-up", "")
         check_key(settings, "on-scroll-down", "")
+        check_key(settings, "angle", 0.0)
+
+        self.label.set_angle(settings["angle"])
+
+        if settings["angle"] != 0.0:
+            self.box.set_orientation(Gtk.Orientation.VERTICAL)
 
         update_image(self.image, "view-refresh-symbolic", self.settings["icon-size"], self.icons_path)
 
