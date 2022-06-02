@@ -886,7 +886,8 @@ class EditorWrapper(object):
             "all-workspaces": True,
             "mark-autotiling": True,
             "mark-xwayland": True,
-            "all-outputs": False
+            "all-outputs": False,
+            "angle": 0.0
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -950,6 +951,9 @@ class EditorWrapper(object):
         self.ckb_all_outputs = builder.get_object("all-outputs")
         self.ckb_all_outputs.set_active(settings["all-outputs"])
 
+        self.taskbar_angle = builder.get_object("angle")
+        self.taskbar_angle.set_active_id(str(settings["angle"]))
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -992,6 +996,11 @@ class EditorWrapper(object):
         settings["mark-xwayland"] = self.ckb_mark_xwayland.get_active()
 
         settings["all-outputs"] = self.ckb_all_outputs.get_active()
+
+        try:
+            settings["angle"] = float(self.taskbar_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
 
         save_json(self.config, self.file)
 
