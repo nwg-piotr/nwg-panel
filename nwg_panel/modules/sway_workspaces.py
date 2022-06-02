@@ -31,6 +31,9 @@ class SwayWorkspaces(Gtk.Box):
         check_key(self.settings, "mark-autotiling", True)
         check_key(self.settings, "mark-content", True)
         check_key(self.settings, "show-layout", True)
+        check_key(self.settings, "angle", 0.0)
+        if self.settings["angle"] != 0.0:
+            self.set_orientation(Gtk.Orientation.VERTICAL)
 
         if self.i3.get_tree().find_focused():
             ws_num, win_name, win_id, non_empty, win_layout = self.find_details()
@@ -43,6 +46,8 @@ class SwayWorkspaces(Gtk.Box):
             self.pack_start(eb, False, False, 0)
 
             box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            if self.settings["angle"] != 0.0:
+                box.set_orientation(Gtk.Orientation.VERTICAL)
             eb.add(box)
 
             if self.settings["mark-autotiling"]:
@@ -54,6 +59,9 @@ class SwayWorkspaces(Gtk.Box):
                 lbl = Gtk.Label("{}{}".format(autotiling, str(num)))
             else:
                 lbl = Gtk.Label("{}".format(str(num)))
+            if self.settings["angle"] != 0.0:
+                lbl.set_angle(self.settings["angle"])
+                self.name_label.set_angle(self.settings["angle"])
 
             self.ws_num2box[num] = eb
             self.ws_num2lbl[num] = lbl

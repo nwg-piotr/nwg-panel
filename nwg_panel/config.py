@@ -1330,7 +1330,8 @@ class EditorWrapper(object):
             "name-length": 40,
             "mark-autotiling": True,
             "mark-content": True,
-            "show-layout": True
+            "show-layout": True,
+            "angle": 0.0
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1373,6 +1374,9 @@ class EditorWrapper(object):
         self.ws_show_layout = builder.get_object("show-layout")
         self.ws_show_layout.set_active(settings["show-layout"])
 
+        self.ws_angle = builder.get_object("angle")
+        self.ws_angle.set_active_id(str(settings["angle"]))
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -1407,6 +1411,11 @@ class EditorWrapper(object):
         val = self.ws_show_layout.get_active()
         if val is not None:
             settings["show-layout"] = val
+
+        try:
+            settings["angle"] = float(self.ws_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
 
         save_json(self.config, self.file)
 
