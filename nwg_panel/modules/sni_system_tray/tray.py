@@ -98,7 +98,7 @@ def update_status(event_box, item):
 
 
 class Tray(Gtk.EventBox):
-    def __init__(self, settings, icons_path=""):
+    def __init__(self, settings, panel_position, icons_path=""):
         self.menu = None
         self.settings = settings
         self.icons_path = icons_path
@@ -114,6 +114,8 @@ class Tray(Gtk.EventBox):
         self.icon_size = settings["icon-size"]
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        if panel_position in ["left", "right"]:
+            self.box.set_orientation(Gtk.Orientation.VERTICAL)
         self.box.set_property("name", settings["inner-css-name"])
         self.add(self.box)
 
