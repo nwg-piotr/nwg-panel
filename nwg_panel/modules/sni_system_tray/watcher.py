@@ -81,12 +81,12 @@ class StatusNotifierWatcherInterface(object):
 
     @accepts_additional_arguments
     def RegisterStatusNotifierItem(self, service, call_info):
-        print(
+        """print(
             "StatusNotifierWatcher -> RegisterStatusNotifierItem\n  service: {}\n  sender: {}".format(
                 service,
                 call_info["sender"]
             )
-        )
+        )"""
 
         # libappindicator sends object path, use sender name and object path
         if service[0] == "/":
@@ -112,16 +112,16 @@ class StatusNotifierWatcherInterface(object):
             )
             item_service_observer.connect_once_available()
         else:
-            print(
+            """print(
                 (
                     "StatusNotifierWatcher -> RegisterStatusNotifierItem: item already registered\n"
                     "  full_service_name: {}"
                 ).format(full_service_name, service)
-            )
+            )"""
 
     @accepts_additional_arguments
     def RegisterStatusNotifierHost(self, service, call_info):
-        print("StatusNotifierWatcher -> RegisterStatusNotifierHost: {}".format(service))
+        # print("StatusNotifierWatcher -> RegisterStatusNotifierHost: {}".format(service))
         if call_info["sender"] not in self._statusNotifierHosts:
             host_service_observer = DBusObserver(
                 message_bus=self.session_bus,
@@ -134,39 +134,39 @@ class StatusNotifierWatcherInterface(object):
                 self.host_unavailable_handler
             )
             host_service_observer.connect_once_available()
-        else:
+        """else:
             print(
                 "StatusNotifierWatcher -> RegisterStatusNotifierHost: host already registered\n  service: {}\n  sender: {})".format(
                     service,
                     call_info["sender"]
                 )
-            )
+            )"""
 
     @property
     def RegisteredStatusNotifierItems(self) -> list:
-        print("StatusNotifierWatcher -> RegisteredStatusNotifierItems")
+        # print("StatusNotifierWatcher -> RegisteredStatusNotifierItems")
         return self._statusNotifierItems
 
     @property
     def IsStatusNotifierHostRegistered(self) -> bool:
-        print(
+        """print(
             "StatusNotifierWatcher -> IsStatusNotifierHostRegistered: {}".format(
                 str(len(self._statusNotifierHosts) > 0)
             )
-        )
+        )"""
         return len(self._statusNotifierHosts) > 0
 
     @property
     def ProtocolVersion(self) -> int:
-        print("StatusNotifierWatcher -> ProtocolVersion: ".format(str(self._protocolVersion)))
+        # print("StatusNotifierWatcher -> ProtocolVersion: ".format(str(self._protocolVersion)))
         return self._protocolVersion
 
     def item_available_handler(self, full_service_name):
-        print(
+        """print(
             "StatusNotifierWatcher -> item_available_handler\n  full_service_name: {}".format(
                 full_service_name
             )
-        )
+        )"""
         self._statusNotifierItems.append(full_service_name)
         self.StatusNotifierItemRegistered.emit(full_service_name)
         self.PropertiesChanged.emit(WATCHER_SERVICE_NAME, {
@@ -177,11 +177,11 @@ class StatusNotifierWatcherInterface(object):
         }, [])
 
     def item_unavailable_handler(self, full_service_name):
-        print(
+        """print(
             "StatusNotifierWatcher -> item_unavailable_handler\n  full_service_name: {}".format(
                 full_service_name
             )
-        )
+        )"""
         if full_service_name in set(self._statusNotifierItems):
             self._statusNotifierItems.remove(full_service_name)
             self.StatusNotifierItemUnregistered.emit(full_service_name)
@@ -212,11 +212,11 @@ def init():
     session_bus = SessionMessageBus()
     session_bus.publish_object(WATCHER_OBJECT_PATH, StatusNotifierWatcherInterface())
     session_bus.register_service(WATCHER_SERVICE_NAME)
-    print("watcher.init(): published {}{} on dbus.".format(WATCHER_SERVICE_NAME, WATCHER_OBJECT_PATH))
+    # print("watcher.init(): published {}{} on dbus.".format(WATCHER_SERVICE_NAME, WATCHER_OBJECT_PATH))
 
     global dasbus_event_loop
     if dasbus_event_loop is None:
-        print("watcher.init(): running dasbus.EventLoop")
+        # print("watcher.init(): running dasbus.EventLoop")
         dasbus_event_loop = EventLoop()
         dasbus_event_loop.run()
 
@@ -224,7 +224,7 @@ def init():
 def deinit():
     global dasbus_event_loop
     if dasbus_event_loop is not None:
-        print("watcher.deinit(): quitting dasbus.EventLoop")
+        # print("watcher.deinit(): quitting dasbus.EventLoop")
         dasbus_event_loop.quit()
     if dasbus_event_loop is not None:
         dasbus_event_loop = None

@@ -37,13 +37,13 @@ def load_icon(image, icon_name: str, icon_size, icons_path=""):
             pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
 
     except GLib.GError:
-        print(
+        """print(
             "tray -> update_icon: icon not found\n  icon_name: {}\n  search_path: {}".format(
                 icon_name,
                 search_path
             ),
             file=sys.stderr
-        )
+        )"""
         path = os.path.join(get_config_dir(), "icons_light/icon-missing.svg")
         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, icon_size, icon_size)
 
@@ -122,7 +122,7 @@ class Tray(Gtk.EventBox):
         self.items = {}
 
     def add_item(self, item: StatusNotifierItem):
-        print("Tray -> add_item: {}".format(item.properties))
+        # print("Tray -> add_item: {}".format(item.properties))
         full_service_name = "{}{}".format(item.service_name, item.object_path)
         if full_service_name not in self.items:
             event_box = Gtk.EventBox()

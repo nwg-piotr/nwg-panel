@@ -44,14 +44,14 @@ class Menu(object):
         self.session_bus.disconnect()
 
     def menu_available_handler(self, _observer):
-        print(
+        """print(
             "Menu -> menu_available_handler: Connecting to menu over dbus:\n"
             "  service_name: {}\n"
             "  object_path: {}".format(
                 self.service_name,
                 self.object_path
             )
-        )
+        )"""
         self.menu_widget = DbusmenuGtk3.Menu().new(
             dbus_name=self.service_name,
             dbus_object=self.object_path
