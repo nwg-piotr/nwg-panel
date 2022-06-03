@@ -598,7 +598,8 @@ class EditorWrapper(object):
             "padding-vertical": 0,
             "spacing": 0,
             "icons": "",
-            "css-name": ""
+            "css-name": "",
+            "exclusive-zone": True
         }
         for key in defaults:
             check_key(self.panel, key, defaults[key])
@@ -726,6 +727,9 @@ class EditorWrapper(object):
         self.eb_css_name = builder.get_object("css-name")
         self.eb_css_name.set_text(self.panel["css-name"])
 
+        self.cb_exclusive_zone = builder.get_object("exclusive-zone")
+        self.cb_exclusive_zone.set_active(self.panel["exclusive-zone"])
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -810,6 +814,8 @@ class EditorWrapper(object):
 
         val = self.eb_css_name.get_text()
         self.panel["css-name"] = val
+
+        self.panel["exclusive-zone"] = self.cb_exclusive_zone.get_active()
 
         save_json(self.config, self.file)
 

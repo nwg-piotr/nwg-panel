@@ -574,7 +574,9 @@ def main():
             if monitor:
                 GtkLayerShell.set_monitor(window, monitor)
 
-            GtkLayerShell.auto_exclusive_zone_enable(window)
+            check_key(panel, "exclusive-zone", True)
+            if panel["exclusive-zone"]:
+                GtkLayerShell.auto_exclusive_zone_enable(window)
 
             if panel["layer"] == "top":
                 GtkLayerShell.set_layer(window, GtkLayerShell.Layer.TOP)
