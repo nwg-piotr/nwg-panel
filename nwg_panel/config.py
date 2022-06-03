@@ -2639,6 +2639,12 @@ class ControlsUserMenu(Gtk.Frame):
 
         self.grid.attach(vbox, 0, 1, 3, 1)
 
+        if is_command("nwg-icon-picker"):
+            button_picker = Gtk.Button.new_from_icon_name("nwg-icon-picker", Gtk.IconSize.BUTTON)
+            button_picker.set_tooltip_text("Pick an icon")
+            button_picker.connect("clicked", on_pick_btn, entry)
+            hbox.pack_start(button_picker, False, False, 0)
+
         listbox = Gtk.ListBox()
         listbox.set_selection_mode(Gtk.SelectionMode.NONE)
         for i in range(len(self.items)):
