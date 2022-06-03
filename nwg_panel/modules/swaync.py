@@ -16,11 +16,14 @@ from gi.repository import Gtk, Gdk
 
 
 class SwayNC(Gtk.EventBox):
-    def __init__(self, settings, icons_path):
+    def __init__(self, settings, icons_path, panel_position):
         self.settings = settings
+        print("settings", settings)
         self.icons_path = icons_path
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        if panel_position == "left" or panel_position == "right":
+            self.box.set_orientation(Gtk.Orientation.VERTICAL)
         self.add(self.box)
         self.image = Gtk.Image()
         self.label = Gtk.Label()

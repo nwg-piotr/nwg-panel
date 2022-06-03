@@ -2210,6 +2210,7 @@ class EditorWrapper(object):
             "root-css-name": "controls-overview",
             "css-name": "controls-window",
             "net-interface": "",
+            "angle": 0.0,
             "custom-items": [
                 {
                     "name": "Panel settings",
@@ -2326,6 +2327,9 @@ class EditorWrapper(object):
         self.ctrl_leave_closes = builder.get_object("leave-closes")
         self.ctrl_leave_closes.set_active(settings["leave-closes"])
 
+        self.ctrl_angle = builder.get_object("angle")
+        self.ctrl_angle.set_active_id(str(settings["angle"]))
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -2387,6 +2391,11 @@ class EditorWrapper(object):
         settings["show-values"] = self.ctrl_show_values.get_active()
         settings["hover-opens"] = self.ctrl_hover_opens.get_active()
         settings["leave-closes"] = self.ctrl_leave_closes.get_active()
+
+        try:
+            settings["angle"] = float(self.ctrl_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
 
         save_json(self.config, self.file)
 

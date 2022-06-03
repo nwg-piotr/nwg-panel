@@ -33,6 +33,7 @@ class Controls(Gtk.EventBox):
         check_key(settings, "root-css-name", "controls-overview")
         check_key(settings, "components", ["net", "brightness", "volume", "battery"])
         check_key(settings, "net-interface", "")
+        check_key(settings, "angle", 0.0)
 
         self.set_property("name", settings["root-css-name"])
 
@@ -93,6 +94,8 @@ class Controls(Gtk.EventBox):
 
     def build_box(self):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        if self.settings["angle"] != 0.0:
+            box.set_orientation(Gtk.Orientation.VERTICAL)
         self.box.pack_start(box, False, False, 6)
 
         if "brightness" in self.settings["components"]:
@@ -323,14 +326,35 @@ class PopupWindow(Gtk.Window):
         GtkLayerShell.set_margin(self, GtkLayerShell.Edge.RIGHT, settings["window-margin"])
         GtkLayerShell.set_margin(self, GtkLayerShell.Edge.LEFT, settings["window-margin"])
 
-        if alignment == "left":
-            GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.LEFT, True)
-        else:
-            GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.RIGHT, True)
-        if position == "bottom":
-            GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.BOTTOM, True)
-        else:
-            GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.TOP, True)
+        # Since v0.7 alignment 'left' / 'right' has been renamed to 'start' / 'end' in the GUI,
+        # but will stay as is in the code. We also have 4 positions now: 'top', 'bottom', 'left', 'right'
+        # instead of 'top" & 'bottom'.
+        if alignment == "left":  # Means: 'start'
+            if position == "top":
+                GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.TOP, True)
+                GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.LEFT, True)
+            elif position == "bottom":
+                GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.BOTTOM, True)
+                GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.LEFT, True)
+            elif position == "left":
+                GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.LEFT, True)
+                GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.TOP, True)
+            elif position == "right":
+                GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.RIGHT, True)
+                GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.TOP, True)
+        else:  # align 'end'
+            if position == "top":
+                GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.TOP, True)
+                GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.RIGHT, True)
+            elif position == "bottom":
+                GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.BOTTOM, True)
+                GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.RIGHT, True)
+            elif position == "left":
+                GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.LEFT, True)
+                GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.BOTTOM, True)
+            elif position == "right":
+                GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.RIGHT, True)
+                GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.BOTTOM, True)
 
         check_key(settings, "commands", {"battery": "", "net": ""})
 

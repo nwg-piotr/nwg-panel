@@ -510,7 +510,7 @@ def main():
                 if common.commands["swaync"]:
                     if "swaync" not in panel:
                         panel["swaync"] = {}
-                    sway_nc = SwayNC(panel["swaync"], icons_path)
+                    sway_nc = SwayNC(panel["swaync"], icons_path, panel["position"])
                     left_box.pack_start(sway_nc, False, False, 0)
 
             if panel["menu-start"] == "left":
@@ -551,7 +551,8 @@ def main():
                 if common.commands["swaync"]:
                     if "swaync" not in panel:
                         panel["swaync"] = {}
-                    sway_nc = SwayNC(panel["swaync"], icons_path)
+
+                    sway_nc = SwayNC(panel["swaync"], icons_path, panel["position"])
                     right_box.pack_end(sway_nc, False, False, 0)
 
             window.add(vbox)
