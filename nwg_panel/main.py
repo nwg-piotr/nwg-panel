@@ -491,7 +491,11 @@ def main():
             inner_box = Gtk.Box(orientation=o, spacing=0)
             inner_box.set_homogeneous(panel["homogeneous"])
 
-            hbox.pack_start(inner_box, True, True, panel["padding-horizontal"])
+            hbox.pack_start(inner_box, True, True, 0)
+            hbox.set_property("margin-start", panel["padding-horizontal"])
+            hbox.set_property("margin-end", panel["padding-horizontal"])
+            hbox.set_property("margin-top", panel["padding-vertical"])
+            hbox.set_property("margin-bottom", panel["padding-vertical"])
 
             left_box = Gtk.Box(orientation=o, spacing=panel["spacing"])
             inner_box.pack_start(left_box, False, True, 0)
