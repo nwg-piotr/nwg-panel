@@ -582,10 +582,17 @@ def main():
             if panel["exclusive-zone"]:
                 GtkLayerShell.auto_exclusive_zone_enable(window)
 
-            if panel["layer"] == "top":
+            layers = {"background": GtkLayerShell.Layer.BACKGROUND,
+                      "bottom": GtkLayerShell.Layer.BOTTOM,
+                      "top": GtkLayerShell.Layer.TOP,
+                      "overlay": GtkLayerShell.Layer.OVERLAY}
+
+            GtkLayerShell.set_layer(window, layers[panel["layer"]])
+
+            """if panel["layer"] == "top":
                 GtkLayerShell.set_layer(window, GtkLayerShell.Layer.TOP)
             else:
-                GtkLayerShell.set_layer(window, GtkLayerShell.Layer.BOTTOM)
+                GtkLayerShell.set_layer(window, GtkLayerShell.Layer.BOTTOM)"""
 
             check_key(panel, "margin-top", 0)
             GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, panel["margin-top"])
