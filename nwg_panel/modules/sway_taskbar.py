@@ -167,6 +167,7 @@ class WindowBox(Gtk.EventBox):
 
         if con.name:
             check_key(settings, "show-app-name", True)
+            check_key(settings, "name-max-len", 20)
             name = con.name[:settings["name-max-len"]] if len(con.name) > settings["name-max-len"] else con.name
             if settings["mark-xwayland"] and not con.app_id:
                 name = "X|" + name
