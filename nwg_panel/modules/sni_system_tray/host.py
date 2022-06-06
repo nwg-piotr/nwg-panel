@@ -55,24 +55,24 @@ class StatusNotifierHostInterface(object):
         self.session_bus.disconnect()
 
     def watcher_available_handler(self, _observer):
-        print("StatusNotifierHostInterface -> watcher_available_handler")
+        # print("StatusNotifierHostInterface -> watcher_available_handler")
         self.watcher_proxy = self.session_bus.get_proxy(WATCHER_SERVICE_NAME, WATCHER_OBJECT_PATH)
         self.watcher_proxy.StatusNotifierItemRegistered.connect(self.item_registered_handler)
         self.watcher_proxy.StatusNotifierItemUnregistered.connect(self.item_unregistered_handler)
         self.watcher_proxy.RegisterStatusNotifierHost(self.host_object_path, callback=lambda _: None)
 
     def watcher_unavailable_handler(self, _observer):
-        print("StatusNotifierHostInterface -> watcher_unavailable_handler")
+        # print("StatusNotifierHostInterface -> watcher_unavailable_handler")
         self._statusNotifierItems.clear()
         disconnect_proxy(self.watcher_proxy)
         self.watcher_proxy = None
 
     def item_registered_handler(self, full_service_service):
-        print(
+        """print(
             "StatusNotifierHostInterface -> item_registered_handler\n  full_service_name: {}".format(
                 full_service_service
             )
-        )
+        )"""
         service_name, object_path = get_service_name_and_object_path(full_service_service)
         if self.find_item(service_name, object_path) is None:
             item = StatusNotifierItem(service_name, object_path)
@@ -81,11 +81,11 @@ class StatusNotifierHostInterface(object):
             self._statusNotifierItems.append(item)
 
     def item_unregistered_handler(self, full_service_service):
-        print(
+        """print(
             "StatusNotifierHostInterface -> item_unregistered_handler\n  full_service_name: {}".format(
                 full_service_service
             )
-        )
+        )"""
         service_name, object_path = get_service_name_and_object_path(full_service_service)
         item = self.find_item(service_name, object_path)
         if item is not None:
@@ -114,7 +114,7 @@ def init(host_id, trays: typing.List[Tray]):
 
     global dasbus_event_loop
     if dasbus_event_loop is None:
-        print("host.init(): running dasbus.EventLoop")
+        # print("host.init(): running dasbus.EventLoop")
         dasbus_event_loop = EventLoop()
         dasbus_event_loop.run()
 
@@ -122,7 +122,7 @@ def init(host_id, trays: typing.List[Tray]):
 def deinit():
     global dasbus_event_loop
     if dasbus_event_loop is not None:
-        print("host.deinit(): quitting dasbus.EventLoop")
+        # print("host.deinit(): quitting dasbus.EventLoop")
         dasbus_event_loop.quit()
     if dasbus_event_loop is not None:
         dasbus_event_loop = None

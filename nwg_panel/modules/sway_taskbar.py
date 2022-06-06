@@ -18,8 +18,13 @@ class SwayTaskbar(Gtk.Box):
         check_key(settings, "all-workspaces", True)
         check_key(settings, "mark-autotiling", True)
         check_key(settings, "mark-xwayland", True)
+        check_key(settings, "angle", 0.0)
+
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=settings["workspaces-spacing"])
         self.settings = settings
+        if self.settings["angle"] != 0.0:
+            self.set_orientation(Gtk.Orientation.VERTICAL)
+
         self.display_name = display_name
         self.i3 = i3
         self.tree = i3.get_tree()
@@ -85,6 +90,8 @@ class WorkspaceBox(Gtk.Box):
         self.con = con
         at_indicator = "a" if con.num in autotiling else ""
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        if settings["angle"] != 0.0:
+            self.set_orientation(Gtk.Orientation.VERTICAL)
 
         check_key(settings, "workspace-buttons", False)
         if settings["workspace-buttons"]:
@@ -92,6 +99,7 @@ class WorkspaceBox(Gtk.Box):
             widget.connect("clicked", self.on_click)
         else:
             widget = Gtk.Label("{}{}:".format(at_indicator, con.num))
+            widget.set_angle(settings["angle"])
 
         self.pack_start(widget, False, False, 4)
 
@@ -105,6 +113,8 @@ class WindowBox(Gtk.EventBox):
         self.settings = settings
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        if settings["angle"] != 0.0:
+            self.box.set_orientation(Gtk.Orientation.VERTICAL)
         self.add(self.box)
         self.con = con
         self.pid = con.pid
@@ -157,12 +167,14 @@ class WindowBox(Gtk.EventBox):
 
         if con.name:
             check_key(settings, "show-app-name", True)
+            check_key(settings, "name-max-len", 20)
             name = con.name[:settings["name-max-len"]] if len(con.name) > settings["name-max-len"] else con.name
             if settings["mark-xwayland"] and not con.app_id:
                 name = "X|" + name
             if settings["show-app-name"]:
                 check_key(settings, "name-max-len", 10)
                 label = Gtk.Label(name)
+                label.set_angle(settings["angle"])
                 self.box.pack_start(label, False, False, 0)
             else:
                 self.set_tooltip_text(name)

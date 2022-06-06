@@ -26,13 +26,17 @@ class Playerctl(Gtk.EventBox):
         check_key(settings, "icon-size", 16)
         check_key(settings, "buttons-position", "left")
         check_key(settings, "chars", 30)
+        check_key(settings, "angle", 0.0)
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        if settings["angle"] != 0.0:
+            self.box.set_orientation(Gtk.Orientation.VERTICAL)
+
         self.box.set_property("name", "task-box")
         self.add(self.box)
         self.image = Gtk.Image()
         update_image(self.image, "view-refresh-symbolic", self.settings["icon-size"], icons_path=self.icons_path)
-        self.label = Gtk.Label("")
+        self.label = Gtk.Label.new("")
         self.icon_path = None
         self.play_pause_btn = Gtk.Button()
         check_key(settings, "button-css-name", "")
@@ -43,6 +47,8 @@ class Playerctl(Gtk.EventBox):
 
         if settings["label-css-name"]:
             self.label.set_property("name", settings["label-css-name"])
+
+        self.label.set_angle(settings["angle"])
 
         self.build_box()
 
@@ -94,6 +100,8 @@ class Playerctl(Gtk.EventBox):
 
     def build_box(self):
         button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        if self.settings["angle"] != 0.0:
+            button_box.set_orientation(Gtk.Orientation.VERTICAL)
 
         img = Gtk.Image()
         update_image(img, "media-skip-backward-symbolic", self.settings["icon-size"], icons_path=self.icons_path)

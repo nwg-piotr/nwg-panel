@@ -113,7 +113,8 @@ SKELETON_PANEL: dict = {
         "on-scroll-down": "",
         "root-css-name": "root-clock",
         "css-name": "clock",
-        "interval": 1
+        "interval": 1,
+        "angle": 0.0
     },
     "playerctl": {
         "buttons-position": "left",
@@ -597,7 +598,8 @@ class EditorWrapper(object):
             "padding-vertical": 0,
             "spacing": 0,
             "icons": "",
-            "css-name": ""
+            "css-name": "",
+            "exclusive-zone": True
         }
         for key in defaults:
             check_key(self.panel, key, defaults[key])
@@ -725,6 +727,9 @@ class EditorWrapper(object):
         self.eb_css_name = builder.get_object("css-name")
         self.eb_css_name.set_text(self.panel["css-name"])
 
+        self.cb_exclusive_zone = builder.get_object("exclusive-zone")
+        self.cb_exclusive_zone.set_active(self.panel["exclusive-zone"])
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -810,6 +815,8 @@ class EditorWrapper(object):
         val = self.eb_css_name.get_text()
         self.panel["css-name"] = val
 
+        self.panel["exclusive-zone"] = self.cb_exclusive_zone.get_active()
+
         save_json(self.config, self.file)
 
     def hide_parent(self, w, parent):
@@ -885,7 +892,8 @@ class EditorWrapper(object):
             "all-workspaces": True,
             "mark-autotiling": True,
             "mark-xwayland": True,
-            "all-outputs": False
+            "all-outputs": False,
+            "angle": 0.0
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -949,6 +957,9 @@ class EditorWrapper(object):
         self.ckb_all_outputs = builder.get_object("all-outputs")
         self.ckb_all_outputs.set_active(settings["all-outputs"])
 
+        self.taskbar_angle = builder.get_object("angle")
+        self.taskbar_angle.set_active_id(str(settings["angle"]))
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -992,6 +1003,11 @@ class EditorWrapper(object):
 
         settings["all-outputs"] = self.ckb_all_outputs.get_active()
 
+        try:
+            settings["angle"] = float(self.taskbar_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
+
         save_json(self.config, self.file)
 
     def edit_clock(self, *args):
@@ -1010,7 +1026,8 @@ class EditorWrapper(object):
             "on-scroll-down": "",
             "root-css-name": "root-clock",
             "css-name": "clock",
-            "interval": 1
+            "interval": 1,
+            "angle": 0.0
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1054,6 +1071,9 @@ class EditorWrapper(object):
         self.sb_interval.configure(adj, 1, 0)
         self.sb_interval.set_value(settings["interval"])
 
+        self.cb_angle = builder.get_object("angle")
+        self.cb_angle.set_active_id(str(settings["angle"]))
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -1072,6 +1092,11 @@ class EditorWrapper(object):
         settings["on-scroll-down"] = self.eb_on_scroll_down.get_text()
         settings["root-css-name"] = self.eb_root_css_name_clock.get_text()
         settings["css-name"] = self.eb_css_name_clock.get_text()
+
+        try:
+            settings["angle"] = float(self.cb_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
 
         val = self.sb_interval.get_value()
         if val is not None:
@@ -1233,7 +1258,8 @@ class EditorWrapper(object):
             "chars": 30,
             "button-css-name": "",
             "label-css-name": "",
-            "interval": 1
+            "interval": 1,
+            "angle": 0.0
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1268,6 +1294,9 @@ class EditorWrapper(object):
         self.eb_label_css_name = builder.get_object("label-css-name")
         self.eb_label_css_name.set_text(settings["label-css-name"])
 
+        self.plctl_angle = builder.get_object("angle")
+        self.plctl_angle.set_active_id(str(settings["angle"]))
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -1287,6 +1316,11 @@ class EditorWrapper(object):
 
         settings["interval"] = int(self.sc_interval_playerctl.get_value())
 
+        try:
+            settings["angle"] = float(self.plctl_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
+
         save_json(self.config, self.file)
 
     def edit_sway_workspaces(self, *args):
@@ -1302,7 +1336,8 @@ class EditorWrapper(object):
             "name-length": 40,
             "mark-autotiling": True,
             "mark-content": True,
-            "show-layout": True
+            "show-layout": True,
+            "angle": 0.0
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1345,6 +1380,9 @@ class EditorWrapper(object):
         self.ws_show_layout = builder.get_object("show-layout")
         self.ws_show_layout.set_active(settings["show-layout"])
 
+        self.ws_angle = builder.get_object("angle")
+        self.ws_angle.set_active_id(str(settings["angle"]))
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -1379,6 +1417,11 @@ class EditorWrapper(object):
         val = self.ws_show_layout.get_active()
         if val is not None:
             settings["show-layout"] = val
+
+        try:
+            settings["angle"] = float(self.ws_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
 
         save_json(self.config, self.file)
 
@@ -1548,7 +1591,8 @@ class EditorWrapper(object):
         settings = self.panel["scratchpad"]
         defaults = {
             "css-name": "",
-            "icon-size": 16
+            "icon-size": 16,
+            "angle": 0.0
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1565,6 +1609,9 @@ class EditorWrapper(object):
         self.scratchpad_icon_size.configure(adj, 1, 0)
         self.scratchpad_icon_size.set_value(settings["icon-size"])
 
+        self.scratchpad_angle = builder.get_object("angle")
+        self.scratchpad_angle.set_active_id(str(settings["angle"]))
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -1573,6 +1620,11 @@ class EditorWrapper(object):
         settings = self.panel["scratchpad"]
         settings["css-name"] = self.scratchpad_css_name.get_text()
         settings["icon-size"] = int(self.scratchpad_icon_size.get_value())
+
+        try:
+            settings["angle"] = float(self.scratchpad_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
 
         save_json(self.config, self.file)
 
@@ -1583,7 +1635,8 @@ class EditorWrapper(object):
         settings = self.panel["dwl-tags"]
         defaults = {
             "tag-names": "1 2 3 4 5 6 7 8 9",
-            "title-limit": 55
+            "title-limit": 55,
+            "angle": 0.0
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1600,6 +1653,9 @@ class EditorWrapper(object):
         self.dwl_tags_title_limit.configure(adj, 1, 0)
         self.dwl_tags_title_limit.set_value(settings["title-limit"])
 
+        self.dwl_angle = builder.get_object("angle")
+        self.dwl_angle.set_active_id(str(settings["angle"]))
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -1608,6 +1664,11 @@ class EditorWrapper(object):
         settings = self.panel["dwl-tags"]
         settings["tag-names"] = self.dwl_tag_names.get_text()
         settings["title-limit"] = int(self.dwl_tags_title_limit.get_value())
+
+        try:
+            settings["angle"] = float(self.dwl_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
 
         save_json(self.config, self.file)
 
@@ -1652,7 +1713,8 @@ class EditorWrapper(object):
             "css-name": "",
             "icon-placement": "left",
             "icon-size": 16,
-            "interval": 1
+            "interval": 1,
+            "angle": 0.0
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1706,6 +1768,9 @@ class EditorWrapper(object):
         self.executor_interval.configure(adj, 1, 0)
         self.executor_interval.set_value(settings["interval"])
 
+        self.executor_angle = builder.get_object("angle")
+        self.executor_angle.set_active_id(str(settings["angle"]))
+
         self.executor_remove = builder.get_object("remove")
 
         self.executor_save_to_db_btn = builder.get_object("save-to-database")
@@ -1753,6 +1818,11 @@ class EditorWrapper(object):
                 settings["icon-placement"] = val
             settings["icon-size"] = int(self.executor_icon_size.get_value())
             settings["interval"] = int(self.executor_interval.get_value())
+
+            try:
+                settings["angle"] = float(self.executor_angle.get_active_id())
+            except:
+                settings["angle"] = 0.0
 
             self.panel[config_key] = settings
         else:
@@ -2164,6 +2234,7 @@ class EditorWrapper(object):
             "root-css-name": "controls-overview",
             "css-name": "controls-window",
             "net-interface": "",
+            "angle": 0.0,
             "custom-items": [
                 {
                     "name": "Panel settings",
@@ -2280,6 +2351,9 @@ class EditorWrapper(object):
         self.ctrl_leave_closes = builder.get_object("leave-closes")
         self.ctrl_leave_closes.set_active(settings["leave-closes"])
 
+        self.ctrl_angle = builder.get_object("angle")
+        self.ctrl_angle.set_active_id(str(settings["angle"]))
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -2341,6 +2415,11 @@ class EditorWrapper(object):
         settings["show-values"] = self.ctrl_show_values.get_active()
         settings["hover-opens"] = self.ctrl_hover_opens.get_active()
         settings["leave-closes"] = self.ctrl_leave_closes.get_active()
+
+        try:
+            settings["angle"] = float(self.ctrl_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
 
         save_json(self.config, self.file)
 
@@ -2583,6 +2662,12 @@ class ControlsUserMenu(Gtk.Frame):
         hbox.pack_start(entry, False, False, 0)
 
         self.grid.attach(vbox, 0, 1, 3, 1)
+
+        if is_command("nwg-icon-picker"):
+            button_picker = Gtk.Button.new_from_icon_name("nwg-icon-picker", Gtk.IconSize.BUTTON)
+            button_picker.set_tooltip_text("Pick an icon")
+            button_picker.connect("clicked", on_pick_btn, entry)
+            hbox.pack_start(button_picker, False, False, 0)
 
         listbox = Gtk.ListBox()
         listbox.set_selection_mode(Gtk.SelectionMode.NONE)

@@ -177,7 +177,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 # Added in v0.1.3, so may be undefined in user's config.
                 if item not in panel:
                     panel["scratchpad"] = {}
-                scratchpad = Scratchpad(common.i3, common.i3.get_tree(), panel[item])
+                scratchpad = Scratchpad(common.i3, common.i3.get_tree(), panel[item], panel["position"])
                 container.pack_start(scratchpad, False, False, panel["items-padding"])
                 common.scratchpads_list.append(scratchpad)
             else:
@@ -234,7 +234,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             tray_settings = {}
             if "tray" in panel:
                 tray_settings = panel["tray"]
-            tray = sni_system_tray.Tray(tray_settings, icons_path)
+            tray = sni_system_tray.Tray(tray_settings, panel["position"], icons_path)
             common.tray_list.append(tray)
             container.pack_start(tray, False, False, panel["items-padding"])
 
@@ -467,8 +467,11 @@ def main():
 
             Gtk.Widget.set_size_request(window, w, h)
 
+            o = Gtk.Orientation.HORIZONTAL if panel["position"] == "top" or panel[
+                "position"] == "bottom" else Gtk.Orientation.VERTICAL
+
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            hbox = Gtk.Box(orientation=o, spacing=0)
             vbox.pack_start(hbox, True, True, panel["padding-vertical"])
 
             check_key(panel, "modules-left", [])
@@ -485,12 +488,16 @@ def main():
             else:
                 check_key(panel, "homogeneous", False)
 
-            inner_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            inner_box = Gtk.Box(orientation=o, spacing=0)
             inner_box.set_homogeneous(panel["homogeneous"])
 
-            hbox.pack_start(inner_box, True, True, panel["padding-horizontal"])
+            hbox.pack_start(inner_box, True, True, 0)
+            hbox.set_property("margin-start", panel["padding-horizontal"])
+            hbox.set_property("margin-end", panel["padding-horizontal"])
+            hbox.set_property("margin-top", panel["padding-vertical"])
+            hbox.set_property("margin-bottom", panel["padding-vertical"])
 
-            left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
+            left_box = Gtk.Box(orientation=o, spacing=panel["spacing"])
             inner_box.pack_start(left_box, False, True, 0)
             if panel["controls"] and panel["controls"] == "left":
                 monitor = None
@@ -507,7 +514,7 @@ def main():
                 if common.commands["swaync"]:
                     if "swaync" not in panel:
                         panel["swaync"] = {}
-                    sway_nc = SwayNC(panel["swaync"], icons_path)
+                    sway_nc = SwayNC(panel["swaync"], icons_path, panel["position"])
                     left_box.pack_start(sway_nc, False, False, 0)
 
             if panel["menu-start"] == "left":
@@ -516,14 +523,14 @@ def main():
 
             instantiate_content(panel, left_box, panel["modules-left"], icons_path=icons_path)
 
-            center_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
+            center_box = Gtk.Box(orientation=o, spacing=panel["spacing"])
             inner_box.pack_start(center_box, True, False, 0)
             check_key(panel, "modules-center", [])
             instantiate_content(panel, center_box, panel["modules-center"], icons_path=icons_path)
 
-            right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=panel["spacing"])
+            right_box = Gtk.Box(orientation=o, spacing=panel["spacing"])
             # Damn on the guy who invented `pack_start(child, expand, fill, padding)`!
-            helper_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            helper_box = Gtk.Box(orientation=o, spacing=0)
             helper_box.pack_end(right_box, False, False, 0)
             inner_box.pack_start(helper_box, False, True, 0)
             check_key(panel, "modules-right", [])
@@ -548,7 +555,8 @@ def main():
                 if common.commands["swaync"]:
                     if "swaync" not in panel:
                         panel["swaync"] = {}
-                    sway_nc = SwayNC(panel["swaync"], icons_path)
+
+                    sway_nc = SwayNC(panel["swaync"], icons_path, panel["position"])
                     right_box.pack_end(sway_nc, False, False, 0)
 
             window.add(vbox)
@@ -570,12 +578,21 @@ def main():
             if monitor:
                 GtkLayerShell.set_monitor(window, monitor)
 
-            GtkLayerShell.auto_exclusive_zone_enable(window)
+            check_key(panel, "exclusive-zone", True)
+            if panel["exclusive-zone"]:
+                GtkLayerShell.auto_exclusive_zone_enable(window)
 
-            if panel["layer"] == "top":
+            layers = {"background": GtkLayerShell.Layer.BACKGROUND,
+                      "bottom": GtkLayerShell.Layer.BOTTOM,
+                      "top": GtkLayerShell.Layer.TOP,
+                      "overlay": GtkLayerShell.Layer.OVERLAY}
+
+            GtkLayerShell.set_layer(window, layers[panel["layer"]])
+
+            """if panel["layer"] == "top":
                 GtkLayerShell.set_layer(window, GtkLayerShell.Layer.TOP)
             else:
-                GtkLayerShell.set_layer(window, GtkLayerShell.Layer.BOTTOM)
+                GtkLayerShell.set_layer(window, GtkLayerShell.Layer.BOTTOM)"""
 
             check_key(panel, "margin-top", 0)
             GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, panel["margin-top"])
@@ -585,8 +602,14 @@ def main():
 
             if panel["position"] == "top":
                 GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.TOP, 1)
-            else:
+                GtkLayerShell.set_layer(window, GtkLayerShell.Layer.TOP)
+            elif panel["position"] == "bottom":
                 GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.BOTTOM, 1)
+            elif panel["position"] == "left":
+                GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.LEFT, 1)
+                GtkLayerShell.set_layer(window, GtkLayerShell.Layer.BOTTOM)
+            elif panel["position"] == "right":
+                GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.RIGHT, 1)
 
             window.show_all()
 

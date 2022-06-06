@@ -22,7 +22,7 @@ class Clock(Gtk.EventBox):
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
-        self.label = Gtk.Label("")
+        self.label = Gtk.Label.new("")
 
         check_key(settings, "root-css-name", "root-clock")
         check_key(settings, "css-name", "clock")
@@ -35,9 +35,12 @@ class Clock(Gtk.EventBox):
         check_key(settings, "on-scroll-down", "")
 
         check_key(settings, "interval", 1)
+        check_key(settings, "angle", 0.0)
 
         self.set_property("name", settings["root-css-name"])
         self.label.set_property("name", settings["css-name"])
+
+        self.label.set_angle(settings["angle"])
 
         if settings["tooltip-text"]:
             self.set_tooltip_text(settings["tooltip-text"])

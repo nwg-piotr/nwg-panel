@@ -8,7 +8,7 @@
     <property name="label-xalign">0.5</property>
     <property name="shadow-type">out</property>
     <child>
-      <!-- n-columns=2 n-rows=15 -->
+      <!-- n-columns=2 n-rows=16 -->
       <object class="GtkGrid" id="grid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -60,6 +60,8 @@
             <items>
               <item id="top" translatable="yes">top</item>
               <item id="bottom" translatable="yes">bottom</item>
+              <item id="left" translatable="yes">left</item>
+              <item id="right" translatable="yes">right</item>
             </items>
           </object>
           <packing>
@@ -83,9 +85,14 @@
           <object class="GtkComboBoxText" id="layer">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">For typical panels use 'top' or 'bottom.
+Horizontal and vertical panels should not
+be placed on the same layer.</property>
             <items>
-              <item id="top" translatable="yes">top</item>
+              <item id="background" translatable="yes">background</item>
               <item id="bottom" translatable="yes">bottom</item>
+              <item id="top" translatable="yes">top</item>
+              <item id="overlay" translatable="yes">overlay</item>
             </items>
           </object>
           <packing>
@@ -110,8 +117,8 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <items>
-              <item id="right" translatable="yes">on the right</item>
-              <item id="left" translatable="yes">on the left</item>
+              <item id="right" translatable="yes">end</item>
+              <item id="left" translatable="yes">start</item>
               <item id="off" translatable="yes">off</item>
             </items>
           </object>
@@ -407,6 +414,24 @@
             <property name="left-attach">0</property>
             <property name="top-attach">0</property>
           </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="exclusive-zone">
+            <property name="label" translatable="yes">enable exclusive zone</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="tooltip-text" translatable="yes">determins whether the panel is to
+put other windows away</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">15</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
         </child>
       </object>
     </child>

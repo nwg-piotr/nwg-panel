@@ -20,10 +20,14 @@ class Scratchpad(Gtk.Box):
 
         defaults = {
             "css-name": "",
-            "icon-size": 16
+            "icon-size": 16,
+            "angle": 0.0
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
+
+        if settings["angle"] != 0.0:
+            self.set_orientation(Gtk.Orientation.VERTICAL)
 
     def check_scratchpad(self, tree):
         content = []

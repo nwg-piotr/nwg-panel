@@ -229,8 +229,8 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <items>
-              <item id="left" translatable="yes">left</item>
-              <item id="right" translatable="yes">right</item>
+              <item id="left" translatable="yes">start</item>
+              <item id="right" translatable="yes">end</item>
             </items>
           </object>
           <packing>
