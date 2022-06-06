@@ -1635,7 +1635,8 @@ class EditorWrapper(object):
         settings = self.panel["dwl-tags"]
         defaults = {
             "tag-names": "1 2 3 4 5 6 7 8 9",
-            "title-limit": 55
+            "title-limit": 55,
+            "angle": 0.0
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1652,6 +1653,9 @@ class EditorWrapper(object):
         self.dwl_tags_title_limit.configure(adj, 1, 0)
         self.dwl_tags_title_limit.set_value(settings["title-limit"])
 
+        self.dwl_angle = builder.get_object("angle")
+        self.dwl_angle.set_active_id(str(settings["angle"]))
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -1660,6 +1664,11 @@ class EditorWrapper(object):
         settings = self.panel["dwl-tags"]
         settings["tag-names"] = self.dwl_tag_names.get_text()
         settings["title-limit"] = int(self.dwl_tags_title_limit.get_value())
+
+        try:
+            settings["angle"] = float(self.dwl_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
 
         save_json(self.config, self.file)
 

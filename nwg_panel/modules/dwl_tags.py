@@ -14,6 +14,7 @@ class DwlTags(Gtk.EventBox):
         Gtk.EventBox.__init__(self)
         check_key(settings, "tag-names", "1 2 3 4 5 6 7 8 9")
         check_key(settings, "title-limit", 55)
+        check_key(self.settings, "angle", 0.0)
 
         self.output = output
         self.settings = settings
@@ -24,9 +25,15 @@ class DwlTags(Gtk.EventBox):
         self.byte_dict = {1: 1, 2: 2, 3: 4, 4: 8, 5: 16, 6: 32, 7: 64, 8: 128, 9: 256}
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        if self.settings["angle"] != 0.0:
+            self.box.set_orientation(Gtk.Orientation.VERTICAL)
         self.add(self.box)
         self.label = Gtk.Label()
+        if self.settings["angle"] != 0.0:
+            self.label.set_angle(self.settings["angle"])
         self.tag_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        if self.settings["angle"] != 0.0:
+            self.tag_box.set_orientation(Gtk.Orientation.VERTICAL)
         self.box.pack_end(self.label, False, False, 4)
         self.show_all()
 
@@ -44,6 +51,8 @@ class DwlTags(Gtk.EventBox):
                 if self.tag_box:
                     self.tag_box.destroy()
                     self.tag_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+                    if self.settings["angle"] != 0.0:
+                        self.tag_box.set_orientation(Gtk.Orientation.VERTICAL)
                     self.tag_box.set_property('name', 'dwl-tag-box')
                     self.box.pack_start(self.tag_box, False, False, 4)
 
@@ -51,7 +60,11 @@ class DwlTags(Gtk.EventBox):
                 win_on_tags = []
                 for item in self.tags:
                     tag_wrapper = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+                    if self.settings["angle"] != 0.0:
+                        tag_wrapper.set_orientation(Gtk.Orientation.VERTICAL)
                     label = Gtk.Label()
+                    if self.settings["angle"] != 0.0:
+                        label.set_angle(self.settings["angle"])
                     tag_wrapper.pack_start(label, False, False, 0)
                     if self.byte_dict[cnt] == selected_output_tag:
                         tag_wrapper.set_property('name', "dwl-tag-selected")
