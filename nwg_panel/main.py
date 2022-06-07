@@ -46,6 +46,7 @@ from nwg_panel.modules.cpu_avg import CpuAvg
 from nwg_panel.modules.scratchpad import Scratchpad
 from nwg_panel.modules.dwl_tags import DwlTags
 from nwg_panel.modules.swaync import SwayNC
+from nwg_panel.modules.openweather import OpenWeather
 
 from nwg_panel.modules.menu_start import MenuStart
 
@@ -211,6 +212,9 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 container.pack_start(playerctl, False, False, panel["items-padding"])
             else:
                 print("'{}' not defined in this panel instance".format(item))
+
+        if item == "openweather":
+            openweather = OpenWeather(panel[item], icons_path)
 
         if item == "cpu-avg":
             cpu_avg = CpuAvg()
