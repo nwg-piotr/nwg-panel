@@ -2,10 +2,10 @@
 
 import json
 import os
+import threading
 
 import gi
 import requests
-import threading
 
 from nwg_panel.tools import check_key, eprint, load_json, save_json, temp_dir, file_age
 
@@ -66,12 +66,20 @@ class OpenWeather(Gtk.EventBox):
         self.refresh()
 
         if settings["interval"] > 0:
-            Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
+            Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, 180, self.refresh)
+
+    def refresh(self):
+        thread = threading.Thread(target=self.get_weather)
+        thread.daemon = True
+        thread.start()
+        return True
 
     def get_weather(self):
         # On sway reload we'll load last saved json from file (instead of requesting data),
         # if the file exists and refresh interval has not yet elapsed.
-        if not os.path.isfile(self.weather_file) or int(file_age(self.weather_file)) > self.settings["interval"] - 1:
+        if not os.path.isfile(self.weather_file) or int(file_age(self.weather_file)) > self.settings[
+                "interval"] * 60 - 1:
+            print(">>> Requesting openweather data")
             try:
                 r = requests.get(self.weather_request)
                 weather = json.loads(r.text)
@@ -80,14 +88,9 @@ class OpenWeather(Gtk.EventBox):
             except Exception as e:
                 eprint(e)
         else:
+            print(">>> Loading weather data from file")
             weather = load_json(self.weather_file)
             GLib.idle_add(self.update_widget, weather)
-
-    def refresh(self):
-        thread = threading.Thread(target=self.get_weather)
-        thread.daemon = True
-        thread.start()
-        return True
 
     def update_widget(self, weather):
         if weather["cod"] in [200, "200"]:
