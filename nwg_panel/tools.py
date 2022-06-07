@@ -5,6 +5,7 @@ import sys
 import json
 import subprocess
 import stat
+import time
 
 import gi
 
@@ -649,3 +650,7 @@ def get_cache_dir():
         return os.path.join(os.getenv("HOME"), ".cache")
     else:
         return None
+
+
+def file_age(path):
+    return time.time() - os.stat(path)[stat.ST_MTIME]

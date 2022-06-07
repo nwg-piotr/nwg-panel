@@ -214,7 +214,8 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 print("'{}' not defined in this panel instance".format(item))
 
         if item == "openweather":
-            openweather = OpenWeather(panel[item], icons_path)
+            if item in panel:
+                openweather = OpenWeather(panel[item], icons_path)
 
         if item == "cpu-avg":
             cpu_avg = CpuAvg()

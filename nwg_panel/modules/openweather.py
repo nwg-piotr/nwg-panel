@@ -7,7 +7,7 @@ import gi
 import requests
 import threading
 
-from nwg_panel.tools import check_key, eprint, load_json
+from nwg_panel.tools import check_key, eprint, load_json, save_json, temp_dir, file_age
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -23,7 +23,7 @@ class OpenWeather(Gtk.EventBox):
                     "appid": "f060ab40f2b012e72350f6acc413132a",
                     "units": "metric",
                     "lang": "",
-                    "interval": 1800}
+                    "interval": 30}
         for key in defaults:
             check_key(settings, key, defaults[key])
 
@@ -35,6 +35,9 @@ class OpenWeather(Gtk.EventBox):
 
         data_home = os.getenv('XDG_DATA_HOME') if os.getenv('XDG_DATA_HOME') else os.path.join(os.getenv("HOME"),
                                                                                                ".local/share")
+        tmp_dir = temp_dir()
+        self.weather_file = os.path.join(tmp_dir, "nwg-openweather-weather")
+
         # Try to obtain geolocation if unset
         if not settings["lat"] or not settings["long"]:
             # Try nwg-shell settings
@@ -66,12 +69,19 @@ class OpenWeather(Gtk.EventBox):
             Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
 
     def get_weather(self):
-        try:
-            r = requests.get(self.forecast_request)
-            weather = json.loads(r.text)
+        # On sway reload we'll load last saved json from file (instead of requesting data),
+        # if the file exists and refresh interval has not yet elapsed.
+        if not os.path.isfile(self.weather_file) or int(file_age(self.weather_file)) > self.settings["interval"] - 1:
+            try:
+                r = requests.get(self.weather_request)
+                weather = json.loads(r.text)
+                save_json(weather, self.weather_file)
+                GLib.idle_add(self.update_widget, weather)
+            except Exception as e:
+                eprint(e)
+        else:
+            weather = load_json(self.weather_file)
             GLib.idle_add(self.update_widget, weather)
-        except Exception as e:
-            print(e)
 
     def refresh(self):
         thread = threading.Thread(target=self.get_weather)
@@ -80,6 +90,6 @@ class OpenWeather(Gtk.EventBox):
         return True
 
     def update_widget(self, weather):
-        if weather["cod"] == "200":
+        if weather["cod"] in [200, "200"]:
             for key in weather:
                 print(key, weather[key])
