@@ -216,6 +216,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
         if item == "openweather":
             if item in panel:
                 openweather = OpenWeather(panel[item], icons_path)
+                container.pack_start(openweather, False, False, panel["items-padding"])
 
         if item == "cpu-avg":
             cpu_avg = CpuAvg()
