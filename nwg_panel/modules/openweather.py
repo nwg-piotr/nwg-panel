@@ -51,11 +51,9 @@ def direction(deg):
         return "?"
 
 
-def handle_keyboard(window, event):
-    if event.type == Gdk.EventType.KEY_RELEASE and event.keyval == Gdk.KEY_Escape:
+def on_button_press(window, event):
+    if event.button == 1:
         window.close()
-    else:
-        return True
 
 
 class OpenWeather(Gtk.EventBox):
@@ -253,7 +251,7 @@ class OpenWeather(Gtk.EventBox):
 
             GtkLayerShell.init_for_window(self.popup)
             GtkLayerShell.set_keyboard_interactivity(self.popup, True)
-            self.popup.connect("key-release-event", handle_keyboard)
+            self.popup.connect('button-press-event', on_button_press)
 
             vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
             vbox.set_property("margin", 12)
