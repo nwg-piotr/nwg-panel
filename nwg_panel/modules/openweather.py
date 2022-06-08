@@ -192,6 +192,8 @@ class OpenWeather(Gtk.EventBox):
             weather = load_json(self.weather_file)
             GLib.idle_add(self.update_widget, weather)
 
+        return weather
+
     def update_widget(self, weather):
         if weather["cod"] in [200, "200"]:
             """for key in weather:
@@ -239,6 +241,9 @@ class OpenWeather(Gtk.EventBox):
             eprint(e)
 
     def display_popup(self, forecast):
+        weather = self.get_weather()
+
+        print("weather:", weather)
         if forecast["cod"] in [200, "200"]:
             if self.popup.is_visible():
                 self.popup.close()
@@ -255,14 +260,14 @@ class OpenWeather(Gtk.EventBox):
             self.popup.add(vbox)
 
             try:
-                icon_path = os.path.join(self.icons_path, "ow-{}.svg".format(forecast["list"][0]["weather"][0]["icon"]))
+                icon_path = os.path.join(self.icons_path, "ow-{}.svg".format(weather["weather"][0]["icon"]))
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 48, 48)
                 hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
                 img = Gtk.Image.new_from_pixbuf(pixbuf)
                 img.set_property("halign", Gtk.Align.END)
                 hbox.pack_start(img, True, True, 0)
                 lbl = Gtk.Label()
-                temp = forecast["list"][0]["main"]["temp"]
+                temp = weather["main"]["temp"]
                 lbl.set_markup(
                     '<span size="xx-large">{}{}</span>'.format(str(round(temp, 1)), degrees[self.settings["units"]]))
                 lbl.set_property("halign", Gtk.Align.START)
@@ -273,9 +278,9 @@ class OpenWeather(Gtk.EventBox):
 
             try:
                 hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-                loc_label = forecast["city"]["name"] if not self.settings["loc-label"] else self.settings["loc-label"]
+                loc_label = weather["name"] if not self.settings["loc-label"] else self.settings["loc-label"]
                 lbl = Gtk.Label()
-                lbl.set_text("{}, {}".format(loc_label, forecast["city"]["country"]))
+                lbl.set_text("{}, {}".format(loc_label, weather["sys"]["country"]))
                 hbox.pack_start(lbl, True, True, 0)
                 vbox.pack_start(hbox, False, False, 0)
             except Exception as e:
@@ -284,9 +289,10 @@ class OpenWeather(Gtk.EventBox):
             try:
                 hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 lbl = Gtk.Label()
-                lbl.set_text("{}° / {}°, feels like {}°".format(round(forecast["list"][0]["main"]["temp_max"], 1),
-                                                                round(forecast["list"][0]["main"]["temp_min"], 1),
-                                                                round(forecast["list"][0]["main"]["feels_like"], 1)))
+                lbl.set_text(
+                    "Feels like {}°, hum {}%, {} hPa".format(weather["main"]["feels_like"],
+                                                             weather["main"]["humidity"],
+                                                             weather["main"]["pressure"]))
                 hbox.pack_start(lbl, True, True, 0)
                 vbox.pack_start(hbox, False, False, 6)
             except Exception as e:
