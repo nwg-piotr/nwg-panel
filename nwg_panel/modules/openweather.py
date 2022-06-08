@@ -157,6 +157,6 @@ class OpenWeather(Gtk.EventBox):
             self.label.set_text(lbl_content)
 
             time = datetime.fromtimestamp(os.stat(self.weather_file)[stat.ST_MTIME])
-            self.set_tooltip_text("{} {} {} ({})".format(weather["name"], temp, desc, time.strftime("%H:%M")))
+            self.set_tooltip_text("{}  {}  {}  ({})".format(weather["name"], temp, desc, time.strftime("%H:%M")))
 
         self.show_all()
