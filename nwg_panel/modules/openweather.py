@@ -456,8 +456,7 @@ class OpenWeather(Gtk.EventBox):
 
             lbl = Gtk.Label()
             lbl.set_markup(
-                '<span font_size="{}">Source: openweathermap.org</span>'.format(
-                    self.settings["forecast-text-size"]))
+                '<span font_size="{}">Source: openweathermap.org</span>'.format(self.settings["forecast-text-size"]))
             vbox.pack_start(lbl, False, False, 6)
 
             item = forecast["list"][0]
