@@ -241,8 +241,16 @@ class OpenWeather(Gtk.EventBox):
         except Exception as e:
             eprint(e)
 
+    def svg2img(self, file_name, size):
+        icon_path = os.path.join(self.icons_path, file_name)
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, size, size)
+        img = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        return img
+
     def display_popup(self, forecast):
         weather = self.get_weather(skip_request=True)
+        print(weather)
 
         if self.popup.is_visible():
             self.popup.close()
@@ -254,18 +262,19 @@ class OpenWeather(Gtk.EventBox):
         self.popup.connect('button-press-event', on_button_press)
 
         vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
-        vbox.set_property("margin", 12)
+        vbox.set_property("margin", 6)
         self.popup.add(vbox)
 
         # CURRENT WEATHER
         # row 0: Big icon
         if "icon" in weather["weather"][0]:
-            icon_path = os.path.join(self.icons_path, "ow-{}.svg".format(weather["weather"][0]["icon"]))
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 48, 48)
+            img = self.svg2img("ow-{}.svg".format(weather["weather"][0]["icon"]), 48)
             hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
-            img = Gtk.Image.new_from_pixbuf(pixbuf)
             img.set_property("halign", Gtk.Align.END)
             hbox.pack_start(img, True, True, 0)
+
+        if "description" in weather["weather"][0]:
+            img.set_tooltip_text(weather["weather"][0]["description"])
 
         # row 0: Temperature big label
         if "temp" in weather["main"]:
@@ -323,16 +332,17 @@ class OpenWeather(Gtk.EventBox):
         pressure = " Pressure {} hPa".format(weather["main"]["pressure"]) if "pressure" in weather["main"] else ""
         clouds = " Clouds {}%".format(weather["clouds"]["all"]) if "clouds" in weather and "all" in weather[
             "clouds"] else ""
-        visibility = " Visibility {} m".format(weather["visibility"]) if "visibility" in weather else ""
+        visibility = " Visibility {} km".format(int(weather["visibility"] / 1000)) if "visibility" in weather else ""
         lbl.set_text(
             "{}{}{}{}{}\n{}{}{}".format(feels_like, humidity, wind_speed, wind_dir, wind_gust, pressure, clouds,
                                         visibility))
         hbox.pack_start(lbl, True, True, 0)
         vbox.pack_start(hbox, False, False, 6)
 
+        # 5-DAY FORECAST
         if forecast["cod"] in [200, "200"]:
             lbl = Gtk.Label()
-            lbl.set_markup('<span size="large"><b>5-day forecast</b></span>')
+            lbl.set_markup('<i>5-day forecast</i>')
             vbox.pack_start(lbl, False, False, 6)
 
             for key in forecast:
@@ -356,11 +366,13 @@ class OpenWeather(Gtk.EventBox):
                 box.pack_start(lbl, False, False, 0)
                 grid.attach(box, 0, i, 1, 1)
 
-                if "icon" in data["weather"][0]:
-                    icon_path = os.path.join(self.icons_path, "ow-{}.svg".format(data["weather"][0]["icon"]))
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 24, 24)
-                    img = Gtk.Image.new_from_pixbuf(pixbuf)
-                    grid.attach(img, 1, i, 1, 1)
+                if "weather" in data and data["weather"][0]:
+                    if "icon" in data["weather"][0]:
+                        img = self.svg2img("ow-{}.svg".format(data["weather"][0]["icon"]), 24)
+                        grid.attach(img, 1, i, 1, 1)
+
+                    if "description" in data["weather"][0]:
+                        img.set_tooltip_text(data["weather"][0]["description"])
 
                 if "temp" in data["main"]:
                     lbl = Gtk.Label.new("{}°".format(str(int(round(data["main"]["temp"], 0)))))
@@ -368,18 +380,50 @@ class OpenWeather(Gtk.EventBox):
 
                 if "pressure" in data["main"]:
                     box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+                    box.set_tooltip_text("Pressure")
                     lbl = Gtk.Label.new("{} hPa".format(data["main"]["pressure"]))
                     box.pack_start(lbl, False, False, 0)
                     grid.attach(box, 3, i, 1, 1)
 
                 if "wind" in data:
-                    wind_speed = "Wind {} m/s".format(data["wind"]["speed"]) if "speed" in data["wind"] and data["wind"]["speed"] else ""
+                    box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+                    box.set_tooltip_text("Wind speed, (gusts), direction")
+                    img = self.svg2img("wind.svg", 20)
+                    box.pack_start(img, False, False, 0)
+                    wind_speed = "{} m/s".format(data["wind"]["speed"]) if "speed" in data["wind"] and data["wind"]["speed"] else ""
                     wind_gust = " ({})".format(data["wind"]["gust"]) if "gust" in data["wind"] and data["wind"]["gust"] else ""
                     wind_dir = " {}".format(direction(data["wind"]["deg"])) if "deg" in data["wind"] and data["wind"]["deg"] else ""
-                    box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                     lbl = Gtk.Label.new("{}{}{}".format(wind_speed, wind_gust, wind_dir))
-                    box.pack_start(lbl, False, False, 0)
+                    box.pack_start(lbl, False, False, 6)
                     grid.attach(box, 4, i, 1, 1)
+
+                if "clouds" in data:
+                    if "all" in data["clouds"]:
+                        box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
+                        box.set_tooltip_text("Cloudiness")
+                        img = self.svg2img("cloud.svg", 20)
+                        box.pack_start(img, False, False, 0)
+                        lbl = Gtk.Label.new("{}%".format(data["clouds"]["all"]))
+                        box.pack_start(lbl, False, False, 0)
+                        grid.attach(box, 5, i, 1, 1)
+
+                if "visibility" in data:
+                    box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
+                    box.set_tooltip_text("Visibility")
+                    img = self.svg2img("eye.svg", 20)
+                    box.pack_start(img, False, False, 0)
+                    lbl = Gtk.Label.new("{} km".format(int(data["visibility"] / 1000)))
+                    box.pack_start(lbl, False, False, 0)
+                    grid.attach(box, 6, i, 1, 1)
+
+                if "pop" in data and data["pop"]:
+                    box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
+                    box.set_tooltip_text("Probability of precipitation")
+                    img = self.svg2img("umbrella.svg", 20)
+                    box.pack_start(img, False, False, 0)
+                    lbl = Gtk.Label.new("{}%".format(int(round(data["pop"] * 100, 0))))
+                    box.pack_start(lbl, False, False, 0)
+                    grid.attach(box, 7, i, 1, 1)
 
             item = forecast["list"][0]
             print("---")
