@@ -72,13 +72,14 @@ class OpenWeather(Gtk.EventBox):
                     "icon-size": 24,
                     "icon-placement": "left",
                     "css-name": "clock",
+                    "popup-css-name": "weather",
                     "on-right-click": "",
                     "on-middle-click": "",
                     "on-scroll": "",
                     "angle": 0.0,
                     "popup-icons": "light",
-                    "forecast-icon-size": 20,
-                    "forecast-text-size": "small"}
+                    "forecast-icon-size": 24,
+                    "forecast-text-size": "medium"}
         for key in defaults:
             check_key(settings, key, defaults[key])
 
@@ -108,6 +109,7 @@ class OpenWeather(Gtk.EventBox):
         self.connect('leave-notify-event', on_leave_notify_event)
 
         self.popup = Gtk.Window()
+        #self.popup.set_property("name", "weather")
 
         if settings["angle"] != 0.0:
             self.box.set_orientation(Gtk.Orientation.VERTICAL)
@@ -200,6 +202,15 @@ class OpenWeather(Gtk.EventBox):
 
         return weather
 
+    def get_forecast(self):
+        eprint("Requesting forecast data")
+        try:
+            r = requests.get(self.forecast_request)
+            forecast = json.loads(r.text)
+            GLib.idle_add(self.display_popup, forecast)
+        except Exception as e:
+            eprint(e)
+
     def update_widget(self, weather):
         if weather["cod"] in [200, "200"]:
             """for key in weather:
@@ -236,15 +247,6 @@ class OpenWeather(Gtk.EventBox):
 
         self.show_all()
 
-    def get_forecast(self):
-        eprint("Requesting forecast data")
-        try:
-            r = requests.get(self.forecast_request)
-            forecast = json.loads(r.text)
-            GLib.idle_add(self.display_popup, forecast)
-        except Exception as e:
-            eprint(e)
-
     def svg2img(self, file_name):
         icon_path = os.path.join(self.popup_icons, file_name)
         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, self.settings["forecast-icon-size"],
@@ -262,10 +264,13 @@ class OpenWeather(Gtk.EventBox):
             self.popup.destroy()
 
         self.popup = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
+        self.popup.set_property("name", self.settings["popup-css-name"])
 
         GtkLayerShell.init_for_window(self.popup)
         GtkLayerShell.set_layer(self.popup, GtkLayerShell.Layer.TOP)
-        # GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.TOP, 1)
+        GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.TOP, 1)
+        GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.BOTTOM, 1)
+        GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.RIGHT, 1)
         self.popup.connect('button-press-event', on_button_press)
 
         vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
