@@ -4,12 +4,12 @@ import json
 import os
 import stat
 import threading
+from datetime import datetime
 
 import gi
 import requests
 
 from nwg_panel.tools import check_key, eprint, load_json, save_json, temp_dir, file_age, update_image
-from datetime import datetime
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -173,11 +173,12 @@ class OpenWeather(Gtk.EventBox):
         else:
             print("No command assigned")
 
-    def get_weather(self):
+    def get_weather(self, skip_request=False):
         # On sway reload we'll load last saved json from file (instead of requesting data),
         # if the file exists and refresh interval has not yet elapsed.
-        if not os.path.isfile(self.weather_file) or int(file_age(self.weather_file)) > self.settings[
-            "interval"] * 60 - 1:
+        weather = {}
+        if (not os.path.isfile(self.weather_file) or int(file_age(self.weather_file)) > self.settings[
+            "interval"] * 60 - 1 and not skip_request):
             eprint("Requesting weather data")
             try:
                 r = requests.get(self.weather_request)
@@ -196,19 +197,19 @@ class OpenWeather(Gtk.EventBox):
         if weather["cod"] in [200, "200"]:
             """for key in weather:
                 print(key, weather[key])"""
-            new_path = os.path.join(self.icons_path, "ow-{}.svg".format(weather["weather"][0]["icon"]))
-            if self.icon_path != new_path:
-                print("Setting image from {}".format(new_path))
-                try:
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                        new_path, self.settings["icon-size"], self.settings["icon-size"])
-                    self.image.set_from_pixbuf(pixbuf)
-                    self.icon_path = new_path
-                except:
-                    print("Failed setting image from {}".format(new_path))
+            if "icon" in weather["weather"][0]:
+                new_path = os.path.join(self.icons_path, "ow-{}.svg".format(weather["weather"][0]["icon"]))
+                if self.icon_path != new_path:
+                    try:
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                            new_path, self.settings["icon-size"], self.settings["icon-size"])
+                        self.image.set_from_pixbuf(pixbuf)
+                        self.icon_path = new_path
+                    except:
+                        print("Failed setting image from {}".format(new_path))
             lbl_content = ""
             temp = ""
-            if weather["main"]["temp"]:
+            if "temp" in weather["main"] and weather["main"]["temp"]:
                 deg = degrees[self.settings["units"]]
                 try:
                     val = round(float(weather["main"]["temp"]), 1)
@@ -217,15 +218,18 @@ class OpenWeather(Gtk.EventBox):
                 except:
                     pass
 
-            desc = weather["weather"][0]["description"].capitalize()
-            if self.settings["show-desc"]:
-                lbl_content += " {}".format(desc)
+            desc = ""
+            if "description" in weather["weather"][0]:
+                desc = weather["weather"][0]["description"].capitalize()
+                if self.settings["show-desc"]:
+                    lbl_content += " {}".format(desc)
 
             self.label.set_text(lbl_content)
 
             time = datetime.fromtimestamp(os.stat(self.weather_file)[stat.ST_MTIME])
-            loc_label = weather["name"] if not self.settings["loc-label"] else self.settings["loc-label"]
-            self.set_tooltip_text("{}  {}  {}  ({})".format(loc_label, temp, desc, time.strftime("%H:%M")))
+            loc_label = weather["name"] if "name" in weather and not self.settings["loc-label"] else self.settings[
+                "loc-label"]
+            self.set_tooltip_text("{}".format(time.strftime("%d %b %H:%M")))
 
         self.show_all()
 
@@ -239,63 +243,96 @@ class OpenWeather(Gtk.EventBox):
             eprint(e)
 
     def display_popup(self, forecast):
-        weather = self.get_weather()
-
+        weather = self.get_weather(skip_request=True)
         print("weather:", weather)
+
+        if self.popup.is_visible():
+            self.popup.close()
+            self.popup.destroy()
+
+        self.popup = Gtk.Window.new(Gtk.WindowType.POPUP)
+
+        GtkLayerShell.init_for_window(self.popup)
+        self.popup.connect('button-press-event', on_button_press)
+
+        vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+        vbox.set_property("margin", 12)
+        self.popup.add(vbox)
+
+        # CURRENT WEATHER
+        # row 0: Big icon
+        if "icon" in weather["weather"][0]:
+            icon_path = os.path.join(self.icons_path, "ow-{}.svg".format(weather["weather"][0]["icon"]))
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 48, 48)
+            hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
+            img = Gtk.Image.new_from_pixbuf(pixbuf)
+            img.set_property("halign", Gtk.Align.END)
+            hbox.pack_start(img, True, True, 0)
+
+        # row 0: Temperature big label
+        if "temp" in weather["main"]:
+            lbl = Gtk.Label()
+            temp = weather["main"]["temp"]
+            lbl.set_markup(
+                '<span size="xx-large">{}{}</span>'.format(str(round(temp, 1)), degrees[self.settings["units"]]))
+            lbl.set_property("halign", Gtk.Align.START)
+            hbox.pack_start(lbl, True, True, 0)
+            vbox.pack_start(hbox, False, False, 0)
+
+        # row 1: Location
+        hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        loc_label = weather["name"] if "name" in weather and not self.settings["loc-label"] else self.settings[
+            "loc-label"]
+        country = ", {}".format(weather["sys"]["country"]) if "country" in weather["sys"] and weather["sys"][
+            "country"] else ""
+        lbl = Gtk.Label()
+        lbl.set_markup('<span size="x-large">{}{}</span>'.format(loc_label, country))
+        hbox.pack_start(lbl, True, True, 0)
+        vbox.pack_start(hbox, False, False, 0)
+
+        # row 2: Sunrise/sunset
+        if weather["sys"]["sunrise"] and weather["sys"]["sunset"]:
+            wbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+            vbox.pack_start(wbox, False, False, 0)
+            hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
+            wbox.pack_start(hbox, True, False, 0)
+            img = Gtk.Image.new_from_icon_name("daytime-sunrise-symbolic", Gtk.IconSize.MENU)
+            hbox.pack_start(img, False, False, 0)
+            dt = datetime.fromtimestamp(weather["sys"]["sunrise"])
+            lbl = Gtk.Label.new(dt.strftime("%H:%M"))
+            hbox.pack_start(lbl, False, False, 0)
+            img = Gtk.Image.new_from_icon_name("daytime-sunset-symbolic", Gtk.IconSize.MENU)
+            hbox.pack_start(img, False, False, 0)
+            dt = datetime.fromtimestamp(weather["sys"]["sunset"])
+            lbl = Gtk.Label.new(dt.strftime("%H:%M"))
+            hbox.pack_start(lbl, False, False, 0)
+
+        # row 3: Weather details
+        hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        lbl = Gtk.Label()
+        lbl.set_property("justify", Gtk.Justification.CENTER)
+        feels_like = "Feels like {}°".format(weather["main"]["feels_like"]) if "feels_like" in weather[
+            "main"] else ""
+        humidity = " Humidity {}%".format(weather["main"]["humidity"]) if "humidity" in weather["main"] else ""
+        wind_speed, wind_dir, wind_gust = "", "", ""
+        if "wind" in weather:
+            if "speed" in weather["wind"]:
+                wind_speed = " Wind: {} m/s".format(weather["wind"]["speed"])
+            if "deg" in weather["wind"]:
+                wind_dir = " {}".format((direction(weather["wind"]["deg"])))
+            if "gust" in weather["wind"]:
+                wind_gust = " (gust {} m/s)".format((weather["wind"]["gust"]))
+        pressure = " Pressure {} hPa".format(weather["main"]["pressure"]) if "pressure" in weather["main"] else ""
+        clouds = " Clouds {}%".format(weather["clouds"]["all"]) if "clouds" in weather and "all" in weather[
+            "clouds"] else ""
+        visibility = " Visibility {} m".format(weather["visibility"]) if "visibility" in weather else ""
+        lbl.set_text(
+            "{}{}{}{}{}\n{}{}{}".format(feels_like, humidity, wind_speed, wind_dir, wind_gust, pressure, clouds,
+                                        visibility))
+        hbox.pack_start(lbl, True, True, 0)
+        vbox.pack_start(hbox, False, False, 6)
+
         if forecast["cod"] in [200, "200"]:
-            if self.popup.is_visible():
-                self.popup.close()
-                self.popup.destroy()
-
-            self.popup = Gtk.Window.new(Gtk.WindowType.POPUP)
-
-            GtkLayerShell.init_for_window(self.popup)
-            GtkLayerShell.set_keyboard_interactivity(self.popup, True)
-            self.popup.connect('button-press-event', on_button_press)
-
-            vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
-            vbox.set_property("margin", 12)
-            self.popup.add(vbox)
-
-            try:
-                icon_path = os.path.join(self.icons_path, "ow-{}.svg".format(weather["weather"][0]["icon"]))
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 48, 48)
-                hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
-                img = Gtk.Image.new_from_pixbuf(pixbuf)
-                img.set_property("halign", Gtk.Align.END)
-                hbox.pack_start(img, True, True, 0)
-                lbl = Gtk.Label()
-                temp = weather["main"]["temp"]
-                lbl.set_markup(
-                    '<span size="xx-large">{}{}</span>'.format(str(round(temp, 1)), degrees[self.settings["units"]]))
-                lbl.set_property("halign", Gtk.Align.START)
-                hbox.pack_start(lbl, True, True, 0)
-                vbox.pack_start(hbox, False, False, 0)
-            except Exception as e:
-                eprint(e)
-
-            try:
-                hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-                loc_label = weather["name"] if not self.settings["loc-label"] else self.settings["loc-label"]
-                lbl = Gtk.Label()
-                lbl.set_text("{}, {}".format(loc_label, weather["sys"]["country"]))
-                hbox.pack_start(lbl, True, True, 0)
-                vbox.pack_start(hbox, False, False, 0)
-            except Exception as e:
-                eprint(e)
-
-            try:
-                hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-                lbl = Gtk.Label()
-                lbl.set_text(
-                    "Feels like {}°, hum {}%, {} hPa".format(weather["main"]["feels_like"],
-                                                             weather["main"]["humidity"],
-                                                             weather["main"]["pressure"]))
-                hbox.pack_start(lbl, True, True, 0)
-                vbox.pack_start(hbox, False, False, 6)
-            except Exception as e:
-                eprint(e)
-
             for key in forecast:
                 print(key, forecast[key])
             item = forecast["list"][0]
@@ -303,4 +340,4 @@ class OpenWeather(Gtk.EventBox):
             for key in item:
                 print(key, item[key])
 
-            self.popup.show_all()
+        self.popup.show_all()
