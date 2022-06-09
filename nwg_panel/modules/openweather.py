@@ -131,9 +131,8 @@ class OpenWeather(Gtk.EventBox):
         self.weather_request = "https://api.openweathermap.org/data/2.5/weather?lat={}&lon={}&units={}&lang={}&appid={}".format(
             settings["lat"], settings["long"], settings["units"], settings["lang"], settings["appid"])
 
-        self.forecast_request = "https://api.openweathermap.org/data/2.5/forecast?lat={}&lon={}&units={}&lang={}&cnt={}&appid={}".format(
-            settings["lat"], settings["long"], settings["units"], settings["lang"], settings["num-timestamps"],
-            settings["appid"])
+        self.forecast_request = "https://api.openweathermap.org/data/2.5/forecast?lat={}&lon={}&units={}&lang={}&appid={}".format(
+            settings["lat"], settings["long"], settings["units"], settings["lang"], settings["appid"])
 
         print("Weather request:", self.weather_request)
         # print("Forecast request:", self.forecast_request)
@@ -244,7 +243,6 @@ class OpenWeather(Gtk.EventBox):
 
     def display_popup(self, forecast):
         weather = self.get_weather(skip_request=True)
-        print("weather:", weather)
 
         if self.popup.is_visible():
             self.popup.close()
@@ -333,11 +331,60 @@ class OpenWeather(Gtk.EventBox):
         vbox.pack_start(hbox, False, False, 6)
 
         if forecast["cod"] in [200, "200"]:
+            lbl = Gtk.Label()
+            lbl.set_markup('<span size="large"><b>5-day forecast</b></span>')
+            vbox.pack_start(lbl, False, False, 6)
+
             for key in forecast:
                 print(key, forecast[key])
+            scrolled_window = Gtk.ScrolledWindow.new(None, None)
+            scrolled_window.set_propagate_natural_width(True)
+            scrolled_window.set_propagate_natural_height(True)
+
+            grid = Gtk.Grid.new()
+            grid.set_column_spacing(6)
+
+            scrolled_window.add_with_viewport(grid)
+            vbox.pack_start(scrolled_window, True, True, 0)
+
+            for i in range(len(forecast["list"])):
+                data = forecast["list"][i]
+
+                dt = datetime.fromtimestamp(data["dt"]).strftime("%a, %d %b %H:%M")
+                box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+                lbl = Gtk.Label.new(dt)
+                box.pack_start(lbl, False, False, 0)
+                grid.attach(box, 0, i, 1, 1)
+
+                if "icon" in data["weather"][0]:
+                    icon_path = os.path.join(self.icons_path, "ow-{}.svg".format(data["weather"][0]["icon"]))
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 24, 24)
+                    img = Gtk.Image.new_from_pixbuf(pixbuf)
+                    grid.attach(img, 1, i, 1, 1)
+
+                if "temp" in data["main"]:
+                    lbl = Gtk.Label.new("{}°".format(str(int(round(data["main"]["temp"], 0)))))
+                    grid.attach(lbl, 2, i, 1, 1)
+
+                if "pressure" in data["main"]:
+                    box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+                    lbl = Gtk.Label.new("{} hPa".format(data["main"]["pressure"]))
+                    box.pack_start(lbl, False, False, 0)
+                    grid.attach(box, 3, i, 1, 1)
+
+                if "wind" in data:
+                    wind_speed = "Wind {} m/s".format(data["wind"]["speed"]) if "speed" in data["wind"] and data["wind"]["speed"] else ""
+                    wind_gust = " ({})".format(data["wind"]["gust"]) if "gust" in data["wind"] and data["wind"]["gust"] else ""
+                    wind_dir = " {}".format(direction(data["wind"]["deg"])) if "deg" in data["wind"] and data["wind"]["deg"] else ""
+                    box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+                    lbl = Gtk.Label.new("{}{}{}".format(wind_speed, wind_gust, wind_dir))
+                    box.pack_start(lbl, False, False, 0)
+                    grid.attach(box, 4, i, 1, 1)
+
             item = forecast["list"][0]
             print("---")
             for key in item:
                 print(key, item[key])
 
         self.popup.show_all()
+        self.popup.set_size_request(self.popup.get_allocated_width(), self.popup.get_allocated_width())
