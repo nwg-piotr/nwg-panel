@@ -273,6 +273,7 @@ class OpenWeather(Gtk.EventBox):
         if self.popup.is_visible():
             self.popup.close()
             self.popup.destroy()
+            return
 
         self.popup = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         self.popup.set_property("name", self.settings["popup-css-name"])
