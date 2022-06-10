@@ -17,6 +17,7 @@ gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk, Gdk, GdkPixbuf
 from shutil import copyfile
+from datetime import datetime
 
 import nwg_panel.common
 
@@ -654,3 +655,7 @@ def get_cache_dir():
 
 def file_age(path):
     return time.time() - os.stat(path)[stat.ST_MTIME]
+
+
+def hms():
+    return datetime.fromtimestamp(time.time()).strftime("%H:%M:%S")
