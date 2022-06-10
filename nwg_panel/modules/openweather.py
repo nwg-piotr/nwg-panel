@@ -417,6 +417,8 @@ class OpenWeather(Gtk.EventBox):
                 if "pressure" in data["main"]:
                     box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                     box.set_tooltip_text("Pressure")
+                    img = self.svg2img("pressure.svg")
+                    box.pack_start(img, False, False, 0)
                     lbl = Gtk.Label()
                     lbl.set_markup('<span font_size="{}">{} hPa</span>'.format(self.settings["forecast-text-size"],
                                                                                data["main"]["pressure"]))
