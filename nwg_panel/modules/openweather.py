@@ -68,7 +68,7 @@ class OpenWeather(Gtk.EventBox):
                     "num-timestamps": 8,
                     "show-desc": False,
                     "loc-label": "",
-                    "interval": 10,
+                    "interval": 60,
                     "icon-size": 24,
                     "icon-placement": "left",
                     "css-name": "clock",
@@ -154,7 +154,6 @@ class OpenWeather(Gtk.EventBox):
         self.refresh()
 
         if settings["interval"] > 0:
-            # Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, 10, self.refresh)
             Gdk.threads_add_timeout_seconds(GLib.PRIORITY_DEFAULT, self.settings["interval"], self.refresh)
 
     def build_box(self):
@@ -166,8 +165,9 @@ class OpenWeather(Gtk.EventBox):
 
     def get_data(self):
         self.get_weather()
-        GLib.idle_add(self.update_widget)
         self.get_forecast()
+        GLib.idle_add(self.update_widget)
+        return True
 
     def refresh(self):
         thread = threading.Thread(target=self.get_data)
@@ -212,7 +212,7 @@ class OpenWeather(Gtk.EventBox):
     def get_forecast(self):
         # On widget click we'll load last saved json from file and open the popup window.
         forecast = {}
-        if not os.path.isfile(self.forecast_file or int(file_age(self.forecast_file)) > self.settings["interval"] - 1):
+        if not os.path.isfile(self.forecast_file) or int(file_age(self.forecast_file) > self.settings["interval"] - 1):
             eprint(hms(), "Requesting forecast data")
             try:
                 r = requests.get(self.forecast_request)
@@ -221,6 +221,7 @@ class OpenWeather(Gtk.EventBox):
             except Exception as e:
                 eprint(e)
         else:
+            eprint(hms(), "Loading forecast data from file")
             forecast = load_json(self.forecast_file)
 
         self.forecast = forecast
@@ -313,8 +314,8 @@ class OpenWeather(Gtk.EventBox):
         # row 1: Location
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         loc_label = self.weather["name"] if "name" in self.weather and not self.settings["loc-label"] else \
-        self.settings[
-            "loc-label"]
+            self.settings[
+                "loc-label"]
         country = ", {}".format(self.weather["sys"]["country"]) if "country" in self.weather["sys"] and \
                                                                    self.weather["sys"][
                                                                        "country"] else ""
@@ -474,9 +475,11 @@ class OpenWeather(Gtk.EventBox):
                     box.pack_start(lbl, False, False, 0)
                     grid.attach(box, 8, i, 1, 1)
 
+            mtime = datetime.fromtimestamp(os.stat(self.forecast_file)[stat.ST_MTIME])
             lbl = Gtk.Label()
             lbl.set_markup(
-                '<span font_size="{}">Source: openweathermap.org</span>'.format(self.settings["forecast-text-size"]))
+                '<span font_size="{}">openweathermap.org {}</span>'.format(self.settings["forecast-text-size"],
+                                                                           mtime.strftime("%d %b %H:%M:%S")))
             vbox.pack_start(lbl, False, False, 6)
 
             """item = forecast["list"][0]
