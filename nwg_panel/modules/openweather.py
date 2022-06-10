@@ -65,10 +65,10 @@ class OpenWeather(Gtk.EventBox):
                     "appid": "f060ab40f2b012e72350f6acc413132a",
                     "units": "metric",
                     "lang": "pl",
-                    "show-name": True,
+                    "show-name": False,
                     "loc-label": "",
                     "interval": 600,
-                    "icon-size": 24,
+                    "icon-size": 30,
                     "icon-placement": "left",
                     "css-name": "clock",
                     "popup-css-name": "weather",
@@ -242,13 +242,13 @@ class OpenWeather(Gtk.EventBox):
             if "name" in self.weather:
                 desc = self.weather["name"]
                 if self.settings["show-name"]:
-                    lbl_content += "{}".format(desc)
+                    lbl_content += "{} ".format(desc)
 
             if "temp" in self.weather["main"] and self.weather["main"]["temp"]:
                 deg = degrees[self.settings["units"]]
                 try:
                     val = round(float(self.weather["main"]["temp"]), 1)
-                    temp = " {}{}".format(str(val), deg)
+                    temp = "{}{}".format(str(val), deg)
                     lbl_content += temp
                 except:
                     pass
