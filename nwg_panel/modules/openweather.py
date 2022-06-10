@@ -68,7 +68,7 @@ class OpenWeather(Gtk.EventBox):
                     "num-timestamps": 8,
                     "show-desc": False,
                     "loc-label": "",
-                    "interval": 60,
+                    "interval": 600,
                     "icon-size": 24,
                     "icon-placement": "left",
                     "css-name": "clock",
@@ -78,8 +78,8 @@ class OpenWeather(Gtk.EventBox):
                     "on-scroll": "",
                     "angle": 0.0,
                     "popup-icons": "light",
-                    "forecast-icon-size": 24,
-                    "forecast-text-size": "medium"}
+                    "forecast-icon-size": 18,
+                    "forecast-text-size": "small"}
         for key in defaults:
             check_key(settings, key, defaults[key])
 
@@ -478,8 +478,8 @@ class OpenWeather(Gtk.EventBox):
             mtime = datetime.fromtimestamp(os.stat(self.forecast_file)[stat.ST_MTIME])
             lbl = Gtk.Label()
             lbl.set_markup(
-                '<span font_size="{}">openweathermap.org {}</span>'.format(self.settings["forecast-text-size"],
-                                                                           mtime.strftime("%d %b %H:%M:%S")))
+                '<span font_size="{}">openweathermap.org, {}</span>'.format(self.settings["forecast-text-size"],
+                                                                           mtime.strftime("%d %B %H:%M:%S")))
             vbox.pack_start(lbl, False, False, 6)
 
             """item = forecast["list"][0]
