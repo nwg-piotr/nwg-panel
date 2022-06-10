@@ -65,8 +65,7 @@ class OpenWeather(Gtk.EventBox):
                     "appid": "f060ab40f2b012e72350f6acc413132a",
                     "units": "metric",
                     "lang": "pl",
-                    "num-timestamps": 8,
-                    "show-desc": False,
+                    "show-name": True,
                     "loc-label": "",
                     "interval": 600,
                     "icon-size": 24,
@@ -78,8 +77,8 @@ class OpenWeather(Gtk.EventBox):
                     "on-scroll": "",
                     "angle": 0.0,
                     "popup-icons": "light",
-                    "forecast-icon-size": 18,
-                    "forecast-text-size": "small"}
+                    "forecast-icon-size": 24,
+                    "forecast-text-size": "medium"}
         for key in defaults:
             check_key(settings, key, defaults[key])
 
@@ -240,19 +239,19 @@ class OpenWeather(Gtk.EventBox):
                     except:
                         print("Failed setting image from {}".format(new_path))
             lbl_content = ""
+            if "name" in self.weather:
+                desc = self.weather["name"]
+                if self.settings["show-name"]:
+                    lbl_content += "{}".format(desc)
+
             if "temp" in self.weather["main"] and self.weather["main"]["temp"]:
                 deg = degrees[self.settings["units"]]
                 try:
                     val = round(float(self.weather["main"]["temp"]), 1)
-                    temp = "{}{}".format(str(val), deg)
+                    temp = " {}{}".format(str(val), deg)
                     lbl_content += temp
                 except:
                     pass
-
-            if "description" in self.weather["weather"][0]:
-                desc = self.weather["weather"][0]["description"].capitalize()
-                if self.settings["show-desc"]:
-                    lbl_content += " {}".format(desc)
 
             self.label.set_text(lbl_content)
 
