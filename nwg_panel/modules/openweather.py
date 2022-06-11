@@ -251,10 +251,15 @@ class OpenWeather(Gtk.EventBox):
         self.show_all()
 
     def svg2img(self, file_name):
-        icon_path = os.path.join(self.popup_icons, file_name)
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, self.settings["forecast-icon-size"],
-                                                        self.settings["forecast-icon-size"])
-        img = Gtk.Image.new_from_pixbuf(pixbuf)
+        try:
+            icon_path = os.path.join(self.popup_icons, file_name)
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, self.settings["forecast-icon-size"],
+                                                            self.settings["forecast-icon-size"])
+            img = Gtk.Image.new_from_pixbuf(pixbuf)
+        except Exception as e:
+            eprint(e)
+            img = Gtk.Image.new_from_icon_name("image-missing", Gtk.IconSize.MENU)
+            img.set_tooltip_text(str(e))
 
         return img
 
@@ -320,12 +325,14 @@ class OpenWeather(Gtk.EventBox):
             vbox.pack_start(wbox, False, False, 0)
             hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
             wbox.pack_start(hbox, True, False, 0)
-            img = Gtk.Image.new_from_icon_name("daytime-sunrise-symbolic", Gtk.IconSize.MENU)
+            # img = Gtk.Image.new_from_icon_name("daytime-sunrise-symbolic", Gtk.IconSize.MENU)
+            img = self.svg2img("sunrise.svg")
             hbox.pack_start(img, False, False, 0)
             dt = datetime.fromtimestamp(self.weather["sys"]["sunrise"])
             lbl = Gtk.Label.new(dt.strftime("%H:%M"))
             hbox.pack_start(lbl, False, False, 0)
-            img = Gtk.Image.new_from_icon_name("daytime-sunset-symbolic", Gtk.IconSize.MENU)
+            # img = Gtk.Image.new_from_icon_name("daytime-sunset-symbolic", Gtk.IconSize.MENU)
+            img = self.svg2img("sunset.svg")
             hbox.pack_start(img, False, False, 0)
             dt = datetime.fromtimestamp(self.weather["sys"]["sunset"])
             lbl = Gtk.Label.new(dt.strftime("%H:%M"))
@@ -337,22 +344,22 @@ class OpenWeather(Gtk.EventBox):
         lbl.set_property("justify", Gtk.Justification.CENTER)
         feels_like = "Feels like {}°".format(self.weather["main"]["feels_like"]) if "feels_like" in self.weather[
             "main"] else ""
-        humidity = " Humidity {}%".format(self.weather["main"]["humidity"]) if "humidity" in self.weather[
+        humidity = "   Humidity {}%".format(self.weather["main"]["humidity"]) if "humidity" in self.weather[
             "main"] else ""
         wind_speed, wind_dir, wind_gust = "", "", ""
         if "wind" in self.weather:
             if "speed" in self.weather["wind"]:
-                wind_speed = " Wind: {} m/s".format(self.weather["wind"]["speed"])
+                wind_speed = "   Wind: {} m/s".format(self.weather["wind"]["speed"])
             if "deg" in self.weather["wind"]:
                 wind_dir = " {}".format((direction(self.weather["wind"]["deg"])))
             if "gust" in self.weather["wind"]:
                 wind_gust = " (gust {} m/s)".format((self.weather["wind"]["gust"]))
         pressure = " Pressure {} hPa".format(self.weather["main"]["pressure"]) if "pressure" in self.weather[
             "main"] else ""
-        clouds = " Cloudiness {}%".format(self.weather["clouds"]["all"]) if "clouds" in self.weather and "all" in \
+        clouds = "   Cloudiness {}%".format(self.weather["clouds"]["all"]) if "clouds" in self.weather and "all" in \
                                                                             self.weather[
                                                                                 "clouds"] else ""
-        visibility = " Visibility {} km".format(
+        visibility = "   Visibility {} km".format(
             int(self.weather["visibility"] / 1000)) if "visibility" in self.weather else ""
         lbl.set_markup(
             '<span font_size="{}">{}{}{}{}{}\n{}{}{}</span>'.format(self.settings["forecast-text-size"], feels_like,

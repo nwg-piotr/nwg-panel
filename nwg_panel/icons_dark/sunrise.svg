@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="16"
+   height="16"
+   version="1.1"
+   id="svg17307"
+   sodipodi:docname="sunrise.svg"
+   inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs17311" />
+  <sodipodi:namedview
+     id="namedview17309"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="14.75"
+     inkscape:cx="7.9661017"
+     inkscape:cy="8"
+     inkscape:window-width="1918"
+     inkscape:window-height="1059"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg17307" />
+  <path
+     style="fill:#444444;fill-opacity:1"
+     d="M 14.971,12.5 C 14.981,12.66 15,12.83 15,13 H 16 Z M 1.0293,12.5 0,13 H 1 C 1,12.83 1.0193,12.66 1.0293,12.5 Z M 13.66,7.3398 12.561,7.7109 C 12.811,7.9309 13.059,8.1797 13.279,8.4297 Z M 2.3398,7.3398 2.7207,8.4297 C 2.9407,8.1797 3.1895,7.9309 3.4395,7.7109 Z M 8,7 C 4.69,7 2,9.68 2,13 H 14 C 14,9.68 11.31,7 8,7 Z M 8,5 7.5,6.0293 C 7.67,6.0193 7.83,6 8,6 8.17,6 8.33,6.0193 8.5,6.0293 Z"
+     id="path17301" />
+  <path
+     style="fill:#444444;fill-opacity:1"
+     d="M 1,14 H 15 C 15.554,14 16,14.446 16,15 16,15.554 15.554,16 15,16 H 1 C 0.446,16 0,15.554 0,15 0,14.446 0.446,14 1,14 Z"
+     id="path17303" />
+  <path
+     style="fill:#444444;fill-opacity:1"
+     d="M 8,0 11,4 H 5 Z"
+     id="path17305" />
+</svg>
