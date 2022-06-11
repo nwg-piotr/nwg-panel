@@ -49,7 +49,7 @@ def direction(deg):
     elif 293 <= deg <= 336:
         return "NW"
     else:
-        return "?"
+        return "WTF"
 
 
 def on_button_press(window, event):
