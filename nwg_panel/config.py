@@ -2549,6 +2549,7 @@ class EditorWrapper(object):
             },
             "show-values": False,
             "output-switcher": False,
+            "backlight-controller": "light",
             "backlight-device": "",
             "interval": 1,
             "window-width": 0,
@@ -2599,6 +2600,9 @@ class EditorWrapper(object):
 
         self.ctrl_comp_brightness = builder.get_object("ctrl-comp-brightness")
         self.ctrl_comp_brightness.set_active("brightness" in settings["components"])
+
+        self.ctrl_backlight_controller = builder.get_object("backlight-controller")
+        self.ctrl_backlight_controller.set_active_id(settings["backlight-controller"])
 
         self.ctrl_backlight_device = builder.get_object("backlight-device")
         self.ctrl_backlight_device.set_text(settings["backlight-device"])
@@ -2699,6 +2703,8 @@ class EditorWrapper(object):
         else:
             if "brightness" in settings["components"]:
                 settings["components"].remove("brightness")
+
+        settings["backlight-controller"] = self.ctrl_backlight_controller.get_active_id()
 
         settings["backlight-device"] = self.ctrl_backlight_device.get_text()
 
