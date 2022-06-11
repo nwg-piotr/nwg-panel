@@ -321,10 +321,18 @@ class PopupWindow(Gtk.Window):
         outer_hbox.pack_start(v_box, True, True, 20)
 
         GtkLayerShell.set_layer(self, GtkLayerShell.Layer.OVERLAY)
-        GtkLayerShell.set_margin(self, GtkLayerShell.Edge.TOP, settings["window-margin"])
-        GtkLayerShell.set_margin(self, GtkLayerShell.Edge.BOTTOM, settings["window-margin"])
-        GtkLayerShell.set_margin(self, GtkLayerShell.Edge.RIGHT, settings["window-margin"])
-        GtkLayerShell.set_margin(self, GtkLayerShell.Edge.LEFT, settings["window-margin"])
+
+        check_key(settings, "window-margin-vertical", 0)
+        if position == "top":
+            GtkLayerShell.set_margin(self, GtkLayerShell.Edge.TOP, settings["window-margin-vertical"])
+        else:
+            GtkLayerShell.set_margin(self, GtkLayerShell.Edge.BOTTOM, settings["window-margin-vertical"])
+
+        check_key(settings, "window-margin-horizontal", 0)
+        if alignment == "right":
+            GtkLayerShell.set_margin(self, GtkLayerShell.Edge.RIGHT, settings["window-margin-horizontal"])
+        else:
+            GtkLayerShell.set_margin(self, GtkLayerShell.Edge.LEFT, settings["window-margin-horizontal"])
 
         # Since v0.7 alignment 'left' / 'right' has been renamed to 'start' / 'end' in the GUI,
         # but will stay as is in the code. We also have 4 positions now: 'top', 'bottom', 'left', 'right'
