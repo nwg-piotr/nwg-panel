@@ -68,9 +68,9 @@ class OpenWeather(Gtk.EventBox):
                     "show-name": False,
                     "loc-label": "",
                     "interval": 600,
-                    "icon-size": 30,
+                    "icon-size": 26,
                     "icon-placement": "left",
-                    "css-name": "clock",
+                    "css-name": "weather",
                     "popup-css-name": "weather",
                     "on-right-click": "",
                     "on-middle-click": "",
@@ -85,8 +85,6 @@ class OpenWeather(Gtk.EventBox):
         self.set_property("name", settings["css-name"])
 
         self.settings = settings
-        self.weather = {}
-        self.forecast = {}
 
         self.icons_path = icons_path
         self.popup_icons = os.path.join(config_dir, "icons_light") if self.settings[
@@ -145,15 +143,14 @@ class OpenWeather(Gtk.EventBox):
         self.forecast_request = "https://api.openweathermap.org/data/2.5/forecast?lat={}&lon={}&units={}&lang={}&appid={}".format(
             settings["lat"], settings["long"], settings["units"], settings["lang"], settings["appid"])
 
-        # print("Weather request:", self.weather_request)
-        # print("Forecast request:", self.forecast_request)
-
         self.build_box()
 
         self.refresh()
 
         if settings["interval"] > 0:
-            Gdk.threads_add_timeout_seconds(GLib.PRIORITY_DEFAULT, self.settings["interval"], self.refresh)
+            # We can't use `self.settings["interval"]` here, as the timer resets on restart. Let's check once a minute.
+            # This will do nothing if files exist and self.weather & self.forecast are not None.
+            Gdk.threads_add_timeout_seconds(GLib.PRIORITY_DEFAULT, 60, self.refresh)
 
     def build_box(self):
         if self.settings["icon-placement"] == "left":
@@ -191,43 +188,33 @@ class OpenWeather(Gtk.EventBox):
             print("No command assigned")
 
     def get_weather(self):
-        # On sway reload we'll load last saved json from file (instead of requesting data),
-        # if the file exists and refresh interval has not yet elapsed.
-        weather = {}
         if not os.path.isfile(self.weather_file) or int(file_age(self.weather_file) > self.settings["interval"] - 1):
             eprint(hms(), "Requesting weather data")
             try:
                 r = requests.get(self.weather_request)
-                weather = json.loads(r.text)
-                save_json(weather, self.weather_file)
+                self.weather = json.loads(r.text)
+                save_json(self.weather, self.weather_file)
             except Exception as e:
                 eprint(e)
-        else:
+        elif not self.weather:
             eprint(hms(), "Loading weather data from file")
-            weather = load_json(self.weather_file)
-
-        self.weather = weather
+            self.weather = load_json(self.weather_file)
 
     def get_forecast(self):
-        # On widget click we'll load last saved json from file and open the popup window.
-        forecast = {}
         if not os.path.isfile(self.forecast_file) or int(file_age(self.forecast_file) > self.settings["interval"] - 1):
             eprint(hms(), "Requesting forecast data")
             try:
                 r = requests.get(self.forecast_request)
-                forecast = json.loads(r.text)
-                save_json(forecast, self.forecast_file)
+                self.forecast = json.loads(r.text)
+                save_json(self.forecast, self.forecast_file)
             except Exception as e:
                 eprint(e)
-        else:
+        elif not self.forecast:
             eprint(hms(), "Loading forecast data from file")
-            forecast = load_json(self.forecast_file)
-
-        self.forecast = forecast
+            self.forecast = load_json(self.forecast_file)
 
     def update_widget(self):
         if self.weather["cod"] in [200, "200"]:
-            # eprint(hms(), "Parsing weather data")
             if "icon" in self.weather["weather"][0]:
                 new_path = os.path.join(self.icons_path, "ow-{}.svg".format(self.weather["weather"][0]["icon"]))
                 if self.icon_path != new_path:
@@ -291,7 +278,7 @@ class OpenWeather(Gtk.EventBox):
         # CURRENT WEATHER
         # row 0: Big icon
         if "icon" in self.weather["weather"][0]:
-            icon_path = os.path.join(self.icons_path, "ow-{}.svg".format(self.weather["weather"][0]["icon"]))
+            icon_path = os.path.join(self.popup_icons, "ow-{}.svg".format(self.weather["weather"][0]["icon"]))
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 48, 48)
             img = Gtk.Image.new_from_pixbuf(pixbuf)
             hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
@@ -359,15 +346,16 @@ class OpenWeather(Gtk.EventBox):
                 wind_gust = " (gust {} m/s)".format((self.weather["wind"]["gust"]))
         pressure = " Pressure {} hPa".format(self.weather["main"]["pressure"]) if "pressure" in self.weather[
             "main"] else ""
-        clouds = " Clouds {}%".format(self.weather["clouds"]["all"]) if "clouds" in self.weather and "all" in \
-                                                                        self.weather[
-                                                                            "clouds"] else ""
+        clouds = " Cloudiness {}%".format(self.weather["clouds"]["all"]) if "clouds" in self.weather and "all" in \
+                                                                            self.weather[
+                                                                                "clouds"] else ""
         visibility = " Visibility {} km".format(
             int(self.weather["visibility"] / 1000)) if "visibility" in self.weather else ""
         lbl.set_markup(
-            '<span font_size="{}">{}{}{}{}{}\n{}{}{}</span>'.format(self.settings["forecast-text-size"], feels_like, humidity,
-                                                             wind_speed, wind_dir, wind_gust, pressure, clouds,
-                                                             visibility))
+            '<span font_size="{}">{}{}{}{}{}\n{}{}{}</span>'.format(self.settings["forecast-text-size"], feels_like,
+                                                                    humidity,
+                                                                    wind_speed, wind_dir, wind_gust, pressure, clouds,
+                                                                    visibility))
         hbox.pack_start(lbl, True, True, 0)
         vbox.pack_start(hbox, False, False, 6)
 
@@ -375,7 +363,8 @@ class OpenWeather(Gtk.EventBox):
         if self.forecast["cod"] in [200, "200"]:
             # eprint(hms(), "Parsing forecast data")
             lbl = Gtk.Label()
-            lbl.set_markup('<span font_size="{}"><big>5-day forecast</big></span>'.format(self.settings["forecast-text-size"]))
+            lbl.set_markup(
+                '<span font_size="{}"><big>5-day forecast</big></span>'.format(self.settings["forecast-text-size"]))
             vbox.pack_start(lbl, False, False, 6)
 
             scrolled_window = Gtk.ScrolledWindow.new(None, None)
@@ -477,10 +466,5 @@ class OpenWeather(Gtk.EventBox):
                 '<span font_size="{}">openweathermap.org, {}</span>'.format(self.settings["forecast-text-size"],
                                                                             mtime.strftime("%d %B %H:%M:%S")))
             vbox.pack_start(lbl, False, False, 6)
-
-            """item = forecast["list"][0]
-            print("---")
-            for key in item:
-                print(key, item[key])"""
 
         self.popup.show_all()
