@@ -143,8 +143,8 @@ class OpenWeather(Gtk.EventBox):
         self.forecast_request = "https://api.openweathermap.org/data/2.5/forecast?lat={}&lon={}&units={}&lang={}&appid={}".format(
             settings["lat"], settings["long"], settings["units"], settings["lang"], settings["appid"])
 
-        eprint(self.weather_request)
-        eprint(self.forecast_request)
+        # eprint(self.weather_request)
+        # eprint(self.forecast_request)
 
         self.build_box()
 
@@ -325,13 +325,11 @@ class OpenWeather(Gtk.EventBox):
             vbox.pack_start(wbox, False, False, 0)
             hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
             wbox.pack_start(hbox, True, False, 0)
-            # img = Gtk.Image.new_from_icon_name("daytime-sunrise-symbolic", Gtk.IconSize.MENU)
             img = self.svg2img("sunrise.svg")
             hbox.pack_start(img, False, False, 0)
             dt = datetime.fromtimestamp(self.weather["sys"]["sunrise"])
             lbl = Gtk.Label.new(dt.strftime("%H:%M"))
             hbox.pack_start(lbl, False, False, 0)
-            # img = Gtk.Image.new_from_icon_name("daytime-sunset-symbolic", Gtk.IconSize.MENU)
             img = self.svg2img("sunset.svg")
             hbox.pack_start(img, False, False, 0)
             dt = datetime.fromtimestamp(self.weather["sys"]["sunset"])
@@ -371,7 +369,6 @@ class OpenWeather(Gtk.EventBox):
 
         # 5-DAY FORECAST
         if self.forecast["cod"] in [200, "200"]:
-            # eprint(hms(), "Parsing forecast data")
             lbl = Gtk.Label()
             lbl.set_markup(
                 '<span font_size="{}"><big>5-day forecast</big></span>'.format(self.settings["forecast-text-size"]))
