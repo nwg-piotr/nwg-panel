@@ -387,7 +387,7 @@ class OpenWeather(Gtk.EventBox):
                 grid.attach(img, 0, i, 1, 1)
 
                 # Time
-                dt = datetime.fromtimestamp(data["dt"]).strftime("%a, %d %b %H:%M")
+                dt = datetime.fromtimestamp(data["dt"]).strftime("%a, %d %b\t<b>%H:%M</b>")
                 box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 lbl = Gtk.Label()
                 lbl.set_markup('<span font_size="{}">{}</span>'.format(self.settings["forecast-text-size"], dt))
