@@ -54,7 +54,7 @@ class SwayWorkspaces(Gtk.Box):
             eb = Gtk.EventBox()
             eb.connect("enter_notify_event", self.on_enter_notify_event)
             eb.connect("leave_notify_event", self.on_leave_notify_event)
-            eb.connect("button-release-event", self.on_click, num)
+            eb.connect("button-press-event", self.on_click, num)
             self.pack_start(eb, False, False, 0)
 
             box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
