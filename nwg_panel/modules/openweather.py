@@ -62,7 +62,7 @@ class OpenWeather(Gtk.EventBox):
         Gtk.EventBox.__init__(self)
         defaults = {"lat": None,
                     "long": None,
-                    "appid": "f060ab40f2b012e72350f6acc413132a",
+                    "appid": "",
                     "units": "metric",
                     "lang": "pl",
                     "show-name": False,
