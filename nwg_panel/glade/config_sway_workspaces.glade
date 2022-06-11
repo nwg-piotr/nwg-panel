@@ -8,7 +8,7 @@
     <property name="label-xalign">0.5</property>
     <property name="shadow-type">out</property>
     <child>
-      <!-- n-columns=3 n-rows=8 -->
+      <!-- n-columns=3 n-rows=10 -->
       <object class="GtkGrid" id="grid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -66,7 +66,7 @@ of workspaces to show</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
-            <property name="top-attach">2</property>
+            <property name="top-attach">4</property>
           </packing>
         </child>
         <child>
@@ -80,7 +80,7 @@ of workspaces to show</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">2</property>
+            <property name="top-attach">4</property>
           </packing>
         </child>
         <child>
@@ -92,7 +92,7 @@ of workspaces to show</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">4</property>
+            <property name="top-attach">6</property>
           </packing>
         </child>
         <child>
@@ -102,7 +102,7 @@ of workspaces to show</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
-            <property name="top-attach">4</property>
+            <property name="top-attach">6</property>
           </packing>
         </child>
         <child>
@@ -114,7 +114,7 @@ of workspaces to show</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">3</property>
+            <property name="top-attach">5</property>
           </packing>
         </child>
         <child>
@@ -124,7 +124,7 @@ of workspaces to show</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
-            <property name="top-attach">3</property>
+            <property name="top-attach">5</property>
           </packing>
         </child>
         <child>
@@ -138,7 +138,7 @@ of workspaces to show</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">5</property>
+            <property name="top-attach">7</property>
           </packing>
         </child>
         <child>
@@ -152,7 +152,7 @@ of workspaces to show</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
-            <property name="top-attach">5</property>
+            <property name="top-attach">7</property>
           </packing>
         </child>
         <child>
@@ -166,7 +166,7 @@ of workspaces to show</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">6</property>
+            <property name="top-attach">8</property>
           </packing>
         </child>
         <child>
@@ -183,7 +183,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
-            <property name="top-attach">7</property>
+            <property name="top-attach">9</property>
           </packing>
         </child>
         <child>
@@ -195,7 +195,85 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">7</property>
+            <property name="top-attach">9</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Custom labels:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Focused labels:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="custom-labels">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="focused-labels">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">One single label or
+multiple custom labels
+for each workspace
+number specified above</property>
+            <property name="double-buffered">False</property>
+            <property name="halign">start</property>
+            <property name="stock">gtk-about</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">One single label or
+multiple custom labels
+for each workspace
+number specified above</property>
+            <property name="double-buffered">False</property>
+            <property name="halign">start</property>
+            <property name="stock">gtk-about</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">3</property>
           </packing>
         </child>
         <child>
