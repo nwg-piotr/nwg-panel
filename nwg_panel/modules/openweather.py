@@ -143,9 +143,6 @@ class OpenWeather(Gtk.EventBox):
         self.forecast_request = "https://api.openweathermap.org/data/2.5/forecast?lat={}&lon={}&units={}&lang={}&appid={}".format(
             settings["lat"], settings["long"], settings["units"], settings["lang"], settings["appid"])
 
-        # eprint(self.weather_request)
-        # eprint(self.forecast_request)
-
         self.build_box()
 
         self.refresh()
