@@ -24,6 +24,8 @@ class SwayWorkspaces(Gtk.Box):
 
     def build_box(self):
         check_key(self.settings, "numbers", [1, 2, 3, 4, 5, 6, 7, 8])
+        check_key(self.settings, "custom-labels", [])
+        check_key(self.settings, "focused-labels", [])
         check_key(self.settings, "show-icon", True)
         check_key(self.settings, "image-size", 16)
         check_key(self.settings, "show-name", True)
@@ -37,8 +39,18 @@ class SwayWorkspaces(Gtk.Box):
 
         if self.i3.get_tree().find_focused():
             ws_num, win_name, win_id, non_empty, win_layout = self.find_details()
+        
+        if len(self.settings["custom-labels"]) == 1 or len(self.settings["custom-labels"]) == len(self.settings["numbers"]):
+            self.settings["custom-labels"] *= len(self.settings["numbers"])
+        else:
+            self.settings["custom-labels"] = []
+        
+        if len(self.settings["focused-labels"]) == 1 or len(self.settings["focused-labels"]) == len(self.settings["numbers"]):
+            self.settings["focused-labels"] *= len(self.settings["numbers"])
+        else:
+            self.settings["focused-labels"] = []
 
-        for num in self.settings["numbers"]:
+        for idx, num in enumerate(self.settings["numbers"]):
             eb = Gtk.EventBox()
             eb.connect("enter_notify_event", self.on_enter_notify_event)
             eb.connect("leave_notify_event", self.on_leave_notify_event)
@@ -50,15 +62,22 @@ class SwayWorkspaces(Gtk.Box):
                 box.set_orientation(Gtk.Orientation.VERTICAL)
             eb.add(box)
 
+            if num == str(ws_num) and self.settings["focused-labels"]:
+                label = self.settings["focused-labels"][idx]
+            elif self.settings["custom-labels"]:
+                label = self.settings["custom-labels"][idx]
+            else:
+                label = str(num)
+
             if self.settings["mark-autotiling"]:
                 try:
                     at = int(num) in self.autotiling
                 except:
                     at = False
                 autotiling = "a" if at in self.autotiling else ""
-                lbl = Gtk.Label("{}{}".format(autotiling, str(num)))
+                lbl = Gtk.Label("{}{}".format(autotiling, label))
             else:
-                lbl = Gtk.Label("{}".format(str(num)))
+                lbl = Gtk.Label("{}".format(label))
             if self.settings["angle"] != 0.0:
                 lbl.set_angle(self.settings["angle"])
                 self.name_label.set_angle(self.settings["angle"])
@@ -87,23 +106,30 @@ class SwayWorkspaces(Gtk.Box):
             ws_num, win_name, win_id, non_empty, win_layout = self.find_details()
 
             if ws_num > 0:
-                for num in self.settings["numbers"]:
+                for idx, num in enumerate(self.settings["numbers"]):
+                    if num == str(ws_num) and self.settings["focused-labels"]:
+                        text = self.settings["focused-labels"][idx]
+                    elif self.settings["custom-labels"]:
+                        text = self.settings["custom-labels"][idx]
+                    else:
+                        text = str(num)
+                    
+                    lbl = self.ws_num2lbl[num]
+
                     # mark non-empty WS with a dot
                     if self.settings["mark-content"]:
                         try:
                             int_num = int(num)
                         except:
                             int_num = 0
-                        lbl = self.ws_num2lbl[num]
-                        text = lbl.get_text()
                         if int_num in non_empty:
                             if not text.endswith("."):
                                 text += "."
-                                lbl.set_text(text)
                         else:
                             if text.endswith("."):
                                 text = text[0:-1]
-                                lbl.set_text(text)
+                    
+                    lbl.set_text(text)
 
                     if num == str(ws_num):
                         self.ws_num2box[num].set_property("name", "task-box-focused")
