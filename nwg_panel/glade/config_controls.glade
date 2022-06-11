@@ -471,9 +471,11 @@ the horizontal, in degrees, measured counterclockwise</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="tooltip-text" translatable="yes">Backlight device path (for 'light')
-or name (for 'brightnessctl').
+or name (for 'brightnessctl')
+or I2C bus number (for 'ddcutil').
 Use 'light -L' or 'brightnessctl -l'
-to check available devices.
+or 'ddcutil --help' to
+check available devices.
 LEAVE BLANK IF EVERYTHING WORKS</property>
             <property name="halign">start</property>
             <property name="stock">gtk-about</property>
