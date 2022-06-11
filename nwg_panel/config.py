@@ -2623,13 +2623,13 @@ class EditorWrapper(object):
 
         self.ctrl_window_margin_horizontal = builder.get_object("window-margin-horizontal")
         self.ctrl_window_margin_horizontal.set_numeric(True)
-        adj = Gtk.Adjustment(value=0, lower=0, upper=1920, step_increment=1, page_increment=10, page_size=1)
+        adj = Gtk.Adjustment(value=0, lower=-1920, upper=1920, step_increment=1, page_increment=10, page_size=1)
         self.ctrl_window_margin_horizontal.configure(adj, 1, 0)
         self.ctrl_window_margin_horizontal.set_value(settings["window-margin-horizontal"])
 
         self.ctrl_window_margin_vertical = builder.get_object("window-margin-vertical")
         self.ctrl_window_margin_vertical.set_numeric(True)
-        adj = Gtk.Adjustment(value=0, lower=0, upper=1920, step_increment=1, page_increment=10, page_size=1)
+        adj = Gtk.Adjustment(value=0, lower=-1920, upper=1920, step_increment=1, page_increment=10, page_size=1)
         self.ctrl_window_margin_vertical.configure(adj, 1, 0)
         self.ctrl_window_margin_vertical.set_value(settings["window-margin-vertical"])
 
