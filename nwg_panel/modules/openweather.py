@@ -55,6 +55,7 @@ def direction(deg):
 def on_button_press(window, event):
     if event.button == 1:
         window.close()
+        window.destroy()
 
 
 class OpenWeather(Gtk.EventBox):
@@ -68,7 +69,7 @@ class OpenWeather(Gtk.EventBox):
                     "show-name": False,
                     "loc-label": "",
                     "interval": 600,
-                    "icon-size": 26,
+                    "icon-size": 24,
                     "icon-placement": "left",
                     "css-name": "weather",
                     "popup-css-name": "weather",
@@ -274,7 +275,7 @@ class OpenWeather(Gtk.EventBox):
         GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.TOP, 1)
         GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.BOTTOM, 1)
         GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.RIGHT, 1)
-        self.popup.connect('button-press-event', on_button_press)
+        self.popup.connect('button-release-event', on_button_press)
 
         vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         vbox.set_property("margin", 6)
