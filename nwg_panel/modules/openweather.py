@@ -370,7 +370,7 @@ class OpenWeather(Gtk.EventBox):
             if "deg" in self.weather["wind"]:
                 wind_dir = " {}".format((direction(self.weather["wind"]["deg"])))
             if "gust" in self.weather["wind"]:
-                wind_gust = " (gust {} m/s)".format((self.weather["wind"]["gust"]))
+                wind_gust = " ({} {} m/s)".format(self.lang["gust"], self.weather["wind"]["gust"])
         pressure = " {}: {} hPa".format(self.lang["pressure"], self.weather["main"]["pressure"]) if "pressure" in \
                                                                                                     self.weather[
                                                                                                         "main"] else ""
