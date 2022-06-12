@@ -9,8 +9,11 @@ from datetime import datetime
 import gi
 import requests
 
-from nwg_panel.tools import check_key, eprint, load_json, save_json, temp_dir, file_age, hms, update_image, get_config_dir
+from nwg_panel.tools import check_key, eprint, load_json, save_json, temp_dir, file_age, hms, update_image, \
+    get_config_dir
+
 config_dir = get_config_dir()
+dir_name = os.path.dirname(__file__)
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -85,6 +88,17 @@ class OpenWeather(Gtk.EventBox):
         self.set_property("name", settings["css-name"])
 
         self.settings = settings
+
+        self.lang = load_json(os.path.join(dir_name, "langs/weather_en"))
+        if self.settings["lang"]:
+            loc_file = os.path.join(dir_name, "langs/weather_{}".format(self.settings["lang"]))
+            try:
+                loc = load_json(loc_file)
+                for key in loc:
+                    self.lang[key] = loc[key]
+                eprint("Loaded translation from {}".format(loc_file))
+            except:
+                eprint("Translation into '{}' corrupted or does not exist.".format(self.settings["lang"]))
 
         self.icons_path = icons_path
         self.popup_icons = os.path.join(config_dir, "icons_light") if self.settings[
@@ -343,25 +357,28 @@ class OpenWeather(Gtk.EventBox):
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         lbl = Gtk.Label()
         lbl.set_property("justify", Gtk.Justification.CENTER)
-        feels_like = "Feels like {}°".format(self.weather["main"]["feels_like"]) if "feels_like" in self.weather[
-            "main"] else ""
-        humidity = "   Humidity {}%".format(self.weather["main"]["humidity"]) if "humidity" in self.weather[
-            "main"] else ""
+        feels_like = "{}: {}°".format(self.lang["feels-like"], self.weather["main"]["feels_like"]) if "feels_like" in \
+                                                                                                      self.weather[
+                                                                                                          "main"] else ""
+        humidity = "   {}: {}%".format(self.lang["humidity"], self.weather["main"]["humidity"]) if "humidity" in \
+                                                                                                   self.weather[
+                                                                                                       "main"] else ""
         wind_speed, wind_dir, wind_gust = "", "", ""
         if "wind" in self.weather:
             if "speed" in self.weather["wind"]:
-                wind_speed = "   Wind: {} m/s".format(self.weather["wind"]["speed"])
+                wind_speed = "   {}: {} m/s".format(self.lang["wind"], self.weather["wind"]["speed"])
             if "deg" in self.weather["wind"]:
                 wind_dir = " {}".format((direction(self.weather["wind"]["deg"])))
             if "gust" in self.weather["wind"]:
                 wind_gust = " (gust {} m/s)".format((self.weather["wind"]["gust"]))
-        pressure = " Pressure {} hPa".format(self.weather["main"]["pressure"]) if "pressure" in self.weather[
-            "main"] else ""
-        clouds = "   Cloudiness {}%".format(self.weather["clouds"]["all"]) if "clouds" in self.weather and "all" in \
-                                                                            self.weather[
-                                                                                "clouds"] else ""
-        visibility = "   Visibility {} km".format(
-            int(self.weather["visibility"] / 1000)) if "visibility" in self.weather else ""
+        pressure = " {}: {} hPa".format(self.lang["pressure"], self.weather["main"]["pressure"]) if "pressure" in \
+                                                                                                    self.weather[
+                                                                                                        "main"] else ""
+        clouds = "   {}: {}%".format(self.lang["cloudiness"],
+                                     self.weather["clouds"]["all"]) if "clouds" in self.weather and "all" in \
+                                                                       self.weather["clouds"] else ""
+        visibility = "   {}: {} km".format(self.lang["visibility"], int(
+            self.weather["visibility"] / 1000)) if "visibility" in self.weather else ""
         lbl.set_markup(
             '<span font_size="{}">{}{}{}{}{}\n{}{}{}</span>'.format(self.settings["forecast-text-size"], feels_like,
                                                                     humidity,
@@ -374,7 +391,8 @@ class OpenWeather(Gtk.EventBox):
         if self.forecast["cod"] in [200, "200"]:
             lbl = Gtk.Label()
             lbl.set_markup(
-                '<span font_size="{}"><big>5-day forecast</big></span>'.format(self.settings["forecast-text-size"]))
+                '<span font_size="{}"><big>{}</big></span>'.format(self.settings["forecast-text-size"],
+                                                                   self.lang["5-day-forecast"]))
             vbox.pack_start(lbl, False, False, 6)
 
             scrolled_window = Gtk.ScrolledWindow.new(None, None)
@@ -405,7 +423,8 @@ class OpenWeather(Gtk.EventBox):
                 dt = datetime.fromtimestamp(data["dt"]).strftime("<b>%H:%M</b>")
                 box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 lbl = Gtk.Label()
-                lbl.set_markup('<span font_size="{}"><tt>{}</tt></span>'.format(self.settings["forecast-text-size"], dt))
+                lbl.set_markup(
+                    '<span font_size="{}"><tt>{}</tt></span>'.format(self.settings["forecast-text-size"], dt))
                 box.pack_start(lbl, False, False, 0)
                 grid.attach(box, 2, i, 1, 1)
 
@@ -435,7 +454,7 @@ class OpenWeather(Gtk.EventBox):
                     box.pack_start(img, False, False, 0)
                     lbl = Gtk.Label()
                     lbl.set_markup('<span font_size="{}">{}%</span>'.format(self.settings["forecast-text-size"],
-                                                                               data["main"]["humidity"]))
+                                                                            data["main"]["humidity"]))
                     box.pack_start(lbl, False, False, 6)
                     grid.attach(box, 5, i, 1, 1)
 

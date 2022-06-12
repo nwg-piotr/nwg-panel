@@ -1,0 +1,10 @@
+{
+  "5-day-forecast": "5-day forecast",
+  "cloudiness": "Cloudiness",
+  "feels-like": "Feels like",
+  "gust": "gust",
+  "humidity": "Humidity",
+  "pressure": "Pressure",
+  "visibility": "Visibility",
+  "wind": "Wind"
+}
