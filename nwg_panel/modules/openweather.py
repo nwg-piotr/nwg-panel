@@ -68,7 +68,7 @@ class OpenWeather(Gtk.EventBox):
                     "show-name": False,
                     "loc-label": "",
                     "interval": 600,
-                    "icon-size": 24,
+                    "icon-size": 18,
                     "icon-placement": "left",
                     "css-name": "weather",
                     "popup-css-name": "weather",
@@ -94,7 +94,7 @@ class OpenWeather(Gtk.EventBox):
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
         self.image = Gtk.Image()
-        self.label = Gtk.Label.new("")
+        self.label = Gtk.Label.new("No weather data")
         self.icon_path = None
 
         self.weather = None
@@ -193,7 +193,8 @@ class OpenWeather(Gtk.EventBox):
             try:
                 r = requests.get(self.weather_request)
                 self.weather = json.loads(r.text)
-                save_json(self.weather, self.weather_file)
+                if self.weather["cod"] in ["200", 200]:
+                    save_json(self.weather, self.weather_file)
             except Exception as e:
                 eprint(e)
         elif not self.weather:
@@ -206,7 +207,8 @@ class OpenWeather(Gtk.EventBox):
             try:
                 r = requests.get(self.forecast_request)
                 self.forecast = json.loads(r.text)
-                save_json(self.forecast, self.forecast_file)
+                if self.forecast["cod"] in ["200", 200]:
+                    save_json(self.forecast, self.forecast_file)
             except Exception as e:
                 eprint(e)
         elif not self.forecast:
@@ -261,6 +263,10 @@ class OpenWeather(Gtk.EventBox):
         return img
 
     def display_popup(self):
+        if not self.weather["cod"] in ["200", 200] or not self.forecast["cod"] in ["200", 200]:
+            print("No data available")
+            return
+
         if self.popup.is_visible():
             self.popup.close()
             self.popup.destroy()
