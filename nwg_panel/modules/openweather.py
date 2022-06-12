@@ -71,7 +71,7 @@ class OpenWeather(Gtk.EventBox):
                     "show-name": False,
                     "loc-label": "",
                     "interval": 1800,
-                    "icon-size": 18,
+                    "icon-size": 24,
                     "icon-placement": "left",
                     "css-name": "weather",
                     "popup-css-name": "weather",
@@ -81,7 +81,14 @@ class OpenWeather(Gtk.EventBox):
                     "angle": 0.0,
                     "popup-icons": "light",
                     "forecast-icon-size": 24,
-                    "forecast-text-size": "medium"}
+                    "forecast-text-size": "medium",
+                    "show-humidity": True,
+                    "show-wind": True,
+                    "show-pressure": True,
+                    "show-cloudiness": True,
+                    "show-visibility": True,
+                    "show-pop": True}
+
         for key in defaults:
             check_key(settings, key, defaults[key])
 
@@ -448,7 +455,7 @@ class OpenWeather(Gtk.EventBox):
                     grid.attach(lbl, 4, i, 1, 1)
 
                 # Humidity
-                if "humidity" in data["main"] and data["main"]["humidity"]:
+                if self.settings["show-humidity"] and "humidity" in data["main"] and data["main"]["humidity"]:
                     box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                     img = self.svg2img("humidity.svg")
                     box.pack_start(img, False, False, 0)
@@ -459,7 +466,7 @@ class OpenWeather(Gtk.EventBox):
                     grid.attach(box, 5, i, 1, 1)
 
                 # Wind
-                if "wind" in data and data["wind"]:
+                if self.settings["show-wind"] and "wind" in data and data["wind"]:
                     box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                     img = self.svg2img("wind.svg")
                     box.pack_start(img, False, False, 0)
@@ -477,7 +484,7 @@ class OpenWeather(Gtk.EventBox):
                     grid.attach(box, 6, i, 1, 1)
 
                 # Pressure
-                if "pressure" in data["main"] and data["main"]["pressure"]:
+                if self.settings["show-pressure"] and "pressure" in data["main"] and data["main"]["pressure"]:
                     box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                     img = self.svg2img("pressure.svg")
                     box.pack_start(img, False, False, 0)
@@ -488,7 +495,7 @@ class OpenWeather(Gtk.EventBox):
                     grid.attach(box, 7, i, 1, 1)
 
                 # Cloudiness
-                if "clouds" in data:
+                if self.settings["show-cloudiness"] and "clouds" in data:
                     if "all" in data["clouds"]:
                         box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
                         img = self.svg2img("cloud.svg")
@@ -500,7 +507,7 @@ class OpenWeather(Gtk.EventBox):
                         grid.attach(box, 8, i, 1, 1)
 
                 # Visibility
-                if "visibility" in data:
+                if self.settings["show-visibility"] and "visibility" in data:
                     box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
                     img = self.svg2img("eye.svg")
                     box.pack_start(img, False, False, 0)
@@ -511,7 +518,7 @@ class OpenWeather(Gtk.EventBox):
                     grid.attach(box, 9, i, 1, 1)
 
                 # Probability of precipitation
-                if "pop" in data and data["pop"]:
+                if self.settings["show-pop"] and "pop" in data and data["pop"]:
                     box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
                     img = self.svg2img("umbrella.svg")
                     box.pack_start(img, False, False, 0)
