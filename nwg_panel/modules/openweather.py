@@ -53,9 +53,8 @@ def direction(deg):
 
 
 def on_button_press(window, event):
-    if event.button == 1:
-        window.close()
-        window.destroy()
+    window.close()
+    window.destroy()
 
 
 class OpenWeather(Gtk.EventBox):
