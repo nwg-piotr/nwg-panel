@@ -9,8 +9,8 @@ from datetime import datetime
 import gi
 import requests
 
-from nwg_panel.common import config_dir
-from nwg_panel.tools import check_key, eprint, load_json, save_json, temp_dir, file_age, hms, update_image
+from nwg_panel.tools import check_key, eprint, load_json, save_json, temp_dir, file_age, hms, update_image, get_config_dir
+config_dir = get_config_dir()
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -67,7 +67,7 @@ class OpenWeather(Gtk.EventBox):
                     "lang": "pl",
                     "show-name": False,
                     "loc-label": "",
-                    "interval": 600,
+                    "interval": 1800,
                     "icon-size": 18,
                     "icon-placement": "left",
                     "css-name": "weather",
