@@ -112,7 +112,7 @@ class OpenWeather(Gtk.EventBox):
 
         self.icons_path = icons_path
         self.popup_icons = os.path.join(config_dir, "icons_light") if self.settings[
-                                                                          "popup-icons"] == "light" else os.path.join(
+                                                                          "ow-popup-icons"] == "light" else os.path.join(
             config_dir, "icons_dark")
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
@@ -413,7 +413,8 @@ class OpenWeather(Gtk.EventBox):
             scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
 
             grid = Gtk.Grid.new()
-            grid.set_column_spacing(6)
+            grid.set_column_spacing(4)
+            grid.set_row_spacing(3)
 
             scrolled_window.add_with_viewport(grid)
             vbox.pack_start(scrolled_window, True, True, 0)
