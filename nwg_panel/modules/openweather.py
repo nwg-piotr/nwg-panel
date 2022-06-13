@@ -69,6 +69,7 @@ class OpenWeather(Gtk.EventBox):
                     "units": "metric",
                     "interval": 1800,
                     "loc-name": "",
+                    "weather-icons": "color",
 
                     "on-right-click": "",
                     "on-middle-click": "",
@@ -80,7 +81,7 @@ class OpenWeather(Gtk.EventBox):
                     "angle": 0.0,
 
                     "ow-popup-icons": "light",
-                    "popup-icon-size": 20,
+                    "popup-icon-size": 24,
                     "popup-text-size": "medium",
                     "popup-css-name": "weather",
                     "show-humidity": True,
@@ -114,6 +115,13 @@ class OpenWeather(Gtk.EventBox):
         self.popup_icons = os.path.join(config_dir, "icons_light") if self.settings[
                                                                           "ow-popup-icons"] == "light" else os.path.join(
             config_dir, "icons_dark")
+
+        if self.settings["weather-icons"] == "light":
+            self.weather_icons = os.path.join(config_dir, "icons_light")
+        elif self.settings["weather-icons"] == "dark":
+            self.weather_icons = os.path.join(config_dir, "icons_dark")
+        else:
+            self.weather_icons = os.path.join(config_dir, "icons_color")
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
@@ -245,7 +253,7 @@ class OpenWeather(Gtk.EventBox):
     def update_widget(self):
         if self.weather and self.weather["cod"] and self.weather["cod"] in [200, "200"]:
             if "icon" in self.weather["weather"][0]:
-                new_path = os.path.join(self.icons_path, "ow-{}.svg".format(self.weather["weather"][0]["icon"]))
+                new_path = os.path.join(self.weather_icons, "ow-{}.svg".format(self.weather["weather"][0]["icon"]))
                 if self.icon_path != new_path:
                     try:
                         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
@@ -276,9 +284,10 @@ class OpenWeather(Gtk.EventBox):
 
         self.show_all()
 
-    def svg2img(self, file_name):
+    def svg2img(self, file_name, weather=False):
+        icon_path = os.path.join(self.popup_icons, file_name) if not weather else os.path.join(self.weather_icons,
+                                                                                               file_name)
         try:
-            icon_path = os.path.join(self.popup_icons, file_name)
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, self.settings["popup-icon-size"],
                                                             self.settings["popup-icon-size"])
             img = Gtk.Image.new_from_pixbuf(pixbuf)
@@ -318,7 +327,7 @@ class OpenWeather(Gtk.EventBox):
         # CURRENT WEATHER
         # row 0: Big icon
         if "icon" in self.weather["weather"][0]:
-            icon_path = os.path.join(self.popup_icons, "ow-{}.svg".format(self.weather["weather"][0]["icon"]))
+            icon_path = os.path.join(self.weather_icons, "ow-{}.svg".format(self.weather["weather"][0]["icon"]))
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 48, 48)
             img = Gtk.Image.new_from_pixbuf(pixbuf)
             hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
@@ -446,7 +455,7 @@ class OpenWeather(Gtk.EventBox):
                 # Icon
                 if "weather" in data and data["weather"][0]:
                     if "icon" in data["weather"][0]:
-                        img = self.svg2img("ow-{}.svg".format(data["weather"][0]["icon"]))
+                        img = self.svg2img("ow-{}.svg".format(data["weather"][0]["icon"]), weather=True)
                         img.set_property("margin-start", 6)
                         img.set_property("margin-end", 2)
                         grid.attach(img, 3, i, 1, 1)

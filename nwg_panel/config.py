@@ -142,6 +142,7 @@ SKELETON_PANEL: dict = {
         "units": "metric",
         "interval": 1800,
         "loc-name": "",
+        "weather-icons": "color",
 
         "on-right-click": "",
         "on-middle-click": "",
@@ -461,6 +462,10 @@ def update_icon(gtk_entry, icons):
         icons_path = os.path.join(get_config_dir(), "icons_dark")
     name = gtk_entry.get_text()
     gtk_entry.set_icon_from_pixbuf(Gtk.EntryIconPosition.PRIMARY, create_pixbuf(name, 16, icons_path=icons_path))
+
+
+def switch_entry_visibility(checkbutton, entry):
+    entry.set_visibility(checkbutton.get_active())
 
 
 class EditorWrapper(object):
@@ -1676,6 +1681,7 @@ class EditorWrapper(object):
             "units": "metric",
             "interval": 1800,
             "loc-name": "",
+            "weather-icons": "color",
 
             "on-right-click": "",
             "on-middle-click": "",
@@ -1705,6 +1711,9 @@ class EditorWrapper(object):
 
         self.ow_appid = builder.get_object("appid")
         self.ow_appid.set_text(settings["appid"])
+
+        key_visibility_switch = builder.get_object("key-visibility-switch")
+        key_visibility_switch.connect("toggled", switch_entry_visibility, self.ow_appid)
 
         # Try to obtain geolocation if unset
         if not settings["lat"] or not settings["long"]:
@@ -1742,6 +1751,9 @@ class EditorWrapper(object):
         adj = Gtk.Adjustment(value=0, lower=180, upper=86401, step_increment=1, page_increment=10, page_size=1)
         self.ow_interval.configure(adj, 1, 0)
         self.ow_interval.set_value(settings["interval"])
+
+        self.ow_weather_icons = builder.get_object("weather-icons")
+        self.ow_weather_icons.set_active_id(settings["weather-icons"])
 
         self.ow_loc_name = builder.get_object("loc-name")
         self.ow_loc_name.set_text(settings["loc-name"])
