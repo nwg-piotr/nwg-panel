@@ -170,7 +170,7 @@ e.g. (1800 for half an hour).</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
-            <property name="label" translatable="yes">Location name:</property>
+            <property name="label" translatable="yes">Custom location name:</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -181,8 +181,8 @@ e.g. (1800 for half an hour).</property>
           <object class="GtkEntry" id="loc-name">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">If you don't like the location name, returned 
-from geocoder, you may define own name here.</property>
+            <property name="tooltip-text" translatable="yes">If you don't like the location name returned from geocoder, 
+you may define your own label here.</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -245,8 +245,8 @@ from geocoder, you may define own name here.</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <items>
-              <item id="left" translatable="yes">start</item>
-              <item id="right" translatable="yes">end</item>
+              <item id="start" translatable="yes">start</item>
+              <item id="end" translatable="yes">end</item>
             </items>
           </object>
           <packing>
@@ -326,6 +326,8 @@ from geocoder, you may define own name here.</property>
           <object class="GtkComboBoxText" id="angle">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">the angle that the baseline of the label makes with 
+the horizontal, in degrees, measured counterclockwise</property>
             <items>
               <item id="0.0" translatable="yes">0°</item>
               <item id="90.0" translatable="yes">90°</item>
@@ -426,7 +428,7 @@ from geocoder, you may define own name here.</property>
         </child>
         <child>
           <object class="GtkCheckButton" id="show-humidity">
-            <property name="label" translatable="yes">show humidity</property>
+            <property name="label" translatable="yes">Show humidity</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
@@ -440,7 +442,7 @@ from geocoder, you may define own name here.</property>
         </child>
         <child>
           <object class="GtkCheckButton" id="show-wind">
-            <property name="label" translatable="yes">show wind</property>
+            <property name="label" translatable="yes">Show wind</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
@@ -454,7 +456,7 @@ from geocoder, you may define own name here.</property>
         </child>
         <child>
           <object class="GtkCheckButton" id="show-pressure">
-            <property name="label" translatable="yes">show pressure</property>
+            <property name="label" translatable="yes">Show pressure</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
@@ -468,7 +470,7 @@ from geocoder, you may define own name here.</property>
         </child>
         <child>
           <object class="GtkCheckButton" id="show-cloudiness">
-            <property name="label" translatable="yes">show cloudiness</property>
+            <property name="label" translatable="yes">Show cloudiness</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
@@ -482,7 +484,7 @@ from geocoder, you may define own name here.</property>
         </child>
         <child>
           <object class="GtkCheckButton" id="show-visibility">
-            <property name="label" translatable="yes">show visibility</property>
+            <property name="label" translatable="yes">Show visibility</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
@@ -496,7 +498,7 @@ from geocoder, you may define own name here.</property>
         </child>
         <child>
           <object class="GtkCheckButton" id="show-pop">
-            <property name="label" translatable="yes">show precipitation probability</property>
+            <property name="label" translatable="yes">Show precipitation probability</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
@@ -552,7 +554,7 @@ from geocoder, you may define own name here.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkComboBoxText">
+          <object class="GtkComboBoxText" id="ow-popup-icons">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <items>
@@ -588,6 +590,7 @@ from geocoder, you may define own name here.</property>
           <object class="GtkEntry" id="lang">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
+            <property name="tooltip-text" translatable="yes">Check available languages at https://openweathermap.org/current#multi</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -595,17 +598,7 @@ from geocoder, you may define own name here.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Check available languages at https://openweathermap.org/current#multi</property>
-            <property name="halign">start</property>
-            <property name="stock">gtk-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">4</property>
-          </packing>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>

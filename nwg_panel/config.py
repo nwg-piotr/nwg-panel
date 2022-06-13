@@ -11,7 +11,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, local_dir, load_json, save_json, load_string, list_outputs, check_key, \
-    list_configs, create_pixbuf, is_command, check_commands, cmd2string
+    list_configs, create_pixbuf, is_command, check_commands, cmd2string, eprint
 
 from nwg_panel.__about__ import __version__
 
@@ -20,6 +20,8 @@ dir_name = os.path.dirname(__file__)
 sway = os.getenv('SWAYSOCK') is not None
 
 config_dir = get_config_dir()
+data_home = os.getenv('XDG_DATA_HOME') if os.getenv('XDG_DATA_HOME') else os.path.join(os.getenv("HOME"),
+                                                                                               ".local/share")
 configs = {}
 editor = None
 selector_window = None
@@ -150,7 +152,7 @@ SKELETON_PANEL: dict = {
         "show-name": False,
         "angle": 0.0,
 
-        "popup-icons": "light",
+        "ow-popup-icons": "light",
         "popup-icon-size": 24,
         "popup-text-size": "medium",
         "popup-css-name": "weather",
@@ -1684,7 +1686,7 @@ class EditorWrapper(object):
             "show-name": False,
             "angle": 0.0,
 
-            "popup-icons": "light",
+            "ow-popup-icons": "light",
             "popup-icon-size": 24,
             "popup-text-size": "medium",
             "popup-css-name": "weather",
@@ -1701,17 +1703,106 @@ class EditorWrapper(object):
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_openweather.glade"))
         frame = builder.get_object("frame")
 
-        """self.scratchpad_css_name = builder.get_object("css-name")
-        self.scratchpad_css_name.set_text(settings["css-name"])
+        self.ow_appid = builder.get_object("appid")
+        self.ow_appid.set_text(settings["appid"])
 
-        self.scratchpad_icon_size = builder.get_object("icon-size")
-        self.scratchpad_icon_size.set_numeric(True)
-        adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
-        self.scratchpad_icon_size.configure(adj, 1, 0)
-        self.scratchpad_icon_size.set_value(settings["icon-size"])
+        # Try to obtain geolocation if unset
+        if not settings["lat"] or not settings["long"]:
+            # Try nwg-shell settings
+            shell_settings_file = os.path.join(data_home, "nwg-shell-config", "settings")
+            if os.path.isfile(shell_settings_file):
+                shell_settings = load_json(shell_settings_file)
+                eprint("OpenWeather: coordinates not set, loading from nwg-shell settings")
+                settings["lat"] = shell_settings["night-lat"]
+                settings["long"] = shell_settings["night-long"]
+                eprint("lat = {}, long = {}".format(settings["lat"], settings["long"]))
+            else:
+                # Set dummy location
+                eprint("OpenWeather: coordinates not set, setting Big Ben in London 51.5008, -0.1246")
+                settings["lat"] = 51.5008
+                settings["long"] = -0.1246
 
-        self.scratchpad_angle = builder.get_object("angle")
-        self.scratchpad_angle.set_active_id(str(settings["angle"]))"""
+        self.ow_lat = builder.get_object("lat")
+        adj = Gtk.Adjustment(value=0, lower=-90, upper=90, step_increment=0.1, page_increment=10, page_size=1)
+        self.ow_lat.configure(adj, 1, 4)
+        self.ow_lat.set_value(settings["lat"])
+
+        self.ow_long = builder.get_object("long")
+        adj = Gtk.Adjustment(value=0, lower=-180, upper=180, step_increment=0.1, page_increment=10, page_size=1)
+        self.ow_long.configure(adj, 1, 4)
+        self.ow_long.set_value(settings["long"])
+
+        self.ow_lang = builder.get_object("lang")
+        self.ow_lang.set_text(settings["lang"])
+
+        self.ow_units = builder.get_object("units")
+        self.ow_units.set_active_id(settings["units"])
+
+        self.ow_interval = builder.get_object("interval")
+        adj = Gtk.Adjustment(value=0, lower=180, upper=86401, step_increment=1, page_increment=10, page_size=1)
+        self.ow_interval.configure(adj, 1, 0)
+        self.ow_interval.set_value(settings["interval"])
+
+        self.ow_loc_name = builder.get_object("loc-name")
+        self.ow_loc_name.set_text(settings["loc-name"])
+
+        self.ow_on_right_click = builder.get_object("on-right-click")
+        self.ow_on_right_click.set_text(settings["on-right-click"])
+
+        self.ow_on_middle_click = builder.get_object("on-middle-click")
+        self.ow_on_middle_click.set_text(settings["on-middle-click"])
+
+        self.ow_on_scroll = builder.get_object("on-scroll")
+        self.ow_on_scroll.set_text(settings["on-scroll"])
+
+        self.ow_icon_placement = builder.get_object("icon-placement")
+        self.ow_icon_placement.set_active_id(settings["icon-placement"])
+
+        self.ow_icon_size = builder.get_object("icon-size")
+        adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
+        self.ow_icon_size.configure(adj, 1, 0)
+        self.ow_icon_size.set_value(settings["icon-size"])
+
+        self.ow_css_name = builder.get_object("css-name")
+        self.ow_css_name.set_text(settings["css-name"])
+
+        self.ow_angle = builder.get_object("angle")
+        self.ow_angle.set_active_id(str(settings["angle"]))
+
+        self.ow_show_name = builder.get_object("show-name")
+        self.ow_show_name.set_active(settings["show-name"])
+
+        self.ow_popup_icons = builder.get_object("ow-popup-icons")
+        self.ow_popup_icons.set_active_id(settings["ow-popup-icons"])
+
+        self.ow_panel_icon_size = builder.get_object("popup-icon-size")
+        adj = Gtk.Adjustment(value=0, lower=8, upper=49, step_increment=1, page_increment=10, page_size=1)
+        self.ow_panel_icon_size.configure(adj, 1, 0)
+        self.ow_panel_icon_size.set_value(settings["popup-icon-size"])
+
+        self.ow_popup_text_size = builder.get_object("popup-text-size")
+        self.ow_popup_text_size.set_active_id(settings["popup-text-size"])
+
+        self.ow_popup_css_name = builder.get_object("popup-css-name")
+        self.ow_popup_css_name.set_text(settings["popup-css-name"])
+
+        self.ow_show_humidity = builder.get_object("show-humidity")
+        self.ow_show_humidity.set_active(settings["show-humidity"])
+
+        self.ow_show_wind = builder.get_object("show-wind")
+        self.ow_show_wind.set_active(settings["show-wind"])
+
+        self.ow_show_pressure = builder.get_object("show-pressure")
+        self.ow_show_pressure.set_active(settings["show-pressure"])
+
+        self.ow_show_cloudiness = builder.get_object("show-cloudiness")
+        self.ow_show_cloudiness.set_active(settings["show-cloudiness"])
+
+        self.ow_show_visibility = builder.get_object("show-visibility")
+        self.ow_show_visibility.set_active(settings["show-visibility"])
+
+        self.ow_show_pop = builder.get_object("show-pop")
+        self.ow_show_pop.set_active(settings["show-pop"])
 
         for item in self.scrolled_window.get_children():
             item.destroy()

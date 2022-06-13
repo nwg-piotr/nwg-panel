@@ -79,7 +79,7 @@ class OpenWeather(Gtk.EventBox):
                     "show-name": False,
                     "angle": 0.0,
 
-                    "popup-icons": "light",
+                    "ow-popup-icons": "light",
                     "popup-icon-size": 24,
                     "popup-text-size": "medium",
                     "popup-css-name": "weather",
@@ -158,8 +158,8 @@ class OpenWeather(Gtk.EventBox):
             else:
                 # Set dummy location
                 eprint("OpenWeather: coordinates not set, setting Big Ben in London 51.5008, -0.1246")
-                self.lat = 51.5008
-                self.long = -0.1246
+                settings["lat"] = 51.5008
+                settings["long"] = -0.1246
 
         self.weather_request = "https://api.openweathermap.org/data/2.5/weather?lat={}&lon={}&units={}&lang={}&appid={}".format(
             settings["lat"], settings["long"], settings["units"], settings["lang"], settings["appid"])
