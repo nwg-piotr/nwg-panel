@@ -80,7 +80,7 @@ class OpenWeather(Gtk.EventBox):
                     "angle": 0.0,
 
                     "ow-popup-icons": "light",
-                    "popup-icon-size": 24,
+                    "popup-icon-size": 20,
                     "popup-text-size": "medium",
                     "popup-css-name": "weather",
                     "show-humidity": True,
@@ -413,8 +413,8 @@ class OpenWeather(Gtk.EventBox):
             scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
 
             grid = Gtk.Grid.new()
-            grid.set_column_spacing(4)
-            grid.set_row_spacing(3)
+            grid.set_column_spacing(2)
+            grid.set_row_spacing(2)
 
             scrolled_window.add_with_viewport(grid)
             vbox.pack_start(scrolled_window, True, True, 0)
@@ -447,6 +447,8 @@ class OpenWeather(Gtk.EventBox):
                 if "weather" in data and data["weather"][0]:
                     if "icon" in data["weather"][0]:
                         img = self.svg2img("ow-{}.svg".format(data["weather"][0]["icon"]))
+                        img.set_property("margin-start", 6)
+                        img.set_property("margin-end", 2)
                         grid.attach(img, 3, i, 1, 1)
                     if "description" in data["weather"][0]:
                         img.set_tooltip_text(data["weather"][0]["description"])
@@ -537,12 +539,14 @@ class OpenWeather(Gtk.EventBox):
                     grid.attach(box, 10, i, 1, 1)
 
             if os.path.isfile(self.forecast_file):
+                sep = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
+                vbox.pack_start(sep, False, False, 0)
                 mtime = datetime.fromtimestamp(os.stat(self.forecast_file)[stat.ST_MTIME])
                 lbl = Gtk.Label()
                 lbl.set_markup(
                     '<span font_size="{}">openweathermap.org, {}</span>'.format(self.settings["popup-text-size"],
                                                                                 mtime.strftime("%d %B %H:%M:%S")))
-                lbl.set_property("margin-top", 6)
+                lbl.set_property("margin-top", 3)
             vbox.pack_start(lbl, False, False, 0)
 
         self.popup.show_all()
