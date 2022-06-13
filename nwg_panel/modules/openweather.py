@@ -414,7 +414,7 @@ class OpenWeather(Gtk.EventBox):
 
             grid = Gtk.Grid.new()
             grid.set_column_spacing(2)
-            grid.set_row_spacing(2)
+            grid.set_row_spacing(3)
 
             scrolled_window.add_with_viewport(grid)
             vbox.pack_start(scrolled_window, True, True, 0)
