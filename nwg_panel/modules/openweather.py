@@ -62,32 +62,35 @@ def on_button_press(window, event):
 
 class OpenWeather(Gtk.EventBox):
     def __init__(self, settings, icons_path=""):
-        Gtk.EventBox.__init__(self)
-        defaults = {"lat": None,
+        defaults = {"appid": "",
+                    "lat": None,
                     "long": None,
-                    "appid": "",
+                    "lang": "en",
                     "units": "metric",
-                    "lang": "pl",
-                    "show-name": False,
-                    "loc-label": "",
                     "interval": 1800,
-                    "icon-size": 24,
-                    "icon-placement": "left",
-                    "css-name": "weather",
-                    "popup-css-name": "weather",
+                    "loc-name": "",
+
                     "on-right-click": "",
                     "on-middle-click": "",
                     "on-scroll": "",
+                    "icon-placement": "start",
+                    "icon-size": 24,
+                    "css-name": "weather",
+                    "show-name": False,
                     "angle": 0.0,
+
                     "popup-icons": "light",
-                    "forecast-icon-size": 24,
-                    "forecast-text-size": "medium",
+                    "popup-icon-size": 24,
+                    "popup-text-size": "medium",
+                    "popup-css-name": "weather",
                     "show-humidity": True,
                     "show-wind": True,
                     "show-pressure": True,
                     "show-cloudiness": True,
                     "show-visibility": True,
                     "show-pop": True}
+
+        Gtk.EventBox.__init__(self)
 
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -174,10 +177,11 @@ class OpenWeather(Gtk.EventBox):
             Gdk.threads_add_timeout_seconds(GLib.PRIORITY_DEFAULT, 60, self.refresh)
 
     def build_box(self):
-        if self.settings["icon-placement"] == "left":
+        if self.settings["icon-placement"] == "start":
             self.box.pack_start(self.image, False, False, 2)
         self.box.pack_start(self.label, False, False, 2)
-        if self.settings["icon-placement"] != "left":
+
+        if self.settings["icon-placement"] != "start":
             self.box.pack_start(self.image, False, False, 2)
 
     def get_data(self):
@@ -217,6 +221,7 @@ class OpenWeather(Gtk.EventBox):
                 if self.weather["cod"] in ["200", 200]:
                     save_json(self.weather, self.weather_file)
             except Exception as e:
+                self.weather = None
                 eprint(e)
         elif not self.weather:
             eprint(hms(), "Loading weather data from file")
@@ -231,13 +236,14 @@ class OpenWeather(Gtk.EventBox):
                 if self.forecast["cod"] in ["200", 200]:
                     save_json(self.forecast, self.forecast_file)
             except Exception as e:
+                self.forecast = None
                 eprint(e)
         elif not self.forecast:
             eprint(hms(), "Loading forecast data from file")
             self.forecast = load_json(self.forecast_file)
 
     def update_widget(self):
-        if self.weather["cod"] in [200, "200"]:
+        if self.weather and self.weather["cod"] and self.weather["cod"] in [200, "200"]:
             if "icon" in self.weather["weather"][0]:
                 new_path = os.path.join(self.icons_path, "ow-{}.svg".format(self.weather["weather"][0]["icon"]))
                 if self.icon_path != new_path:
@@ -273,8 +279,8 @@ class OpenWeather(Gtk.EventBox):
     def svg2img(self, file_name):
         try:
             icon_path = os.path.join(self.popup_icons, file_name)
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, self.settings["forecast-icon-size"],
-                                                            self.settings["forecast-icon-size"])
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, self.settings["popup-icon-size"],
+                                                            self.settings["popup-icon-size"])
             img = Gtk.Image.new_from_pixbuf(pixbuf)
         except Exception as e:
             eprint(e)
@@ -284,7 +290,7 @@ class OpenWeather(Gtk.EventBox):
         return img
 
     def display_popup(self):
-        if not self.weather["cod"] in ["200", 200] or not self.forecast["cod"] in ["200", 200]:
+        if not self.weather or not self.weather["cod"] in ["200", 200] or not self.forecast["cod"] in ["200", 200]:
             print("No data available")
             return
 
@@ -292,6 +298,8 @@ class OpenWeather(Gtk.EventBox):
             self.popup.close()
             self.popup.destroy()
             return
+
+        self.popup.destroy()
 
         self.popup = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         self.popup.set_property("name", self.settings["popup-css-name"])
@@ -332,9 +340,8 @@ class OpenWeather(Gtk.EventBox):
 
         # row 1: Location
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-        loc_label = self.weather["name"] if "name" in self.weather and not self.settings["loc-label"] else \
-            self.settings[
-                "loc-label"]
+        loc_label = self.weather["name"] if "name" in self.weather and not self.settings["loc-name"] else \
+            self.settings["loc-name"]
         country = ", {}".format(self.weather["sys"]["country"]) if "country" in self.weather["sys"] and \
                                                                    self.weather["sys"][
                                                                        "country"] else ""
@@ -387,7 +394,7 @@ class OpenWeather(Gtk.EventBox):
         visibility = "   {}: {} km".format(self.lang["visibility"], int(
             self.weather["visibility"] / 1000)) if "visibility" in self.weather else ""
         lbl.set_markup(
-            '<span font_size="{}">{}{}{}{}{}\n{}{}{}</span>'.format(self.settings["forecast-text-size"], feels_like,
+            '<span font_size="{}">{}{}{}{}{}\n{}{}{}</span>'.format(self.settings["popup-text-size"], feels_like,
                                                                     humidity,
                                                                     wind_speed, wind_dir, wind_gust, pressure, clouds,
                                                                     visibility))
@@ -398,7 +405,7 @@ class OpenWeather(Gtk.EventBox):
         if self.forecast["cod"] in [200, "200"]:
             lbl = Gtk.Label()
             lbl.set_markup(
-                '<span font_size="{}"><big>{}</big></span>'.format(self.settings["forecast-text-size"],
+                '<span font_size="{}"><big>{}</big></span>'.format(self.settings["popup-text-size"],
                                                                    self.lang["5-day-forecast"]))
             vbox.pack_start(lbl, False, False, 6)
 
@@ -422,7 +429,7 @@ class OpenWeather(Gtk.EventBox):
                 dt = datetime.fromtimestamp(data["dt"]).strftime("%a, %d %b")
                 box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 lbl = Gtk.Label()
-                lbl.set_markup('<span font_size="{}">{}</span>'.format(self.settings["forecast-text-size"], dt))
+                lbl.set_markup('<span font_size="{}">{}</span>'.format(self.settings["popup-text-size"], dt))
                 box.pack_start(lbl, False, False, 0)
                 grid.attach(box, 1, i, 1, 1)
 
@@ -431,7 +438,7 @@ class OpenWeather(Gtk.EventBox):
                 box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 lbl = Gtk.Label()
                 lbl.set_markup(
-                    '<span font_size="{}"><tt>{}</tt></span>'.format(self.settings["forecast-text-size"], dt))
+                    '<span font_size="{}"><tt>{}</tt></span>'.format(self.settings["popup-text-size"], dt))
                 box.pack_start(lbl, False, False, 0)
                 grid.attach(box, 2, i, 1, 1)
 
@@ -449,7 +456,7 @@ class OpenWeather(Gtk.EventBox):
                     feels_like = ""
                     if "feels_like" in data["main"] and data["main"]["feels_like"]:
                         feels_like = " ({}°)".format(int(round(data["main"]["feels_like"], 0)))
-                    lbl.set_markup('<span font_size="{}">{}°{}</span>'.format(self.settings["forecast-text-size"],
+                    lbl.set_markup('<span font_size="{}">{}°{}</span>'.format(self.settings["popup-text-size"],
                                                                               str(int(round(data["main"]["temp"], 0))),
                                                                               feels_like))
                     grid.attach(lbl, 4, i, 1, 1)
@@ -460,7 +467,7 @@ class OpenWeather(Gtk.EventBox):
                     img = self.svg2img("humidity.svg")
                     box.pack_start(img, False, False, 0)
                     lbl = Gtk.Label()
-                    lbl.set_markup('<span font_size="{}">{}%</span>'.format(self.settings["forecast-text-size"],
+                    lbl.set_markup('<span font_size="{}">{}%</span>'.format(self.settings["popup-text-size"],
                                                                             data["main"]["humidity"]))
                     box.pack_start(lbl, False, False, 6)
                     grid.attach(box, 5, i, 1, 1)
@@ -478,7 +485,7 @@ class OpenWeather(Gtk.EventBox):
                         "deg"] else ""
                     lbl = Gtk.Label()
                     lbl.set_markup(
-                        '<span font_size="{}">{}{}{}</span>'.format(self.settings["forecast-text-size"], wind_speed,
+                        '<span font_size="{}">{}{}{}</span>'.format(self.settings["popup-text-size"], wind_speed,
                                                                     wind_gust, wind_dir))
                     box.pack_start(lbl, False, False, 6)
                     grid.attach(box, 6, i, 1, 1)
@@ -489,7 +496,7 @@ class OpenWeather(Gtk.EventBox):
                     img = self.svg2img("pressure.svg")
                     box.pack_start(img, False, False, 0)
                     lbl = Gtk.Label()
-                    lbl.set_markup('<span font_size="{}">{} hPa</span>'.format(self.settings["forecast-text-size"],
+                    lbl.set_markup('<span font_size="{}">{} hPa</span>'.format(self.settings["popup-text-size"],
                                                                                data["main"]["pressure"]))
                     box.pack_start(lbl, False, False, 0)
                     grid.attach(box, 7, i, 1, 1)
@@ -501,7 +508,7 @@ class OpenWeather(Gtk.EventBox):
                         img = self.svg2img("cloud.svg")
                         box.pack_start(img, False, False, 0)
                         lbl = Gtk.Label()
-                        lbl.set_markup('<span font_size="{}">{}%</span>'.format(self.settings["forecast-text-size"],
+                        lbl.set_markup('<span font_size="{}">{}%</span>'.format(self.settings["popup-text-size"],
                                                                                 data["clouds"]["all"]))
                         box.pack_start(lbl, False, False, 0)
                         grid.attach(box, 8, i, 1, 1)
@@ -512,7 +519,7 @@ class OpenWeather(Gtk.EventBox):
                     img = self.svg2img("eye.svg")
                     box.pack_start(img, False, False, 0)
                     lbl = Gtk.Label()
-                    lbl.set_markup('<span font_size="{}">{} km</span>'.format(self.settings["forecast-text-size"],
+                    lbl.set_markup('<span font_size="{}">{} km</span>'.format(self.settings["popup-text-size"],
                                                                               int(data["visibility"] / 1000)))
                     box.pack_start(lbl, False, False, 0)
                     grid.attach(box, 9, i, 1, 1)
@@ -523,17 +530,18 @@ class OpenWeather(Gtk.EventBox):
                     img = self.svg2img("umbrella.svg")
                     box.pack_start(img, False, False, 0)
                     lbl = Gtk.Label()
-                    lbl.set_markup('<span font_size="{}">{}%</span>'.format(self.settings["forecast-text-size"],
+                    lbl.set_markup('<span font_size="{}">{}%</span>'.format(self.settings["popup-text-size"],
                                                                             int(round(data["pop"] * 100, 0))))
                     box.pack_start(lbl, False, False, 0)
                     grid.attach(box, 10, i, 1, 1)
 
-            mtime = datetime.fromtimestamp(os.stat(self.forecast_file)[stat.ST_MTIME])
-            lbl = Gtk.Label()
-            lbl.set_markup(
-                '<span font_size="{}">openweathermap.org, {}</span>'.format(self.settings["forecast-text-size"],
-                                                                            mtime.strftime("%d %B %H:%M:%S")))
-            lbl.set_property("margin-top", 6)
+            if os.path.isfile(self.forecast_file):
+                mtime = datetime.fromtimestamp(os.stat(self.forecast_file)[stat.ST_MTIME])
+                lbl = Gtk.Label()
+                lbl.set_markup(
+                    '<span font_size="{}">openweathermap.org, {}</span>'.format(self.settings["popup-text-size"],
+                                                                                mtime.strftime("%d %B %H:%M:%S")))
+                lbl.set_property("margin-top", 6)
             vbox.pack_start(lbl, False, False, 0)
 
         self.popup.show_all()

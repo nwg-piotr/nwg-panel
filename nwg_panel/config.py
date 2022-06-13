@@ -11,7 +11,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, local_dir, load_json, save_json, load_string, list_outputs, check_key, \
-    list_configs, create_pixbuf, update_image, is_command, check_commands, cmd2string
+    list_configs, create_pixbuf, is_command, check_commands, cmd2string
 
 from nwg_panel.__about__ import __version__
 
@@ -131,6 +131,35 @@ SKELETON_PANEL: dict = {
     "dwl-tags": {
         "tag-names": "1 2 3 4 5 6 7 8 9",
         "title-limit": 55
+    },
+    "openweather": {
+        "appid": "",
+        "lat": None,
+        "long": None,
+        "lang": "en",
+        "units": "metric",
+        "interval": 1800,
+        "loc-name": "",
+
+        "on-right-click": "",
+        "on-middle-click": "",
+        "on-scroll": "",
+        "icon-placement": "start",
+        "icon-size": 24,
+        "css-name": "weather",
+        "show-name": False,
+        "angle": 0.0,
+
+        "popup-icons": "light",
+        "popup-icon-size": 24,
+        "popup-text-size": "medium",
+        "popup-css-name": "weather",
+        "show-humidity": True,
+        "show-wind": True,
+        "show-pressure": True,
+        "show-cloudiness": True,
+        "show-visibility": True,
+        "show-pop": True
     }
 }
 
@@ -445,7 +474,7 @@ class EditorWrapper(object):
         builder.add_from_file(os.path.join(dir_name, "glade/config_main.glade"))
 
         self.window = builder.get_object("main-window")
-        #self.window.set_transient_for(parent)
+        # self.window.set_transient_for(parent)
         self.window.set_keep_above(True)
         self.window.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.window.connect('destroy', self.show_parent, parent)
@@ -459,6 +488,7 @@ class EditorWrapper(object):
                               "sway-taskbar",
                               "sway-workspaces",
                               "scratchpad",
+                              "openweather",
                               "dwl-tags",
                               "tray"]
 
@@ -508,6 +538,9 @@ class EditorWrapper(object):
 
         eb = builder.get_object("eb-scratchpad")
         eb.connect("button-press-event", self.edit_scratchpad)
+
+        eb = builder.get_object("eb-openweather")
+        eb.connect("button-press-event", self.edit_openweather)
 
         eb = builder.get_object("eb-dwl-tags")
         eb.connect("button-press-event", self.edit_dwl_tags)
@@ -1627,6 +1660,62 @@ class EditorWrapper(object):
             settings["angle"] = 0.0
 
         save_json(self.config, self.file)
+
+    def edit_openweather(self, *args):
+        self.load_panel()
+        self.edited = "openweather"
+        check_key(self.panel, "openweather", {})
+        settings = self.panel["openweather"]
+        defaults = {
+            "appid": "",
+            "lat": None,
+            "long": None,
+            "lang": "en",
+            "units": "metric",
+            "interval": 1800,
+            "loc-name": "",
+
+            "on-right-click": "",
+            "on-middle-click": "",
+            "on-scroll": "",
+            "icon-placement": "start",
+            "icon-size": 24,
+            "css-name": "weather",
+            "show-name": False,
+            "angle": 0.0,
+
+            "popup-icons": "light",
+            "popup-icon-size": 24,
+            "popup-text-size": "medium",
+            "popup-css-name": "weather",
+            "show-humidity": True,
+            "show-wind": True,
+            "show-pressure": True,
+            "show-cloudiness": True,
+            "show-visibility": True,
+            "show-pop": True
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_openweather.glade"))
+        frame = builder.get_object("frame")
+
+        """self.scratchpad_css_name = builder.get_object("css-name")
+        self.scratchpad_css_name.set_text(settings["css-name"])
+
+        self.scratchpad_icon_size = builder.get_object("icon-size")
+        self.scratchpad_icon_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
+        self.scratchpad_icon_size.configure(adj, 1, 0)
+        self.scratchpad_icon_size.set_value(settings["icon-size"])
+
+        self.scratchpad_angle = builder.get_object("angle")
+        self.scratchpad_angle.set_active_id(str(settings["angle"]))"""
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(frame)
 
     def edit_dwl_tags(self, *args):
         self.load_panel()
