@@ -198,7 +198,7 @@ class PanelSelector(Gtk.Window):
         self.scrolled_window = Gtk.ScrolledWindow()
         self.scrolled_window.set_propagate_natural_width(True)
         self.scrolled_window.set_propagate_natural_height(True)
-        self.scrolled_window.set_property("margin-top", 12)
+        self.scrolled_window.set_property("margin-top", 6)
         max_height = 0
         for key in outputs:
             h = outputs[key]["height"]
@@ -213,9 +213,9 @@ class PanelSelector(Gtk.Window):
         self.scrolled_window.add(vbox)
 
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        vbox.pack_start(self.hbox, True, False, 12)
+        vbox.pack_start(self.hbox, True, False, 6)
         listboxes = self.build_listboxes()
-        self.hbox.pack_start(listboxes, True, True, 12)
+        self.hbox.pack_start(listboxes, True, True, 6)
 
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
 
@@ -241,12 +241,12 @@ class PanelSelector(Gtk.Window):
         inner_hbox.pack_start(label, False, False, 6)
 
         self.new_file_entry = Gtk.Entry()
-        self.new_file_entry.set_width_chars(20)
+        self.new_file_entry.set_width_chars(15)
         self.new_file_entry.set_placeholder_text("filename")
         self.new_file_entry.connect("changed", validate_name)
         inner_hbox.pack_start(self.new_file_entry, False, False, 0)
 
-        btn = Gtk.Button.new_with_label("Add/delete files")
+        btn = Gtk.Button.new_with_label("Add/delete")
         btn.connect("clicked", self.add_delete_files)
         inner_hbox.pack_end(btn, False, False, 0)
 
@@ -493,7 +493,7 @@ class EditorWrapper(object):
 
         self.delete_weather_data = False
 
-        Gtk.Widget.set_size_request(self.window, 820, 1)
+        Gtk.Widget.set_size_request(self.window, 677, 1)
 
         self.known_modules = ["clock",
                               "playerctl",
@@ -2726,8 +2726,8 @@ class ControlsCustomItems(Gtk.Frame):
         Gtk.Frame.__init__(self)
         self.set_label("Controls: Custom items")
         self.grid = Gtk.Grid()
-        self.grid.set_column_spacing(10)
-        self.grid.set_row_spacing(10)
+        self.grid.set_column_spacing(6)
+        self.grid.set_row_spacing(6)
         self.set_label_align(0.5, 0.5)
         self.grid.set_property("margin", 6)
         self.add(self.grid)
@@ -2753,13 +2753,13 @@ class ControlsCustomItems(Gtk.Frame):
             vbox.pack_start(hbox, False, False, 6)
 
             entry = Gtk.Entry()
-            entry.set_width_chars(15)
+            entry.set_width_chars(10)
             entry.set_text(item["name"])
             entry.connect("changed", self.update_value_from_entry, i, "name")
             hbox.pack_start(entry, False, False, 0)
 
             entry = Gtk.Entry()
-            entry.set_width_chars(15)
+            entry.set_width_chars(10)
             entry.set_text(item["icon"])
             update_icon(entry, self.icons)
             entry.connect("changed", self.update_icon, self.icons, i, "icon")
@@ -2772,10 +2772,10 @@ class ControlsCustomItems(Gtk.Frame):
                 hbox.pack_start(btn, False, False, 0)
 
             entry = Gtk.Entry()
-            entry.set_width_chars(15)
+            entry.set_width_chars(12)
             entry.set_text(item["cmd"])
             entry.connect("changed", self.update_value_from_entry, i, "cmd")
-            hbox.pack_start(entry, False, False, 0)
+            hbox.pack_start(entry, True, False, 0)
 
             btn = Gtk.Button.new_from_icon_name("gtk-go-up", Gtk.IconSize.MENU)
             btn.set_always_show_image(True)
@@ -2804,12 +2804,12 @@ class ControlsCustomItems(Gtk.Frame):
         vbox.pack_start(hbox, False, False, 6)
 
         self.new_name = Gtk.Entry()
-        self.new_name.set_width_chars(15)
+        self.new_name.set_width_chars(10)
         self.new_name.set_placeholder_text("label")
         hbox.pack_start(self.new_name, False, False, 0)
 
         self.new_icon = Gtk.Entry()
-        self.new_icon.set_width_chars(15)
+        self.new_icon.set_width_chars(10)
         self.new_icon.set_placeholder_text("icon")
         update_icon(self.new_icon, self.icons)
         self.new_icon.connect("changed", update_icon, self.icons)
@@ -2822,7 +2822,7 @@ class ControlsCustomItems(Gtk.Frame):
             hbox.pack_start(btn, False, False, 0)
 
         self.new_command = Gtk.Entry()
-        self.new_command.set_width_chars(15)
+        self.new_command.set_width_chars(10)
         self.new_command.set_placeholder_text("command")
         hbox.pack_start(self.new_command, False, False, 0)
 
@@ -2916,17 +2916,17 @@ class ControlsUserMenu(Gtk.Frame):
         hbox.pack_start(label, False, False, 6)
 
         entry = Gtk.Entry()
-        entry.set_width_chars(15)
+        entry.set_width_chars(10)
         entry.set_text(self.name)
         entry.connect("changed", self.update_prop_from_entry, "name")
         hbox.pack_start(entry, False, False, 0)
 
         label = Gtk.Label()
         label.set_text("Icon")
-        hbox.pack_start(label, False, False, 6)
+        hbox.pack_start(label, True, False, 6)
 
         entry = Gtk.Entry()
-        entry.set_width_chars(25)
+        entry.set_width_chars(20)
         entry.set_text(self.icon)
         update_icon(entry, self.icons)
         entry.connect("changed", self.update_icon, self.icons, "icon")
@@ -2990,12 +2990,12 @@ class ControlsUserMenu(Gtk.Frame):
         vbox.pack_start(hbox, False, False, 6)
 
         self.new_name = Gtk.Entry()
-        self.new_name.set_width_chars(15)
+        self.new_name.set_width_chars(10)
         self.new_name.set_placeholder_text("label")
         hbox.pack_start(self.new_name, False, False, 0)
 
         self.new_command = Gtk.Entry()
-        self.new_command.set_width_chars(25)
+        self.new_command.set_width_chars(20)
         self.new_command.set_placeholder_text("command")
         hbox.pack_start(self.new_command, False, False, 0)
 

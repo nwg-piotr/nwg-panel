@@ -431,7 +431,7 @@
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="padding">10</property>
+                <property name="padding">6</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -439,7 +439,7 @@
           <packing>
             <property name="expand">True</property>
             <property name="fill">True</property>
-            <property name="padding">10</property>
+            <property name="padding">6</property>
             <property name="position">0</property>
           </packing>
         </child>
@@ -451,11 +451,10 @@
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="spacing">20</property>
-                <property name="homogeneous">True</property>
+                <property name="spacing">6</property>
                 <child>
                   <object class="GtkButton" id="btn-apply-restart">
-                    <property name="label">Save &amp; restart</property>
+                    <property name="label">Save/restart</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
@@ -498,8 +497,8 @@
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="padding">20</property>
+                <property name="fill">False</property>
+                <property name="padding">12</property>
                 <property name="pack-type">end</property>
                 <property name="position">0</property>
               </packing>
@@ -507,7 +506,7 @@
           </object>
           <packing>
             <property name="expand">False</property>
-            <property name="fill">True</property>
+            <property name="fill">False</property>
             <property name="padding">6</property>
             <property name="position">1</property>
           </packing>
