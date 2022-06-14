@@ -899,6 +899,8 @@ class EditorWrapper(object):
             self.update_menu_start()
         elif self.edited == "dwl-tags":
             self.update_dwl_tags()
+        elif self.edited == "openweather":
+            self.update_openweather()
         elif self.edited == "custom-items":
             save_json(self.config, self.file)
         elif self.edited == "user-menu":
@@ -1801,15 +1803,15 @@ class EditorWrapper(object):
         self.ow_popup_icons = builder.get_object("ow-popup-icons")
         self.ow_popup_icons.set_active_id(settings["ow-popup-icons"])
 
-        self.ow_panel_header_icon_size = builder.get_object("popup-header-icon-size")
+        self.ow_popup_header_icon_size = builder.get_object("popup-header-icon-size")
         adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
-        self.ow_panel_header_icon_size.configure(adj, 1, 0)
-        self.ow_panel_header_icon_size.set_value(settings["popup-header-icon-size"])
+        self.ow_popup_header_icon_size.configure(adj, 1, 0)
+        self.ow_popup_header_icon_size.set_value(settings["popup-header-icon-size"])
 
-        self.ow_panel_icon_size = builder.get_object("popup-icon-size")
+        self.ow_popup_icon_size = builder.get_object("popup-icon-size")
         adj = Gtk.Adjustment(value=0, lower=8, upper=49, step_increment=1, page_increment=10, page_size=1)
-        self.ow_panel_icon_size.configure(adj, 1, 0)
-        self.ow_panel_icon_size.set_value(settings["popup-icon-size"])
+        self.ow_popup_icon_size.configure(adj, 1, 0)
+        self.ow_popup_icon_size.set_value(settings["popup-icon-size"])
 
         self.ow_popup_text_size = builder.get_object("popup-text-size")
         self.ow_popup_text_size.set_active_id(settings["popup-text-size"])
@@ -1855,6 +1857,47 @@ class EditorWrapper(object):
     def mark_weather_data_delete(self, *args):
         eprint("Weather data files marked for deletion")
         self.delete_weather_data = True
+
+    def update_openweather(self, *args):
+        settings = self.panel["openweather"]
+
+        settings["appid"] = self.ow_appid.get_text()
+        settings["lat"] = round(self.ow_lat.get_value(), 4)
+        settings["long"] = round(self.ow_long.get_value(), 4)
+        settings["lang"] = self.ow_lang.get_text()
+        settings["units"] = self.ow_units.get_active_id()
+        settings["interval"] = int(self.ow_interval.get_value())
+        settings["loc-name"] = self.ow_loc_name.get_text()
+        settings["weather-icons"] = self.ow_weather_icons.get_active_id()
+        settings["on-right-click"] = self.ow_on_right_click.get_text()
+        settings["on-middle-click"] = self.ow_on_middle_click.get_text()
+        settings["on-scroll"] = self.ow_on_scroll.get_text()
+        settings["icon-placement"] = self.ow_icon_placement.get_active_id()
+        settings["icon-size"] = int(self.ow_icon_size.get_value())
+        settings["css-name"] = self.ow_css_name.get_text()
+        settings["show-name"] = self.ow_show_name.get_active()
+        try:
+            settings["angle"] = float(self.ow_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
+        settings["ow-popup-icons"] = self.ow_popup_icons.get_active_id()
+        settings["popup-header-icon-size"] = int(self.ow_popup_header_icon_size.get_value())
+        settings["popup-icon-size"] = int(self.ow_popup_icon_size.get_value())
+        settings["popup-text-size"] = self.ow_popup_text_size.get_active_id()
+        settings["popup-css-name"] = self.ow_popup_css_name.get_text()
+        settings["popup-placement"] = self.ow_popup_placement.get_active_id()
+        settings["popup-margin-horizontal"] = int(self.ow_popup_margin_horizontal.get_value())
+        settings["popup-margin-vertical"] = int(self.ow_popup_margin_vertical.get_value())
+        settings["show-humidity"] = self.ow_show_humidity.get_active()
+        settings["show-wind"] = self.ow_show_wind.get_active()
+        settings["show-pressure"] = self.ow_show_pressure.get_active()
+        settings["show-cloudiness"] = self.ow_show_cloudiness.get_active()
+        settings["show-visibility"] = self.ow_show_visibility.get_active()
+        settings["show-pop"] = self.ow_show_pop.get_active()
+
+        for key in settings:
+            print(key, settings[key])
+        save_json(self.config, self.file)
 
     def edit_dwl_tags(self, *args):
         self.load_panel()
