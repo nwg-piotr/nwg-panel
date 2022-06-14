@@ -87,8 +87,9 @@ class OpenWeather(Gtk.EventBox):
                     "popup-text-size": "medium",
                     "popup-css-name": "weather",
                     "popup-placement": "right",
-                    "popup-margin-horizontal": 12,
-                    "popup-margin-vertical": 12,
+                    "popup-margin-horizontal": 0,
+                    "popup-margin-top": 0,
+                    "popup-margin-bottom": 0,
                     "show-humidity": True,
                     "show-wind": True,
                     "show-pressure": True,
@@ -337,8 +338,8 @@ class OpenWeather(Gtk.EventBox):
             GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.RIGHT, 1)
 
         # set vertical margin (same for top & bottom)
-        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.TOP, self.settings["popup-margin-vertical"])
-        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.BOTTOM, self.settings["popup-margin-vertical"])
+        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.TOP, self.settings["popup-margin-top"])
+        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.BOTTOM, self.settings["popup-margin-bottom"])
 
         # set horizontal margin (same for left & right)
         GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.LEFT, self.settings["popup-margin-horizontal"])

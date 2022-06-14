@@ -160,7 +160,8 @@ SKELETON_PANEL: dict = {
         "popup-css-name": "weather",
         "popup-placement": "right",
         "popup-margin-horizontal": 0,
-        "popup-margin-vertical": 0,
+        "popup-margin-top": 0,
+        "popup-margin-bottom": 0,
         "show-humidity": True,
         "show-wind": True,
         "show-pressure": True,
@@ -1719,7 +1720,8 @@ class EditorWrapper(object):
             "popup-css-name": "weather",
             "popup-placement": "right",
             "popup-margin-horizontal": 0,
-            "popup-margin-vertical": 0,
+            "popup-margin-top": 0,
+            "popup-margin-bottom": 0,
             "show-humidity": True,
             "show-wind": True,
             "show-pressure": True,
@@ -1836,14 +1838,19 @@ class EditorWrapper(object):
         self.ow_popup_placement.set_active_id(settings["popup-placement"])
 
         self.ow_popup_margin_horizontal = builder.get_object("popup-margin-horizontal")
-        adj = Gtk.Adjustment(value=0, lower=0, upper=1000, step_increment=1, page_increment=10, page_size=1)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=3000, step_increment=1, page_increment=10, page_size=1)
         self.ow_popup_margin_horizontal.configure(adj, 1, 0)
         self.ow_popup_margin_horizontal.set_value(settings["popup-margin-horizontal"])
 
-        self.ow_popup_margin_vertical = builder.get_object("popup-margin-vertical")
-        adj = Gtk.Adjustment(value=0, lower=0, upper=1000, step_increment=1, page_increment=10, page_size=1)
-        self.ow_popup_margin_vertical.configure(adj, 1, 0)
-        self.ow_popup_margin_vertical.set_value(settings["popup-margin-vertical"])
+        self.ow_popup_margin_top = builder.get_object("popup-margin-top")
+        adj = Gtk.Adjustment(value=0, lower=0, upper=2000, step_increment=1, page_increment=10, page_size=1)
+        self.ow_popup_margin_top.configure(adj, 1, 0)
+        self.ow_popup_margin_top.set_value(settings["popup-margin-top"])
+
+        self.ow_popup_margin_bottom = builder.get_object("popup-margin-bottom")
+        adj = Gtk.Adjustment(value=0, lower=0, upper=2000, step_increment=1, page_increment=10, page_size=1)
+        self.ow_popup_margin_bottom.configure(adj, 1, 0)
+        self.ow_popup_margin_bottom.set_value(settings["popup-margin-bottom"])
 
         self.ow_show_humidity = builder.get_object("show-humidity")
         self.ow_show_humidity.set_active(settings["show-humidity"])
@@ -1903,7 +1910,8 @@ class EditorWrapper(object):
         settings["popup-css-name"] = self.ow_popup_css_name.get_text()
         settings["popup-placement"] = self.ow_popup_placement.get_active_id()
         settings["popup-margin-horizontal"] = int(self.ow_popup_margin_horizontal.get_value())
-        settings["popup-margin-vertical"] = int(self.ow_popup_margin_vertical.get_value())
+        settings["popup-margin-top"] = int(self.ow_popup_margin_top.get_value())
+        settings["popup-margin-bottom"] = int(self.ow_popup_margin_bottom.get_value())
         settings["show-humidity"] = self.ow_show_humidity.get_active()
         settings["show-wind"] = self.ow_show_wind.get_active()
         settings["show-pressure"] = self.ow_show_pressure.get_active()
