@@ -81,9 +81,13 @@ class OpenWeather(Gtk.EventBox):
                     "angle": 0.0,
 
                     "ow-popup-icons": "light",
+                    "popup-header-icon-size": 48,
                     "popup-icon-size": 24,
                     "popup-text-size": "medium",
                     "popup-css-name": "weather",
+                    "popup-placement": "right",
+                    "popup-margin-horizontal": 12,
+                    "popup-margin-vertical": 12,
                     "show-humidity": True,
                     "show-wind": True,
                     "show-pressure": True,
@@ -314,10 +318,27 @@ class OpenWeather(Gtk.EventBox):
         self.popup.set_property("name", self.settings["popup-css-name"])
 
         GtkLayerShell.init_for_window(self.popup)
+
         GtkLayerShell.set_layer(self.popup, GtkLayerShell.Layer.TOP)
+
+        # stretch vertically to the entire window height
         GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.TOP, 1)
         GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.BOTTOM, 1)
-        GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.RIGHT, 1)
+
+        # attach to left/right margin or just center
+        if self.settings["popup-placement"] == "left":
+            GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.LEFT, 1)
+        elif self.settings["popup-placement"] == "right":
+            GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.RIGHT, 1)
+
+        # set vertical margin (same for top & bottom)
+        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.TOP, self.settings["popup-margin-vertical"])
+        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.BOTTOM, self.settings["popup-margin-vertical"])
+
+        # set horizontal margin (same for left & right)
+        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.LEFT, self.settings["popup-margin-horizontal"])
+        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.RIGHT, self.settings["popup-margin-horizontal"])
+
         self.popup.connect('button-release-event', on_button_press)
 
         vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
@@ -326,11 +347,12 @@ class OpenWeather(Gtk.EventBox):
 
         # CURRENT WEATHER
         # row 0: Big icon
+        hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
         if "icon" in self.weather["weather"][0]:
             icon_path = os.path.join(self.weather_icons, "ow-{}.svg".format(self.weather["weather"][0]["icon"]))
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 48, 48)
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, self.settings["popup-header-icon-size"],
+                                                            self.settings["popup-header-icon-size"])
             img = Gtk.Image.new_from_pixbuf(pixbuf)
-            hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
             img.set_property("halign", Gtk.Align.END)
             hbox.pack_start(img, True, True, 0)
 
@@ -345,7 +367,8 @@ class OpenWeather(Gtk.EventBox):
                 '<span size="xx-large">{}{}</span>'.format(str(round(temp, 1)), degrees[self.settings["units"]]))
             lbl.set_property("halign", Gtk.Align.START)
             hbox.pack_start(lbl, True, True, 0)
-            vbox.pack_start(hbox, False, False, 0)
+
+        vbox.pack_start(hbox, False, False, 0)
 
         # row 1: Location
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)

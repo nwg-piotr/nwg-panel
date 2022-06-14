@@ -21,7 +21,7 @@ sway = os.getenv('SWAYSOCK') is not None
 
 config_dir = get_config_dir()
 data_home = os.getenv('XDG_DATA_HOME') if os.getenv('XDG_DATA_HOME') else os.path.join(os.getenv("HOME"),
-                                                                                               ".local/share")
+                                                                                       ".local/share")
 configs = {}
 editor = None
 selector_window = None
@@ -157,6 +157,9 @@ SKELETON_PANEL: dict = {
         "popup-icon-size": 24,
         "popup-text-size": "medium",
         "popup-css-name": "weather",
+        "popup-placement": "right",
+        "popup-margin-horizontal": 0,
+        "popup-margin-vertical": 0,
         "show-humidity": True,
         "show-wind": True,
         "show-pressure": True,
@@ -487,6 +490,8 @@ class EditorWrapper(object):
         self.window.connect('destroy', self.show_parent, parent)
         self.window.connect("key-release-event", handle_keyboard)
         self.window.connect("show", self.hide_parent, parent)
+
+        self.delete_weather_data = False
 
         Gtk.Widget.set_size_request(self.window, 820, 1)
 
@@ -1693,9 +1698,13 @@ class EditorWrapper(object):
             "angle": 0.0,
 
             "ow-popup-icons": "light",
+            "popup-header-icon-size": 48,
             "popup-icon-size": 24,
             "popup-text-size": "medium",
             "popup-css-name": "weather",
+            "popup-placement": "right",
+            "popup-margin-horizontal": 0,
+            "popup-margin-vertical": 0,
             "show-humidity": True,
             "show-wind": True,
             "show-pressure": True,
@@ -1711,6 +1720,7 @@ class EditorWrapper(object):
 
         self.ow_appid = builder.get_object("appid")
         self.ow_appid.set_text(settings["appid"])
+        self.ow_appid.connect("changed", self.mark_weather_data_delete)
 
         key_visibility_switch = builder.get_object("key-visibility-switch")
         key_visibility_switch.connect("toggled", switch_entry_visibility, self.ow_appid)
@@ -1735,17 +1745,21 @@ class EditorWrapper(object):
         adj = Gtk.Adjustment(value=0, lower=-90, upper=90, step_increment=0.1, page_increment=10, page_size=1)
         self.ow_lat.configure(adj, 1, 4)
         self.ow_lat.set_value(settings["lat"])
+        self.ow_lat.connect("value-changed", self.mark_weather_data_delete)
 
         self.ow_long = builder.get_object("long")
         adj = Gtk.Adjustment(value=0, lower=-180, upper=180, step_increment=0.1, page_increment=10, page_size=1)
         self.ow_long.configure(adj, 1, 4)
         self.ow_long.set_value(settings["long"])
+        self.ow_long.connect("value-changed", self.mark_weather_data_delete)
 
         self.ow_lang = builder.get_object("lang")
         self.ow_lang.set_text(settings["lang"])
+        self.ow_lang.connect("changed", self.mark_weather_data_delete)
 
         self.ow_units = builder.get_object("units")
         self.ow_units.set_active_id(settings["units"])
+        self.ow_units.connect("changed", self.mark_weather_data_delete)
 
         self.ow_interval = builder.get_object("interval")
         adj = Gtk.Adjustment(value=0, lower=180, upper=86401, step_increment=1, page_increment=10, page_size=1)
@@ -1787,6 +1801,11 @@ class EditorWrapper(object):
         self.ow_popup_icons = builder.get_object("ow-popup-icons")
         self.ow_popup_icons.set_active_id(settings["ow-popup-icons"])
 
+        self.ow_panel_header_icon_size = builder.get_object("popup-header-icon-size")
+        adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
+        self.ow_panel_header_icon_size.configure(adj, 1, 0)
+        self.ow_panel_header_icon_size.set_value(settings["popup-header-icon-size"])
+
         self.ow_panel_icon_size = builder.get_object("popup-icon-size")
         adj = Gtk.Adjustment(value=0, lower=8, upper=49, step_increment=1, page_increment=10, page_size=1)
         self.ow_panel_icon_size.configure(adj, 1, 0)
@@ -1797,6 +1816,19 @@ class EditorWrapper(object):
 
         self.ow_popup_css_name = builder.get_object("popup-css-name")
         self.ow_popup_css_name.set_text(settings["popup-css-name"])
+
+        self.ow_popup_placement = builder.get_object("popup-placement")
+        self.ow_popup_placement.set_active_id(settings["popup-placement"])
+
+        self.ow_popup_margin_horizontal = builder.get_object("popup-margin-horizontal")
+        adj = Gtk.Adjustment(value=0, lower=0, upper=1000, step_increment=1, page_increment=10, page_size=1)
+        self.ow_popup_margin_horizontal.configure(adj, 1, 0)
+        self.ow_popup_margin_horizontal.set_value(settings["popup-margin-horizontal"])
+
+        self.ow_popup_margin_vertical = builder.get_object("popup-margin-vertical")
+        adj = Gtk.Adjustment(value=0, lower=0, upper=1000, step_increment=1, page_increment=10, page_size=1)
+        self.ow_popup_margin_vertical.configure(adj, 1, 0)
+        self.ow_popup_margin_vertical.set_value(settings["popup-margin-vertical"])
 
         self.ow_show_humidity = builder.get_object("show-humidity")
         self.ow_show_humidity.set_active(settings["show-humidity"])
@@ -1819,6 +1851,10 @@ class EditorWrapper(object):
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
+
+    def mark_weather_data_delete(self, *args):
+        eprint("Weather data files marked for deletion")
+        self.delete_weather_data = True
 
     def edit_dwl_tags(self, *args):
         self.load_panel()
