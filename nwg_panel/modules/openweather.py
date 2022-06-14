@@ -95,7 +95,8 @@ class OpenWeather(Gtk.EventBox):
                     "show-pressure": True,
                     "show-cloudiness": True,
                     "show-visibility": True,
-                    "show-pop": True}
+                    "show-pop": True,
+                    "module-id": ""}
 
         Gtk.EventBox.__init__(self)
 
@@ -158,6 +159,8 @@ class OpenWeather(Gtk.EventBox):
         tmp_dir = temp_dir()
         self.weather_file = "{}-{}".format(os.path.join(tmp_dir, "nwg-openweather-weather"), settings["module-id"])
         self.forecast_file = "{}-{}".format(os.path.join(tmp_dir, "nwg-openweather-forecast"), settings["module-id"])
+        eprint("Weather file: {}".format(self.weather_file))
+        eprint("Forecast file: {}".format(self.forecast_file))
 
         # Try to obtain geolocation if unset
         if not settings["lat"] or not settings["long"]:
