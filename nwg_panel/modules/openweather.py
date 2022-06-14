@@ -3,6 +3,7 @@
 import json
 import os
 import stat
+import subprocess
 import threading
 from datetime import datetime
 
@@ -217,12 +218,16 @@ class OpenWeather(Gtk.EventBox):
             self.launch(self.settings["on-right-click"])
 
     def on_scroll(self, widget, event):
-        if event.direction == Gdk.ScrollDirection.UP and self.settings["on-scroll-up"]:
-            self.launch(self.settings["on-scroll-up"])
-        elif event.direction == Gdk.ScrollDirection.DOWN and self.settings["on-scroll-up"]:
-            self.launch(self.settings["on-scroll-up"])
+        if event.direction == Gdk.ScrollDirection.UP and self.settings["on-scroll"]:
+            self.launch(self.settings["on-scroll"])
+        elif event.direction == Gdk.ScrollDirection.DOWN and self.settings["on-scroll"]:
+            self.launch(self.settings["on-scroll"])
         else:
             print("No command assigned")
+
+    def launch(self, cmd):
+        print("Executing '{}'".format(cmd))
+        subprocess.Popen('exec {}'.format(cmd), shell=True)
 
     def get_weather(self):
         if not os.path.isfile(self.weather_file) or int(file_age(self.weather_file) > self.settings["interval"] - 1):
