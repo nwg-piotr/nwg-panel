@@ -8,7 +8,7 @@
     <property name="label-xalign">0.5</property>
     <property name="shadow-type">out</property>
     <child>
-      <!-- n-columns=3 n-rows=30 -->
+      <!-- n-columns=3 n-rows=31 -->
       <object class="GtkGrid" id="grid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -746,6 +746,39 @@ Creative Commons Attribution-ShareAlike 4.0</property>
             <property name="left-attach">1</property>
             <property name="top-attach">20</property>
           </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="module-id">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">module.id</property>
+            <attributes>
+              <attribute name="style" value="oblique"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">30</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Module ID:</property>
+            <attributes>
+              <attribute name="style" value="oblique"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">30</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>

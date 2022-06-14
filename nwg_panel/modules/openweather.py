@@ -154,8 +154,8 @@ class OpenWeather(Gtk.EventBox):
         data_home = os.getenv('XDG_DATA_HOME') if os.getenv('XDG_DATA_HOME') else os.path.join(os.getenv("HOME"),
                                                                                                ".local/share")
         tmp_dir = temp_dir()
-        self.weather_file = os.path.join(tmp_dir, "nwg-openweather-weather")
-        self.forecast_file = os.path.join(tmp_dir, "nwg-openweather-forecast")
+        self.weather_file = "{}-{}".format(os.path.join(tmp_dir, "nwg-openweather-weather"), settings["module-id"])
+        self.forecast_file = "{}-{}".format(os.path.join(tmp_dir, "nwg-openweather-forecast"), settings["module-id"])
 
         # Try to obtain geolocation if unset
         if not settings["lat"] or not settings["long"]:

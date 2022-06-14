@@ -4,6 +4,7 @@ import os
 import signal
 import subprocess
 import sys
+import time
 
 import gi
 
@@ -11,7 +12,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, local_dir, load_json, save_json, load_string, list_outputs, check_key, \
-    list_configs, create_pixbuf, is_command, check_commands, cmd2string, eprint
+    list_configs, create_pixbuf, is_command, check_commands, cmd2string, eprint, temp_dir
 
 from nwg_panel.__about__ import __version__
 
@@ -906,6 +907,17 @@ class EditorWrapper(object):
         elif self.edited == "user-menu":
             save_json(self.config, self.file)
 
+        if self.delete_weather_data:
+            tmp_dir = temp_dir()
+            for item in ["nwg-openweather-weather", "nwg-openweather-forecast"]:
+                f = "{}-{}".format(os.path.join(tmp_dir, item), self.panel["openweather"]["module-id"])
+                # f = os.path.join(tmp_dir, item)
+                if os.path.exists(f):
+                    eprint("Deleting {}".format(f))
+                    os.remove(f)
+                else:
+                    eprint("{} file not found".format(f))
+
         selector_window.refresh(reload=True)
 
     def restart_panel(self, *args):
@@ -1681,6 +1693,7 @@ class EditorWrapper(object):
         check_key(self.panel, "openweather", {})
         settings = self.panel["openweather"]
         defaults = {
+            "module-id": str(time.time()),
             "appid": "",
             "lat": None,
             "long": None,
@@ -1850,6 +1863,9 @@ class EditorWrapper(object):
         self.ow_show_pop = builder.get_object("show-pop")
         self.ow_show_pop.set_active(settings["show-pop"])
 
+        self.ow_module_id = builder.get_object("module-id")
+        self.ow_module_id.set_text(settings["module-id"])
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -1895,8 +1911,6 @@ class EditorWrapper(object):
         settings["show-visibility"] = self.ow_show_visibility.get_active()
         settings["show-pop"] = self.ow_show_pop.get_active()
 
-        for key in settings:
-            print(key, settings[key])
         save_json(self.config, self.file)
 
     def edit_dwl_tags(self, *args):

@@ -454,7 +454,7 @@
                 <property name="spacing">6</property>
                 <child>
                   <object class="GtkButton" id="btn-apply-restart">
-                    <property name="label">Save/restart</property>
+                    <property name="label">Apply/restart</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
