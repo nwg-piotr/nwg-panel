@@ -85,7 +85,7 @@ class OpenWeather(Gtk.EventBox):
                     "popup-header-icon-size": 48,
                     "popup-icon-size": 24,
                     "popup-text-size": "medium",
-                    "popup-css-name": "weather",
+                    "popup-css-name": "weather-forecast",
                     "popup-placement": "right",
                     "popup-margin-horizontal": 0,
                     "popup-margin-top": 0,
