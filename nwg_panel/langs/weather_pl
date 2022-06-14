@@ -1,0 +1,10 @@
+{
+  "5-day-forecast": "prognoza pięciodniowa",
+  "cloudiness": "Zachmurzenie",
+  "feels-like": "Odczucie",
+  "gust": "w porywach",
+  "humidity": "Wilgotność",
+  "pressure": "Ciśnienie",
+  "visibility": "Widoczność",
+  "wind": "Wiatr"
+}

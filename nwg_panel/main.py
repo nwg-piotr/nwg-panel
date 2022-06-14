@@ -46,6 +46,7 @@ from nwg_panel.modules.cpu_avg import CpuAvg
 from nwg_panel.modules.scratchpad import Scratchpad
 from nwg_panel.modules.dwl_tags import DwlTags
 from nwg_panel.modules.swaync import SwayNC
+from nwg_panel.modules.openweather import OpenWeather
 
 from nwg_panel.modules.menu_start import MenuStart
 
@@ -212,6 +213,11 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             else:
                 print("'{}' not defined in this panel instance".format(item))
 
+        if item == "openweather":
+            if item in panel:
+                openweather = OpenWeather(panel[item], icons_path)
+                container.pack_start(openweather, False, False, panel["items-padding"])
+
         if item == "cpu-avg":
             cpu_avg = CpuAvg()
             container.pack_start(cpu_avg, False, False, panel["items-padding"])
@@ -338,6 +344,8 @@ def main():
 
     copy_files(os.path.join(dir_name, "icons_light"), os.path.join(common.config_dir, "icons_light"))
     copy_files(os.path.join(dir_name, "icons_dark"), os.path.join(common.config_dir, "icons_dark"))
+    copy_files(os.path.join(dir_name, "icons_color"), os.path.join(common.config_dir, "icons_color"))
+    copy_files(os.path.join(dir_name, "langs"), os.path.join(common.config_dir, "langs"))
     copy_executors(os.path.join(dir_name, "executors"), os.path.join(common.config_dir, "executors"))
     copy_files(os.path.join(dir_name, "config"), common.config_dir, args.restore)
     copy_files(os.path.join(dir_name, "local"), local_dir())

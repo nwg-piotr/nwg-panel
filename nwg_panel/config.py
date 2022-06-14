@@ -4,6 +4,7 @@ import os
 import signal
 import subprocess
 import sys
+import time
 
 import gi
 
@@ -11,7 +12,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, local_dir, load_json, save_json, load_string, list_outputs, check_key, \
-    list_configs, create_pixbuf, update_image, is_command, check_commands, cmd2string
+    list_configs, create_pixbuf, is_command, check_commands, cmd2string, eprint, temp_dir
 
 from nwg_panel.__about__ import __version__
 
@@ -20,6 +21,8 @@ dir_name = os.path.dirname(__file__)
 sway = os.getenv('SWAYSOCK') is not None
 
 config_dir = get_config_dir()
+data_home = os.getenv('XDG_DATA_HOME') if os.getenv('XDG_DATA_HOME') else os.path.join(os.getenv("HOME"),
+                                                                                       ".local/share")
 configs = {}
 editor = None
 selector_window = None
@@ -131,6 +134,40 @@ SKELETON_PANEL: dict = {
     "dwl-tags": {
         "tag-names": "1 2 3 4 5 6 7 8 9",
         "title-limit": 55
+    },
+    "openweather": {
+        "appid": "",
+        "lat": None,
+        "long": None,
+        "lang": "en",
+        "units": "metric",
+        "interval": 1800,
+        "loc-name": "",
+        "weather-icons": "color",
+
+        "on-right-click": "",
+        "on-middle-click": "",
+        "on-scroll": "",
+        "icon-placement": "start",
+        "icon-size": 24,
+        "css-name": "weather",
+        "show-name": False,
+        "angle": 0.0,
+
+        "ow-popup-icons": "light",
+        "popup-icon-size": 24,
+        "popup-text-size": "medium",
+        "popup-css-name": "weather",
+        "popup-placement": "right",
+        "popup-margin-horizontal": 0,
+        "popup-margin-top": 0,
+        "popup-margin-bottom": 0,
+        "show-humidity": True,
+        "show-wind": True,
+        "show-pressure": True,
+        "show-cloudiness": True,
+        "show-visibility": True,
+        "show-pop": True
     }
 }
 
@@ -163,7 +200,7 @@ class PanelSelector(Gtk.Window):
         self.scrolled_window = Gtk.ScrolledWindow()
         self.scrolled_window.set_propagate_natural_width(True)
         self.scrolled_window.set_propagate_natural_height(True)
-        self.scrolled_window.set_property("margin-top", 12)
+        self.scrolled_window.set_property("margin-top", 6)
         max_height = 0
         for key in outputs:
             h = outputs[key]["height"]
@@ -178,9 +215,9 @@ class PanelSelector(Gtk.Window):
         self.scrolled_window.add(vbox)
 
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        vbox.pack_start(self.hbox, True, False, 12)
+        vbox.pack_start(self.hbox, True, False, 6)
         listboxes = self.build_listboxes()
-        self.hbox.pack_start(listboxes, True, True, 12)
+        self.hbox.pack_start(listboxes, True, True, 6)
 
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
 
@@ -206,12 +243,12 @@ class PanelSelector(Gtk.Window):
         inner_hbox.pack_start(label, False, False, 6)
 
         self.new_file_entry = Gtk.Entry()
-        self.new_file_entry.set_width_chars(20)
+        self.new_file_entry.set_width_chars(15)
         self.new_file_entry.set_placeholder_text("filename")
         self.new_file_entry.connect("changed", validate_name)
         inner_hbox.pack_start(self.new_file_entry, False, False, 0)
 
-        btn = Gtk.Button.new_with_label("Add/delete files")
+        btn = Gtk.Button.new_with_label("Add/delete")
         btn.connect("clicked", self.add_delete_files)
         inner_hbox.pack_end(btn, False, False, 0)
 
@@ -432,6 +469,10 @@ def update_icon(gtk_entry, icons):
     gtk_entry.set_icon_from_pixbuf(Gtk.EntryIconPosition.PRIMARY, create_pixbuf(name, 16, icons_path=icons_path))
 
 
+def switch_entry_visibility(checkbutton, entry):
+    entry.set_visibility(checkbutton.get_active())
+
+
 class EditorWrapper(object):
     def __init__(self, parent, file, panel_idx, plugin_menu_start):
         self.file = file
@@ -445,20 +486,23 @@ class EditorWrapper(object):
         builder.add_from_file(os.path.join(dir_name, "glade/config_main.glade"))
 
         self.window = builder.get_object("main-window")
-        #self.window.set_transient_for(parent)
+        # self.window.set_transient_for(parent)
         self.window.set_keep_above(True)
         self.window.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.window.connect('destroy', self.show_parent, parent)
         self.window.connect("key-release-event", handle_keyboard)
         self.window.connect("show", self.hide_parent, parent)
 
-        Gtk.Widget.set_size_request(self.window, 820, 1)
+        self.delete_weather_data = False
+
+        Gtk.Widget.set_size_request(self.window, 677, 1)
 
         self.known_modules = ["clock",
                               "playerctl",
                               "sway-taskbar",
                               "sway-workspaces",
                               "scratchpad",
+                              "openweather",
                               "dwl-tags",
                               "tray"]
 
@@ -509,6 +553,9 @@ class EditorWrapper(object):
         eb = builder.get_object("eb-scratchpad")
         eb.connect("button-press-event", self.edit_scratchpad)
 
+        eb = builder.get_object("eb-openweather")
+        eb.connect("button-press-event", self.edit_openweather)
+
         eb = builder.get_object("eb-dwl-tags")
         eb.connect("button-press-event", self.edit_dwl_tags)
 
@@ -553,6 +600,9 @@ class EditorWrapper(object):
         self.edited = None
 
         self.set_panel()
+        self.panel_name_label = builder.get_object("panel-name-label")
+        self.panel_name_label.set_text("Editing: '{}'".format(self.panel["name"]))
+
         self.edit_panel()
 
         self.window.show_all()
@@ -854,11 +904,25 @@ class EditorWrapper(object):
             self.update_menu_start()
         elif self.edited == "dwl-tags":
             self.update_dwl_tags()
+        elif self.edited == "openweather":
+            self.update_openweather()
         elif self.edited == "custom-items":
             save_json(self.config, self.file)
         elif self.edited == "user-menu":
             save_json(self.config, self.file)
 
+        if self.delete_weather_data:
+            tmp_dir = temp_dir()
+            for item in ["nwg-openweather-weather", "nwg-openweather-forecast"]:
+                f = "{}-{}".format(os.path.join(tmp_dir, item), self.panel["openweather"]["module-id"])
+                # f = os.path.join(tmp_dir, item)
+                if os.path.exists(f):
+                    eprint("Deleting {}".format(f))
+                    os.remove(f)
+                else:
+                    eprint("{} file not found".format(f))
+
+        self.panel_name_label.set_text("Editing: '{}'".format(self.panel["name"]))
         selector_window.refresh(reload=True)
 
     def restart_panel(self, *args):
@@ -1625,6 +1689,239 @@ class EditorWrapper(object):
             settings["angle"] = float(self.scratchpad_angle.get_active_id())
         except:
             settings["angle"] = 0.0
+
+        save_json(self.config, self.file)
+
+    def edit_openweather(self, *args):
+        self.load_panel()
+        self.edited = "openweather"
+        check_key(self.panel, "openweather", {})
+        settings = self.panel["openweather"]
+        defaults = {
+            "module-id": str(time.time()),
+            "appid": "",
+            "lat": None,
+            "long": None,
+            "lang": "en",
+            "units": "metric",
+            "interval": 1800,
+            "loc-name": "",
+            "weather-icons": "color",
+
+            "on-right-click": "",
+            "on-middle-click": "",
+            "on-scroll": "",
+            "icon-placement": "start",
+            "icon-size": 24,
+            "css-name": "weather",
+            "show-name": False,
+            "angle": 0.0,
+
+            "ow-popup-icons": "light",
+            "popup-header-icon-size": 48,
+            "popup-icon-size": 24,
+            "popup-text-size": "medium",
+            "popup-css-name": "weather",
+            "popup-placement": "right",
+            "popup-margin-horizontal": 0,
+            "popup-margin-top": 0,
+            "popup-margin-bottom": 0,
+            "show-humidity": True,
+            "show-wind": True,
+            "show-pressure": True,
+            "show-cloudiness": True,
+            "show-visibility": True,
+            "show-pop": True
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_openweather.glade"))
+        frame = builder.get_object("frame")
+
+        self.ow_appid = builder.get_object("appid")
+        self.ow_appid.set_text(settings["appid"])
+        self.ow_appid.connect("changed", self.mark_weather_data_delete)
+
+        key_visibility_switch = builder.get_object("key-visibility-switch")
+        key_visibility_switch.connect("toggled", switch_entry_visibility, self.ow_appid)
+
+        # Try to obtain geolocation if unset
+        if not settings["lat"] or not settings["long"]:
+            # Try nwg-shell settings
+            shell_settings_file = os.path.join(data_home, "nwg-shell-config", "settings")
+            if os.path.isfile(shell_settings_file):
+                shell_settings = load_json(shell_settings_file)
+                eprint("OpenWeather: coordinates not set, loading from nwg-shell settings")
+                settings["lat"] = shell_settings["night-lat"]
+                settings["long"] = shell_settings["night-long"]
+                eprint("lat = {}, long = {}".format(settings["lat"], settings["long"]))
+            else:
+                # Set dummy location
+                eprint("OpenWeather: coordinates not set, setting Big Ben in London 51.5008, -0.1246")
+                settings["lat"] = 51.5008
+                settings["long"] = -0.1246
+
+        self.ow_lat = builder.get_object("lat")
+        adj = Gtk.Adjustment(value=0, lower=-90, upper=90, step_increment=0.1, page_increment=10, page_size=1)
+        self.ow_lat.configure(adj, 1, 4)
+        self.ow_lat.set_value(settings["lat"])
+        self.ow_lat.connect("value-changed", self.mark_weather_data_delete)
+
+        self.ow_long = builder.get_object("long")
+        adj = Gtk.Adjustment(value=0, lower=-180, upper=180, step_increment=0.1, page_increment=10, page_size=1)
+        self.ow_long.configure(adj, 1, 4)
+        self.ow_long.set_value(settings["long"])
+        self.ow_long.connect("value-changed", self.mark_weather_data_delete)
+
+        self.ow_lang = builder.get_object("lang")
+        self.ow_lang.set_text(settings["lang"])
+        self.ow_lang.connect("changed", self.mark_weather_data_delete)
+
+        self.ow_units = builder.get_object("units")
+        self.ow_units.set_active_id(settings["units"])
+        self.ow_units.connect("changed", self.mark_weather_data_delete)
+
+        self.ow_interval = builder.get_object("interval")
+        adj = Gtk.Adjustment(value=0, lower=180, upper=86401, step_increment=1, page_increment=10, page_size=1)
+        self.ow_interval.configure(adj, 1, 0)
+        self.ow_interval.set_value(settings["interval"])
+
+        self.ow_weather_icons = builder.get_object("weather-icons")
+        self.ow_weather_icons.set_active_id(settings["weather-icons"])
+
+        self.ow_loc_name = builder.get_object("loc-name")
+        self.ow_loc_name.set_text(settings["loc-name"])
+
+        self.ow_on_right_click = builder.get_object("on-right-click")
+        self.ow_on_right_click.set_text(settings["on-right-click"])
+
+        self.ow_on_middle_click = builder.get_object("on-middle-click")
+        self.ow_on_middle_click.set_text(settings["on-middle-click"])
+
+        self.ow_on_scroll = builder.get_object("on-scroll")
+        self.ow_on_scroll.set_text(settings["on-scroll"])
+
+        self.ow_icon_placement = builder.get_object("icon-placement")
+        self.ow_icon_placement.set_active_id(settings["icon-placement"])
+
+        self.ow_icon_size = builder.get_object("icon-size")
+        adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
+        self.ow_icon_size.configure(adj, 1, 0)
+        self.ow_icon_size.set_value(settings["icon-size"])
+
+        self.ow_css_name = builder.get_object("css-name")
+        self.ow_css_name.set_text(settings["css-name"])
+
+        self.ow_angle = builder.get_object("angle")
+        self.ow_angle.set_active_id(str(settings["angle"]))
+
+        self.ow_show_name = builder.get_object("show-name")
+        self.ow_show_name.set_active(settings["show-name"])
+
+        self.ow_popup_icons = builder.get_object("ow-popup-icons")
+        self.ow_popup_icons.set_active_id(settings["ow-popup-icons"])
+
+        self.ow_popup_header_icon_size = builder.get_object("popup-header-icon-size")
+        adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
+        self.ow_popup_header_icon_size.configure(adj, 1, 0)
+        self.ow_popup_header_icon_size.set_value(settings["popup-header-icon-size"])
+
+        self.ow_popup_icon_size = builder.get_object("popup-icon-size")
+        adj = Gtk.Adjustment(value=0, lower=8, upper=49, step_increment=1, page_increment=10, page_size=1)
+        self.ow_popup_icon_size.configure(adj, 1, 0)
+        self.ow_popup_icon_size.set_value(settings["popup-icon-size"])
+
+        self.ow_popup_text_size = builder.get_object("popup-text-size")
+        self.ow_popup_text_size.set_active_id(settings["popup-text-size"])
+
+        self.ow_popup_css_name = builder.get_object("popup-css-name")
+        self.ow_popup_css_name.set_text(settings["popup-css-name"])
+
+        self.ow_popup_placement = builder.get_object("popup-placement")
+        self.ow_popup_placement.set_active_id(settings["popup-placement"])
+
+        self.ow_popup_margin_horizontal = builder.get_object("popup-margin-horizontal")
+        adj = Gtk.Adjustment(value=0, lower=0, upper=3000, step_increment=1, page_increment=10, page_size=1)
+        self.ow_popup_margin_horizontal.configure(adj, 1, 0)
+        self.ow_popup_margin_horizontal.set_value(settings["popup-margin-horizontal"])
+
+        self.ow_popup_margin_top = builder.get_object("popup-margin-top")
+        adj = Gtk.Adjustment(value=0, lower=0, upper=2000, step_increment=1, page_increment=10, page_size=1)
+        self.ow_popup_margin_top.configure(adj, 1, 0)
+        self.ow_popup_margin_top.set_value(settings["popup-margin-top"])
+
+        self.ow_popup_margin_bottom = builder.get_object("popup-margin-bottom")
+        adj = Gtk.Adjustment(value=0, lower=0, upper=2000, step_increment=1, page_increment=10, page_size=1)
+        self.ow_popup_margin_bottom.configure(adj, 1, 0)
+        self.ow_popup_margin_bottom.set_value(settings["popup-margin-bottom"])
+
+        self.ow_show_humidity = builder.get_object("show-humidity")
+        self.ow_show_humidity.set_active(settings["show-humidity"])
+
+        self.ow_show_wind = builder.get_object("show-wind")
+        self.ow_show_wind.set_active(settings["show-wind"])
+
+        self.ow_show_pressure = builder.get_object("show-pressure")
+        self.ow_show_pressure.set_active(settings["show-pressure"])
+
+        self.ow_show_cloudiness = builder.get_object("show-cloudiness")
+        self.ow_show_cloudiness.set_active(settings["show-cloudiness"])
+
+        self.ow_show_visibility = builder.get_object("show-visibility")
+        self.ow_show_visibility.set_active(settings["show-visibility"])
+
+        self.ow_show_pop = builder.get_object("show-pop")
+        self.ow_show_pop.set_active(settings["show-pop"])
+
+        self.ow_module_id = builder.get_object("module-id")
+        self.ow_module_id.set_text(settings["module-id"])
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(frame)
+
+    def mark_weather_data_delete(self, *args):
+        eprint("Weather data files marked for deletion")
+        self.delete_weather_data = True
+
+    def update_openweather(self, *args):
+        settings = self.panel["openweather"]
+
+        settings["appid"] = self.ow_appid.get_text()
+        settings["lat"] = round(self.ow_lat.get_value(), 4)
+        settings["long"] = round(self.ow_long.get_value(), 4)
+        settings["lang"] = self.ow_lang.get_text()
+        settings["units"] = self.ow_units.get_active_id()
+        settings["interval"] = int(self.ow_interval.get_value())
+        settings["loc-name"] = self.ow_loc_name.get_text()
+        settings["weather-icons"] = self.ow_weather_icons.get_active_id()
+        settings["on-right-click"] = self.ow_on_right_click.get_text()
+        settings["on-middle-click"] = self.ow_on_middle_click.get_text()
+        settings["on-scroll"] = self.ow_on_scroll.get_text()
+        settings["icon-placement"] = self.ow_icon_placement.get_active_id()
+        settings["icon-size"] = int(self.ow_icon_size.get_value())
+        settings["css-name"] = self.ow_css_name.get_text()
+        settings["show-name"] = self.ow_show_name.get_active()
+        try:
+            settings["angle"] = float(self.ow_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
+        settings["ow-popup-icons"] = self.ow_popup_icons.get_active_id()
+        settings["popup-header-icon-size"] = int(self.ow_popup_header_icon_size.get_value())
+        settings["popup-icon-size"] = int(self.ow_popup_icon_size.get_value())
+        settings["popup-text-size"] = self.ow_popup_text_size.get_active_id()
+        settings["popup-css-name"] = self.ow_popup_css_name.get_text()
+        settings["popup-placement"] = self.ow_popup_placement.get_active_id()
+        settings["popup-margin-horizontal"] = int(self.ow_popup_margin_horizontal.get_value())
+        settings["popup-margin-top"] = int(self.ow_popup_margin_top.get_value())
+        settings["popup-margin-bottom"] = int(self.ow_popup_margin_bottom.get_value())
+        settings["show-humidity"] = self.ow_show_humidity.get_active()
+        settings["show-wind"] = self.ow_show_wind.get_active()
+        settings["show-pressure"] = self.ow_show_pressure.get_active()
+        settings["show-cloudiness"] = self.ow_show_cloudiness.get_active()
+        settings["show-visibility"] = self.ow_show_visibility.get_active()
+        settings["show-pop"] = self.ow_show_pop.get_active()
 
         save_json(self.config, self.file)
 
@@ -2455,8 +2752,8 @@ class ControlsCustomItems(Gtk.Frame):
         Gtk.Frame.__init__(self)
         self.set_label("Controls: Custom items")
         self.grid = Gtk.Grid()
-        self.grid.set_column_spacing(10)
-        self.grid.set_row_spacing(10)
+        self.grid.set_column_spacing(6)
+        self.grid.set_row_spacing(6)
         self.set_label_align(0.5, 0.5)
         self.grid.set_property("margin", 6)
         self.add(self.grid)
@@ -2482,13 +2779,13 @@ class ControlsCustomItems(Gtk.Frame):
             vbox.pack_start(hbox, False, False, 6)
 
             entry = Gtk.Entry()
-            entry.set_width_chars(15)
+            entry.set_width_chars(10)
             entry.set_text(item["name"])
             entry.connect("changed", self.update_value_from_entry, i, "name")
             hbox.pack_start(entry, False, False, 0)
 
             entry = Gtk.Entry()
-            entry.set_width_chars(15)
+            entry.set_width_chars(10)
             entry.set_text(item["icon"])
             update_icon(entry, self.icons)
             entry.connect("changed", self.update_icon, self.icons, i, "icon")
@@ -2501,10 +2798,10 @@ class ControlsCustomItems(Gtk.Frame):
                 hbox.pack_start(btn, False, False, 0)
 
             entry = Gtk.Entry()
-            entry.set_width_chars(15)
+            entry.set_width_chars(12)
             entry.set_text(item["cmd"])
             entry.connect("changed", self.update_value_from_entry, i, "cmd")
-            hbox.pack_start(entry, False, False, 0)
+            hbox.pack_start(entry, True, False, 0)
 
             btn = Gtk.Button.new_from_icon_name("gtk-go-up", Gtk.IconSize.MENU)
             btn.set_always_show_image(True)
@@ -2533,12 +2830,12 @@ class ControlsCustomItems(Gtk.Frame):
         vbox.pack_start(hbox, False, False, 6)
 
         self.new_name = Gtk.Entry()
-        self.new_name.set_width_chars(15)
+        self.new_name.set_width_chars(10)
         self.new_name.set_placeholder_text("label")
         hbox.pack_start(self.new_name, False, False, 0)
 
         self.new_icon = Gtk.Entry()
-        self.new_icon.set_width_chars(15)
+        self.new_icon.set_width_chars(10)
         self.new_icon.set_placeholder_text("icon")
         update_icon(self.new_icon, self.icons)
         self.new_icon.connect("changed", update_icon, self.icons)
@@ -2551,7 +2848,7 @@ class ControlsCustomItems(Gtk.Frame):
             hbox.pack_start(btn, False, False, 0)
 
         self.new_command = Gtk.Entry()
-        self.new_command.set_width_chars(15)
+        self.new_command.set_width_chars(10)
         self.new_command.set_placeholder_text("command")
         hbox.pack_start(self.new_command, False, False, 0)
 
@@ -2645,17 +2942,17 @@ class ControlsUserMenu(Gtk.Frame):
         hbox.pack_start(label, False, False, 6)
 
         entry = Gtk.Entry()
-        entry.set_width_chars(15)
+        entry.set_width_chars(10)
         entry.set_text(self.name)
         entry.connect("changed", self.update_prop_from_entry, "name")
         hbox.pack_start(entry, False, False, 0)
 
         label = Gtk.Label()
         label.set_text("Icon")
-        hbox.pack_start(label, False, False, 6)
+        hbox.pack_start(label, True, False, 6)
 
         entry = Gtk.Entry()
-        entry.set_width_chars(25)
+        entry.set_width_chars(20)
         entry.set_text(self.icon)
         update_icon(entry, self.icons)
         entry.connect("changed", self.update_icon, self.icons, "icon")
@@ -2719,12 +3016,12 @@ class ControlsUserMenu(Gtk.Frame):
         vbox.pack_start(hbox, False, False, 6)
 
         self.new_name = Gtk.Entry()
-        self.new_name.set_width_chars(15)
+        self.new_name.set_width_chars(10)
         self.new_name.set_placeholder_text("label")
         hbox.pack_start(self.new_name, False, False, 0)
 
         self.new_command = Gtk.Entry()
-        self.new_command.set_width_chars(25)
+        self.new_command.set_width_chars(20)
         self.new_command.set_placeholder_text("command")
         hbox.pack_start(self.new_command, False, False, 0)
 

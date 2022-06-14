@@ -5,6 +5,7 @@ import sys
 import json
 import subprocess
 import stat
+import time
 
 import gi
 
@@ -16,6 +17,7 @@ gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk, Gdk, GdkPixbuf
 from shutil import copyfile
+from datetime import datetime
 
 import nwg_panel.common
 
@@ -150,6 +152,16 @@ def get_config_dir():
         os.makedirs(folder, exist_ok=True)
 
     folder = os.path.join(config_dir, "icons_dark")
+    if not os.path.isdir(os.path.join(folder)):
+        print("Creating '{}'".format(folder))
+        os.makedirs(folder, exist_ok=True)
+
+    folder = os.path.join(config_dir, "icons_color")
+    if not os.path.isdir(os.path.join(folder)):
+        print("Creating '{}'".format(folder))
+        os.makedirs(folder, exist_ok=True)
+
+    folder = os.path.join(config_dir, "langs")
     if not os.path.isdir(os.path.join(folder)):
         print("Creating '{}'".format(folder))
         os.makedirs(folder, exist_ok=True)
@@ -649,3 +661,11 @@ def get_cache_dir():
         return os.path.join(os.getenv("HOME"), ".cache")
     else:
         return None
+
+
+def file_age(path):
+    return time.time() - os.stat(path)[stat.ST_MTIME]
+
+
+def hms():
+    return datetime.fromtimestamp(time.time()).strftime("%H:%M:%S")

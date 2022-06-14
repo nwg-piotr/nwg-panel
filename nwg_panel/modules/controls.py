@@ -582,7 +582,7 @@ class PopupWindow(Gtk.Window):
 
     def on_window_show(self, *args):
         self.src_tag = 0
-        self.refresh
+        self.refresh()
 
     def switch_menu_box(self, widget, event):
         if self.menu_box.get_visible():

@@ -137,7 +137,7 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
-            <property name="label" translatable="yes">Lock screen command:</property>
+            <property name="label" translatable="yes">Lock screen cmd:</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -149,7 +149,7 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
-            <property name="label" translatable="yes">Logout command:</property>
+            <property name="label" translatable="yes">Logout cmd:</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -161,7 +161,7 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
-            <property name="label" translatable="yes">Restart command:</property>
+            <property name="label" translatable="yes">Restart cmd:</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -173,7 +173,7 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
-            <property name="label" translatable="yes">Shutdown command:</property>
+            <property name="label" translatable="yes">Shutdown cmd:</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -185,7 +185,7 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
-            <property name="label" translatable="yes">File manager name:</property>
+            <property name="label" translatable="yes">File manager:</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -197,7 +197,7 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
-            <property name="label" translatable="yes">Terminal emulator name:</property>
+            <property name="label" translatable="yes">Terminal emulator:</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -279,7 +279,7 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
-            <property name="label" translatable="yes">Vertical item padding:</property>
+            <property name="label" translatable="yes">Item padding:</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -373,7 +373,9 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
-            <property name="label" translatable="yes">Menu button  icon size:</property>
+            <property name="label" translatable="yes">Menu button
+icon size:</property>
+            <property name="justify">right</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -384,6 +386,7 @@
           <object class="GtkSpinButton" id="icon-size-button">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
+            <property name="valign">center</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -415,6 +418,9 @@
             <property name="left-attach">2</property>
             <property name="top-attach">2</property>
           </packing>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>

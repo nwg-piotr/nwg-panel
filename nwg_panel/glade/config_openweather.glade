@@ -1,0 +1,923 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.38.2 -->
+<interface>
+  <requires lib="gtk+" version="3.24"/>
+  <object class="GtkFrame" id="frame">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="label-xalign">0.5</property>
+    <property name="shadow-type">out</property>
+    <child>
+      <!-- n-columns=3 n-rows=32 -->
+      <object class="GtkGrid" id="grid">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="margin-start">6</property>
+        <property name="margin-end">6</property>
+        <property name="margin-top">6</property>
+        <property name="margin-bottom">6</property>
+        <property name="row-spacing">6</property>
+        <property name="column-spacing">12</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Language:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Check interval:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">6</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">Common</property>
+            <attributes>
+              <attribute name="weight" value="bold"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Longitude:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Latitude:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">API key:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="appid">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="tooltip-text" translatable="yes">Paste your API key (appid) here.</property>
+            <property name="visibility">False</property>
+            <property name="invisible-char">*</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Units:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">5</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText" id="units">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <items>
+              <item id="metric" translatable="yes">metric</item>
+              <item id="imperial" translatable="yes">imperial</item>
+              <item id="standard" translatable="yes">standard</item>
+            </items>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">5</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="interval">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="tooltip-text" translatable="yes">Specifies how often (in seconds)
+to ask for weather data 
+e.g. (1800 for half an hour).</property>
+            <property name="climb-rate">1</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">6</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="lat">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="long">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="lang">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="tooltip-text" translatable="yes">Check available languages at https://openweathermap.org/current#multi</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText" id="ow-popup-icons">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <items>
+              <item id="light" translatable="yes">light</item>
+              <item id="dark" translatable="yes">dark</item>
+            </items>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">19</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="popup-icons">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Icon set:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">19</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">Forecast window</property>
+            <attributes>
+              <attribute name="weight" value="bold"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">18</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="show-name">
+            <property name="label" translatable="yes">Show location name</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">17</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText" id="angle">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">the angle that the baseline of the label makes with 
+the horizontal, in degrees, measured counterclockwise</property>
+            <items>
+              <item id="0.0" translatable="yes">0°</item>
+              <item id="90.0" translatable="yes">90°</item>
+              <item id="270.0" translatable="yes">270°</item>
+            </items>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">16</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Angle:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">16</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="css-name">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">15</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">CSS name:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">15</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="icon-size">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">14</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Icon size:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">14</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText" id="icon-placement">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <items>
+              <item id="start" translatable="yes">start</item>
+              <item id="end" translatable="yes">end</item>
+            </items>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">13</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Icon placement:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">13</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="on-scroll">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="tooltip-text" translatable="yes">Command to execute on scroll event</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">12</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">On scroll:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">12</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="on-middle-click">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="tooltip-text" translatable="yes">Command to execute on middle click event</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">11</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">On middle click:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">11</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="on-right-click">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="tooltip-text" translatable="yes">Command to execute on right click event</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">10</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">On right click:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">10</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">Panel widget</property>
+            <attributes>
+              <attribute name="weight" value="bold"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">9</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="loc-name">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="tooltip-text" translatable="yes">If you don't like the location name returned from geocoder, 
+you may define your own label here.</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">8</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText" id="weather-icons">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <items>
+              <item id="color" translatable="yes">color</item>
+              <item id="light" translatable="yes">light</item>
+              <item id="dark" translatable="yes">dark</item>
+            </items>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">7</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Custom location name:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">8</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Weather icons:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">7</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">Colorful icons: Modern Weather Icon Pack 
+by Dovora interactive https://www.dovora.com
+Creative Commons Attribution-ShareAlike 4.0</property>
+            <property name="halign">start</property>
+            <property name="stock">gtk-about</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">7</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="key-visibility-switch">
+            <property name="label" translatable="yes">show</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="popup-margin-top">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">26</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Top margin:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">26</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="popup-margin-horizontal">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">25</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Side margin:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">25</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText" id="popup-placement">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <items>
+              <item id="left" translatable="yes">left</item>
+              <item id="center" translatable="yes">center</item>
+              <item id="right" translatable="yes">right</item>
+            </items>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">24</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Window placement:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">24</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="popup-css-name">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">23</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">CSS name:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">23</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText" id="popup-text-size">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <items>
+              <item id="xx-small" translatable="yes">xx-small</item>
+              <item id="x-small" translatable="yes">x-small</item>
+              <item id="small" translatable="yes">small</item>
+              <item id="medium" translatable="yes">medium</item>
+              <item id="large" translatable="yes">large</item>
+              <item id="x-large" translatable="yes">x-large</item>
+              <item id="xx-large" translatable="yes">xx-large</item>
+            </items>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">22</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Text size:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">22</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="popup-icon-size">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">21</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Icon size:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">21</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Header icon size:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">20</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="popup-header-icon-size">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">20</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="module-id">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">module.id</property>
+            <attributes>
+              <attribute name="style" value="oblique"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">31</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Module ID:</property>
+            <attributes>
+              <attribute name="style" value="oblique"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">31</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="show-pop">
+            <property name="label" translatable="yes">Show precipitation probability</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">30</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="show-visibility">
+            <property name="label" translatable="yes">Show visibility</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">30</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="show-cloudiness">
+            <property name="label" translatable="yes">Show cloudiness</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">29</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="show-pressure">
+            <property name="label" translatable="yes">Show pressure</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">29</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="show-wind">
+            <property name="label" translatable="yes">Show wind</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">28</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="show-humidity">
+            <property name="label" translatable="yes">Show humidity</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">28</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="popup-margin-bottom">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">27</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Bottom margin:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">27</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">&lt;a href="https://openweathermap.org/appid"&gt;https://openweathermap.org/appid&lt;/a&gt;</property>
+            <property name="use-markup">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+    <child type="label">
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">Module: OpenWeather</property>
+      </object>
+    </child>
+  </object>
+</interface>
