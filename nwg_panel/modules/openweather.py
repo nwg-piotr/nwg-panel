@@ -32,7 +32,7 @@ def on_leave_notify_event(widget, event):
     widget.unset_state_flags(Gtk.StateFlags.SELECTED)
 
 
-degrees = {"": "°K", "metric": "°C", "imperial": "°F"}
+degrees = {"standard": "°K", "metric": "°C", "imperial": "°F"}
 
 
 def direction(deg):
