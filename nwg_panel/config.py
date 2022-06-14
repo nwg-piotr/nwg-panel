@@ -600,6 +600,9 @@ class EditorWrapper(object):
         self.edited = None
 
         self.set_panel()
+        self.panel_name_label = builder.get_object("panel-name-label")
+        self.panel_name_label.set_text("Editing: '{}'".format(self.panel["name"]))
+
         self.edit_panel()
 
         self.window.show_all()
@@ -919,6 +922,7 @@ class EditorWrapper(object):
                 else:
                     eprint("{} file not found".format(f))
 
+        self.panel_name_label.set_text("Editing: '{}'".format(self.panel["name"]))
         selector_window.refresh(reload=True)
 
     def restart_panel(self, *args):
