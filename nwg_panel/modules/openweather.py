@@ -274,7 +274,7 @@ class OpenWeather(Gtk.EventBox):
                         print("Failed setting image from {}".format(new_path))
             lbl_content = ""
             if "name" in self.weather:
-                desc = self.weather["name"]
+                desc = self.weather["name"] if not self.settings["loc-name"] else self.settings["loc-name"]
                 if self.settings["show-name"]:
                     lbl_content += "{} ".format(desc)
 
