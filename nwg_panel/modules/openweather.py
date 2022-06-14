@@ -104,9 +104,9 @@ class OpenWeather(Gtk.EventBox):
 
         self.settings = settings
 
-        self.lang = load_json(os.path.join(dir_name, "langs/weather_en"))
+        self.lang = load_json(os.path.join(config_dir, "langs/weather_en"))
         if self.settings["lang"]:
-            loc_file = os.path.join(dir_name, "langs/weather_{}".format(self.settings["lang"]))
+            loc_file = os.path.join(config_dir, "langs/weather_{}".format(self.settings["lang"]))
             try:
                 loc = load_json(loc_file)
                 for key in loc:
