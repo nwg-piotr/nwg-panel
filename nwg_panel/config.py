@@ -1394,6 +1394,8 @@ class EditorWrapper(object):
         settings = self.panel["sway-workspaces"]
         defaults = {
             "numbers": [1, 2, 3, 4, 5, 6, 7, 8],
+            "custom-labels": [],
+            "focused-labels": [],
             "show-icon": True,
             "image-size": 16,
             "show-name": True,
@@ -1416,6 +1418,20 @@ class EditorWrapper(object):
             text += str(item) + " "
         self.eb_workspaces_menu.set_text(text.strip())
         self.eb_workspaces_menu.connect("changed", validate_workspaces)
+
+        self.ws_custom_labels = builder.get_object("custom-labels")
+        labels = settings["custom-labels"]
+        text = ""
+        for item in labels:
+            text += str(item) + " "
+        self.ws_custom_labels.set_text(text.strip())
+
+        self.ws_focused_labels = builder.get_object("focused-labels")
+        labels = settings["focused-labels"]
+        text = ""
+        for item in labels:
+            text += str(item) + " "
+        self.ws_focused_labels.set_text(text.strip())
 
         self.ws_show_icon = builder.get_object("show-icon")
         self.ws_show_icon.set_active(settings["show-icon"])
@@ -1457,6 +1473,12 @@ class EditorWrapper(object):
         val = self.eb_workspaces_menu.get_text()
         if val:
             settings["numbers"] = val.split()
+
+        val = self.ws_custom_labels.get_text()
+        settings["custom-labels"] = val.split()
+
+        val = self.ws_focused_labels.get_text()
+        settings["focused-labels"] = val.split()
 
         val = self.ws_show_icon.get_active()
         if val is not None:
