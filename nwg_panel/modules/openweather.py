@@ -386,6 +386,7 @@ class OpenWeather(Gtk.EventBox):
         country = ", {}".format(self.weather["sys"]["country"]) if "country" in self.weather["sys"] and \
                                                                    self.weather["sys"][
                                                                        "country"] else ""
+        hbox.set_tooltip_text("{}, {}".format(self.settings["lat"], self.settings["long"]))
         lbl = Gtk.Label()
         lbl.set_markup('<span size="x-large">{}{}</span>'.format(loc_label, country))
         hbox.pack_start(lbl, True, True, 0)
