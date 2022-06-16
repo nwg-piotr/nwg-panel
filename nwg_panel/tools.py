@@ -355,6 +355,12 @@ def check_commands():
     except ModuleNotFoundError:
         pass
 
+    try:
+        import requests
+        nwg_panel.common.commands["python-requests"] = True
+    except ModuleNotFoundError:
+        pass
+
 
 def get_volume():
     vol = 0

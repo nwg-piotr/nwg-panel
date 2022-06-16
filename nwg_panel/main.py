@@ -10,7 +10,6 @@ License: MIT
 import argparse
 import signal
 import sys
-import time
 
 import gi
 
@@ -46,7 +45,11 @@ from nwg_panel.modules.cpu_avg import CpuAvg
 from nwg_panel.modules.scratchpad import Scratchpad
 from nwg_panel.modules.dwl_tags import DwlTags
 from nwg_panel.modules.swaync import SwayNC
-from nwg_panel.modules.openweather import OpenWeather
+try:
+    from nwg_panel.modules.openweather import OpenWeather
+except Exception as e:
+    eprint("Couldn't load OpenWeather module: ".format(e))
+
 
 from nwg_panel.modules.menu_start import MenuStart
 
@@ -214,9 +217,12 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 print("'{}' not defined in this panel instance".format(item))
 
         if item == "openweather":
-            if item in panel:
-                openweather = OpenWeather(panel[item], icons_path)
-                container.pack_start(openweather, False, False, panel["items-padding"])
+            if "python-requests" in common.commands and common.commands["python-requests"]:
+                if item in panel:
+                    openweather = OpenWeather(panel[item], icons_path)
+                    container.pack_start(openweather, False, False, panel["items-padding"])
+            else:
+                eprint("OpenWeather module needs the 'python-requests' package")
 
         if item == "cpu-avg":
             cpu_avg = CpuAvg()

@@ -3,12 +3,18 @@
 import json
 import os
 import stat
+import sys
 import subprocess
 import threading
 from datetime import datetime
 
 import gi
-import requests
+
+try:
+    import requests
+except ModuleNotFoundError:
+    print("You need to install python-requests package", file=sys.stderr)
+    sys.exit(1)
 
 from nwg_panel.tools import check_key, eprint, load_json, save_json, temp_dir, file_age, hms, update_image, \
     get_config_dir
