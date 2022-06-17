@@ -586,6 +586,20 @@ class OpenWeather(Gtk.EventBox):
                     box.pack_start(lbl, False, False, 0)
                     grid.attach(box, 10, i, 1, 1)
 
+                    # Precipitation volume
+                    if "rain" in data and "3h" in data["rain"]:
+                        lbl = Gtk.Label()
+                        lbl.set_markup('<span font_size="{}">{} mm</span>'.format(self.settings["popup-text-size"],
+                                                                                  round(data["rain"]["3h"], 2)))
+                        grid.attach(lbl, 11, i, 1, 1)
+
+                    if "snow" in data and "3h" in data["snow"]:
+                        box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+                        lbl = Gtk.Label()
+                        lbl.set_markup('<span font_size="{}">{} mm</span>'.format(self.settings["popup-text-size"],
+                                                                                  round(data["rain"]["3h"], 2)))
+                        grid.attach(lbl, 12, i, 1, 1)
+
             if os.path.isfile(self.forecast_file):
                 sep = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
                 vbox.pack_start(sep, False, False, 0)
