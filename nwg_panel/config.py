@@ -167,7 +167,8 @@ SKELETON_PANEL: dict = {
         "show-pressure": True,
         "show-cloudiness": True,
         "show-visibility": True,
-        "show-pop": True
+        "show-pop": True,
+        "show-volume": True
     }
 }
 
@@ -1753,7 +1754,8 @@ class EditorWrapper(object):
             "show-pressure": True,
             "show-cloudiness": True,
             "show-visibility": True,
-            "show-pop": True
+            "show-pop": True,
+            "show-volume":True
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1896,6 +1898,9 @@ class EditorWrapper(object):
         self.ow_show_pop = builder.get_object("show-pop")
         self.ow_show_pop.set_active(settings["show-pop"])
 
+        self.ow_show_volume = builder.get_object("show-volume")
+        self.ow_show_volume.set_active(settings["show-volume"])
+
         self.ow_module_id = builder.get_object("module-id")
         self.ow_module_id.set_text(settings["module-id"])
 
@@ -1944,6 +1949,7 @@ class EditorWrapper(object):
         settings["show-cloudiness"] = self.ow_show_cloudiness.get_active()
         settings["show-visibility"] = self.ow_show_visibility.get_active()
         settings["show-pop"] = self.ow_show_pop.get_active()
+        settings["show-volume"] = self.ow_show_volume.get_active()
 
         save_json(self.config, self.file)
 
