@@ -8,7 +8,7 @@
     <property name="label-xalign">0.5</property>
     <property name="shadow-type">out</property>
     <child>
-      <!-- n-columns=3 n-rows=32 -->
+      <!-- n-columns=3 n-rows=33 -->
       <object class="GtkGrid" id="grid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -664,36 +664,6 @@ Creative Commons Attribution-ShareAlike 4.0</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="module-id">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="halign">start</property>
-            <property name="label" translatable="yes">module.id</property>
-            <attributes>
-              <attribute name="style" value="oblique"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">31</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="halign">end</property>
-            <property name="label" translatable="yes">Module ID:</property>
-            <attributes>
-              <attribute name="style" value="oblique"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">31</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkCheckButton" id="show-pop">
             <property name="label" translatable="yes">Show precipitation probability</property>
             <property name="visible">True</property>
@@ -810,6 +780,58 @@ Creative Commons Attribution-ShareAlike 4.0</property>
             <property name="left-attach">1</property>
             <property name="top-attach">0</property>
           </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="module-id">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="margin-top">6</property>
+            <property name="label" translatable="yes">module.id</property>
+            <attributes>
+              <attribute name="style" value="oblique"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">32</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="margin-top">6</property>
+            <property name="label" translatable="yes">Module ID:</property>
+            <attributes>
+              <attribute name="style" value="oblique"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">32</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="show-volume">
+            <property name="label" translatable="yes">Show precipitation volume</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">31</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>

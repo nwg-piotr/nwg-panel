@@ -102,6 +102,7 @@ class OpenWeather(Gtk.EventBox):
                     "show-cloudiness": True,
                     "show-visibility": True,
                     "show-pop": True,
+                    "show-volume": True,
                     "module-id": ""}
 
         Gtk.EventBox.__init__(self)
@@ -586,19 +587,24 @@ class OpenWeather(Gtk.EventBox):
                     box.pack_start(lbl, False, False, 0)
                     grid.attach(box, 10, i, 1, 1)
 
-                    # Precipitation volume
+                # Precipitation volume
+                if self.settings["show-volume"]:
+                    box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+                    img = self.svg2img("measure.svg")
+                    box.pack_start(img, False, False, 0)
                     if "rain" in data and "3h" in data["rain"]:
                         lbl = Gtk.Label()
                         lbl.set_markup('<span font_size="{}">{} mm</span>'.format(self.settings["popup-text-size"],
                                                                                   round(data["rain"]["3h"], 2)))
-                        grid.attach(lbl, 11, i, 1, 1)
+                        box.pack_start(lbl, False, False, 0)
+                        grid.attach(box, 11, i, 1, 1)
 
                     if "snow" in data and "3h" in data["snow"]:
-                        box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                         lbl = Gtk.Label()
                         lbl.set_markup('<span font_size="{}">{} mm</span>'.format(self.settings["popup-text-size"],
                                                                                   round(data["rain"]["3h"], 2)))
-                        grid.attach(lbl, 12, i, 1, 1)
+                        box.pack_start(lbl, False, False, 0)
+                        grid.attach(box, 12, i, 1, 1)
 
             if os.path.isfile(self.forecast_file):
                 sep = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
