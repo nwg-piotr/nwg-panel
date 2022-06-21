@@ -8,7 +8,7 @@
     <property name="label-xalign">0.5</property>
     <property name="shadow-type">out</property>
     <child>
-      <!-- n-columns=3 n-rows=33 -->
+      <!-- n-columns=3 n-rows=35 -->
       <object class="GtkGrid" id="grid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -773,44 +773,13 @@ Creative Commons Attribution-ShareAlike 4.0</property>
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="halign">start</property>
             <property name="label" translatable="yes">&lt;a href="https://openweathermap.org/appid"&gt;https://openweathermap.org/appid&lt;/a&gt;</property>
             <property name="use-markup">True</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
             <property name="top-attach">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="module-id">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="halign">start</property>
-            <property name="margin-top">6</property>
-            <property name="label" translatable="yes">module.id</property>
-            <attributes>
-              <attribute name="style" value="oblique"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">32</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="halign">end</property>
-            <property name="margin-top">6</property>
-            <property name="label" translatable="yes">Module ID:</property>
-            <attributes>
-              <attribute name="style" value="oblique"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">32</property>
           </packing>
         </child>
         <child>
@@ -826,6 +795,107 @@ Creative Commons Attribution-ShareAlike 4.0</property>
             <property name="left-attach">1</property>
             <property name="top-attach">31</property>
           </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="module-id">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="margin-top">6</property>
+            <property name="label" translatable="yes">module.id</property>
+            <attributes>
+              <attribute name="style" value="oblique"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">34</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="margin-top">6</property>
+            <property name="label" translatable="yes">Module ID:</property>
+            <attributes>
+              <attribute name="style" value="oblique"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">34</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">Alerts</property>
+            <attributes>
+              <attribute name="weight" value="bold"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">32</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">&lt;a href="https://www.weatherbit.io/account/create"&gt;https://www.weatherbit.io/account/create&lt;/a&gt;</property>
+            <property name="use-markup">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">32</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Weatherbit API key:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">33</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="weatherbit-api-key">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="tooltip-text" translatable="yes">Paste your API key (appid) here.</property>
+            <property name="visibility">False</property>
+            <property name="invisible-char">●</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">33</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="key-visibility-switch1">
+            <property name="label" translatable="yes">show</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">33</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>
