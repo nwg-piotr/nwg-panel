@@ -194,7 +194,7 @@ class Controls(Gtk.EventBox):
             self.bt_label.set_text(name)
 
     def update_brightness(self):
-        value = get_brightness(device=self.settings["backlight-device"])
+        value = get_brightness(device=self.settings["backlight-device"], controller=self.settings["backlight-controller"])
         if self.bri_value != value:
             icon_name = bri_icon_name(value)
 
@@ -272,6 +272,7 @@ class PopupWindow(Gtk.Window):
         if monitor:
             GtkLayerShell.set_monitor(self, monitor)
 
+        check_key(settings, "backlight-controller", "light")
         check_key(settings, "backlight-device", "")
 
         check_key(settings, "css-name", "controls-window")
@@ -690,7 +691,7 @@ class PopupWindow(Gtk.Window):
 
     def set_bri(self, slider):
         self.parent.bri_value = int(slider.get_value())
-        set_brightness(self.parent.bri_value, self.settings["backlight-device"])
+        set_brightness(self.parent.bri_value, device=self.settings["backlight-device"], controller=self.settings["backlight-controller"])
 
     def set_vol(self, slider):
         self.parent.vol_value = int(slider.get_value())

@@ -423,16 +423,16 @@ def set_volume(percent):
         eprint("Couldn't set volume, 'pamixer' not found")
 
 
-def get_brightness(device=""):
+def get_brightness(device="", controller=""):
     brightness = 0
-    if nwg_panel.common.commands["light"]:
+    if nwg_panel.common.commands["light"] and controller == "light":
         try:
             cmd = "light -G -s {}".format(device) if device else "light -G"
             output = cmd2string(cmd)
             brightness = int(round(float(output), 0))
         except:
             pass
-    elif nwg_panel.common.commands["brightnessctl"]:
+    elif nwg_panel.common.commands["brightnessctl"] and controller == "brightnessctl":
         try:
             cmd = "brightnessctl g -d {}".format(device) if device else "brightnessctl g"
             output = cmd2string(cmd)
@@ -440,21 +440,29 @@ def get_brightness(device=""):
             brightness = int(round(float(b), 0))
         except:
             pass
+    elif nwg_panel.common.commands["ddcutil"] and controller == "ddcutil":
+        try:
+            cmd = "ddcutil --sleep-multiplier=.01 --noverify getvcp 10 --bus={}".format(device) if device else "ddcutil --sleep-multiplier=.01 --noverify getvcp 10"
+            output = cmd2string(cmd)
+            b = int(output.split("current value =")[1].split(",")[0])
+            brightness = int(round(float(b), 0))
+        except:
+            pass
     else:
-        eprint("Couldn't get brightness, is 'light' or 'brightnessctl' installed?")
+        eprint("Couldn't get brightness, is 'light' or 'brightnessctl' or 'ddcutil' installed?")
 
     return brightness
 
 
-def set_brightness(percent, device=""):
+def set_brightness(percent, device="", controller=""):
     if percent == 0:
         percent = 1
-    if nwg_panel.common.commands["light"]:
+    if nwg_panel.common.commands["light"] and controller == "light":
         if device:
             subprocess.call("light -s {} -S {}".format(device, percent).split())
         else:
             subprocess.call("light -S {}".format(percent).split())
-    elif nwg_panel.common.commands["brightnessctl"]:
+    elif nwg_panel.common.commands["brightnessctl"] and controller == "brightnessctl":
         if device:
             subprocess.call("brightnessctl -d {} s {}%".format(device, percent).split(),
                             stdout=subprocess.DEVNULL,
@@ -463,8 +471,13 @@ def set_brightness(percent, device=""):
             subprocess.call("brightnessctl s {}%".format(percent).split(),
                             stdout=subprocess.DEVNULL,
                             stderr=subprocess.STDOUT)
+    elif nwg_panel.common.commands["ddcutil"] and controller == "ddcutil":
+        if device:
+            subprocess.call("ddcutil --sleep-multiplier=.01 --noverify setvcp 10 {} --bus={}".format(percent, device).split())
+        else:
+            subprocess.call("ddcutil --sleep-multiplier=.01 --noverify setvcp 10 {}".format(percent).split())
     else:
-        eprint("Either 'light' or 'brightnessctl' package required")
+        eprint("Either 'light' or 'brightnessctl' or 'ddcutil' package required")
 
 
 def get_battery():
