@@ -46,6 +46,16 @@ button {
     color: #eeeeee
 }
 
+/* Brightness slider popup window in sample config uses this name */
+#brightness-popup {
+    border-radius: 15px;
+    background: #36364f;
+    color: #eeeeee
+}
+#brightness-popup box {
+    padding: 15px;
+}
+
 /* Executors usually behave better in monospace fonts */
 #executor-label {
     font-family: monospace
