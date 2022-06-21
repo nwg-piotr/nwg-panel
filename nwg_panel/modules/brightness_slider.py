@@ -10,8 +10,7 @@ gi.require_version('Gdk', '3.0')
 gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
-#from nwg_panel.tools import check_key, get_brightness, set_brightness, update_image, eprint
-from nwg_panel.tools import check_key, update_image, eprint, get_volume, set_volume
+from nwg_panel.tools import check_key, get_brightness, set_brightness, update_image, eprint
 from nwg_panel.common import commands
 
 class BrightnessSlider(Gtk.EventBox):
