@@ -225,17 +225,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 eprint("OpenWeather module needs the 'python-requests' package")
 
         if item == "brightness-slider":
-            panel[item] = {}
             if item in panel:
-                if not panel[item].get("popup-position", False):
-                    if panel["position"] == "top":
-                        panel[item]["popup-position"] = "bottom"
-                    elif panel["position"] == "bottom":
-                        panel[item]["popup-position"] = "top"
-                    elif panel["position"] == "left":
-                        panel[item]["popup-position"] = "right"
-                    elif panel["position"] == "right":
-                        panel[item]["popup-position"] = "left"
                 brightness_slider = BrightnessSlider(panel[item], icons_path)
                 container.pack_start(brightness_slider, False, False, panel["items-padding"])
 
