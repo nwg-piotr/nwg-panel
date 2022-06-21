@@ -3,8 +3,8 @@
 import json
 import os
 import stat
-import sys
 import subprocess
+import sys
 import threading
 from datetime import datetime
 
@@ -70,6 +70,7 @@ def on_button_press(window, event):
 class OpenWeather(Gtk.EventBox):
     def __init__(self, settings, icons_path=""):
         defaults = {"appid": "",
+                    "weatherbit-api-key": "",
                     "lat": None,
                     "long": None,
                     "lang": "en",
@@ -140,11 +141,13 @@ class OpenWeather(Gtk.EventBox):
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
         self.image = Gtk.Image()
+        self.alert_image = Gtk.Image()
         self.label = Gtk.Label.new("No weather data")
         self.icon_path = None
 
         self.weather = None
         self.forecast = None
+        self.alerts = None
 
         self.connect('button-press-event', self.on_button_press)
         self.add_events(Gdk.EventMask.SCROLL_MASK)
@@ -166,8 +169,10 @@ class OpenWeather(Gtk.EventBox):
         tmp_dir = temp_dir()
         self.weather_file = "{}-{}".format(os.path.join(tmp_dir, "nwg-openweather-weather"), settings["module-id"])
         self.forecast_file = "{}-{}".format(os.path.join(tmp_dir, "nwg-openweather-forecast"), settings["module-id"])
+        self.alerts_file = "{}-{}".format(os.path.join(tmp_dir, "nwg-weatherbit-alerts"), settings["module-id"])
         eprint("Weather file: {}".format(self.weather_file))
         eprint("Forecast file: {}".format(self.forecast_file))
+        eprint("Alerts file: {}".format(self.alerts_file))
 
         # Try to obtain geolocation if unset
         if not settings["lat"] or not settings["long"]:
@@ -191,6 +196,12 @@ class OpenWeather(Gtk.EventBox):
         self.forecast_request = "https://api.openweathermap.org/data/2.5/forecast?lat={}&lon={}&units={}&lang={}&appid={}".format(
             settings["lat"], settings["long"], settings["units"], settings["lang"], settings["appid"])
 
+        self.alerts_request = "https://api.weatherbit.io/v2.0/alerts?lat={}&lon={}&key={}".format(settings["lat"],
+                                                                                                  settings["long"],
+                                                                                                  settings[
+                                                                                                      "weatherbit-api-key"]) if \
+            settings["weatherbit-api-key"] else ""
+
         self.build_box()
 
         self.refresh()
@@ -202,15 +213,19 @@ class OpenWeather(Gtk.EventBox):
 
     def build_box(self):
         if self.settings["icon-placement"] == "start":
+            self.box.pack_start(self.alert_image, False, False, 0)
             self.box.pack_start(self.image, False, False, 2)
         self.box.pack_start(self.label, False, False, 2)
 
         if self.settings["icon-placement"] != "start":
+            self.box.pack_start(self.alert_image, False, False, 0)
             self.box.pack_start(self.image, False, False, 2)
 
     def get_data(self):
         self.get_weather()
         self.get_forecast()
+        if self.settings["weatherbit-api-key"]:
+            self.get_alerts()
         GLib.idle_add(self.update_widget)
         return True
 
@@ -270,6 +285,21 @@ class OpenWeather(Gtk.EventBox):
             eprint(hms(), "Loading forecast data from file")
             self.forecast = load_json(self.forecast_file)
 
+    def get_alerts(self):
+        if not os.path.isfile(self.alerts_file) or int(file_age(self.alerts_file) > self.settings["interval"] - 1):
+            eprint(hms(), "Requesting alerts data")
+            try:
+                r = requests.get(self.alerts_request)
+                self.alerts = json.loads(r.text)
+                if "alerts" in self.alerts:
+                    save_json(self.alerts, self.alerts_file)
+            except Exception as e:
+                self.alerts = None
+                eprint(e)
+        elif not self.alerts and os.path.isfile(self.alerts_file):
+            eprint(hms(), "Loading alerts data from file")
+            self.alerts = load_json(self.alerts_file)
+
     def update_widget(self):
         if self.weather and self.weather["cod"] and self.weather["cod"] in [200, "200"]:
             if "icon" in self.weather["weather"][0]:
@@ -282,6 +312,16 @@ class OpenWeather(Gtk.EventBox):
                         self.icon_path = new_path
                     except:
                         print("Failed setting image from {}".format(new_path))
+
+            if self.alerts and self.alerts["alerts"]:
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join(self.weather_icons, "exclamation.svg"),
+                                                                self.settings["icon-size"], self.settings["icon-size"])
+                self.alert_image.set_from_pixbuf(pixbuf)
+                print(self.alerts["alerts"][0]["title"])
+            else:
+                self.alert_image = Gtk.Image()
+                self.alert_image.set_size_request(0, 0)
+
             lbl_content = ""
             if "name" in self.weather:
                 desc = self.weather["name"] if not self.settings["loc-name"] else self.settings["loc-name"]
@@ -450,6 +490,19 @@ class OpenWeather(Gtk.EventBox):
         hbox.pack_start(lbl, True, True, 0)
         vbox.pack_start(hbox, False, False, 6)
 
+        # Alerts, if any
+        if self.alerts and "alerts" in self.alerts:
+            try:
+                hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+                lbl = Gtk.Label()
+                lbl.set_line_wrap(True)
+                lbl.set_justify(Gtk.Justification.CENTER)
+                lbl.set_markup('<span bgcolor="#cc0000"> {} </span>'.format(self.alerts["alerts"][0]["title"]))
+                hbox.pack_start(lbl, True, False, 6)
+                vbox.pack_start(hbox, False, False, 6)
+            except:
+                pass
+
         # 5-DAY FORECAST
         if self.forecast["cod"] in [200, "200"]:
             lbl = Gtk.Label()
@@ -602,7 +655,7 @@ class OpenWeather(Gtk.EventBox):
                     if "snow" in data and "3h" in data["snow"]:
                         lbl = Gtk.Label()
                         lbl.set_markup('<span font_size="{}">{} mm</span>'.format(self.settings["popup-text-size"],
-                                                                                  round(data["rain"]["3h"], 2)))
+                                                                                  round(data["snow"]["3h"], 2)))
                         box.pack_start(lbl, False, False, 0)
                         grid.attach(box, 12, i, 1, 1)
 

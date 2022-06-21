@@ -137,6 +137,7 @@ SKELETON_PANEL: dict = {
     },
     "openweather": {
         "appid": "",
+        "weatherbit-api-key": "",
         "lat": None,
         "long": None,
         "lang": "en",
@@ -914,9 +915,8 @@ class EditorWrapper(object):
 
         if self.delete_weather_data:
             tmp_dir = temp_dir()
-            for item in ["nwg-openweather-weather", "nwg-openweather-forecast"]:
+            for item in ["nwg-openweather-weather", "nwg-openweather-forecast", "nwg-weatherbit-alerts"]:
                 f = "{}-{}".format(os.path.join(tmp_dir, item), self.panel["openweather"]["module-id"])
-                # f = os.path.join(tmp_dir, item)
                 if os.path.exists(f):
                     eprint("Deleting {}".format(f))
                     os.remove(f)
@@ -1723,6 +1723,7 @@ class EditorWrapper(object):
         defaults = {
             "module-id": str(time.time()),
             "appid": "",
+            "weatherbit-api-key": "",
             "lat": None,
             "long": None,
             "lang": "en",
@@ -1769,6 +1770,12 @@ class EditorWrapper(object):
 
         key_visibility_switch = builder.get_object("key-visibility-switch")
         key_visibility_switch.connect("toggled", switch_entry_visibility, self.ow_appid)
+
+        self.weatherbit_api_key = builder.get_object("weatherbit-api-key")
+        self.weatherbit_api_key.set_text(settings["weatherbit-api-key"])
+
+        key_visibility_switch1 = builder.get_object("key-visibility-switch1")
+        key_visibility_switch1.connect("toggled", switch_entry_visibility, self.weatherbit_api_key)
 
         # Try to obtain geolocation if unset
         if not settings["lat"] or not settings["long"]:
@@ -1916,6 +1923,7 @@ class EditorWrapper(object):
         settings = self.panel["openweather"]
 
         settings["appid"] = self.ow_appid.get_text()
+        settings["weatherbit-api-key"] = self.weatherbit_api_key.get_text()
         settings["lat"] = round(self.ow_lat.get_value(), 4)
         settings["long"] = round(self.ow_long.get_value(), 4)
         settings["lang"] = self.ow_lang.get_text()
