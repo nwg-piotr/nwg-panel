@@ -8,7 +8,7 @@
     <property name="label-xalign">0.5</property>
     <property name="shadow-type">out</property>
     <child>
-      <!-- n-columns=4 n-rows=14 -->
+      <!-- n-columns=4 n-rows=19 -->
       <object class="GtkGrid" id="grid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -92,7 +92,7 @@ LEAVE BLANK IF EVERYTHING WORKS</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">12</property>
+            <property name="top-attach">17</property>
           </packing>
         </child>
         <child>
@@ -122,7 +122,7 @@ LEAVE BLANK IF EVERYTHING WORKS</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">12</property>
+            <property name="top-attach">17</property>
           </packing>
         </child>
         <child>
@@ -130,35 +130,7 @@ LEAVE BLANK IF EVERYTHING WORKS</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
-            <property name="label" translatable="yes">Slider popup position:</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">9</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkComboBoxText" id="popup-position">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <items>
-              <item id="top" translatable="yes">top</item>
-              <item id="bottom" translatable="yes">bottom</item>
-              <item id="left" translatable="yes">left</item>
-              <item id="right" translatable="yes">right</item>
-            </items>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">9</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="halign">end</property>
-            <property name="label" translatable="yes">Slider length:</property>
+            <property name="label" translatable="yes">Popup horizontal alignment:</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -166,26 +138,53 @@ LEAVE BLANK IF EVERYTHING WORKS</property>
           </packing>
         </child>
         <child>
-          <object class="GtkSpinButton" id="popup-length">
+          <object class="GtkComboBoxText" id="popup-horizontal-alignment">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <items>
+              <item id="left" translatable="yes">left</item>
+              <item id="right" translatable="yes">right</item>
+              <item id="center" translatable="yes">center</item>
+            </items>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">10</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Popup slider width:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">12</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="popup-width">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">10</property>
+            <property name="top-attach">12</property>
           </packing>
         </child>
         <child>
           <object class="GtkImage">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Slider popup window length in pixels; leave 0 for auto.</property>
+            <property name="tooltip-text" translatable="yes">Slider popup window width in pixels; leave 0 for auto.</property>
             <property name="halign">start</property>
             <property name="stock">gtk-about</property>
           </object>
           <packing>
             <property name="left-attach">3</property>
-            <property name="top-attach">10</property>
+            <property name="top-attach">12</property>
           </packing>
         </child>
         <child>
@@ -197,7 +196,7 @@ LEAVE BLANK IF EVERYTHING WORKS</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">11</property>
+            <property name="top-attach">16</property>
           </packing>
         </child>
         <child>
@@ -211,7 +210,7 @@ LEAVE BLANK IF EVERYTHING WORKS</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">11</property>
+            <property name="top-attach">16</property>
           </packing>
         </child>
         <child>
@@ -405,7 +404,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">3</property>
-            <property name="top-attach">11</property>
+            <property name="top-attach">16</property>
           </packing>
         </child>
         <child>
@@ -432,7 +431,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">3</property>
-            <property name="top-attach">13</property>
+            <property name="top-attach">18</property>
           </packing>
         </child>
         <child>
@@ -445,22 +444,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">13</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Where to show slider popup window.
-Usually opposite of panel position:
-e.g. bottom if panel is at the top.</property>
-            <property name="halign">start</property>
-            <property name="stock">gtk-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">3</property>
-            <property name="top-attach">9</property>
+            <property name="top-attach">18</property>
           </packing>
         </child>
         <child>
@@ -488,6 +472,147 @@ e.g. bottom if panel is at the top.</property>
             <property name="left-attach">3</property>
             <property name="top-attach">5</property>
           </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Popup slider height:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">13</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="popup-height">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">13</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">Slider popup window height in pixels; leave 0 for auto.</property>
+            <property name="halign">start</property>
+            <property name="stock">gtk-about</property>
+          </object>
+          <packing>
+            <property name="left-attach">3</property>
+            <property name="top-attach">13</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Popup vertical alignment:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">11</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText" id="popup-vertical-alignment">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <items>
+              <item id="top" translatable="yes">top</item>
+              <item id="bottom" translatable="yes">bottom</item>
+              <item id="center" translatable="yes">center</item>
+            </items>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">11</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">9</property>
+            <property name="width">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Popup horizontal margin:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">14</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Popup vertical margin:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">15</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="popup-horizontal-margin">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">14</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="popup-vertical-margin">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">15</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>
