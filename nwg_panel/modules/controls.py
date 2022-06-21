@@ -525,7 +525,7 @@ class PopupWindow(Gtk.Window):
                 v_box.pack_start(c_item, True, True, 2)
 
         check_key(settings, "menu", {})
-        if settings["menu"]:
+        if settings["menu"] and "items" in settings["menu"] and settings["menu"]["items"]:
             template = settings["menu"]
 
             sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
