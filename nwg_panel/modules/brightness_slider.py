@@ -28,16 +28,16 @@ class BrightnessSlider(Gtk.EventBox):
             "angle": 0.0,
             "icon-placement": "start",
             "backlight-device": "",
-            "slider-orientation": "vertical",
-            "slider-inverted": True,
-            "popup-icon-placement": "off",
+            "slider-orientation": "horizontal",
+            "slider-inverted": False,
+            "popup-icon-placement": "start",
             "popup-horizontal-alignment": "left",
-            "popup-vertical-alignment": "center",
+            "popup-vertical-alignment": "top",
             "popup-width": 256,
             "popup-height": 64,
-            "popup-horizontal-margin": 100,
-            "popup-vertical-margin": 100,
-            "step-size": 2,
+            "popup-horizontal-margin": 0,
+            "popup-vertical-margin": 0,
+            "step-size": 1,
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
