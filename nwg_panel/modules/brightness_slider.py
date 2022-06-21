@@ -54,6 +54,10 @@ class BrightnessSlider(Gtk.EventBox):
 
         self.popup_window = PopupWindow(self, settings, icons_path=self.icons_path)
 
+        if settings["angle"] != 0.0:
+            self.box.set_orientation(Gtk.Orientation.VERTICAL)
+            self.bri_label.set_angle(settings["angle"])
+
         # events
         self.connect('button-press-event', self.on_button_press)
         self.connect('enter-notify-event', self.on_enter_notify_event)

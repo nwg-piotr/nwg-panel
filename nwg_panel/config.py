@@ -2048,6 +2048,8 @@ class EditorWrapper(object):
                 value = widget.get_active()
             elif type(widget) in [Gtk.ComboBoxText, Gtk.ComboBox]:
                 value = widget.get_active_id()
+                if setting == "angle":
+                    value = float(value)
             settings[setting] = value
         save_json(self.config, self.file)
 
