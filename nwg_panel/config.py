@@ -528,6 +528,7 @@ class EditorWrapper(object):
                               "sway-workspaces",
                               "scratchpad",
                               "openweather",
+                              "brightness-slider",
                               "dwl-tags",
                               "tray"]
 
