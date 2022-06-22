@@ -28,6 +28,7 @@ class BrightnessSlider(Gtk.EventBox):
             "angle": 0.0,
             "icon-placement": "start",
             "backlight-device": "",
+            "backlight-controller": "light",
             "slider-orientation": "horizontal",
             "slider-inverted": False,
             "popup-icon-placement": "start",
@@ -101,7 +102,7 @@ class BrightnessSlider(Gtk.EventBox):
         return False
 
     def update_brightness(self):
-        self.bri_value = get_brightness(device=self.settings["backlight-device"])
+        self.bri_value = get_brightness(device=self.settings["backlight-device"], controller=self.settings["backlight-controller"])
         
         icon_name = bri_icon_name(self.bri_value)
 
@@ -251,7 +252,7 @@ class PopupWindow(Gtk.Window):
 
     def set_bri(self, slider):
         self.parent.bri_value = int(slider.get_value())
-        set_brightness(self.parent.bri_value, device=self.settings["backlight-device"])
+        set_brightness(self.parent.bri_value, device=self.settings["backlight-device"], controller=self.settings["backlight-controller"])
 
 def bri_icon_name(value):
     icon_name = "display-brightness-low-symbolic"
