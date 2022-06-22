@@ -442,7 +442,7 @@ def get_brightness(device="", controller=""):
             pass
     elif nwg_panel.common.commands["ddcutil"] and controller == "ddcutil":
         try:
-            cmd = "ddcutil --sleep-multiplier=.01 --noverify getvcp 10 --bus={}".format(device) if device else "ddcutil --sleep-multiplier=.01 --noverify getvcp 10"
+            cmd = "ddcutil getvcp 10 --bus={}".format(device) if device else "ddcutil getvcp 10"
             output = cmd2string(cmd)
             b = int(output.split("current value =")[1].split(",")[0])
             brightness = int(round(float(b), 0))
@@ -473,9 +473,9 @@ def set_brightness(percent, device="", controller=""):
                             stderr=subprocess.STDOUT)
     elif nwg_panel.common.commands["ddcutil"] and controller == "ddcutil":
         if device:
-            subprocess.call("ddcutil --sleep-multiplier=.01 --noverify setvcp 10 {} --bus={}".format(percent, device).split())
+            subprocess.call("ddcutil setvcp 10 {} --bus={}".format(percent, device).split())
         else:
-            subprocess.call("ddcutil --sleep-multiplier=.01 --noverify setvcp 10 {}".format(percent).split())
+            subprocess.call("ddcutil setvcp 10 {}".format(percent).split())
     else:
         eprint("Either 'light' or 'brightnessctl' or 'ddcutil' package required")
 
