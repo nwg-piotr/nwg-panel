@@ -74,7 +74,7 @@ class BrightnessSlider(Gtk.EventBox):
         self.build_box()
 
         self.refresh()
-        Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, 5, self.refresh)
+        Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
 
     def build_box(self):
         if self.settings["icon-placement"] == "start":
