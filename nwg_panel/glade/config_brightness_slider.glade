@@ -19,47 +19,6 @@
         <property name="row-spacing">12</property>
         <property name="column-spacing">12</property>
         <child>
-          <object class="GtkEntry" id="backlight-device">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="placeholder-text" translatable="yes">backlight device</property>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Depends on `light` or `brightnessctl`.</property>
-            <property name="halign">start</property>
-            <property name="stock">gtk-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Backlight device path (for 'light')
-or name (for 'brightnessctl').
-Use 'light -L' or 'brightnessctl -l'
-to check available devices.
-LEAVE BLANK IF EVERYTHING WORKS</property>
-            <property name="halign">start</property>
-            <property name="stock">gtk-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">3</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -588,6 +547,51 @@ the horizontal, in degrees, measured counterclockwise</property>
           <packing>
             <property name="left-attach">2</property>
             <property name="top-attach">15</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">Backlight device path (for 'light')
+or name (for 'brightnessctl')
+or I2C bus number (for 'ddcutil').
+Use 'light -L' or 'brightnessctl -l'
+or 'ddcutil --help' to
+check available devices.
+LEAVE BLANK IF EVERYTHING WORKS</property>
+            <property name="halign">start</property>
+            <property name="stock">gtk-about</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="backlight-device">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="placeholder-text" translatable="yes">backlight device</property>
+          </object>
+          <packing>
+            <property name="left-attach">3</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText" id="backlight-controller">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <items>
+              <item id="light" translatable="yes">light</item>
+              <item id="brightnessctl" translatable="yes">brightnessctl</item>
+              <item id="ddcutil" translatable="yes">ddcutil</item>
+            </items>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">1</property>
           </packing>
         </child>
         <child>
