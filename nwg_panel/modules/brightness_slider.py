@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import threading
-import subprocess
 
 import gi
 
@@ -10,8 +9,8 @@ gi.require_version('Gdk', '3.0')
 gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
-from nwg_panel.tools import check_key, get_brightness, set_brightness, update_image, eprint
-from nwg_panel.common import commands
+from nwg_panel.tools import check_key, get_brightness, set_brightness, update_image
+
 
 class BrightnessSlider(Gtk.EventBox):
     def __init__(self, settings, icons_path=""):
@@ -101,8 +100,10 @@ class BrightnessSlider(Gtk.EventBox):
 
         return False
 
-    def update_brightness(self):
-        self.bri_value = get_brightness(device=self.settings["backlight-device"], controller=self.settings["backlight-controller"])
+    def update_brightness(self, get=True):
+        if get:
+            self.bri_value = get_brightness(device=self.settings["backlight-device"],
+                                            controller=self.settings["backlight-controller"])
         
         icon_name = bri_icon_name(self.bri_value)
 
@@ -124,13 +125,20 @@ class BrightnessSlider(Gtk.EventBox):
     def on_scroll(self, w, event):
         if event.direction == Gdk.ScrollDirection.UP:
             self.bri_value += self.settings["step-size"]
-            self.popup_window.bri_scale.set_value(self.bri_value)
-            self.update_brightness()
         elif event.direction == Gdk.ScrollDirection.DOWN:
             self.bri_value -= self.settings["step-size"]
+        
+        self.bri_value = min(self.bri_value, 100)
+        self.bri_value = max(self.bri_value, 0)
+
+        self.update_brightness(get=False)
+
+        if self.popup_window.get_visible():
             self.popup_window.bri_scale.set_value(self.bri_value)
-            self.update_brightness()
-    
+
+        set_brightness(self.bri_value, device=self.settings["backlight-device"],
+                       controller=self.settings["backlight-controller"])
+
         return False
 
     def on_enter_notify_event(self, widget, event):
@@ -151,6 +159,7 @@ class BrightnessSlider(Gtk.EventBox):
         widget.unset_state_flags(Gtk.StateFlags.SELECTED)
         return True
 
+
 class PopupWindow(Gtk.Window):
     def __init__(self, parent, settings, monitor=None, icons_path=""):
         Gtk.Window.__init__(self, type_hint=Gdk.WindowTypeHint.NORMAL)
@@ -163,6 +172,8 @@ class PopupWindow(Gtk.Window):
         self.icon_size = settings["icon-size"]
         self.icons_path = icons_path
         self.src_tag = 0
+        self.value_changed = False
+        self.scrolled = False
 
         self.set_property("name", self.settings["css-name"])
         
@@ -181,9 +192,16 @@ class PopupWindow(Gtk.Window):
         elif self.settings["slider-orientation"] == "horizontal":
             self.box.set_orientation(Gtk.Orientation.HORIZONTAL)
             self.bri_scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
-
         self.bri_scale.set_inverted(self.settings["slider-inverted"])
-        self.bri_scale_handler = self.bri_scale.connect("value-changed", self.set_bri)
+
+        if self.settings["backlight-controller"] == "ddcutil":
+            self.bri_scale_handler = self.bri_scale.connect("value-changed", self.on_value_changed)
+            self.bri_scale.connect("button-release-event", self.on_button_release)
+            
+            self.bri_scale.add_events(Gdk.EventMask.SCROLL_MASK)
+            self.bri_scale.connect('scroll-event', self.on_scroll)
+        else:
+            self.bri_scale_handler = self.bri_scale.connect("value-changed", self.set_bri)
 
         self.bri_icon_name = "view-refresh-symbolic"
         self.bri_image = Gtk.Image.new_from_icon_name(self.bri_icon_name, Gtk.IconSize.MENU)
@@ -226,6 +244,7 @@ class PopupWindow(Gtk.Window):
                 update_image(self.bri_image, self.parent.bri_icon_name, self.icon_size, self.icons_path)
                 self.bri_icon_name = self.parent.bri_icon_name
 
+        else:
             with self.bri_scale.handler_block(self.bri_scale_handler):
                 self.bri_scale.set_value(self.parent.bri_value)
 
@@ -252,7 +271,24 @@ class PopupWindow(Gtk.Window):
 
     def set_bri(self, slider):
         self.parent.bri_value = int(slider.get_value())
-        set_brightness(self.parent.bri_value, device=self.settings["backlight-device"], controller=self.settings["backlight-controller"])
+        self.parent.update_brightness(get=False)
+        set_brightness(self.parent.bri_value, device=self.settings["backlight-device"],
+                       controller=self.settings["backlight-controller"])
+
+    def on_button_release(self, scale, event):
+        if self.value_changed:
+            self.set_bri(scale)
+            self.value_changed = False
+
+    def on_value_changed(self, *args):
+        if self.scrolled:
+            self.set_bri(self.bri_scale)
+            self.scrolled = False
+        else:
+            self.value_changed = True
+
+    def on_scroll(self, w, event):
+        self.scrolled = True
 
 def bri_icon_name(value):
     icon_name = "display-brightness-low-symbolic"
