@@ -49,7 +49,7 @@ try:
     from nwg_panel.modules.openweather import OpenWeather
 except Exception as e:
     eprint("Couldn't load OpenWeather module: ".format(e))
-
+from nwg_panel.modules.brightness_slider import BrightnessSlider
 
 from nwg_panel.modules.menu_start import MenuStart
 
@@ -223,6 +223,11 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                     container.pack_start(openweather, False, False, panel["items-padding"])
             else:
                 eprint("OpenWeather module needs the 'python-requests' package")
+
+        if item == "brightness-slider":
+            if item in panel:
+                brightness_slider = BrightnessSlider(panel[item], icons_path)
+                container.pack_start(brightness_slider, False, False, panel["items-padding"])
 
         if item == "cpu-avg":
             cpu_avg = CpuAvg()

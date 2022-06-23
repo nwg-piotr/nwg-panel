@@ -170,6 +170,29 @@ SKELETON_PANEL: dict = {
         "show-visibility": True,
         "show-pop": True,
         "show-volume": True
+    },
+    "brightness-slider": {
+        "show-values": True,
+        "icon-size": 16,
+        "interval": 10,
+        "hover-opens": False,
+        "leave-closes": False,
+        "root-css-name": "brightness-module",
+        "css-name": "brightness-popup",
+        "angle": 0.0,
+        "icon-placement": "start",
+        "backlight-device": "",
+        "backlight-controller": "light",
+        "slider-orientation": "horizontal",
+        "slider-inverted": False,
+        "popup-icon-placement": "start",
+        "popup-horizontal-alignment": "left",
+        "popup-vertical-alignment": "top",
+        "popup-width": 256,
+        "popup-height": 64,
+        "popup-horizontal-margin": 0,
+        "popup-vertical-margin": 0,
+        "step-size": 1,
     }
 }
 
@@ -505,6 +528,7 @@ class EditorWrapper(object):
                               "sway-workspaces",
                               "scratchpad",
                               "openweather",
+                              "brightness-slider",
                               "dwl-tags",
                               "tray"]
 
@@ -557,6 +581,9 @@ class EditorWrapper(object):
 
         eb = builder.get_object("eb-openweather")
         eb.connect("button-press-event", self.edit_openweather)
+
+        eb = builder.get_object("eb-brightness-slider")
+        eb.connect("button-press-event", self.edit_brightness_slider)
 
         eb = builder.get_object("eb-dwl-tags")
         eb.connect("button-press-event", self.edit_dwl_tags)
@@ -908,6 +935,8 @@ class EditorWrapper(object):
             self.update_dwl_tags()
         elif self.edited == "openweather":
             self.update_openweather()
+        elif self.edited == "brightness-slider":
+            self.update_brightness_slider()
         elif self.edited == "custom-items":
             save_json(self.config, self.file)
         elif self.edited == "user-menu":
@@ -1959,6 +1988,80 @@ class EditorWrapper(object):
         settings["show-pop"] = self.ow_show_pop.get_active()
         settings["show-volume"] = self.ow_show_volume.get_active()
 
+        save_json(self.config, self.file)
+    
+    def edit_brightness_slider(self, *args):
+        self.load_panel()
+        self.edited = "brightness-slider"
+        check_key(self.panel, "brightness-slider", {})
+        settings = self.panel["brightness-slider"]
+
+        defaults = {
+            "show-values": True,
+            "icon-size": 16,
+            "interval": 10,
+            "hover-opens": False,
+            "leave-closes": False,
+            "root-css-name": "brightness-module",
+            "css-name": "brightness-popup",
+            "angle": 0.0,
+            "icon-placement": "start",
+            "backlight-device": "",
+            "backlight-controller": "light",
+            "slider-orientation": "horizontal",
+            "slider-inverted": False,
+            "popup-icon-placement": "start",
+            "popup-horizontal-alignment": "left",
+            "popup-vertical-alignment": "top",
+            "popup-width": 256,
+            "popup-height": 64,
+            "popup-horizontal-margin": 0,
+            "popup-vertical-margin": 0,
+            "step-size": 1,
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_brightness_slider.glade"))
+        frame = builder.get_object("frame")
+
+        self.brightness_slider_config = {}
+        for setting in defaults:
+            widget = builder.get_object(setting)
+            value = settings[setting]
+
+            if type(widget) == Gtk.Entry:
+                widget.set_text(value.strip())
+            elif type(widget) == Gtk.SpinButton:
+                widget.set_numeric(True)
+                adj = Gtk.Adjustment(value=0, lower=0, upper=10000, step_increment=1, page_increment=10, page_size=1)
+                widget.configure(adj, 1, 0)
+                widget.set_value(value)
+            elif type(widget) == Gtk.CheckButton:
+                widget.set_active(value)
+            elif type(widget) in [Gtk.ComboBoxText, Gtk.ComboBox]:
+                widget.set_active_id(str(value))
+            self.brightness_slider_config[setting] = widget
+        
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(frame)
+
+    def update_brightness_slider(self):
+        settings = self.panel["brightness-slider"]
+        
+        for setting, widget in self.brightness_slider_config.items():
+            if type(widget) == Gtk.Entry:
+                value = widget.get_text()
+            elif type(widget) == Gtk.SpinButton:
+                value = int(widget.get_value())
+            elif type(widget) == Gtk.CheckButton:
+                value = widget.get_active()
+            elif type(widget) in [Gtk.ComboBoxText, Gtk.ComboBox]:
+                value = widget.get_active_id()
+                if setting == "angle":
+                    value = float(value)
+            settings[setting] = value
         save_json(self.config, self.file)
 
     def edit_dwl_tags(self, *args):

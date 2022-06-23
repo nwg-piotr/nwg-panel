@@ -193,19 +193,21 @@ class Controls(Gtk.EventBox):
         if self.bt_label:
             self.bt_label.set_text(name)
 
-    def update_brightness(self):
-        value = get_brightness(device=self.settings["backlight-device"], controller=self.settings["backlight-controller"])
-        if self.bri_value != value:
-            icon_name = bri_icon_name(value)
+    def update_brightness(self, get=True):
+        if get:
+            self.bri_value = get_brightness(device=self.settings["backlight-device"], controller=self.settings["backlight-controller"])
+        
+        icon_name = bri_icon_name(self.bri_value)
 
-            if icon_name != self.bri_icon_name:
-                update_image(self.bri_image, icon_name, self.icon_size, self.icons_path)
-                self.bri_icon_name = icon_name
+        if icon_name != self.bri_icon_name:
+            update_image(self.bri_image, icon_name, self.icon_size, self.icons_path)
+            self.bri_icon_name = icon_name
 
-            if self.bri_label:
-                self.bri_label.set_text("{}%".format(value))
-
-            self.bri_value = value
+        if self.bri_label:
+            self.bri_label.set_text("{}%".format(self.bri_value))
+        
+        if get:
+            self.popup_window.refresh()
 
     def update_volume(self):
         volume = get_volume()
@@ -369,6 +371,9 @@ class PopupWindow(Gtk.Window):
 
         add_sep = False
         if "brightness" in settings["components"]:
+            self.value_changed = False
+            self.scrolled = False
+
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             v_box.pack_start(inner_hbox, False, False, 0)
 
@@ -378,7 +383,15 @@ class PopupWindow(Gtk.Window):
             inner_hbox.pack_start(self.bri_image, False, False, 6)
 
             self.bri_scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
-            self.bri_scale_handler = self.bri_scale.connect("value-changed", self.set_bri)
+
+            if self.settings["backlight-controller"] == "ddcutil":
+                self.bri_scale_handler = self.bri_scale.connect("value-changed", self.on_value_changed)
+                self.bri_scale.connect("button-release-event", self.on_button_release)
+
+                self.bri_scale.add_events(Gdk.EventMask.SCROLL_MASK)
+                self.bri_scale.connect('scroll-event', self.on_scroll)
+            else:
+                self.bri_scale_handler = self.bri_scale.connect("value-changed", self.set_bri)
 
             inner_hbox.pack_start(self.bri_scale, True, True, 5)
             add_sep = True
@@ -661,19 +674,25 @@ class PopupWindow(Gtk.Window):
                 self.bat_label.set_text("{}% {}".format(self.parent.bat_value, self.parent.bat_time))
 
             if "volume" in self.settings["components"] and commands["pamixer"]:
+                self.vol_scale.set_value(self.parent.vol_value)
                 if self.parent.vol_icon_name != self.vol_icon_name:
                     update_image(self.vol_image, self.parent.vol_icon_name, self.icon_size, self.icons_path)
                     self.vol_icon_name = self.parent.vol_icon_name
-
                 self.vol_scale.set_draw_value(False if self.parent.vol_value > 100 else True) # Dont display val out of scale
-                with self.vol_scale.handler_block(self.vol_scale_handler):
-                    self.vol_scale.set_value(self.parent.vol_value)
 
             if "brightness" in self.settings["components"]:
+                if not self.value_changed:
+                    self.bri_scale.set_value(self.parent.bri_value)
                 if self.parent.bri_icon_name != self.bri_icon_name:
                     update_image(self.bri_image, self.parent.bri_icon_name, self.icon_size, self.icons_path)
                     self.bri_icon_name = self.parent.bri_icon_name
 
+        else:
+            if "volume" in self.settings["components"] and commands["pamixer"]:
+                with self.vol_scale.handler_block(self.vol_scale_handler):
+                    self.vol_scale.set_value(self.parent.vol_value)
+
+            if "brightness" in self.settings["components"]:
                 with self.bri_scale.handler_block(self.bri_scale_handler):
                     self.bri_scale.set_value(self.parent.bri_value)
 
@@ -691,11 +710,29 @@ class PopupWindow(Gtk.Window):
 
     def set_bri(self, slider):
         self.parent.bri_value = int(slider.get_value())
-        set_brightness(self.parent.bri_value, device=self.settings["backlight-device"], controller=self.settings["backlight-controller"])
+        self.parent.update_brightness(get=False)
+        set_brightness(self.parent.bri_value, device=self.settings["backlight-device"],
+                       controller=self.settings["backlight-controller"])
+
+    def on_button_release(self, scale, event):
+        if self.value_changed:
+            self.set_bri(scale)
+            self.value_changed = False
+
+    def on_value_changed(self, *args):
+        if self.scrolled:
+            self.set_bri(self.bri_scale)
+            self.scrolled = False
+        else:
+            self.value_changed = True
+
+    def on_scroll(self, w, event):
+        self.scrolled = True
 
     def set_vol(self, slider):
         self.parent.vol_value = int(slider.get_value())
         set_volume(self.parent.vol_value)
+        self.parent.update_volume()
 
     def close_win(self, w, e):
         self.hide()
