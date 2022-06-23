@@ -113,6 +113,9 @@ class BrightnessSlider(Gtk.EventBox):
 
         if self.bri_label:
             self.bri_label.set_text("{}%".format(self.bri_value))
+        
+        if get:
+            self.popup_window.refresh()
     
     def on_button_press(self, w, event):
         if not self.popup_window.get_visible():
@@ -240,6 +243,7 @@ class PopupWindow(Gtk.Window):
 
     def refresh(self, *args):
         if self.get_visible():
+            self.bri_scale.set_value(self.parent.bri_value)
             if self.parent.bri_icon_name != self.bri_icon_name:
                 update_image(self.bri_image, self.parent.bri_icon_name, self.icon_size, self.icons_path)
                 self.bri_icon_name = self.parent.bri_icon_name

@@ -195,7 +195,7 @@ class Controls(Gtk.EventBox):
 
     def update_brightness(self, get=True):
         if get:
-            value = get_brightness(device=self.settings["backlight-device"], controller=self.settings["backlight-controller"])
+            self.bri_value = get_brightness(device=self.settings["backlight-device"], controller=self.settings["backlight-controller"])
         
         icon_name = bri_icon_name(self.bri_value)
 
@@ -205,6 +205,9 @@ class Controls(Gtk.EventBox):
 
         if self.bri_label:
             self.bri_label.set_text("{}%".format(self.bri_value))
+        
+        if get:
+            self.popup_window.refresh()
 
     def update_volume(self):
         volume = get_volume()
@@ -671,12 +674,14 @@ class PopupWindow(Gtk.Window):
                 self.bat_label.set_text("{}% {}".format(self.parent.bat_value, self.parent.bat_time))
 
             if "volume" in self.settings["components"] and commands["pamixer"]:
+                self.vol_scale.set_value(self.parent.vol_value)
                 if self.parent.vol_icon_name != self.vol_icon_name:
                     update_image(self.vol_image, self.parent.vol_icon_name, self.icon_size, self.icons_path)
                     self.vol_icon_name = self.parent.vol_icon_name
                 self.vol_scale.set_draw_value(False if self.parent.vol_value > 100 else True) # Dont display val out of scale
 
             if "brightness" in self.settings["components"]:
+                self.bri_scale.set_value(self.parent.bri_value)
                 if self.parent.bri_icon_name != self.bri_icon_name:
                     update_image(self.bri_image, self.parent.bri_icon_name, self.icon_size, self.icons_path)
                     self.bri_icon_name = self.parent.bri_icon_name
