@@ -317,7 +317,6 @@ class OpenWeather(Gtk.EventBox):
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join(self.weather_icons, "exclamation.svg"),
                                                                 self.settings["icon-size"], self.settings["icon-size"])
                 self.alert_image.set_from_pixbuf(pixbuf)
-                print(self.alerts["alerts"][0]["title"])
             else:
                 self.alert_image = Gtk.Image()
                 self.alert_image.set_size_request(0, 0)
@@ -492,16 +491,28 @@ class OpenWeather(Gtk.EventBox):
 
         # Alerts, if any
         if self.alerts and "alerts" in self.alerts:
-            try:
-                hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-                lbl = Gtk.Label()
-                lbl.set_line_wrap(True)
-                lbl.set_justify(Gtk.Justification.CENTER)
-                lbl.set_markup('<span bgcolor="#cc0000"> {} </span>'.format(self.alerts["alerts"][0]["title"]))
-                hbox.pack_start(lbl, True, False, 6)
-                vbox.pack_start(hbox, False, False, 6)
-            except:
-                pass
+            for alert in self.alerts["alerts"]:
+                try:
+                    hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+                    lbl = Gtk.Label()
+                    lbl.set_line_wrap(True)
+                    lbl.set_justify(Gtk.Justification.CENTER)
+                    lbl.set_markup('<span bgcolor="#cc0000"> {} </span>'.format(alert["title"]))
+                    if alert["description"]:
+                        effective = alert["effective_local"] if "effective_local" in alert else ""
+                        expires = alert["expires_local"] if "expires_local" in alert else ""
+                        regions = ""
+                        if "regions" in alert and alert["regions"]:
+                            regions = "[ "
+                            for r in alert["regions"]:
+                                regions += "{} ".format(r)
+                            regions += "]"
+                        lbl.set_tooltip_text(
+                            "{} - {}\n{}\n{}".format(effective, expires, regions, alert["description"].splitlines()[0]))
+                    hbox.pack_start(lbl, True, False, 6)
+                    vbox.pack_start(hbox, False, False, 6)
+                except Exception as e:
+                    eprint(e)
 
         # 5-DAY FORECAST
         if self.forecast["cod"] in [200, "200"]:
