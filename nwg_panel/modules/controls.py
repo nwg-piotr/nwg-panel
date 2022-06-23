@@ -681,7 +681,8 @@ class PopupWindow(Gtk.Window):
                 self.vol_scale.set_draw_value(False if self.parent.vol_value > 100 else True) # Dont display val out of scale
 
             if "brightness" in self.settings["components"]:
-                self.bri_scale.set_value(self.parent.bri_value)
+                if not self.value_changed:
+                    self.bri_scale.set_value(self.parent.bri_value)
                 if self.parent.bri_icon_name != self.bri_icon_name:
                     update_image(self.bri_image, self.parent.bri_icon_name, self.icon_size, self.icons_path)
                     self.bri_icon_name = self.parent.bri_icon_name

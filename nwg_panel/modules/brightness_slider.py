@@ -243,7 +243,8 @@ class PopupWindow(Gtk.Window):
 
     def refresh(self, *args):
         if self.get_visible():
-            self.bri_scale.set_value(self.parent.bri_value)
+            if not self.value_changed:
+                self.bri_scale.set_value(self.parent.bri_value)
             if self.parent.bri_icon_name != self.bri_icon_name:
                 update_image(self.bri_image, self.parent.bri_icon_name, self.icon_size, self.icons_path)
                 self.bri_icon_name = self.parent.bri_icon_name
