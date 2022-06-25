@@ -69,6 +69,7 @@ def on_button_press(window, event):
 
 class OpenWeather(Gtk.EventBox):
     def __init__(self, settings, icons_path=""):
+        self.warnings_box = None
         defaults = {"appid": "",
                     "weatherbit-api-key": "",
                     "lat": None,
@@ -394,7 +395,7 @@ class OpenWeather(Gtk.EventBox):
         GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.LEFT, self.settings["popup-margin-horizontal"])
         GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.RIGHT, self.settings["popup-margin-horizontal"])
 
-        self.popup.connect('button-release-event', on_button_press)
+        # self.popup.connect('button-release-event', on_button_press)
 
         vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         vbox.set_property("margin", 6)
@@ -492,13 +493,21 @@ class OpenWeather(Gtk.EventBox):
         # Alerts, if any
         if self.alerts and "alerts" in self.alerts and "title" in self.alerts["alerts"][0]:
             hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+            eb = Gtk.EventBox()
             lbl = Gtk.Label()
+            eb.add(lbl)
+            eb.connect("button-press-event", self.on_warning_clicked)
             lbl.set_line_wrap(True)
             lbl.set_justify(Gtk.Justification.CENTER)
-            lbl.set_markup('<span bgcolor="#cc0000"> {} </span>'.format(self.alerts["alerts"][0]["title"]))
-            hbox.pack_start(lbl, True, False, 6)
+            # We will set markup later, as we don't yet know the number of unique alert
+            hbox.pack_start(eb, True, False, 6)
             vbox.pack_start(hbox, False, False, 6)
-            descriptions = ["www.weatherbit.io"]
+            descriptions = []
+            self.warnings_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+            w_label = Gtk.Label()
+            w_label.set_line_wrap(True)
+            self.warnings_box.pack_start(w_label, False, False, 10)
+            vbox.pack_start(self.warnings_box, False, False, 0)
             for alert in self.alerts["alerts"]:
                 try:
                     if alert["description"]:
@@ -510,13 +519,17 @@ class OpenWeather(Gtk.EventBox):
                             for r in alert["regions"]:
                                 regions += "{} ".format(r)
                             regions += "]"
-                        description = "{} - {}\n{}\n{}".format(effective, expires, regions,
-                                                                alert["description"].splitlines()[0])
+                        description = "<b>{}: {} - {}</b>\n{}\n{}".format(alert["title"], effective, expires, regions,
+                                                                          alert["description"].splitlines()[0])
                         if description not in descriptions:
                             descriptions.append(description)
                 except Exception as e:
                     eprint(e)
-            lbl.set_tooltip_text("\n\n".join(descriptions))
+
+            # Use just the 1st alerts "title", add total alerts count
+            lbl.set_markup('<span bgcolor="#cc0000"> {} ({}) >> </span>'.format(self.alerts["alerts"][0]["title"],
+                                                                                len(descriptions)))
+            w_label.set_markup("\n\n".join(descriptions))
 
         # 5-DAY FORECAST
         if self.forecast["cod"] in [200, "200"]:
@@ -686,3 +699,10 @@ class OpenWeather(Gtk.EventBox):
             vbox.pack_start(lbl, False, False, 0)
 
         self.popup.show_all()
+        self.warnings_box.hide()
+
+    def on_warning_clicked(self, label, event):
+        if not self.warnings_box.is_visible():
+            self.warnings_box.show()
+        else:
+            self.warnings_box.hide()
