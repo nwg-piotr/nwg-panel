@@ -490,14 +490,17 @@ class OpenWeather(Gtk.EventBox):
         vbox.pack_start(hbox, False, False, 6)
 
         # Alerts, if any
-        if self.alerts and "alerts" in self.alerts:
+        if self.alerts and "alerts" in self.alerts and "title" in self.alerts["alerts"][0]:
+            hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+            lbl = Gtk.Label()
+            lbl.set_line_wrap(True)
+            lbl.set_justify(Gtk.Justification.CENTER)
+            lbl.set_markup('<span bgcolor="#cc0000"> {} </span>'.format(self.alerts["alerts"][0]["title"]))
+            hbox.pack_start(lbl, True, False, 6)
+            vbox.pack_start(hbox, False, False, 6)
+            descriptions = ["www.weatherbit.io"]
             for alert in self.alerts["alerts"]:
                 try:
-                    hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-                    lbl = Gtk.Label()
-                    lbl.set_line_wrap(True)
-                    lbl.set_justify(Gtk.Justification.CENTER)
-                    lbl.set_markup('<span bgcolor="#cc0000"> {} </span>'.format(alert["title"]))
                     if alert["description"]:
                         effective = alert["effective_local"] if "effective_local" in alert else ""
                         expires = alert["expires_local"] if "expires_local" in alert else ""
@@ -507,12 +510,13 @@ class OpenWeather(Gtk.EventBox):
                             for r in alert["regions"]:
                                 regions += "{} ".format(r)
                             regions += "]"
-                        lbl.set_tooltip_text(
-                            "{} - {}\n{}\n{}".format(effective, expires, regions, alert["description"].splitlines()[0]))
-                    hbox.pack_start(lbl, True, False, 6)
-                    vbox.pack_start(hbox, False, False, 6)
+                        description = "{} - {}\n{}\n{}".format(effective, expires, regions,
+                                                                alert["description"].splitlines()[0])
+                        if description not in descriptions:
+                            descriptions.append(description)
                 except Exception as e:
                     eprint(e)
+            lbl.set_tooltip_text("\n\n".join(descriptions))
 
         # 5-DAY FORECAST
         if self.forecast["cod"] in [200, "200"]:
