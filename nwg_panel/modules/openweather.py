@@ -69,7 +69,7 @@ def on_button_press(window, event):
 
 class OpenWeather(Gtk.EventBox):
     def __init__(self, settings, icons_path=""):
-        self.warnings_box = None
+        self.alerts_scrolled_window = None
         defaults = {"appid": "",
                     "weatherbit-api-key": "",
                     "lat": None,
@@ -148,7 +148,7 @@ class OpenWeather(Gtk.EventBox):
 
         self.weather = None
         self.forecast = None
-        self.alerts = None
+        self.alerts_json = None
 
         self.connect('button-press-event', self.on_button_press)
         self.add_events(Gdk.EventMask.SCROLL_MASK)
@@ -291,15 +291,15 @@ class OpenWeather(Gtk.EventBox):
             eprint(hms(), "Requesting alerts data")
             try:
                 r = requests.get(self.alerts_request)
-                self.alerts = json.loads(r.text)
-                if "alerts" in self.alerts:
-                    save_json(self.alerts, self.alerts_file)
+                self.alerts_json = json.loads(r.text)
+                if "alerts" in self.alerts_json:
+                    save_json(self.alerts_json, self.alerts_file)
             except Exception as e:
-                self.alerts = None
+                self.alerts_json = None
                 eprint(e)
-        elif not self.alerts and os.path.isfile(self.alerts_file):
+        elif not self.alerts_json and os.path.isfile(self.alerts_file):
             eprint(hms(), "Loading alerts data from file")
-            self.alerts = load_json(self.alerts_file)
+            self.alerts_json = load_json(self.alerts_file)
 
     def update_widget(self):
         if self.weather and self.weather["cod"] and self.weather["cod"] in [200, "200"]:
@@ -314,7 +314,7 @@ class OpenWeather(Gtk.EventBox):
                     except:
                         print("Failed setting image from {}".format(new_path))
 
-            if self.alerts and self.alerts["alerts"]:
+            if self.alerts_json and self.alerts_json["alerts"]:
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join(self.weather_icons, "exclamation.svg"),
                                                                 self.settings["icon-size"], self.settings["icon-size"])
                 self.alert_image.set_from_pixbuf(pixbuf)
@@ -488,48 +488,63 @@ class OpenWeather(Gtk.EventBox):
                                                                     wind_speed, wind_dir, wind_gust, pressure, clouds,
                                                                     visibility))
         hbox.pack_start(lbl, True, True, 0)
-        vbox.pack_start(hbox, False, False, 6)
+        vbox.pack_start(hbox, False, False, 0)
 
         # Alerts, if any
-        if self.alerts and "alerts" in self.alerts and "title" in self.alerts["alerts"][0]:
-            hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-            eb = Gtk.EventBox()
-            lbl = Gtk.Label()
-            eb.add(lbl)
-            eb.connect("button-press-event", self.on_warning_clicked)
-            lbl.set_line_wrap(True)
-            lbl.set_justify(Gtk.Justification.CENTER)
-            # We will set markup later, as we don't yet know the number of unique alert
-            hbox.pack_start(eb, True, False, 6)
-            vbox.pack_start(hbox, False, False, 6)
-            descriptions = []
-            self.warnings_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-            w_label = Gtk.Label()
-            w_label.set_line_wrap(True)
-            self.warnings_box.pack_start(w_label, False, False, 10)
-            vbox.pack_start(self.warnings_box, False, False, 0)
-            for alert in self.alerts["alerts"]:
-                try:
-                    if alert["description"]:
-                        effective = alert["effective_local"] if "effective_local" in alert else ""
-                        expires = alert["expires_local"] if "expires_local" in alert else ""
-                        regions = ""
-                        if "regions" in alert and alert["regions"]:
-                            regions = "[ "
-                            for r in alert["regions"]:
-                                regions += "{} ".format(r)
-                            regions += "]"
-                        description = "<b>{}: {} - {}</b>\n{}\n{}".format(alert["title"], effective, expires, regions,
-                                                                          alert["description"].splitlines()[0])
-                        if description not in descriptions:
-                            descriptions.append(description)
-                except Exception as e:
-                    eprint(e)
+        if self.alerts_json and "alerts" in self.alerts_json and self.alerts_json["alerts"]:
+            if "title" in self.alerts_json["alerts"][0]:
+                eb = Gtk.EventBox()
+                hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+                eb.add(hbox)
+                eb.connect("button-press-event", self.on_warning_clicked)
+                box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+                lbl = Gtk.Label()
+                lbl.set_line_wrap(True)
+                lbl.set_justify(Gtk.Justification.CENTER)
+                # We will set markup later, as we don't yet know the number of unique alert
+                box.pack_start(lbl, False, False, 0)
+                img = self.svg2img("pan-end-symbolic.svg")
+                box.pack_start(img, False, False, 0)
+                hbox.pack_start(box, True, False, 0)
+                vbox.pack_start(eb, False, False, 6)
 
-            # Use just the 1st alerts "title", add total alerts count
-            lbl.set_markup('<span bgcolor="#cc0000"> {} ({}) >> </span>'.format(self.alerts["alerts"][0]["title"],
-                                                                                len(descriptions)))
-            w_label.set_markup("\n\n".join(descriptions))
+                self.alerts_scrolled_window = Gtk.ScrolledWindow.new(None, None)
+                self.alerts_scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+                self.alerts_scrolled_window.set_propagate_natural_height(True)
+                warnings_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+                warnings_box.set_property("margin", 10)
+                self.alerts_scrolled_window.add(warnings_box)
+                w_label = Gtk.Label()
+                w_label.set_line_wrap(True)
+                warnings_box.pack_start(w_label, False, False, 0)
+                vbox.pack_start(self.alerts_scrolled_window, False, False, 10)
+
+                descriptions = []
+                for alert in self.alerts_json["alerts"]:
+                    try:
+                        if alert["description"]:
+                            effective = alert["effective_local"] if "effective_local" in alert else ""
+                            expires = alert["expires_local"] if "expires_local" in alert else ""
+                            regions = ""
+                            if "regions" in alert and alert["regions"]:
+                                regions = "[ "
+                                for r in alert["regions"]:
+                                    regions += "{} ".format(r)
+                                regions += "]"
+                            description = "<b>{}: {} - {}</b>\n{}\n{}".format(alert["title"], effective, expires,
+                                                                              regions,
+                                                                              alert["description"].splitlines()[0])
+                            # Omit repeating alerts
+                            if description not in descriptions:
+                                descriptions.append(description)
+                    except Exception as e:
+                        eprint(e)
+
+                # Use just the 1st alerts "title", add unlabeled alerts count
+                lbl.set_markup(
+                    '<span bgcolor="#cc0000"> {} (+{}) </span>'.format(self.alerts_json["alerts"][0]["title"],
+                                                                       len(descriptions) - 1))
+                w_label.set_markup("\n\n".join(descriptions))
 
         # 5-DAY FORECAST
         if self.forecast["cod"] in [200, "200"]:
@@ -699,10 +714,12 @@ class OpenWeather(Gtk.EventBox):
             vbox.pack_start(lbl, False, False, 0)
 
         self.popup.show_all()
-        self.warnings_box.hide()
+        if self.alerts_scrolled_window:
+            self.alerts_scrolled_window.hide()
 
     def on_warning_clicked(self, label, event):
-        if not self.warnings_box.is_visible():
-            self.warnings_box.show()
-        else:
-            self.warnings_box.hide()
+        if self.alerts_scrolled_window:
+            if not self.alerts_scrolled_window.is_visible():
+                self.alerts_scrolled_window.show()
+            else:
+                self.alerts_scrolled_window.hide()
