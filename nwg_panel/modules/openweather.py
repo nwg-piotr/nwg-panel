@@ -573,14 +573,11 @@ class OpenWeather(Gtk.EventBox):
             for i in range(len(self.forecast["list"])):
                 data = self.forecast["list"][i]
 
-                # Bullet
-                img = self.svg2img("pan-end-symbolic.svg")
-                grid.attach(img, 0, i, 1, 1)
-
                 # Date
                 dt = datetime.fromtimestamp(data["dt"]).strftime("%a, %d %b")
                 box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 lbl = Gtk.Label()
+                lbl.set_property("margin-left", 10)
                 lbl.set_markup('<span font_size="{}">{}</span>'.format(self.settings["popup-text-size"], dt))
                 box.pack_start(lbl, False, False, 0)
                 grid.attach(box, 1, i, 1, 1)
