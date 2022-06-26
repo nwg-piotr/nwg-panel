@@ -69,6 +69,7 @@ def on_button_press(window, event):
 
 class OpenWeather(Gtk.EventBox):
     def __init__(self, settings, icons_path=""):
+        self.src_tag = 0
         self.alerts_scrolled_window = None
         defaults = {"appid": "",
                     "weatherbit-api-key": "",
@@ -373,6 +374,9 @@ class OpenWeather(Gtk.EventBox):
         self.popup = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         self.popup.set_property("name", self.settings["popup-css-name"])
 
+        self.popup.connect("leave_notify_event", self.on_window_exit)
+        self.popup.connect("enter_notify_event", self.on_window_enter)
+
         GtkLayerShell.init_for_window(self.popup)
 
         GtkLayerShell.set_layer(self.popup, GtkLayerShell.Layer.TOP)
@@ -394,8 +398,6 @@ class OpenWeather(Gtk.EventBox):
         # set horizontal margin (same for left & right)
         GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.LEFT, self.settings["popup-margin-horizontal"])
         GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.RIGHT, self.settings["popup-margin-horizontal"])
-
-        # self.popup.connect('button-release-event', on_button_press)
 
         vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         vbox.set_property("margin", 6)
@@ -496,7 +498,9 @@ class OpenWeather(Gtk.EventBox):
                 eb = Gtk.EventBox()
                 hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 eb.add(hbox)
-                eb.connect("button-press-event", self.on_warning_clicked)
+                eb.connect("button-release-event", self.on_warning_clicked)
+                eb.connect("enter_notify_event", self.on_window_enter)
+                eb.connect("leave_notify_event", self.on_window_enter)
                 box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 lbl = Gtk.Label()
                 lbl.set_line_wrap(True)
@@ -509,6 +513,7 @@ class OpenWeather(Gtk.EventBox):
                 vbox.pack_start(eb, False, False, 6)
 
                 self.alerts_scrolled_window = Gtk.ScrolledWindow.new(None, None)
+                self.alerts_scrolled_window.connect("enter_notify_event", self.on_window_enter)
                 self.alerts_scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
                 self.alerts_scrolled_window.set_propagate_natural_height(True)
                 warnings_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
@@ -556,6 +561,7 @@ class OpenWeather(Gtk.EventBox):
 
             scrolled_window = Gtk.ScrolledWindow.new(None, None)
             scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+            scrolled_window.connect("enter_notify_event", self.on_window_enter)
 
             grid = Gtk.Grid.new()
             grid.set_column_spacing(3)
@@ -723,3 +729,19 @@ class OpenWeather(Gtk.EventBox):
                 self.alerts_scrolled_window.show()
             else:
                 self.alerts_scrolled_window.hide()
+
+    def on_window_exit(self, w, e):
+        if self.popup.get_visible():
+            self.src_tag = GLib.timeout_add_seconds(1, self.close_and_clear_tag)
+        return True
+
+    def close_and_clear_tag(self):
+        self.popup.close()
+        self.popup.destroy()
+        self.src_tag = 0
+
+    def on_window_enter(self, *args):
+        if self.src_tag > 0:
+            GLib.Source.remove(self.src_tag)
+            self.src_tag = 0
+        return True
