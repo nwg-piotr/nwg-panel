@@ -531,13 +531,12 @@ class OpenWeather(Gtk.EventBox):
                             effective = alert["effective_local"] if "effective_local" in alert else ""
                             expires = alert["expires_local"] if "expires_local" in alert else ""
                             regions = ""
-                            if "regions" in alert and alert["regions"]:
-                                regions = "[ "
-                                for r in alert["regions"]:
-                                    regions += "{} ".format(r)
-                                regions += "]"
-                            description = "<b>{}: {} - {}</b>\n{}\n{}".format(alert["title"], effective, expires,
-                                                                              regions,
+                            # if "regions" in alert and alert["regions"]:
+                            #     regions = "[ "
+                            #     for r in alert["regions"]:
+                            #         regions += "{} ".format(r)
+                            #     regions += "]"
+                            description = "<b>{}: {} - {}</b>\n\n{}\n".format(alert["title"], effective, expires,
                                                                               alert["description"].splitlines()[0])
                             # Omit repeating alerts
                             if description not in descriptions:
@@ -546,9 +545,13 @@ class OpenWeather(Gtk.EventBox):
                         eprint(e)
 
                 # Use just the 1st alerts "title", add unlabeled alerts count
-                lbl.set_markup(
-                    '<span bgcolor="#cc0000"> {} (+{}) </span>'.format(self.alerts_json["alerts"][0]["title"],
-                                                                       len(descriptions) - 1))
+                if len(descriptions) > 1:
+                    lbl.set_markup(
+                        '<span bgcolor="#cc0000"> {} (+{}) </span>'.format(self.alerts_json["alerts"][0]["title"],
+                                                                           len(descriptions) - 1))
+                else:
+                    lbl.set_markup('<span bgcolor="#cc0000"> {} </span>'.format(self.alerts_json["alerts"][0]["title"]))
+
                 w_label.set_markup("\n\n".join(descriptions))
 
         # 5-DAY FORECAST
@@ -724,6 +727,7 @@ class OpenWeather(Gtk.EventBox):
         if self.alerts_scrolled_window:
             if not self.alerts_scrolled_window.is_visible():
                 self.alerts_scrolled_window.show()
+                self.alerts_scrolled_window.set_size_request(0, int(self.popup.get_allocated_height() / 4))
             else:
                 self.alerts_scrolled_window.hide()
 
