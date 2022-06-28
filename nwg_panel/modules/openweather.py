@@ -444,7 +444,7 @@ class OpenWeather(Gtk.EventBox):
         # row 2: Sunrise/sunset
         if self.weather["sys"]["sunrise"] and self.weather["sys"]["sunset"]:
             wbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-            vbox.pack_start(wbox, False, False, 0)
+            vbox.pack_start(wbox, False, False, 6)
             hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
             wbox.pack_start(hbox, True, False, 0)
             img = self.svg2img("sunrise.svg")
