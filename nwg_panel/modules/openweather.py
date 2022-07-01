@@ -530,7 +530,12 @@ class OpenWeather(Gtk.EventBox):
                         if alert["description"]:
                             effective = alert["effective_local"] if "effective_local" in alert else ""
                             expires = alert["expires_local"] if "expires_local" in alert else ""
-                            regions = ""
+
+                            if "T" in effective:
+                                effective = effective.replace("T", " ")
+                            if "T" in expires:
+                                expires = expires.replace("T", " ")
+                            # regions = ""
                             # if "regions" in alert and alert["regions"]:
                             #     regions = "[ "
                             #     for r in alert["regions"]:
@@ -564,7 +569,7 @@ class OpenWeather(Gtk.EventBox):
 
             scrolled_window = Gtk.ScrolledWindow.new(None, None)
             scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-            scrolled_window.connect("enter_notify_event", self.on_window_enter)
+            scrolled_window.connect("enter-notify-event", self.on_window_enter)
 
             grid = Gtk.Grid.new()
             grid.set_column_spacing(3)
