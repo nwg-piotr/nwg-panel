@@ -657,7 +657,8 @@ def list_configs(config_dir):
     configs = {}
     # allow to store json files other than panel config files in the config directory
     # (prevents from crash w/ nwg-drawer>=0.1.7 and future nwg-menu versions)
-    exclusions = [os.path.join(config_dir, "preferred-apps.json")]
+    exclusions = [os.path.join(config_dir, "preferred-apps.json"),
+                  os.path.join(config_dir, "calendar.json")]
     entries = os.listdir(config_dir)
     entries.sort()
     for entry in entries:
