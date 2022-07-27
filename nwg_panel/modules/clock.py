@@ -36,7 +36,6 @@ class Clock(Gtk.EventBox):
 
         defaults = {"root-css-name": "root-clock",
                     "css-name": "clock",
-                    "popup-css-name": "calendar",
                     "icon-size": 24,
                     "tooltip-text": "",
                     "tooltip-date-format": False,
@@ -45,15 +44,18 @@ class Clock(Gtk.EventBox):
                     "on-scroll-up": "",
                     "on-scroll-down": "",
                     "interval": 1,
-                    "calendar-interval": 10,
                     "angle": 0.0,
-                    "calendar-path": ""}
+                    "calendar-path": "",
+                    "popup-css-name": "calendar",
+                    "popup-placement": "top",
+                    "popup-margin-horizontal": 0,
+                    "popup-margin-vertical": 6,
+                    "calendar-interval": 60}
 
         for key in defaults:
             check_key(settings, key, defaults[key])
 
         self.reminder_img = Gtk.Image()
-        # update_image(self.reminder_img, "gtk-apply", self.settings["icon-size"], self.icons_path)
 
         self.calendar = {}
 
@@ -83,7 +85,7 @@ class Clock(Gtk.EventBox):
             Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
 
         if settings["calendar-interval"] > 0:
-            Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["calendar-interval"], self.load_calendar)
+            Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["calendar-interval"], self.reload_calendar)
 
 
     def update_widget(self, output, tooltip=""):
@@ -173,6 +175,21 @@ class Clock(Gtk.EventBox):
         GtkLayerShell.set_layer(self.popup, GtkLayerShell.Layer.TOP)
         GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.TOP, 1)
         GtkLayerShell.set_keyboard_interactivity(self.popup, True)
+
+        if self.settings["popup-placement"] in ["top-left", "top", "top-right"]:
+            GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.TOP, 1)
+        elif self.settings["popup-placement"] in ["bottom-left", "bottom", "bottom-right"]:
+            GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.BOTTOM, 1)
+
+        if self.settings["popup-placement"] in ["top-left", "bottom-left"]:
+            GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.LEFT, 1)
+        elif self.settings["popup-placement"] in ["top-right", "bottom-right"]:
+            GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.RIGHT, 1)
+
+        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.TOP, self.settings["popup-margin-vertical"])
+        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.BOTTOM, self.settings["popup-margin-vertical"])
+        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.RIGHT, self.settings["popup-margin-horizontal"])
+        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.LEFT, self.settings["popup-margin-horizontal"])
 
         vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         vbox.set_property("margin", 6)
@@ -276,6 +293,10 @@ class Clock(Gtk.EventBox):
                 save_json(self.calendar, self.path)
 
         return True
+
+    def reload_calendar(self):
+        if not self.popup or not self.popup.is_visible():
+            self.load_calendar()
 
     def handle_keyboard(self, win, event):
         if event.type == Gdk.EventType.KEY_RELEASE and event.keyval == Gdk.KEY_Escape:
