@@ -62,24 +62,6 @@ class Clock(Gtk.EventBox):
             check_key(settings, key, defaults[key])
 
         self.calendar = {}
-        if settings["calendar-path"]:
-            self.path = os.path.join(settings["calendar-path"], "calendar.json")
-            c = load_json(self.path)
-            if c is not None:
-                self.calendar = c
-            else:
-                save_json(self.calendar, self.path)
-        else:
-            config_dir = get_config_dir()
-            self.path = os.path.join(config_dir, "calendar.json")
-            c = load_json(self.path)
-            if c is not None:
-                self.calendar = c
-            else:
-                save_json(self.calendar, self.path)
-
-        print("self.calendar = ", self.calendar)
-        print("self.path = ", self.path)
 
         self.set_property("name", settings["root-css-name"])
         self.label.set_property("name", settings["css-name"])
@@ -168,6 +150,8 @@ class Clock(Gtk.EventBox):
 
             self.popup.destroy()
 
+        self.load_calendar()
+
         self.popup = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         self.popup.connect("key-release-event", self.handle_keyboard)
         GtkLayerShell.init_for_window(self.popup)
@@ -180,9 +164,14 @@ class Clock(Gtk.EventBox):
         self.popup.add(vbox)
         self.cal = Gtk.Calendar.new()
         self.cal.connect("day-selected", self.on_day_selected)
+        self.cal.connect("next-month", self.mark_days)
+        self.cal.connect("prev-month", self.mark_days)
+        self.cal.connect("next-year", self.mark_days)
+        self.cal.connect("prev-year", self.mark_days)
         vbox.pack_start(self.cal, False, False, 0)
 
         self.popup.show_all()
+        self.mark_days()
 
         self.note_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         self.note_entry = Gtk.Entry()
@@ -210,6 +199,29 @@ class Clock(Gtk.EventBox):
 
         self.popup.set_size_request(self.popup.get_allocated_width() * 2, 0)
 
+        y, m, d = self.cal.get_date()
+        if self.is_marked(y, m, d):
+            self.cal.select_day(d)
+
+    def mark_days(self, *args):
+        for i in range(1, 32):
+            self.cal.unmark_day(i)
+        y, m, d = self.cal.get_date()
+        y, m, d = str(y), str(m), str(d)
+        if y in self.calendar and m in self.calendar[y]:
+            for i in range(1, 32):
+                if str(i) in self.calendar[y][m]:
+                    self.cal.mark_day(i)
+
+    def is_marked(self, year, month, day):
+        y = str(year)
+        m = str(month)
+        d = str(day)
+        if y in self.calendar and m in self.calendar[y] and d in self.calendar[y][m] and self.calendar[y][m][d]:
+            return True
+
+        return False
+
     def cancel_close_popup(self, *args):
         self.popup.destroy()
 
@@ -233,21 +245,44 @@ class Clock(Gtk.EventBox):
         save_json(c, self.path)
         self.popup.destroy()
 
+    def load_calendar(self):
+        if self.settings["calendar-path"]:
+            self.path = os.path.join(self.settings["calendar-path"], "calendar.json")
+            c = load_json(self.path)
+            if c is not None:
+                self.calendar = c
+            else:
+                save_json(self.calendar, self.path)
+        else:
+            config_dir = get_config_dir()
+            self.path = os.path.join(config_dir, "calendar.json")
+            c = load_json(self.path)
+            if c is not None:
+                self.calendar = c
+            else:
+                save_json(self.calendar, self.path)
+
+        print("self.calendar = ", self.calendar)
+        print("self.path = ", self.path)
+
     def handle_keyboard(self, win, event):
         if event.type == Gdk.EventType.KEY_RELEASE and event.keyval == Gdk.KEY_Escape:
             self.popup.destroy()
 
     def on_day_selected(self, cal):
         y, m, d = cal.get_date()
-        try:
+        y, m, d = str(y), str(m), str(d)
+        if y in self.calendar and m in self.calendar[y] and d in self.calendar[y][m]:
             self.note_entry.set_text(self.calendar[y][m][d])
-        except KeyError as e:
-            print("KeyError", self.calendar, e)
+        else:
+            print("No data for this date")
             self.note_entry.set_text("")
+
         self.note_box.show_all()
 
     def on_note_changed(self, eb):
         y, m, d = self.cal.get_date()
+        y, m, d = str(y), str(m), str(d)
         if y not in self.calendar:
             self.calendar[y] = {}
         if m not in self.calendar[y]:
