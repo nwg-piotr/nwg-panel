@@ -7,7 +7,7 @@ import subprocess
 import threading
 from datetime import datetime
 
-from nwg_panel.tools import check_key, get_config_dir, load_json, save_json
+from nwg_panel.tools import check_key, get_config_dir, load_json, save_json, update_image
 
 import gi
 
@@ -18,7 +18,14 @@ from gi.repository import Gtk, Gdk, GtkLayerShell
 
 
 class Clock(Gtk.EventBox):
-    def __init__(self, settings):
+    def __init__(self, settings, icons_path=""):
+        self.path = ""
+        self.cal = None
+        self.note_box = None
+        self.popup = None
+        self.note_entry = None
+        self.icons_path = icons_path
+
         self.settings = settings
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
@@ -56,21 +63,23 @@ class Clock(Gtk.EventBox):
 
         self.calendar = {}
         if settings["calendar-path"]:
-            c = load_json(os.path.join(settings["calendar-path"], "calendar.json"))
+            self.path = os.path.join(settings["calendar-path"], "calendar.json")
+            c = load_json(self.path)
             if c is not None:
                 self.calendar = c
             else:
-                save_json(self.calendar, os.path.join(settings["calendar-path"], "calendar.json"))
+                save_json(self.calendar, self.path)
         else:
             config_dir = get_config_dir()
-            c = load_json(os.path.join(config_dir, "calendar.json"))
+            self.path = os.path.join(config_dir, "calendar.json")
+            c = load_json(self.path)
             if c is not None:
                 self.calendar = c
             else:
-                save_json(self.calendar, os.path.join(config_dir, "calendar.json"))
+                save_json(self.calendar, self.path)
 
         print("self.calendar = ", self.calendar)
-        self.popup = Gtk.Window()
+        print("self.path = ", self.path)
 
         self.set_property("name", settings["root-css-name"])
         self.label.set_property("name", settings["css-name"])
@@ -152,25 +161,99 @@ class Clock(Gtk.EventBox):
         subprocess.Popen('exec {}'.format(cmd), shell=True)
 
     def display_calendar_window(self):
-        if self.popup.is_visible():
-            self.popup.close()
-            self.popup.destroy()
-            return
+        if self.popup:
+            if self.popup.is_visible():
+                self.popup.destroy()
+                return
 
-        self.popup.destroy()
+            self.popup.destroy()
 
         self.popup = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
+        self.popup.connect("key-release-event", self.handle_keyboard)
         GtkLayerShell.init_for_window(self.popup)
         GtkLayerShell.set_layer(self.popup, GtkLayerShell.Layer.TOP)
         GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.TOP, 1)
+        GtkLayerShell.set_keyboard_interactivity(self.popup, True)
 
         vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         vbox.set_property("margin", 6)
         self.popup.add(vbox)
-        cal = Gtk.Calendar.new()
-        cal.set_detail_width_chars(10)
-        vbox.pack_start(cal, False, False, 0)
+        self.cal = Gtk.Calendar.new()
+        self.cal.connect("day-selected", self.on_day_selected)
+        vbox.pack_start(self.cal, False, False, 0)
 
         self.popup.show_all()
 
-        self.popup.set_size_request(self.popup.get_allocated_width() * 1.5, 0)
+        self.note_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        self.note_entry = Gtk.Entry()
+        self.note_entry.set_property("margin-top", 6)
+        self.note_entry.connect("changed", self.on_note_changed)
+        vbox.pack_start(self.note_box, False, False, 0)
+        self.note_box.pack_start(self.note_entry, True, True, 0)
+        btn = Gtk.Button()
+        img = Gtk.Image()
+        btn.set_image(img)
+        update_image(img, "gtk-close", 32, self.icons_path)
+        btn.set_tooltip_text("Cancel & close")
+        btn.connect("clicked", self.cancel_close_popup)
+        btn.set_always_show_image(True)
+        self.note_box.pack_start(btn, False, False, 0)
+
+        btn = Gtk.Button()
+        img = Gtk.Image()
+        btn.set_image(img)
+        update_image(img, "gtk-apply", 24, self.icons_path)
+        btn.set_tooltip_text("Apply & close")
+        btn.connect("clicked", self.apply_close_popup)
+        btn.set_always_show_image(True)
+        self.note_box.pack_start(btn, False, False, 0)
+
+        self.popup.set_size_request(self.popup.get_allocated_width() * 2, 0)
+
+    def cancel_close_popup(self, *args):
+        self.popup.destroy()
+
+    def apply_close_popup(self, *args):
+        c = {}
+        if len(self.calendar) > 0:
+            for key_year in self.calendar:
+                if len(self.calendar[key_year]) > 0:
+                    for key_month in self.calendar[key_year]:
+                        if len(self.calendar[key_year][key_month]) > 0:
+                            for key_day in self.calendar[key_year][key_month]:
+                                if self.calendar[key_year][key_month][key_day]:
+                                    if key_year not in c:
+                                        c[key_year] = {}
+                                    if key_month not in c[key_year]:
+                                        c[key_year][key_month] = {}
+                                    note = self.calendar[key_year][key_month][key_day]
+                                    if note:
+                                        c[key_year][key_month][key_day] = note
+        print("c = ", c)
+        save_json(c, self.path)
+        self.popup.destroy()
+
+    def handle_keyboard(self, win, event):
+        if event.type == Gdk.EventType.KEY_RELEASE and event.keyval == Gdk.KEY_Escape:
+            self.popup.destroy()
+
+    def on_day_selected(self, cal):
+        y, m, d = cal.get_date()
+        try:
+            self.note_entry.set_text(self.calendar[y][m][d])
+        except KeyError:
+            self.note_entry.set_text("")
+        self.note_box.show_all()
+
+    def on_note_changed(self, eb):
+        y, m, d = self.cal.get_date()
+        if y not in self.calendar:
+            self.calendar[y] = {}
+        if m not in self.calendar[y]:
+            self.calendar[y][m] = {}
+        note = eb.get_text()
+        if note:
+            self.calendar[y][m][d] = eb.get_text()
+        elif d in self.calendar[y][m]:
+            self.calendar[y][m].pop(d, None)
+        print(self.calendar)

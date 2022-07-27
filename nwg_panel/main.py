@@ -203,7 +203,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
         if item == "clock":
             if item in panel:
-                clock = Clock(panel[item])
+                clock = Clock(panel[item], icons_path=icons_path)
                 container.pack_start(clock, False, False, panel["items-padding"])
             else:
                 clock = Clock({})
