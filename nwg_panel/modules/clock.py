@@ -7,7 +7,7 @@ import subprocess
 import threading
 from datetime import datetime
 
-from nwg_panel.tools import check_key, get_config_dir, load_json, save_json, update_image
+from nwg_panel.tools import check_key, get_config_dir, local_dir, load_json, save_json, update_image
 
 import gi
 
@@ -19,6 +19,7 @@ from gi.repository import Gtk, Gdk, GtkLayerShell
 
 class Clock(Gtk.EventBox):
     def __init__(self, settings, icons_path=""):
+        self.reminder_img_updated = False
         self.path = ""
         self.cal = None
         self.note_box = None
@@ -29,25 +30,14 @@ class Clock(Gtk.EventBox):
         self.settings = settings
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+
         self.add(self.box)
         self.label = Gtk.Label.new("")
-
-        check_key(settings, "root-css-name", "root-clock")
-        check_key(settings, "css-name", "clock")
-        check_key(settings, "tooltip-text", "")
-        check_key(settings, "tooltip-date-format", False)
-        check_key(settings, "on-left-click", "")
-        check_key(settings, "on-right-click", "")
-        check_key(settings, "on-middle-click", "")
-        check_key(settings, "on-scroll-up", "")
-        check_key(settings, "on-scroll-down", "")
-
-        check_key(settings, "interval", 1)
-        check_key(settings, "angle", 0.0)
 
         defaults = {"root-css-name": "root-clock",
                     "css-name": "clock",
                     "popup-css-name": "calendar",
+                    "icon-size": 24,
                     "tooltip-text": "",
                     "tooltip-date-format": False,
                     "on-right-click": "",
@@ -55,11 +45,15 @@ class Clock(Gtk.EventBox):
                     "on-scroll-up": "",
                     "on-scroll-down": "",
                     "interval": 1,
+                    "calendar-interval": 10,
                     "angle": 0.0,
                     "calendar-path": ""}
 
         for key in defaults:
             check_key(settings, key, defaults[key])
+
+        self.reminder_img = Gtk.Image()
+        # update_image(self.reminder_img, "gtk-apply", self.settings["icon-size"], self.icons_path)
 
         self.calendar = {}
 
@@ -81,11 +75,16 @@ class Clock(Gtk.EventBox):
             self.add_events(Gdk.EventMask.SCROLL_MASK)
             self.connect('scroll-event', self.on_scroll)
 
+        self.load_calendar()
         self.build_box()
         self.refresh()
 
         if settings["interval"] > 0:
             Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
+
+        if settings["calendar-interval"] > 0:
+            Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["calendar-interval"], self.load_calendar)
+
 
     def update_widget(self, output, tooltip=""):
         self.label.set_text(output)
@@ -103,6 +102,22 @@ class Clock(Gtk.EventBox):
         except Exception as e:
             print(e)
 
+        ymd = now.strftime("%Y#%m#%d").split("#")
+        y = ymd[0]
+        try:
+            month = int(ymd[1]) - 1
+            m = str(month)
+        except:
+            m = None
+        d = ymd[2]
+        if self.has_note(y, m, d):
+            if not self.reminder_img_updated:
+                update_image(self.reminder_img, "gtk-apply", self.settings["icon-size"], self.icons_path)
+                self.reminder_img_updated = True
+            self.reminder_img.set_visible(True)
+        else:
+            self.reminder_img.set_visible(False)
+
     def refresh(self):
         thread = threading.Thread(target=self.get_output)
         thread.daemon = True
@@ -110,8 +125,8 @@ class Clock(Gtk.EventBox):
         return True
 
     def build_box(self):
-        self.box.pack_start(self.label, False, False, 4)
-        self.label.show()
+        self.box.pack_start(self.reminder_img, False, False, 0)
+        self.box.pack_start(self.label, False, False, 6)
 
     def on_enter_notify_event(self, widget, event):
         widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
@@ -182,7 +197,7 @@ class Clock(Gtk.EventBox):
         btn = Gtk.Button()
         img = Gtk.Image()
         btn.set_image(img)
-        update_image(img, "gtk-close", 32, self.icons_path)
+        update_image(img, "gtk-close", self.settings["icon-size"], self.icons_path)
         btn.set_tooltip_text("Cancel & close")
         btn.connect("clicked", self.cancel_close_popup)
         btn.set_always_show_image(True)
@@ -191,7 +206,7 @@ class Clock(Gtk.EventBox):
         btn = Gtk.Button()
         img = Gtk.Image()
         btn.set_image(img)
-        update_image(img, "gtk-apply", 24, self.icons_path)
+        update_image(img, "gtk-apply", self.settings["icon-size"], self.icons_path)
         btn.set_tooltip_text("Apply & close")
         btn.connect("clicked", self.apply_close_popup)
         btn.set_always_show_image(True)
@@ -200,7 +215,7 @@ class Clock(Gtk.EventBox):
         self.popup.set_size_request(self.popup.get_allocated_width() * 2, 0)
 
         y, m, d = self.cal.get_date()
-        if self.is_marked(y, m, d):
+        if self.has_note(y, m, d):
             self.cal.select_day(d)
 
     def mark_days(self, *args):
@@ -213,7 +228,7 @@ class Clock(Gtk.EventBox):
                 if str(i) in self.calendar[y][m]:
                     self.cal.mark_day(i)
 
-    def is_marked(self, year, month, day):
+    def has_note(self, year, month, day):
         y = str(year)
         m = str(month)
         d = str(day)
@@ -241,7 +256,6 @@ class Clock(Gtk.EventBox):
                                     note = self.calendar[key_year][key_month][key_day]
                                     if note:
                                         c[key_year][key_month][key_day] = note
-        print("c = ", c)
         save_json(c, self.path)
         self.popup.destroy()
 
@@ -254,16 +268,14 @@ class Clock(Gtk.EventBox):
             else:
                 save_json(self.calendar, self.path)
         else:
-            config_dir = get_config_dir()
-            self.path = os.path.join(config_dir, "calendar.json")
+            self.path = os.path.join(local_dir(), "calendar.json")
             c = load_json(self.path)
             if c is not None:
                 self.calendar = c
             else:
                 save_json(self.calendar, self.path)
 
-        print("self.calendar = ", self.calendar)
-        print("self.path = ", self.path)
+        return True
 
     def handle_keyboard(self, win, event):
         if event.type == Gdk.EventType.KEY_RELEASE and event.keyval == Gdk.KEY_Escape:
@@ -275,7 +287,6 @@ class Clock(Gtk.EventBox):
         if y in self.calendar and m in self.calendar[y] and d in self.calendar[y][m]:
             self.note_entry.set_text(self.calendar[y][m][d])
         else:
-            print("No data for this date")
             self.note_entry.set_text("")
 
         self.note_box.show_all()
@@ -292,4 +303,3 @@ class Clock(Gtk.EventBox):
             self.calendar[y][m][d] = eb.get_text()
         elif d in self.calendar[y][m]:
             self.calendar[y][m].pop(d, None)
-        print(self.calendar)
