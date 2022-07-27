@@ -241,7 +241,8 @@ class Clock(Gtk.EventBox):
         y, m, d = cal.get_date()
         try:
             self.note_entry.set_text(self.calendar[y][m][d])
-        except KeyError:
+        except KeyError as e:
+            print("KeyError", self.calendar, e)
             self.note_entry.set_text("")
         self.note_box.show_all()
 
