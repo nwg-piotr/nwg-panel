@@ -285,6 +285,7 @@ class Clock(Gtk.EventBox):
             c = load_json(self.path)
             if c is not None:
                 self.calendar = c
+                return True
             else:
                 result = save_json(self.calendar, self.path)
                 if result == "ok":
