@@ -46,11 +46,12 @@ class Clock(Gtk.EventBox):
                     "interval": 1,
                     "angle": 0.0,
                     "calendar-path": "",
-                    "popup-css-name": "calendar",
-                    "popup-placement": "top",
-                    "popup-margin-horizontal": 0,
-                    "popup-margin-vertical": 6,
-                    "calendar-interval": 60}
+                    "calendar-css-name": "calendar-window",
+                    "calendar-placement": "top",
+                    "calendar-margin-horizontal": 0,
+                    "calendar-margin-vertical": 6,
+                    "calendar-interval": 60,
+                    "calendar-on": True}
 
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -170,26 +171,27 @@ class Clock(Gtk.EventBox):
         self.load_calendar()
 
         self.popup = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
+        self.popup.set_property("name", self.settings["calendar-css-name"])
         self.popup.connect("key-release-event", self.handle_keyboard)
         GtkLayerShell.init_for_window(self.popup)
         GtkLayerShell.set_layer(self.popup, GtkLayerShell.Layer.TOP)
         GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.TOP, 1)
         GtkLayerShell.set_keyboard_interactivity(self.popup, True)
 
-        if self.settings["popup-placement"] in ["top-left", "top", "top-right"]:
+        if self.settings["calendar-placement"] in ["top-left", "top", "top-right"]:
             GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.TOP, 1)
-        elif self.settings["popup-placement"] in ["bottom-left", "bottom", "bottom-right"]:
+        elif self.settings["calendar-placement"] in ["bottom-left", "bottom", "bottom-right"]:
             GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.BOTTOM, 1)
 
-        if self.settings["popup-placement"] in ["top-left", "bottom-left"]:
+        if self.settings["calendar-placement"] in ["top-left", "bottom-left"]:
             GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.LEFT, 1)
-        elif self.settings["popup-placement"] in ["top-right", "bottom-right"]:
+        elif self.settings["calendar-placement"] in ["top-right", "bottom-right"]:
             GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.RIGHT, 1)
 
-        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.TOP, self.settings["popup-margin-vertical"])
-        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.BOTTOM, self.settings["popup-margin-vertical"])
-        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.RIGHT, self.settings["popup-margin-horizontal"])
-        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.LEFT, self.settings["popup-margin-horizontal"])
+        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.TOP, self.settings["calendar-margin-vertical"])
+        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.BOTTOM, self.settings["calendar-margin-vertical"])
+        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.RIGHT, self.settings["calendar-margin-horizontal"])
+        GtkLayerShell.set_margin(self.popup, GtkLayerShell.Edge.LEFT, self.settings["calendar-margin-horizontal"])
 
         vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         vbox.set_property("margin", 6)

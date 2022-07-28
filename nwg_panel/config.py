@@ -987,7 +987,7 @@ class EditorWrapper(object):
             "mark-autotiling": True,
             "mark-xwayland": True,
             "all-outputs": False,
-            "angle": 0.0
+            "angle": 0.0,
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1121,7 +1121,14 @@ class EditorWrapper(object):
             "root-css-name": "root-clock",
             "css-name": "clock",
             "interval": 1,
-            "angle": 0.0
+            "angle": 0.0,
+            "calendar-path": "",
+            "calendar-css-name": "calendar-window",
+            "calendar-placement": "top",
+            "calendar-margin-horizontal": 0,
+            "calendar-margin-vertical": 6,
+            "calendar-interval": 60,
+            "calendar-on": True
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1137,9 +1144,6 @@ class EditorWrapper(object):
 
         self.eb_tooltip_date = builder.get_object("tooltip-date")
         self.eb_tooltip_date.set_active(settings["tooltip-date-format"])
-
-        self.eb_on_left_click = builder.get_object("on-left-click")
-        self.eb_on_left_click.set_text(settings["on-left-click"])
 
         self.eb_on_middle_click = builder.get_object("on-middle-click")
         self.eb_on_middle_click.set_text(settings["on-middle-click"])
@@ -1167,6 +1171,36 @@ class EditorWrapper(object):
 
         self.cb_angle = builder.get_object("angle")
         self.cb_angle.set_active_id(str(settings["angle"]))
+
+        self.cb_calendar_on = builder.get_object("calendar-on")
+        self.cb_calendar_on.set_active(settings["calendar-on"])
+
+        self.combo_calendar_placement = builder.get_object("calendar-placement")
+        self.combo_calendar_placement.set_active_id(settings["calendar-placement"])
+
+        self.sb_calendar_margin_horizontal = builder.get_object("calendar-margin-horizontal")
+        self.sb_calendar_margin_horizontal.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=720, step_increment=1, page_increment=10, page_size=1)
+        self.sb_calendar_margin_horizontal.configure(adj, 1, 0)
+        self.sb_calendar_margin_horizontal.set_value(settings["calendar-margin-horizontal"])
+
+        self.sb_calendar_margin_vertical = builder.get_object("calendar-margin-vertical")
+        self.sb_calendar_margin_vertical.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=480, step_increment=1, page_increment=10, page_size=1)
+        self.sb_calendar_margin_vertical.configure(adj, 1, 0)
+        self.sb_calendar_margin_vertical.set_value(settings["calendar-margin-vertical"])
+
+        self.eb_calendar_css_name = builder.get_object("calendar-css-name")
+        self.eb_calendar_css_name.set_text(settings["calendar-css-name"])
+
+        self.eb_calendar_path = builder.get_object("calendar-path")
+        self.eb_calendar_path.set_text(settings["calendar-path"])
+
+        self.sb_calendar_interval = builder.get_object("calendar-interval")
+        self.sb_calendar_interval.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=60, upper=86400, step_increment=1, page_increment=10, page_size=1)
+        self.sb_calendar_interval.configure(adj, 1, 0)
+        self.sb_calendar_interval.set_value(settings["calendar-interval"])
 
         for item in self.scrolled_window.get_children():
             item.destroy()
