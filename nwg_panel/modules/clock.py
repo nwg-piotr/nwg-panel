@@ -7,7 +7,7 @@ import subprocess
 import threading
 from datetime import datetime
 
-from nwg_panel.tools import check_key, local_dir, load_json, save_json, update_image
+from nwg_panel.tools import check_key, eprint, local_dir, load_json, save_json, update_image
 
 import gi
 
@@ -177,7 +177,6 @@ class Clock(Gtk.EventBox):
         self.popup.connect("key-release-event", self.handle_keyboard)
         GtkLayerShell.init_for_window(self.popup)
         GtkLayerShell.set_layer(self.popup, GtkLayerShell.Layer.TOP)
-        GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.TOP, 1)
         GtkLayerShell.set_keyboard_interactivity(self.popup, True)
 
         if self.settings["calendar-placement"] in ["top-left", "top", "top-right"]:
@@ -282,19 +281,29 @@ class Clock(Gtk.EventBox):
 
     def load_calendar(self):
         if self.settings["calendar-path"]:
-            self.path = os.path.join(self.settings["calendar-path"], "calendar.json")
+            self.path = self.settings["calendar-path"]
             c = load_json(self.path)
             if c is not None:
                 self.calendar = c
             else:
-                save_json(self.calendar, self.path)
+                result = save_json(self.calendar, self.path)
+                if result == "ok":
+                    print("Created new calendar file at '{}'".format(self.path))
+                    return True
+                else:
+                    eprint("Couldn't create '{}': {}. Using default path.".format(self.path, result))
+
+        self.path = os.path.join(local_dir(), "calendar.json")
+        c = load_json(self.path)
+        if c is not None:
+            self.calendar = c
         else:
-            self.path = os.path.join(local_dir(), "calendar.json")
-            c = load_json(self.path)
-            if c is not None:
-                self.calendar = c
+            result = save_json(self.calendar, self.path)
+            if result == "ok":
+                print("Created new calendar file at '{}'".format(self.path))
+                return True
             else:
-                save_json(self.calendar, self.path)
+                eprint("Couldn't create '{}': {}. No more idea...".format(self.path, result))
 
         return True
 

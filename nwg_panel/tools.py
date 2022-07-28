@@ -208,13 +208,17 @@ def load_json(path):
         with open(path, 'r') as f:
             return json.load(f)
     except Exception as e:
-        print("Error loading json: {}".format(e))
+        eprint("Error loading json: {}".format(e))
         return None
 
 
 def save_json(src_dict, path):
-    with open(path, 'w') as f:
-        json.dump(src_dict, f, indent=2)
+    try:
+        with open(path, 'w') as f:
+            json.dump(src_dict, f, indent=2)
+        return "ok"
+    except Exception as e:
+        return e
 
 
 def save_string(string, file):

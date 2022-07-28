@@ -320,7 +320,7 @@
           <object class="GtkEntry" id="calendar-path">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">Leave blank for default '~/.local/share/nwg-panel/calendar.json'.
+            <property name="tooltip-text" translatable="yes">Leave blank for default '/home/$USER/.local/share/nwg-panel/calendar.json'.
 Or you may use e.g. '~/Dropbox/calendar.json' to sync data between your machines.
 Use dirrefent file names for multiple calendars.</property>
             <property name="placeholder-text" translatable="yes">leave blank for default</property>
