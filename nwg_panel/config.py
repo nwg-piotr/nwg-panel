@@ -1126,7 +1126,7 @@ class EditorWrapper(object):
             "calendar-css-name": "calendar-window",
             "calendar-placement": "top",
             "calendar-margin-horizontal": 0,
-            "calendar-margin-vertical": 6,
+            "calendar-margin-vertical": 0,
             "calendar-interval": 60,
             "calendar-on": True
         }
@@ -1212,7 +1212,6 @@ class EditorWrapper(object):
         settings["format"] = self.eb_format.get_text()
         settings["tooltip-text"] = self.eb_tooltip_text.get_text()
         settings["tooltip-date-format"] = self.eb_tooltip_date.get_active()
-        settings["on-left-click"] = self.eb_on_left_click.get_text()
         settings["on-middle-click"] = self.eb_on_middle_click.get_text()
         settings["on-right-click"] = self.eb_on_right_click.get_text()
 
@@ -1229,6 +1228,14 @@ class EditorWrapper(object):
         val = self.sb_interval.get_value()
         if val is not None:
             settings["interval"] = int(val)
+
+        settings["calendar-on"] = self.cb_calendar_on.get_active()
+        settings["calendar-path"] = self.eb_calendar_path.get_text()
+        settings["calendar-placement"] = self.combo_calendar_placement.get_active_id()
+        settings["calendar-margin-horizontal"] = int(self.sb_calendar_margin_horizontal.get_value())
+        settings["calendar-margin-vertical"] = int(self.sb_calendar_margin_vertical.get_value())
+        settings["calendar-css-name"] = self.eb_calendar_css_name.get_text()
+        settings["calendar-interval"] = int(self.sb_calendar_interval.get_value())
 
         save_json(self.config, self.file)
 

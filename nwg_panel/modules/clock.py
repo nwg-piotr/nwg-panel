@@ -7,7 +7,7 @@ import subprocess
 import threading
 from datetime import datetime
 
-from nwg_panel.tools import check_key, get_config_dir, local_dir, load_json, save_json, update_image
+from nwg_panel.tools import check_key, local_dir, load_json, save_json, update_image
 
 import gi
 
@@ -49,7 +49,7 @@ class Clock(Gtk.EventBox):
                     "calendar-css-name": "calendar-window",
                     "calendar-placement": "top",
                     "calendar-margin-horizontal": 0,
-                    "calendar-margin-vertical": 6,
+                    "calendar-margin-vertical": 0,
                     "calendar-interval": 60,
                     "calendar-on": True}
 
@@ -72,7 +72,9 @@ class Clock(Gtk.EventBox):
             self.settings["format"] = "%a, %d. %b  %H:%M:%S"
 
         self.connect('button-press-event', self.on_button_press)
-        self.connect('enter-notify-event', self.on_enter_notify_event)
+        if self.settings["calendar-on"] or self.settings["on-middle-click"] or self.settings["on-right-click"] or \
+                self.settings["on-scroll-up"] or self.settings["on-scroll-down"]:
+            self.connect('enter-notify-event', self.on_enter_notify_event)
         self.connect('leave-notify-event', self.on_leave_notify_event)
         if settings["on-scroll-up"] or settings["on-scroll-down"]:
             self.add_events(Gdk.EventMask.SCROLL_MASK)
@@ -87,7 +89,6 @@ class Clock(Gtk.EventBox):
 
         if settings["calendar-interval"] > 0:
             Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["calendar-interval"], self.reload_calendar)
-
 
     def update_widget(self, output, tooltip=""):
         self.label.set_text(output)
@@ -128,7 +129,8 @@ class Clock(Gtk.EventBox):
         return True
 
     def build_box(self):
-        self.box.pack_start(self.reminder_img, False, False, 0)
+        if self.settings["calendar-on"]:
+            self.box.pack_start(self.reminder_img, False, False, 0)
         self.box.pack_start(self.label, False, False, 6)
 
     def on_enter_notify_event(self, widget, event):
@@ -141,8 +143,8 @@ class Clock(Gtk.EventBox):
 
     def on_button_press(self, widget, event):
         if event.button == 1:
-            # self.launch(self.settings["on-left-click"])
-            self.display_calendar_window()
+            if self.settings["calendar-on"]:
+                self.display_calendar_window()
         elif event.button == 2 and self.settings["on-middle-click"]:
             self.launch(self.settings["on-middle-click"])
         elif event.button == 3 and self.settings["on-right-click"]:
@@ -226,7 +228,7 @@ class Clock(Gtk.EventBox):
         img = Gtk.Image()
         btn.set_image(img)
         update_image(img, "gtk-apply", self.settings["icon-size"], self.icons_path)
-        btn.set_tooltip_text("Apply & close")
+        btn.set_tooltip_text("Save & close")
         btn.connect("clicked", self.apply_close_popup)
         btn.set_always_show_image(True)
         self.note_box.pack_start(btn, False, False, 0)

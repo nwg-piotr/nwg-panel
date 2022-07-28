@@ -447,6 +447,7 @@ Use dirrefent file names for multiple calendars.</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
+            <property name="halign">start</property>
             <property name="draw-indicator">True</property>
           </object>
           <packing>
