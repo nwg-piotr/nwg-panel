@@ -36,7 +36,6 @@ class Clock(Gtk.EventBox):
 
         defaults = {"root-css-name": "root-clock",
                     "css-name": "clock",
-                    "icon-size": 24,
                     "tooltip-text": "",
                     "tooltip-date-format": False,
                     "on-right-click": "",
@@ -50,6 +49,7 @@ class Clock(Gtk.EventBox):
                     "calendar-placement": "top",
                     "calendar-margin-horizontal": 0,
                     "calendar-margin-vertical": 0,
+                    "calendar-icon-size": 24,
                     "calendar-interval": 60,
                     "calendar-on": True}
 
@@ -116,7 +116,7 @@ class Clock(Gtk.EventBox):
         d = ymd[2]
         if self.has_note(y, m, d):
             if not self.reminder_img_updated:
-                update_image(self.reminder_img, "gtk-apply", self.settings["icon-size"], self.icons_path)
+                update_image(self.reminder_img, "gtk-apply", self.settings["calendar-icon-size"], self.icons_path)
                 self.reminder_img_updated = True
             self.reminder_img.set_visible(True)
         else:
@@ -217,7 +217,7 @@ class Clock(Gtk.EventBox):
         btn = Gtk.Button()
         img = Gtk.Image()
         btn.set_image(img)
-        update_image(img, "gtk-close", self.settings["icon-size"], self.icons_path)
+        update_image(img, "gtk-close", self.settings["calendar-icon-size"], self.icons_path)
         btn.set_tooltip_text("Cancel & close")
         btn.connect("clicked", self.cancel_close_popup)
         btn.set_always_show_image(True)
@@ -226,7 +226,7 @@ class Clock(Gtk.EventBox):
         btn = Gtk.Button()
         img = Gtk.Image()
         btn.set_image(img)
-        update_image(img, "gtk-apply", self.settings["icon-size"], self.icons_path)
+        update_image(img, "gtk-apply", self.settings["calendar-icon-size"], self.icons_path)
         btn.set_tooltip_text("Save & close")
         btn.connect("clicked", self.apply_close_popup)
         btn.set_always_show_image(True)

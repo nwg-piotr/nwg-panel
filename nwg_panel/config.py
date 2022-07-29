@@ -1127,6 +1127,7 @@ class EditorWrapper(object):
             "calendar-placement": "top",
             "calendar-margin-horizontal": 0,
             "calendar-margin-vertical": 0,
+            "calendar-icon-size": 24,
             "calendar-interval": 60,
             "calendar-on": True
         }
@@ -1196,6 +1197,12 @@ class EditorWrapper(object):
         self.eb_calendar_path = builder.get_object("calendar-path")
         self.eb_calendar_path.set_text(settings["calendar-path"])
 
+        self.sb_calendar_icon_size = builder.get_object("calendar-icon-size")
+        self.sb_calendar_icon_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=512, step_increment=1, page_increment=10, page_size=1)
+        self.sb_calendar_icon_size.configure(adj, 1, 0)
+        self.sb_calendar_icon_size.set_value(settings["calendar-icon-size"])
+
         self.sb_calendar_interval = builder.get_object("calendar-interval")
         self.sb_calendar_interval.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=60, upper=86400, step_increment=1, page_increment=10, page_size=1)
@@ -1235,6 +1242,7 @@ class EditorWrapper(object):
         settings["calendar-margin-horizontal"] = int(self.sb_calendar_margin_horizontal.get_value())
         settings["calendar-margin-vertical"] = int(self.sb_calendar_margin_vertical.get_value())
         settings["calendar-css-name"] = self.eb_calendar_css_name.get_text()
+        settings["calendar-icon-size"] = int(self.sb_calendar_icon_size.get_value())
         settings["calendar-interval"] = int(self.sb_calendar_interval.get_value())
 
         save_json(self.config, self.file)

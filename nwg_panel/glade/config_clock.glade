@@ -294,29 +294,6 @@
           </packing>
         </child>
         <child>
-          <object class="GtkSpinButton" id="calendar-interval">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">Calendar refresh interval in seconds</property>
-          </object>
-          <packing>
-            <property name="left-attach">3</property>
-            <property name="top-attach">7</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="halign">end</property>
-            <property name="label" translatable="yes">Interval:</property>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">7</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkEntry" id="calendar-path">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
@@ -457,10 +434,50 @@ Use dirrefent file names for multiple calendars.</property>
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkSpinButton" id="calendar-interval">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="tooltip-text" translatable="yes">Calendar refresh interval in seconds</property>
+          </object>
+          <packing>
+            <property name="left-attach">3</property>
+            <property name="top-attach">8</property>
+          </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Interval:</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">8</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Icon size:</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">7</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="calendar-icon-size">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="tooltip-text" translatable="yes">Calendar refresh interval in seconds</property>
+          </object>
+          <packing>
+            <property name="left-attach">3</property>
+            <property name="top-attach">7</property>
+          </packing>
         </child>
         <child>
           <placeholder/>
