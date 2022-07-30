@@ -208,13 +208,17 @@ def load_json(path):
         with open(path, 'r') as f:
             return json.load(f)
     except Exception as e:
-        print("Error loading json: {}".format(e))
+        eprint("Error loading json: {}".format(e))
         return None
 
 
 def save_json(src_dict, path):
-    with open(path, 'w') as f:
-        json.dump(src_dict, f, indent=2)
+    try:
+        with open(path, 'w') as f:
+            json.dump(src_dict, f, indent=2)
+        return "ok"
+    except Exception as e:
+        return e
 
 
 def save_string(string, file):
@@ -657,7 +661,8 @@ def list_configs(config_dir):
     configs = {}
     # allow to store json files other than panel config files in the config directory
     # (prevents from crash w/ nwg-drawer>=0.1.7 and future nwg-menu versions)
-    exclusions = [os.path.join(config_dir, "preferred-apps.json")]
+    exclusions = [os.path.join(config_dir, "preferred-apps.json"),
+                  os.path.join(config_dir, "calendar.json")]
     entries = os.listdir(config_dir)
     entries.sort()
     for entry in entries:
