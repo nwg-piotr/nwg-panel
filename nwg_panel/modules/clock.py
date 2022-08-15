@@ -220,6 +220,7 @@ class Clock(Gtk.EventBox):
         vbox.pack_start(self.note_box, False, False, 0)
         self.note_box.pack_start(self.note_entry, True, True, 0)
         btn = Gtk.Button()
+        btn.set_property("margin-top", 6)
         img = Gtk.Image()
         btn.set_image(img)
         update_image(img, "gtk-close", self.settings["calendar-icon-size"], self.icons_path)
@@ -229,6 +230,7 @@ class Clock(Gtk.EventBox):
         self.note_box.pack_start(btn, False, False, 0)
 
         btn = Gtk.Button()
+        btn.set_property("margin-top", 6)
         img = Gtk.Image()
         btn.set_image(img)
         update_image(img, "object-select", self.settings["calendar-icon-size"], self.icons_path)
