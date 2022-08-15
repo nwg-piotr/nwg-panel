@@ -231,7 +231,7 @@ class Clock(Gtk.EventBox):
         btn = Gtk.Button()
         img = Gtk.Image()
         btn.set_image(img)
-        update_image(img, "gtk-apply", self.settings["calendar-icon-size"], self.icons_path)
+        update_image(img, "object-select", self.settings["calendar-icon-size"], self.icons_path)
         btn.set_tooltip_text("Save & close")
         btn.connect("clicked", self.apply_close_popup)
         btn.set_always_show_image(True)

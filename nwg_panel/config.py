@@ -349,7 +349,7 @@ class PanelSelector(Gtk.Window):
 
                 btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
 
-                btn = Gtk.Button.new_from_icon_name("gtk-go-up", Gtk.IconSize.MENU)
+                btn = Gtk.Button.new_from_icon_name("go-up", Gtk.IconSize.MENU)
                 btn.set_always_show_image(True)
                 if panel_idx > 0:
                     btn.set_tooltip_text("Move up")
@@ -357,7 +357,7 @@ class PanelSelector(Gtk.Window):
                 btn.connect("clicked", self.move_up, panels, panels[panel_idx])
                 btn_box.pack_start(btn, False, False, 0)
 
-                btn = Gtk.Button.new_from_icon_name("gtk-go-down", Gtk.IconSize.MENU)
+                btn = Gtk.Button.new_from_icon_name("go-down", Gtk.IconSize.MENU)
                 btn.set_always_show_image(True)
                 if panel_idx < len(panels) - 1:
                     btn.set_tooltip_text("Move down")
@@ -365,13 +365,13 @@ class PanelSelector(Gtk.Window):
                 btn.connect("clicked", self.move_down, panels, panels[panel_idx])
                 btn_box.pack_start(btn, False, False, 0)
 
-                btn = Gtk.Button.new_from_icon_name("gtk-remove", Gtk.IconSize.MENU)
+                btn = Gtk.Button.new_from_icon_name("list-remove", Gtk.IconSize.MENU)
                 btn.set_always_show_image(True)
                 btn.set_tooltip_text("Remove panel")
                 btn.connect("clicked", self.delete, panels, panels[panel_idx])
                 btn_box.pack_start(btn, False, False, 0)
 
-                btn = Gtk.Button.new_from_icon_name("gtk-edit", Gtk.IconSize.BUTTON)
+                btn = Gtk.Button.new_from_icon_name("document-edit", Gtk.IconSize.BUTTON)
                 btn.connect("clicked", self.on_edit_button, path, panel_idx)
                 btn.set_tooltip_text("Edit panel")
                 btn_box.pack_start(btn, False, False, 0)
@@ -392,13 +392,14 @@ class PanelSelector(Gtk.Window):
             ivbox.pack_start(hbox, False, False, 3)
             btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
 
-            btn = Gtk.Button.new_from_icon_name("gtk-add", Gtk.IconSize.MENU)
+            btn = Gtk.Button.new_from_icon_name("list-add", Gtk.IconSize.MENU)
             btn.set_always_show_image(True)
             btn.set_label("New")
             btn.connect("clicked", self.append, path)
             btn_box.pack_start(btn, False, False, 0)
 
-            btn = Gtk.Button.new_from_icon_name("gtk-apply", Gtk.IconSize.BUTTON)
+            btn = Gtk.Button.new_from_icon_name("object-select", Gtk.IconSize.MENU)
+            btn.set_always_show_image(True)
             btn.set_label("Apply")
             btn_box.pack_start(btn, False, False, 0)
             btn.connect("clicked", self.apply, panels, path)
@@ -2635,19 +2636,19 @@ class EditorWrapper(object):
                 Gtk.Widget.set_size_request(label, 180, 1)
                 hbox.pack_start(label, False, False, 6)
 
-                btn = Gtk.Button.new_from_icon_name("gtk-go-up", Gtk.IconSize.MENU)
+                btn = Gtk.Button.new_from_icon_name("go-up", Gtk.IconSize.MENU)
                 btn.set_always_show_image(True)
                 btn.set_sensitive(i > 0)
                 btn.connect("clicked", self.move_up, module)
                 hbox.pack_start(btn, False, False, 0)
 
-                btn = Gtk.Button.new_from_icon_name("gtk-go-down", Gtk.IconSize.MENU)
+                btn = Gtk.Button.new_from_icon_name("go-down", Gtk.IconSize.MENU)
                 btn.set_always_show_image(True)
                 btn.set_sensitive(i < len(self.modules) - 1)
                 btn.connect("clicked", self.move_down, module)
                 hbox.pack_start(btn, False, False, 0)
 
-                btn = Gtk.Button.new_from_icon_name("gtk-remove", Gtk.IconSize.MENU)
+                btn = Gtk.Button.new_from_icon_name("list-remove", Gtk.IconSize.MENU)
                 btn.set_always_show_image(True)
                 btn.connect("clicked", self.delete, module)
                 hbox.pack_start(btn, False, False, 0)
@@ -3005,19 +3006,19 @@ class ControlsCustomItems(Gtk.Frame):
             entry.connect("changed", self.update_value_from_entry, i, "cmd")
             hbox.pack_start(entry, True, False, 0)
 
-            btn = Gtk.Button.new_from_icon_name("gtk-go-up", Gtk.IconSize.MENU)
+            btn = Gtk.Button.new_from_icon_name("go-up", Gtk.IconSize.MENU)
             btn.set_always_show_image(True)
             btn.set_sensitive(i > 0)
             btn.connect("clicked", self.move_up, item)
             hbox.pack_start(btn, False, False, 0)
 
-            btn = Gtk.Button.new_from_icon_name("gtk-go-down", Gtk.IconSize.MENU)
+            btn = Gtk.Button.new_from_icon_name("go-down", Gtk.IconSize.MENU)
             btn.set_always_show_image(True)
             btn.set_sensitive(i < len(self.items) - 1)
             btn.connect("clicked", self.move_down, item)
             hbox.pack_start(btn, False, False, 0)
 
-            btn = Gtk.Button.new_from_icon_name("gtk-remove", Gtk.IconSize.MENU)
+            btn = Gtk.Button.new_from_icon_name("list-remove", Gtk.IconSize.MENU)
             btn.set_always_show_image(True)
             btn.connect("clicked", self.delete, item)
             hbox.pack_start(btn, False, False, 0)
@@ -3054,7 +3055,7 @@ class ControlsCustomItems(Gtk.Frame):
         self.new_command.set_placeholder_text("command")
         hbox.pack_start(self.new_command, False, False, 0)
 
-        btn = Gtk.Button.new_from_icon_name("gtk-add", Gtk.IconSize.MENU)
+        btn = Gtk.Button.new_from_icon_name("list-add", Gtk.IconSize.MENU)
         btn.set_always_show_image(True)
         btn.set_label("Append")
         btn.connect("clicked", self.append)
@@ -3191,19 +3192,19 @@ class ControlsUserMenu(Gtk.Frame):
             entry.connect("changed", self.update_value_from_entry, i, "cmd")
             hbox.pack_start(entry, False, False, 0)
 
-            btn = Gtk.Button.new_from_icon_name("gtk-go-up", Gtk.IconSize.MENU)
+            btn = Gtk.Button.new_from_icon_name("go-up", Gtk.IconSize.MENU)
             btn.set_always_show_image(True)
             btn.set_sensitive(i > 0)
             btn.connect("clicked", self.move_up, item)
             hbox.pack_start(btn, False, False, 0)
 
-            btn = Gtk.Button.new_from_icon_name("gtk-go-down", Gtk.IconSize.MENU)
+            btn = Gtk.Button.new_from_icon_name("go-down", Gtk.IconSize.MENU)
             btn.set_always_show_image(True)
             btn.set_sensitive(i < len(self.items) - 1)
             btn.connect("clicked", self.move_down, item)
             hbox.pack_start(btn, False, False, 0)
 
-            btn = Gtk.Button.new_from_icon_name("gtk-remove", Gtk.IconSize.MENU)
+            btn = Gtk.Button.new_from_icon_name("list-remove", Gtk.IconSize.MENU)
             btn.set_always_show_image(True)
             btn.connect("clicked", self.delete, item)
             hbox.pack_start(btn, False, False, 0)
@@ -3227,7 +3228,7 @@ class ControlsUserMenu(Gtk.Frame):
         self.new_command.set_placeholder_text("command")
         hbox.pack_start(self.new_command, False, False, 0)
 
-        btn = Gtk.Button.new_from_icon_name("gtk-add", Gtk.IconSize.MENU)
+        btn = Gtk.Button.new_from_icon_name("list-add", Gtk.IconSize.MENU)
         btn.set_always_show_image(True)
         btn.set_label("Append")
         btn.connect("clicked", self.append)
