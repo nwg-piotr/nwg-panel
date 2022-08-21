@@ -157,7 +157,7 @@
 you defined in sway config. We'll build the 
 context menu out of them.</property>
             <property name="halign">start</property>
-            <property name="stock">gtk-about</property>
+            <property name="icon-name">help-about</property>
           </object>
           <packing>
             <property name="left-attach">2</property>

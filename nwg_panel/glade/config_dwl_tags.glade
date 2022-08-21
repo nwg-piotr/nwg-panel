@@ -57,7 +57,7 @@
             <property name="can-focus">False</property>
             <property name="tooltip-text" translatable="yes">Space-separated names  for tags 1 - 9</property>
             <property name="double-buffered">False</property>
-            <property name="stock">gtk-about</property>
+            <property name="icon-name">help-about</property>
           </object>
           <packing>
             <property name="left-attach">2</property>

@@ -26,7 +26,7 @@
 of workspaces to show</property>
             <property name="double-buffered">False</property>
             <property name="halign">start</property>
-            <property name="stock">gtk-about</property>
+            <property name="icon-name">help-about</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
@@ -252,7 +252,7 @@ for each workspace
 number specified above</property>
             <property name="double-buffered">False</property>
             <property name="halign">start</property>
-            <property name="stock">gtk-about</property>
+            <property name="icon-name">help-about</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
@@ -269,7 +269,7 @@ for each workspace
 number specified above</property>
             <property name="double-buffered">False</property>
             <property name="halign">start</property>
-            <property name="stock">gtk-about</property>
+            <property name="icon-name">help-about</property>
           </object>
           <packing>
             <property name="left-attach">2</property>

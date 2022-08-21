@@ -475,7 +475,7 @@ you may define your own label here.</property>
 by Dovora interactive https://www.dovora.com
 Creative Commons Attribution-ShareAlike 4.0</property>
             <property name="halign">start</property>
-            <property name="stock">gtk-about</property>
+            <property name="icon-name">help-about</property>
           </object>
           <packing>
             <property name="left-attach">2</property>

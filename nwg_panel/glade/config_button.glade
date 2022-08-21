@@ -180,7 +180,7 @@
             <property name="tooltip-text" translatable="yes">Attention! Renaming an existing
 button will create a new one.</property>
             <property name="halign">start</property>
-            <property name="stock">gtk-dialog-warning</property>
+            <property name="icon-name">dialog-warning</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
