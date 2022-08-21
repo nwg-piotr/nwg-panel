@@ -37,6 +37,8 @@ class SwayWorkspaces(Gtk.Box):
         if self.settings["angle"] != 0.0:
             self.set_orientation(Gtk.Orientation.VERTICAL)
 
+        # prevent from #142
+        ws_num = -1
         if self.i3.get_tree().find_focused():
             ws_num, win_name, win_id, non_empty, win_layout = self.find_details()
         
