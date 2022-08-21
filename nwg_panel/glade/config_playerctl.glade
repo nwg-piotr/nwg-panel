@@ -55,7 +55,7 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="tooltip-text" translatable="yes">Optional name for use in the css file</property>
-            <property name="stock">gtk-about</property>
+            <property name="icon-name">help-about</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
@@ -79,7 +79,7 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="tooltip-text" translatable="yes">Optional name for use in the css file</property>
-            <property name="stock">gtk-about</property>
+            <property name="icon-name">help-about</property>
           </object>
           <packing>
             <property name="left-attach">2</property>

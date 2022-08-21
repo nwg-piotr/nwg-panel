@@ -81,7 +81,7 @@
             <property name="can-focus">False</property>
             <property name="tooltip-text" translatable="yes">Depends on `python-psutil`.</property>
             <property name="halign">start</property>
-            <property name="stock">gtk-about</property>
+            <property name="icon-name">help-about</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -119,7 +119,7 @@
             <property name="can-focus">False</property>
             <property name="tooltip-text" translatable="yes">Depends on `bluez-utils`.</property>
             <property name="halign">start</property>
-            <property name="stock">gtk-about</property>
+            <property name="icon-name">help-about</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -172,7 +172,7 @@ use `ifconfig` to check names,
 e.g. `enp6s0`or `wlo1`.
 Depends on `python-netifaces`.</property>
             <property name="halign">start</property>
-            <property name="stock">gtk-about</property>
+            <property name="icon-name">help-about</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -199,7 +199,7 @@ Depends on `python-netifaces`.</property>
             <property name="can-focus">False</property>
             <property name="tooltip-text" translatable="yes">Depends on the `pamixer` package.</property>
             <property name="halign">start</property>
-            <property name="stock">gtk-about</property>
+            <property name="icon-name">help-about</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -252,7 +252,7 @@ Depends on `python-netifaces`.</property>
             <property name="can-focus">False</property>
             <property name="tooltip-text" translatable="yes">Controls window width in pixels; leave 0 for auto.</property>
             <property name="halign">start</property>
-            <property name="stock">gtk-about</property>
+            <property name="icon-name">help-about</property>
           </object>
           <packing>
             <property name="left-attach">3</property>
@@ -459,7 +459,7 @@ the horizontal, in degrees, measured counterclockwise</property>
             <property name="can-focus">False</property>
             <property name="tooltip-text" translatable="yes">Depends on `light` or `brightnessctl`.</property>
             <property name="halign">start</property>
-            <property name="stock">gtk-about</property>
+            <property name="icon-name">help-about</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -478,7 +478,7 @@ or 'ddcutil --help' to
 check available devices.
 LEAVE BLANK IF EVERYTHING WORKS</property>
             <property name="halign">start</property>
-            <property name="stock">gtk-about</property>
+            <property name="icon-name">help-about</property>
           </object>
           <packing>
             <property name="left-attach">4</property>
