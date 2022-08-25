@@ -39,6 +39,9 @@ class CustomButton(Gtk.Button):
             else:
                 self.set_tooltip_text(settings["label"])
 
+        if "tooltip" in settings and settings["tooltip"]:
+            self.set_tooltip_text(settings["tooltip"])
+
         check_key(settings, "command", "")
         if settings["command"]:
             self.connect("clicked", self.on_click, settings["command"])

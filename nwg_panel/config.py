@@ -2466,6 +2466,7 @@ class EditorWrapper(object):
             "command": "",
             "icon": "",
             "label": "",
+            "tooltip": "",
             "label-position": "right",
             "css-name": "",
             "icon-size": 16
@@ -2504,6 +2505,9 @@ class EditorWrapper(object):
         self.button_label_position = builder.get_object("label-position")
         self.button_label_position.set_active_id(settings["label-position"])
 
+        self.button_tooltip = builder.get_object("tooltip")
+        self.button_tooltip.set_text(settings["tooltip"])
+
         self.button_css_name = builder.get_object("css-name")
         self.button_css_name.set_text(settings["css-name"])
 
@@ -2529,6 +2533,7 @@ class EditorWrapper(object):
             settings["icon"] = self.button_icon.get_text()
             settings["label"] = self.button_label.get_text()
             settings["label-position"] = self.button_label_position.get_active_id()
+            settings["tooltip"] = self.button_tooltip.get_text()
             settings["css-name"] = self.button_css_name.get_text()
             settings["icon-size"] = int(self.button_icon_size.get_value())
 
