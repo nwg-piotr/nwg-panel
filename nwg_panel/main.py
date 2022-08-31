@@ -446,7 +446,7 @@ def main():
             controls_width = panel["controls-settings"]["window-width"] if panel["controls-settings"][
                                                                                "window-width"] > 0 else int(w / 5)
             check_key(panel, "height", 0)
-            h = panel["height"]
+            h = panel["height"] / common.outputs[panel["output"]]["scale"]
 
             check_key(panel, "controls", "off")
             if panel["controls"]:
