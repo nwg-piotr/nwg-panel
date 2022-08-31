@@ -256,7 +256,7 @@ def list_outputs(sway=False, tree=None, silent=False):
     :return: {"name": str, "x": int, "y": int, "width": int, "height": int, "monitor": Gkd.Monitor}
     """
     outputs_dict = {}
-    if not sway:
+    if sway:
         if not silent:
             print("Running on sway")
         if not tree:
@@ -313,6 +313,7 @@ def list_outputs(sway=False, tree=None, silent=False):
                                                   'width': h,
                                                   'height': w,
                                                   'transform': transform,
+                                                  'scale': scale,
                                                   'monitor': None}
         else:
             print("'wlr-randr' command not found, terminating")
