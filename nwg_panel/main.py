@@ -438,10 +438,6 @@ def main():
             # Width undefined or "auto"
             if "output" in panel and panel["output"] and "width" not in panel:
                 panel["width"] = common.outputs[panel["output"]]["width"]
-                print('{}: {} / {} = {} '.format(panel["name"], common.outputs[panel["output"]]["width"],
-                                                 common.outputs[panel["output"]]["scale"],
-                                                 common.outputs[panel["output"]]["width"] /
-                                                 common.outputs[panel["output"]]["scale"]))
 
             check_key(panel, "width", 0)
             w = panel["width"]
@@ -450,7 +446,7 @@ def main():
             controls_width = panel["controls-settings"]["window-width"] if panel["controls-settings"][
                                                                                "window-width"] > 0 else int(w / 5)
             check_key(panel, "height", 0)
-            h = panel["height"] / common.outputs[panel["output"]]["scale"]
+            h = panel["height"]
 
             check_key(panel, "controls", "off")
             if panel["controls"]:

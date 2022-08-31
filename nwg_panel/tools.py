@@ -263,14 +263,12 @@ def list_outputs(sway=False, tree=None, silent=False):
             tree = nwg_panel.common.i3.get_tree()
         for item in tree:
             if item.type == "output" and not item.name.startswith("__"):
-                print(">>>", item.name, item.ipc_data)
                 outputs_dict[item.name] = {"x": item.rect.x,
                                            "y": item.rect.y,
                                            "width": item.rect.width,
                                            "height": item.rect.height,
                                            "monitor": None}
-                outputs_dict[item.name]["scale"] = item.ipc_data["scale"] if "scale" in item.ipc_data and item.ipc_data[
-                    "scale"] else 1.0
+
     elif os.getenv('WAYLAND_DISPLAY') is not None:
         if not silent:
             print("Running on Wayland, but not sway")
@@ -296,23 +294,23 @@ def list_outputs(sway=False, tree=None, silent=False):
                             scale = float(line.split()[1])
                         except ValueError:
                             scale = 1.0
+
                     if name is not None and w is not None and h is not None and x is not None and y is not None \
                             and transform is not None:
                         if transform == "normal":
                             outputs_dict[name] = {'name': name,
                                                   'x': x,
                                                   'y': y,
-                                                  'width': w,
-                                                  'height': h,
+                                                  'width': int(w / scale),
+                                                  'height': int(h / scale),
                                                   'transform': transform,
-                                                  'scale': scale,
                                                   'monitor': None}
                         else:
                             outputs_dict[name] = {'name': name,
                                                   'x': x,
                                                   'y': y,
-                                                  'width': h,
-                                                  'height': w,
+                                                  'width': int(h / scale),
+                                                  'height': int(w / scale),
                                                   'transform': transform,
                                                   'scale': scale,
                                                   'monitor': None}
