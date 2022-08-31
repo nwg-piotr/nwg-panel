@@ -45,6 +45,7 @@ from nwg_panel.modules.cpu_avg import CpuAvg
 from nwg_panel.modules.scratchpad import Scratchpad
 from nwg_panel.modules.dwl_tags import DwlTags
 from nwg_panel.modules.swaync import SwayNC
+
 try:
     from nwg_panel.modules.openweather import OpenWeather
 except Exception as e:
@@ -590,9 +591,11 @@ def main():
 
             check_key(panel, "layer", "top")
             o = panel["output"] if "output" in panel else "undefined"
-            print("Output: {}, position: {}, layer: {}, width: {}, height: {}".format(o, panel["position"],
-                                                                                      panel["layer"], panel["width"],
-                                                                                      panel["height"]))
+            print("Panel '{}': output: {}, position: {}, layer: {}, width: {}, height: {}".format(panel["name"], o,
+                                                                                                  panel["position"],
+                                                                                                  panel["layer"],
+                                                                                                  panel["width"],
+                                                                                                  panel["height"]))
 
             if monitor:
                 GtkLayerShell.set_monitor(window, monitor)

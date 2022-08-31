@@ -268,13 +268,14 @@ def list_outputs(sway=False, tree=None, silent=False):
                                            "width": item.rect.width,
                                            "height": item.rect.height,
                                            "monitor": None}
+
     elif os.getenv('WAYLAND_DISPLAY') is not None:
         if not silent:
             print("Running on Wayland, but not sway")
         if nwg_panel.common.commands["wlr-randr"]:
             lines = subprocess.check_output("wlr-randr", shell=True).decode("utf-8").strip().splitlines()
             if lines:
-                name, w, h, x, y, transform = None, None, None, None, None, None
+                name, w, h, x, y, transform, scale = None, None, None, None, None, None, 1.0
                 for line in lines:
                     if not line.startswith(" "):
                         name = line.split()[0]
@@ -288,23 +289,30 @@ def list_outputs(sway=False, tree=None, silent=False):
                         x_y = line.split()[1].split(',')
                         x = int(x_y[0])
                         y = int(x_y[1])
+                    elif "Scale" in line:
+                        try:
+                            scale = float(line.split()[1])
+                        except ValueError:
+                            scale = 1.0
+
                     if name is not None and w is not None and h is not None and x is not None and y is not None \
                             and transform is not None:
                         if transform == "normal":
                             outputs_dict[name] = {'name': name,
                                                   'x': x,
                                                   'y': y,
-                                                  'width': w,
-                                                  'height': h,
+                                                  'width': int(w / scale),
+                                                  'height': int(h / scale),
                                                   'transform': transform,
                                                   'monitor': None}
                         else:
                             outputs_dict[name] = {'name': name,
                                                   'x': x,
                                                   'y': y,
-                                                  'width': h,
-                                                  'height': w,
+                                                  'width': int(h / scale),
+                                                  'height': int(w / scale),
                                                   'transform': transform,
+                                                  'scale': scale,
                                                   'monitor': None}
         else:
             print("'wlr-randr' command not found, terminating")
