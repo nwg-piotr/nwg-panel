@@ -12,10 +12,15 @@ from .menu import Menu
 
 
 def resize_pix_buf(image, pixbuf, icon_size):
+    # [At least on non-HiDPI system], this value is always in 1 or 2 (output scaled down or not scaled at all
+    # / output scaled up), globally, whether one or more displays are scaled - so it seems useless.
+    # E.g. if we scale one output * 1.2, we have icons resized * 2 on all outputs. Let's turn it off.
+    """
     scaled_icon_size = image.get_scale_factor() * icon_size
     if pixbuf.get_height() != scaled_icon_size:
         width = scaled_icon_size * pixbuf.get_width() / pixbuf.get_height()
         pixbuf = pixbuf.scale_simple(width, scaled_icon_size, GdkPixbuf.InterpType.BILINEAR)
+    """
     image.set_from_pixbuf(pixbuf)
 
 
