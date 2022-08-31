@@ -437,7 +437,11 @@ def main():
 
             # Width undefined or "auto"
             if "output" in panel and panel["output"] and "width" not in panel:
-                panel["width"] = common.outputs[panel["output"]]["width"] / common.outputs[panel["output"]]["scale"]
+                panel["width"] = common.outputs[panel["output"]]["width"]
+                print('{}: {} / {} = {} '.format(panel["name"], common.outputs[panel["output"]]["width"],
+                                                 common.outputs[panel["output"]]["scale"],
+                                                 common.outputs[panel["output"]]["width"] /
+                                                 common.outputs[panel["output"]]["scale"]))
 
             check_key(panel, "width", 0)
             w = panel["width"]

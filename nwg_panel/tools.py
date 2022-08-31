@@ -263,6 +263,7 @@ def list_outputs(sway=False, tree=None, silent=False):
             tree = nwg_panel.common.i3.get_tree()
         for item in tree:
             if item.type == "output" and not item.name.startswith("__"):
+                print(">>>", item.name, item.ipc_data)
                 outputs_dict[item.name] = {"x": item.rect.x,
                                            "y": item.rect.y,
                                            "width": item.rect.width,
