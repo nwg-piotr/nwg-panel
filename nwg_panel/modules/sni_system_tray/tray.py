@@ -21,6 +21,14 @@ def resize_pix_buf(image, pixbuf, icon_size):
         width = scaled_icon_size * pixbuf.get_width() / pixbuf.get_height()
         pixbuf = pixbuf.scale_simple(width, scaled_icon_size, GdkPixbuf.InterpType.BILINEAR)
     """
+    factor = 1
+    w, h = pixbuf.get_width(), pixbuf.get_height()
+    if w != icon_size:
+        factor = icon_size / w
+    elif h != icon_size:
+        factor = icon_size / h
+    pixbuf = pixbuf.scale_simple(w * factor, h * factor, GdkPixbuf.InterpType.BILINEAR)
+
     image.set_from_pixbuf(pixbuf)
 
 
