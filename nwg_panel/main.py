@@ -497,19 +497,13 @@ def main():
             check_key(panel, "modules-left", [])
             check_key(panel, "modules-center", [])
             check_key(panel, "modules-right", [])
-
-            # This is to allow the "auto" value. Actually all non-numeric values will be removed.
-            if "homogeneous" in panel and not isinstance(panel["homogeneous"], bool):
-                panel.pop("homogeneous")
-
-            # set equal columns width by default if "modules-center" not empty; this may be overridden in config
-            if panel["modules-center"]:
-                check_key(panel, "homogeneous", True)
-            else:
-                check_key(panel, "homogeneous", False)
+            check_key(panel, "homogeneous", True)
 
             inner_box = Gtk.Box(orientation=o, spacing=0)
-            inner_box.set_homogeneous(panel["homogeneous"])
+
+            # set equal columns width by default if "modules-center" not empty; this may be overridden in config
+            if panel["modules-center"] and panel["homogeneous"]:
+                inner_box.set_homogeneous(True)
 
             hbox.pack_start(inner_box, True, True, 0)
             hbox.set_property("margin-start", panel["padding-horizontal"])
