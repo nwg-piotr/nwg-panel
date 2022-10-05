@@ -127,6 +127,7 @@
       "buttons-position": "left",
       "icon-size": 16,
       "chars": 30,
+      "scroll": false,
       "button-css-name": "",
       "label-css-name": "",
       "interval": 1
@@ -246,6 +247,7 @@
       "buttons-position": "left",
       "icon-size": 16,
       "chars": 30,
+      "scroll": false,
       "button-css-name": "",
       "label-css-name": "",
       "interval": 1

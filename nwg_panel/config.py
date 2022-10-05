@@ -123,6 +123,7 @@ SKELETON_PANEL: dict = {
         "buttons-position": "left",
         "icon-size": 16,
         "chars": 30,
+        "scroll": False,
         "button-css-name": "",
         "label-css-name": "",
         "interval": 1
@@ -1406,6 +1407,7 @@ class EditorWrapper(object):
             "buttons-position": "left",
             "icon-size": 16,
             "chars": 30,
+            "scroll": False,
             "button-css-name": "",
             "label-css-name": "",
             "interval": 1,
@@ -1431,6 +1433,9 @@ class EditorWrapper(object):
         adj = Gtk.Adjustment(value=0, lower=1, upper=256, step_increment=1, page_increment=10, page_size=1)
         self.sc_chars.configure(adj, 1, 0)
         self.sc_chars.set_value(settings["chars"])
+
+        self.cb_scroll = builder.get_object("scroll")
+        self.cb_scroll.set_active(settings["scroll"])
 
         self.sc_interval_playerctl = builder.get_object("interval")
         self.sc_interval_playerctl.set_numeric(True)
@@ -1460,6 +1465,7 @@ class EditorWrapper(object):
 
         settings["icon-size"] = int(self.sc_icon_size_playerctl.get_value())
         settings["chars"] = int(self.sc_chars.get_value())
+        settings["scroll"] = self.cb_scroll.get_active()
 
         settings["button-css-name"] = self.eb_button_css_name.get_text()
         settings["label-css-name"] = self.eb_label_css_name.get_text()
@@ -1841,7 +1847,7 @@ class EditorWrapper(object):
             "show-cloudiness": True,
             "show-visibility": True,
             "show-pop": True,
-            "show-volume":True
+            "show-volume": True
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -2045,7 +2051,7 @@ class EditorWrapper(object):
         settings["show-volume"] = self.ow_show_volume.get_active()
 
         save_json(self.config, self.file)
-    
+
     def edit_brightness_slider(self, *args):
         self.load_panel()
         self.edited = "brightness-slider"
@@ -2098,14 +2104,14 @@ class EditorWrapper(object):
             elif type(widget) in [Gtk.ComboBoxText, Gtk.ComboBox]:
                 widget.set_active_id(str(value))
             self.brightness_slider_config[setting] = widget
-        
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
 
     def update_brightness_slider(self):
         settings = self.panel["brightness-slider"]
-        
+
         for setting, widget in self.brightness_slider_config.items():
             if type(widget) == Gtk.Entry:
                 value = widget.get_text()
