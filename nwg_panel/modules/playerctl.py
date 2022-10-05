@@ -27,6 +27,7 @@ class Playerctl(Gtk.EventBox):
         check_key(settings, "buttons-position", "left")
         check_key(settings, "chars", 30)
         check_key(settings, "angle", 0.0)
+        check_key(settings, "scroll", True)
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         if settings["angle"] != 0.0:
@@ -44,6 +45,9 @@ class Playerctl(Gtk.EventBox):
             self.play_pause_btn.set_property("name", self.settings["button-css-name"])
         self.status = ""
         self.retries = 2  # to avoid hiding the module on forward / backward btn when playing from the browser
+
+        self.output_start_idx = 0
+        self.old_metadata = ""
 
         if settings["label-css-name"]:
             self.label.set_property("name", settings["label-css-name"])
@@ -72,7 +76,25 @@ class Playerctl(Gtk.EventBox):
                                  self.settings["icon-size"], icons_path=self.icons_path)
                     metadata = "{} - paused".format(metadata)
 
-            self.label.set_text(metadata)
+            # reset (scrolling) if track changed
+            if metadata != self.old_metadata:
+                self.output_start_idx = 0
+                self.old_metadata = metadata
+
+            if not self.settings["scroll"]:
+                self.label.set_text(metadata)
+            else:
+                # scroll track metadata of 1 character once settings["interval"]
+                if len(metadata) > self.settings["chars"]:
+                    if self.output_start_idx + self.settings["chars"] <= len(metadata):
+                        self.label.set_text(
+                            metadata[self.output_start_idx:self.output_start_idx + self.settings["chars"]])
+                        self.output_start_idx += 1
+                    else:
+                        self.label.set_text(metadata[:self.settings["chars"]])
+                        self.output_start_idx = 0
+                else:
+                    self.label.set_text(metadata)
         else:
             if self.get_visible():
                 if self.retries == 0:
@@ -87,7 +109,10 @@ class Playerctl(Gtk.EventBox):
         try:
             status = player_status()
             if status in ["Playing", "Paused"]:
-                metadata = player_metadata()[:self.settings["chars"]]
+                if not self.settings["scroll"]:
+                    metadata = player_metadata()[:self.settings["chars"]]
+                else:
+                    metadata = player_metadata()
             GLib.idle_add(self.update_widget, status, metadata)
         except Exception as e:
             print(e)
