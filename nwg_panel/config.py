@@ -679,6 +679,7 @@ class EditorWrapper(object):
             "spacing": 0,
             "icons": "",
             "css-name": "",
+            "homogeneous": True,
             "exclusive-zone": True
         }
         for key in defaults:
@@ -807,6 +808,9 @@ class EditorWrapper(object):
         self.eb_css_name = builder.get_object("css-name")
         self.eb_css_name.set_text(self.panel["css-name"])
 
+        self.cb_homogeneous = builder.get_object("homogeneous")
+        self.cb_homogeneous.set_active(self.panel["homogeneous"])
+
         self.cb_exclusive_zone = builder.get_object("exclusive-zone")
         self.cb_exclusive_zone.set_active(self.panel["exclusive-zone"])
 
@@ -894,6 +898,8 @@ class EditorWrapper(object):
 
         val = self.eb_css_name.get_text()
         self.panel["css-name"] = val
+
+        self.panel["homogeneous"] = self.cb_homogeneous.get_active()
 
         self.panel["exclusive-zone"] = self.cb_exclusive_zone.get_active()
 
