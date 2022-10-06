@@ -30,10 +30,10 @@ class Playerctl(Gtk.EventBox):
         check_key(settings, "icon-size", 16)
         check_key(settings, "buttons-position", "left")
         check_key(settings, "chars", 30)
-        check_key(settings, "angle", 0.0)
         check_key(settings, "scroll", True)
         check_key(settings, "show-cover", True)
         check_key(settings, "cover-size", 24)
+        check_key(settings, "angle", 0.0)
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         if settings["angle"] != 0.0:
