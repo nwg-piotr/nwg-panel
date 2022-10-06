@@ -80,6 +80,7 @@ class Playerctl(Gtk.EventBox):
                                                             self.settings["cover-size"],
                                                             self.settings["cover-size"])
             self.cover_img.set_from_pixbuf(pixbuf)
+            self.cover_img.show()
         except Exception as e:
             eprint("Couldn't update remote cover: {}".format(e))
             update_image(self.cover_img, "music", self.settings["cover-size"], self.icons_path)
