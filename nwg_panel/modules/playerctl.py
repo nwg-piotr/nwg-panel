@@ -28,6 +28,8 @@ class Playerctl(Gtk.EventBox):
         check_key(settings, "chars", 30)
         check_key(settings, "angle", 0.0)
         check_key(settings, "scroll", True)
+        check_key(settings, "show-cover", True)
+        check_key(settings, "cover-size", 16)
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         if settings["angle"] != 0.0:
@@ -49,6 +51,9 @@ class Playerctl(Gtk.EventBox):
         self.output_start_idx = 0
         self.old_metadata = ""
 
+        self.cover_img = Gtk.Image()
+        update_image(self.cover_img, "music", settings["cover-size"], icons_path)
+
         if settings["label-css-name"]:
             self.label.set_property("name", settings["label-css-name"])
 
@@ -62,6 +67,7 @@ class Playerctl(Gtk.EventBox):
             Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
 
     def update_widget(self, status, metadata):
+        text = metadata["text"]
         if status in ["Playing", "Paused"]:
             self.retries = 2
             if not self.get_visible():
@@ -74,7 +80,7 @@ class Playerctl(Gtk.EventBox):
                 elif status == "Paused":
                     update_image(self.play_pause_btn.get_image(), "media-playback-start-symbolic",
                                  self.settings["icon-size"], icons_path=self.icons_path)
-                    metadata = "{} - paused".format(metadata)
+                    text = "{} - paused".format(text)
 
             # reset (scrolling) if track changed
             if metadata != self.old_metadata:
@@ -82,19 +88,19 @@ class Playerctl(Gtk.EventBox):
                 self.old_metadata = metadata
 
             if not self.settings["scroll"]:
-                self.label.set_text(metadata)
+                self.label.set_text(text)
             else:
                 # scroll track metadata of 1 character once settings["interval"]
-                if len(metadata) > self.settings["chars"]:
-                    if self.output_start_idx + self.settings["chars"] <= len(metadata):
+                if len(text) > self.settings["chars"]:
+                    if self.output_start_idx + self.settings["chars"] <= len(text):
                         self.label.set_text(
-                            metadata[self.output_start_idx:self.output_start_idx + self.settings["chars"]])
+                            text[self.output_start_idx:self.output_start_idx + self.settings["chars"]])
                         self.output_start_idx += 1
                     else:
-                        self.label.set_text(metadata[:self.settings["chars"]])
+                        self.label.set_text(text[:self.settings["chars"]])
                         self.output_start_idx = 0
                 else:
-                    self.label.set_text(metadata)
+                    self.label.set_text(text)
         else:
             if self.get_visible():
                 if self.retries == 0:
@@ -105,14 +111,13 @@ class Playerctl(Gtk.EventBox):
         return False
 
     def get_output(self):
-        status, metadata = "", ""
+        metadata = {"text": "", "url": ""}
         try:
             status = player_status()
             if status in ["Playing", "Paused"]:
-                if not self.settings["scroll"]:
-                    metadata = player_metadata()[:self.settings["chars"]]
-                else:
-                    metadata = player_metadata()
+                metadata = player_metadata()
+                if not self.settings["scroll"] and len(metadata["text"]) > self.settings["chars"]:
+                    metadata["text"] = metadata["text"][:self.settings["chars"] - 1]
             GLib.idle_add(self.update_widget, status, metadata)
         except Exception as e:
             print(e)
@@ -154,9 +159,13 @@ class Playerctl(Gtk.EventBox):
 
         if self.settings["buttons-position"] == "left":
             self.box.pack_start(button_box, False, False, 2)
+            if self.settings["show-cover"]:
+                self.box.pack_start(self.cover_img, False, False, 0)
             self.box.pack_start(self.label, False, False, 10)
         else:
             self.box.pack_start(self.label, False, False, 2)
+            if self.settings["show-cover"]:
+                self.box.pack_start(self.cover_img, False, False, 0)
             self.box.pack_start(button_box, False, False, 10)
 
     def launch(self, button, cmd):
