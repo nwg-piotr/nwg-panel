@@ -201,9 +201,9 @@ class Playerctl(Gtk.EventBox):
                 self.box.pack_start(self.cover_img, False, False, 0)
             self.box.pack_start(self.label, False, False, 10)
         else:
-            self.box.pack_start(self.label, False, False, 2)
             if self.settings["show-cover"]:
-                self.box.pack_start(self.cover_img, False, False, 0)
+                self.box.pack_start(self.cover_img, False, False, 2)
+            self.box.pack_start(self.label, False, False, 2)
             self.box.pack_start(button_box, False, False, 10)
 
     def launch(self, button, cmd):
