@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
+import os.path
 
 from gi.repository import GLib
 
 import subprocess
 import threading
+import requests
 
-from nwg_panel.tools import check_key, update_image, player_status, player_metadata
+from nwg_panel.tools import check_key, update_image, player_status, player_metadata, eprint, local_dir
 
 import gi
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gdk, GdkPixbuf
+
+from urllib.parse import unquote, urlparse
 
 
 class Playerctl(Gtk.EventBox):
@@ -26,8 +30,10 @@ class Playerctl(Gtk.EventBox):
         check_key(settings, "icon-size", 16)
         check_key(settings, "buttons-position", "left")
         check_key(settings, "chars", 30)
-        check_key(settings, "angle", 0.0)
         check_key(settings, "scroll", True)
+        check_key(settings, "show-cover", True)
+        check_key(settings, "cover-size", 24)
+        check_key(settings, "angle", 0.0)
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         if settings["angle"] != 0.0:
@@ -48,6 +54,10 @@ class Playerctl(Gtk.EventBox):
 
         self.output_start_idx = 0
         self.old_metadata = ""
+        self.old_cover_url = ""
+
+        self.cover_img = Gtk.Image()
+        update_image(self.cover_img, "music", settings["cover-size"], icons_path)
 
         if settings["label-css-name"]:
             self.label.set_property("name", settings["label-css-name"])
@@ -61,7 +71,42 @@ class Playerctl(Gtk.EventBox):
         if settings["interval"] > 0:
             Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
 
+    def update_remote_cover(self, url):
+        try:
+            r = requests.get(url, allow_redirects=True)
+            cover_path = os.path.join(local_dir(), "cover.jpg")
+            open(cover_path, 'wb').write(r.content)
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(cover_path,
+                                                            self.settings["cover-size"],
+                                                            self.settings["cover-size"])
+            self.cover_img.set_from_pixbuf(pixbuf)
+            self.cover_img.show()
+        except Exception as e:
+            eprint("Couldn't update remote cover: {}".format(e))
+            update_image(self.cover_img, "music", self.settings["cover-size"], self.icons_path)
+
+    def update_cover_image(self, url):
+        if url.startswith("file:"):
+            try:
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(unquote(urlparse(url).path),
+                                                                self.settings["cover-size"],
+                                                                self.settings["cover-size"])
+                self.cover_img.set_from_pixbuf(pixbuf)
+                self.cover_img.show()
+            except Exception as e:
+                eprint("Error creating pixbuf: {}".format(e))
+                update_image(self.cover_img, "music", self.settings["cover-size"], self.icons_path)
+
+        if url.startswith("http"):
+            thread = threading.Thread(target=self.update_remote_cover(url))
+            thread.daemon = True
+            thread.start()
+
+        elif not url:
+            self.cover_img.hide()
+
     def update_widget(self, status, metadata):
+        text = metadata["text"]
         if status in ["Playing", "Paused"]:
             self.retries = 2
             if not self.get_visible():
@@ -74,27 +119,28 @@ class Playerctl(Gtk.EventBox):
                 elif status == "Paused":
                     update_image(self.play_pause_btn.get_image(), "media-playback-start-symbolic",
                                  self.settings["icon-size"], icons_path=self.icons_path)
-                    metadata = "{} - paused".format(metadata)
+                    text = "{} - paused".format(text)
 
             # reset (scrolling) if track changed
             if metadata != self.old_metadata:
                 self.output_start_idx = 0
+                self.update_cover_image(metadata["url"])
                 self.old_metadata = metadata
 
             if not self.settings["scroll"]:
-                self.label.set_text(metadata)
+                self.label.set_text(text)
             else:
                 # scroll track metadata of 1 character once settings["interval"]
-                if len(metadata) > self.settings["chars"]:
-                    if self.output_start_idx + self.settings["chars"] <= len(metadata):
+                if len(text) > self.settings["chars"]:
+                    if self.output_start_idx + self.settings["chars"] <= len(text):
                         self.label.set_text(
-                            metadata[self.output_start_idx:self.output_start_idx + self.settings["chars"]])
+                            text[self.output_start_idx:self.output_start_idx + self.settings["chars"]])
                         self.output_start_idx += 1
                     else:
-                        self.label.set_text(metadata[:self.settings["chars"]])
+                        self.label.set_text(text[:self.settings["chars"]])
                         self.output_start_idx = 0
                 else:
-                    self.label.set_text(metadata)
+                    self.label.set_text(text)
         else:
             if self.get_visible():
                 if self.retries == 0:
@@ -105,14 +151,13 @@ class Playerctl(Gtk.EventBox):
         return False
 
     def get_output(self):
-        status, metadata = "", ""
+        metadata = {"text": "", "url": ""}
         try:
             status = player_status()
             if status in ["Playing", "Paused"]:
-                if not self.settings["scroll"]:
-                    metadata = player_metadata()[:self.settings["chars"]]
-                else:
-                    metadata = player_metadata()
+                metadata = player_metadata()
+                if not self.settings["scroll"] and len(metadata["text"]) > self.settings["chars"]:
+                    metadata["text"] = metadata["text"][:self.settings["chars"] - 1]
             GLib.idle_add(self.update_widget, status, metadata)
         except Exception as e:
             print(e)
@@ -154,8 +199,12 @@ class Playerctl(Gtk.EventBox):
 
         if self.settings["buttons-position"] == "left":
             self.box.pack_start(button_box, False, False, 2)
+            if self.settings["show-cover"]:
+                self.box.pack_start(self.cover_img, False, False, 0)
             self.box.pack_start(self.label, False, False, 10)
         else:
+            if self.settings["show-cover"]:
+                self.box.pack_start(self.cover_img, False, False, 2)
             self.box.pack_start(self.label, False, False, 2)
             self.box.pack_start(button_box, False, False, 10)
 

@@ -564,9 +564,10 @@ def player_status():
 
 
 def player_metadata():
-    data = ""
+    data = {"text": "", "url": ""}
     try:
-        data = cmd2string("playerctl metadata --format '{{artist}} - {{title}}'")
+        lines = cmd2string("playerctl metadata --format '{{artist}}#:#{{title}}#:#{{mpris:artUrl}}'").split("#:#")
+        data = {"text": "{} - {}".format(lines[0], lines[1]), "url": lines[2]}
     except:
         pass
 

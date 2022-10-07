@@ -1408,6 +1408,8 @@ class EditorWrapper(object):
             "icon-size": 16,
             "chars": 30,
             "scroll": False,
+            "show-cover": True,
+            "cover-size": 24,
             "button-css-name": "",
             "label-css-name": "",
             "interval": 1,
@@ -1437,6 +1439,15 @@ class EditorWrapper(object):
         self.cb_scroll = builder.get_object("scroll")
         self.cb_scroll.set_active(settings["scroll"])
 
+        self.sc_cover_size = builder.get_object("cover-size")
+        self.sc_cover_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=513, step_increment=1, page_increment=10, page_size=1)
+        self.sc_cover_size.configure(adj, 1, 0)
+        self.sc_cover_size.set_value(settings["cover-size"])
+
+        self.cb_show_cover = builder.get_object("show-cover")
+        self.cb_show_cover.set_active(settings["show-cover"])
+
         self.sc_interval_playerctl = builder.get_object("interval")
         self.sc_interval_playerctl.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=0, upper=60, step_increment=1, page_increment=10, page_size=1)
@@ -1465,7 +1476,9 @@ class EditorWrapper(object):
 
         settings["icon-size"] = int(self.sc_icon_size_playerctl.get_value())
         settings["chars"] = int(self.sc_chars.get_value())
+        settings["cover-size"] = int(self.sc_cover_size.get_value())
         settings["scroll"] = self.cb_scroll.get_active()
+        settings["show-cover"] = self.cb_show_cover.get_active()
 
         settings["button-css-name"] = self.eb_button_css_name.get_text()
         settings["label-css-name"] = self.eb_label_css_name.get_text()
