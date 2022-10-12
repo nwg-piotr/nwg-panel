@@ -446,9 +446,13 @@ def get_brightness(device="", controller=""):
             pass
     elif nwg_panel.common.commands["brightnessctl"] and controller == "brightnessctl":
         try:
+            cmd = "brightnessctl m -d {}".format(device) if device else "brightnessctl m"
+            output = cmd2string(cmd)
+            max_bri = int(output)
+
             cmd = "brightnessctl g -d {}".format(device) if device else "brightnessctl g"
             output = cmd2string(cmd)
-            b = int(output) * 100 / 255
+            b = int(output) * 100 / max_bri
             brightness = int(round(float(b), 0))
         except:
             pass
