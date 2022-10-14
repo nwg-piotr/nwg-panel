@@ -107,6 +107,7 @@ class Playerctl(Gtk.EventBox):
 
     def update_widget(self, status, metadata):
         text = metadata["text"]
+        self.label.set_tooltip_text(text)
         if status in ["Playing", "Paused"]:
             self.retries = 2
             if not self.get_visible():
