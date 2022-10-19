@@ -236,12 +236,14 @@ class Controls(Gtk.EventBox):
     def on_button_press(self, w, event):
         if not self.popup_window.get_visible():
             self.popup_window.show_all()
+            self.popup_window.bcg_window.show()
             if self.popup_window.sink_box:
                 self.popup_window.sink_box.hide()
             if self.popup_window.menu_box:
                 self.popup_window.menu_box.hide()
         else:
             self.popup_window.hide()
+            self.popup_window.bcg_window.hide()
         return False
 
     def on_enter_notify_event(self, widget, event):
@@ -270,6 +272,7 @@ class Controls(Gtk.EventBox):
 class PopupWindow(Gtk.Window):
     def __init__(self, parent, position, alignment, settings, width, monitor=None, icons_path=""):
         Gtk.Window.__init__(self, type_hint=Gdk.WindowTypeHint.NORMAL)
+        self.bcg_window = None
         GtkLayerShell.init_for_window(self)
         if monitor:
             GtkLayerShell.set_monitor(self, monitor)
@@ -279,7 +282,9 @@ class PopupWindow(Gtk.Window):
 
         check_key(settings, "css-name", "controls-window")
         self.parent = parent
-        
+
+        self.set_up_bcg_window()
+
         self.set_property("name", settings["css-name"])
         self.icon_size = settings["icon-size"]
         self.icons_path = icons_path
@@ -587,13 +592,27 @@ class PopupWindow(Gtk.Window):
 
         Gdk.threads_add_timeout(GLib.PRIORITY_LOW, 500, self.refresh)
 
+    def set_up_bcg_window(self):
+        self.bcg_window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
+
+        GtkLayerShell.init_for_window(self.bcg_window)
+        GtkLayerShell.set_layer(self.bcg_window, GtkLayerShell.Layer.OVERLAY)
+        GtkLayerShell.set_anchor(self.bcg_window, GtkLayerShell.Edge.TOP, True)
+        GtkLayerShell.set_anchor(self.bcg_window, GtkLayerShell.Edge.BOTTOM, True)
+        GtkLayerShell.set_anchor(self.bcg_window, GtkLayerShell.Edge.LEFT, True)
+        GtkLayerShell.set_anchor(self.bcg_window, GtkLayerShell.Edge.RIGHT, True)
+        # GtkLayerShell.set_exclusive_zone(self.bcg_window, -1)  # cover panels
+        self.bcg_window.connect("button-release-event", self.hide_and_clear_tag)
+        self.bcg_window.set_property("name", "bcg-window")
+
     def on_window_exit(self, w, e):
         if self.get_visible():
             self.src_tag = GLib.timeout_add_seconds(1, self.hide_and_clear_tag)
         return True
 
-    def hide_and_clear_tag(self):
+    def hide_and_clear_tag(self, *args):
         self.hide()
+        self.bcg_window.hide()
         self.src_tag = 0
 
     def on_window_enter(self, *args):
@@ -736,6 +755,7 @@ class PopupWindow(Gtk.Window):
 
     def close_win(self, w, e):
         self.hide()
+        self.bcg_window.hide()
 
     def handle_keyboard(self, w, e):
         if e.type == Gdk.EventType.KEY_RELEASE and e.keyval == Gdk.KEY_Escape:
@@ -746,6 +766,7 @@ class PopupWindow(Gtk.Window):
         print("Executing '{}'".format(cmd))
         subprocess.Popen('{}'.format(cmd), shell=True)
         self.hide()
+        self.bcg_window.hide()
 
 
 class SinkBox(Gtk.Box):
