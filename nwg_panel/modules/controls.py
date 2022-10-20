@@ -28,8 +28,9 @@ class Controls(Gtk.EventBox):
         check_key(settings, "icon-size", 16)
         check_key(settings, "interval", 1)
         check_key(settings, "icon-size", 16)
-        check_key(settings, "hover-opens", True)
+        check_key(settings, "hover-opens", False)
         check_key(settings, "leave-closes", True)
+        check_key(settings, "click-closes", False)
         check_key(settings, "root-css-name", "controls-overview")
         check_key(settings, "components", ["net", "brightness", "volume", "battery"])
         check_key(settings, "net-interface", "")
@@ -76,8 +77,8 @@ class Controls(Gtk.EventBox):
         self.popup_window = PopupWindow(self, position, alignment, settings, width, monitor=monitor,
                                         icons_path=self.icons_path)
 
-        self.connect('button-press-event', self.on_button_press)
-        self.connect('enter-notify-event', self.on_enter_notify_event)
+        self.connect('button-press-event', self.on_button_press, settings)
+        self.connect('enter-notify-event', self.on_enter_notify_event, settings)
         self.connect('leave-notify-event', self.on_leave_notify_event)
 
         self.build_box()
@@ -195,8 +196,9 @@ class Controls(Gtk.EventBox):
 
     def update_brightness(self, get=True):
         if get:
-            self.bri_value = get_brightness(device=self.settings["backlight-device"], controller=self.settings["backlight-controller"])
-        
+            self.bri_value = get_brightness(device=self.settings["backlight-device"],
+                                            controller=self.settings["backlight-controller"])
+
         icon_name = bri_icon_name(self.bri_value)
 
         if icon_name != self.bri_icon_name:
@@ -205,7 +207,7 @@ class Controls(Gtk.EventBox):
 
         if self.bri_label:
             self.bri_label.set_text("{}%".format(self.bri_value))
-        
+
         if get:
             self.popup_window.refresh()
 
@@ -233,21 +235,27 @@ class Controls(Gtk.EventBox):
         if self.bat_label:
             self.bat_label.set_text("{}%".format(value))
 
-    def on_button_press(self, w, event):
+    def on_button_press(self, w, event, settings):
         if not self.popup_window.get_visible():
             self.popup_window.show_all()
+            if settings["click-closes"]:
+                self.popup_window.bcg_window.show()
             if self.popup_window.sink_box:
                 self.popup_window.sink_box.hide()
             if self.popup_window.menu_box:
                 self.popup_window.menu_box.hide()
         else:
             self.popup_window.hide()
+            if self.popup_window.bcg_window:
+                self.popup_window.bcg_window.hide()
         return False
 
-    def on_enter_notify_event(self, widget, event):
+    def on_enter_notify_event(self, widget, event, settings):
         if self.settings["hover-opens"]:
             if not self.popup_window.get_visible():
                 self.popup_window.show_all()
+                if settings["click-closes"]:
+                    self.popup_window.bcg_window.show()
                 if self.popup_window.sink_box:
                     self.popup_window.sink_box.hide()
                 if self.popup_window.menu_box:
@@ -270,6 +278,7 @@ class Controls(Gtk.EventBox):
 class PopupWindow(Gtk.Window):
     def __init__(self, parent, position, alignment, settings, width, monitor=None, icons_path=""):
         Gtk.Window.__init__(self, type_hint=Gdk.WindowTypeHint.NORMAL)
+        self.bcg_window = None
         GtkLayerShell.init_for_window(self)
         if monitor:
             GtkLayerShell.set_monitor(self, monitor)
@@ -279,7 +288,9 @@ class PopupWindow(Gtk.Window):
 
         check_key(settings, "css-name", "controls-window")
         self.parent = parent
-        
+
+        self.set_up_bcg_window()
+
         self.set_property("name", settings["css-name"])
         self.icon_size = settings["icon-size"]
         self.icons_path = icons_path
@@ -296,9 +307,9 @@ class PopupWindow(Gtk.Window):
         self.bri_scale_handler = None
         self.vol_scale = None
         self.vol_scale_handler = None
-        
+
         self.src_tag = 0
-        
+
         self.connect("show", self.on_window_show)
 
         check_key(settings, "output-switcher", False)
@@ -587,13 +598,27 @@ class PopupWindow(Gtk.Window):
 
         Gdk.threads_add_timeout(GLib.PRIORITY_LOW, 500, self.refresh)
 
+    def set_up_bcg_window(self):
+        self.bcg_window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
+
+        GtkLayerShell.init_for_window(self.bcg_window)
+        GtkLayerShell.set_layer(self.bcg_window, GtkLayerShell.Layer.OVERLAY)
+        GtkLayerShell.set_anchor(self.bcg_window, GtkLayerShell.Edge.TOP, True)
+        GtkLayerShell.set_anchor(self.bcg_window, GtkLayerShell.Edge.BOTTOM, True)
+        GtkLayerShell.set_anchor(self.bcg_window, GtkLayerShell.Edge.LEFT, True)
+        GtkLayerShell.set_anchor(self.bcg_window, GtkLayerShell.Edge.RIGHT, True)
+        # GtkLayerShell.set_exclusive_zone(self.bcg_window, -1)  # cover panels
+        self.bcg_window.connect("button-release-event", self.hide_and_clear_tag)
+        self.bcg_window.set_property("name", "bcg-window")
+
     def on_window_exit(self, w, e):
         if self.get_visible():
             self.src_tag = GLib.timeout_add_seconds(1, self.hide_and_clear_tag)
         return True
 
-    def hide_and_clear_tag(self):
+    def hide_and_clear_tag(self, *args):
         self.hide()
+        self.bcg_window.hide()
         self.src_tag = 0
 
     def on_window_enter(self, *args):
@@ -613,7 +638,7 @@ class PopupWindow(Gtk.Window):
             self.menu_box.show_all()
 
     def refresh_sinks(self, *args):
-        if  commands["pamixer"]:
+        if commands["pamixer"]:
             self.sinks = list_sinks()
 
     def toggle_mute(self, e, slider):
@@ -678,7 +703,8 @@ class PopupWindow(Gtk.Window):
                 if self.parent.vol_icon_name != self.vol_icon_name:
                     update_image(self.vol_image, self.parent.vol_icon_name, self.icon_size, self.icons_path)
                     self.vol_icon_name = self.parent.vol_icon_name
-                self.vol_scale.set_draw_value(False if self.parent.vol_value > 100 else True) # Dont display val out of scale
+                self.vol_scale.set_draw_value(
+                    False if self.parent.vol_value > 100 else True)  # Dont display val out of scale
 
             if "brightness" in self.settings["components"]:
                 if not self.value_changed:
@@ -736,6 +762,7 @@ class PopupWindow(Gtk.Window):
 
     def close_win(self, w, e):
         self.hide()
+        self.bcg_window.hide()
 
     def handle_keyboard(self, w, e):
         if e.type == Gdk.EventType.KEY_RELEASE and e.keyval == Gdk.KEY_Escape:
@@ -746,6 +773,7 @@ class PopupWindow(Gtk.Window):
         print("Executing '{}'".format(cmd))
         subprocess.Popen('{}'.format(cmd), shell=True)
         self.hide()
+        self.bcg_window.hide()
 
 
 class SinkBox(Gtk.Box):

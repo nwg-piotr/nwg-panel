@@ -118,7 +118,7 @@ def check_tree():
 
             for item in common.controls_list:
                 if item.popup_window.get_visible():
-                    item.popup_window.hide()
+                    item.popup_window.hide_and_clear_tag()
 
         common.ipc_data = tree.ipc_data
 
@@ -375,6 +375,11 @@ def main():
         provider.load_from_path(os.path.join(common.config_dir, args.style))
     except Exception as e:
         print(e, file=sys.stderr)
+
+    # Controls background window (invisible): add style missing from the css file
+    css = provider.to_string().encode('utf-8')
+    css += b""" window#bcg-window { background-color: rgba(0, 0, 0, 0.2); } """
+    provider.load_from_data(css)
 
     # Mirror bars to all outputs #48 (if panel["output"] == "All")
     to_remove = []

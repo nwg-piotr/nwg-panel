@@ -38,8 +38,9 @@
       "show-values": false,
       "interval": 1,
       "icon-size": 16,
-      "hover-opens": true,
+      "hover-opens": false,
       "leave-closes": true,
+      "click-closes": false,
       "css-name": "controls-window",
       "net-interface": "",
       "custom-items": [
@@ -179,8 +180,9 @@
       "show-values": false,
       "interval": 1,
       "icon-size": 16,
-      "hover-opens": true,
+      "hover-opens": false,
       "leave-closes": true,
+      "click-closes": false,
       "css-name": "controls-window",
       "net-interface": "",
       "custom-items": [
