@@ -421,7 +421,7 @@ be placed on the same layer.</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
-            <property name="tooltip-text" translatable="yes">determins whether the panel is to put other windows away</property>
+            <property name="tooltip-text" translatable="yes">determines whether the panel is to put other windows away</property>
             <property name="draw-indicator">True</property>
           </object>
           <packing>
