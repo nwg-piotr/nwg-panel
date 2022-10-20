@@ -88,7 +88,7 @@ of workspaces to show</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
-            <property name="label" translatable="yes">Window name lenght limit:</property>
+            <property name="label" translatable="yes">Window name length limit:</property>
           </object>
           <packing>
             <property name="left-attach">0</property>

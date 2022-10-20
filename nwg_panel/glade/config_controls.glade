@@ -468,7 +468,7 @@ LEAVE BLANK IF EVERYTHING WORKS</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">False</property>
-                <property name="tooltip-text" translatable="yes">Determins if to open the Controls window
+                <property name="tooltip-text" translatable="yes">Determines if to open the Controls window
 on panel Controls widget pointed</property>
                 <property name="draw-indicator">True</property>
               </object>
@@ -484,7 +484,7 @@ on panel Controls widget pointed</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">False</property>
-                <property name="tooltip-text" translatable="yes">Determins if to close the Controls
+                <property name="tooltip-text" translatable="yes">Determines if to close the Controls
 window when left</property>
                 <property name="draw-indicator">True</property>
               </object>
@@ -500,7 +500,7 @@ window when left</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">False</property>
-                <property name="tooltip-text" translatable="yes">Determins if to close the Controls
+                <property name="tooltip-text" translatable="yes">Determines if to close the Controls
 window on mouse click outside it</property>
                 <property name="draw-indicator">True</property>
               </object>
@@ -523,7 +523,7 @@ window on mouse click outside it</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
-            <property name="tooltip-text" translatable="yes">Determins if show the Controls
+            <property name="tooltip-text" translatable="yes">Determines if show the Controls
 values in the panel widget</property>
             <property name="draw-indicator">True</property>
           </object>
