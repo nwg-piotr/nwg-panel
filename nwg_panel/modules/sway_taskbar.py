@@ -19,6 +19,7 @@ class SwayTaskbar(Gtk.Box):
         check_key(settings, "mark-autotiling", True)
         check_key(settings, "mark-xwayland", True)
         check_key(settings, "angle", 0.0)
+        check_key(settings, "order-by-pid", False)
 
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=settings["workspaces-spacing"])
         self.settings = settings
@@ -71,7 +72,11 @@ class SwayTaskbar(Gtk.Box):
                 if desc.type == "workspace":
                     self.ws_box = WorkspaceBox(desc, self.settings, self.autotiling)
                     if all_workspaces or desc.find_focused() is not None:
-                        for con in desc.descendants():
+                        descendants = desc.descendants()
+                        # Setting to sort by PID, where the earliest PID shows first.
+                        if self.settings["order-by-pid"]:
+                            descendants = sorted(descendants, key=lambda c: c.pid)
+                        for con in descendants:
                             if con.name or con.app_id:
                                 win_box = WindowBox(con, self.settings, self.position, self.icons_path, floating=con in desc.floating_nodes)
                                 self.ws_box.pack_start(win_box, False, False, self.settings["task-padding"])
