@@ -378,7 +378,7 @@ def main():
 
     # Controls background window (invisible): add style missing from the css file
     css = provider.to_string().encode('utf-8')
-    css += b""" window#bcg-window { background-color: rgba(0, 0, 0, 0.15); } """
+    css += b""" window#bcg-window { background-color: rgba(0, 0, 0, 0.2); } """
     provider.load_from_data(css)
 
     # Mirror bars to all outputs #48 (if panel["output"] == "All")

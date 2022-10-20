@@ -53,8 +53,9 @@ SKELETON_PANEL: dict = {
         "show-values": False,
         "interval": 1,
         "icon-size": 16,
-        "hover-opens": True,
+        "hover-opens": False,
         "leave-closes": True,
+        "click-closes": False,
         "root-css-name": "controls-overview",
         "css-name": "controls-window",
         "net-interface": "",
@@ -2747,8 +2748,9 @@ class EditorWrapper(object):
             "window-margin-horizontal": 0,
             "window-margin-vertical": 0,
             "icon-size": 16,
-            "hover-opens": True,
+            "hover-opens": False,
             "leave-closes": True,
+            "click-closes": False,
             "root-css-name": "controls-overview",
             "css-name": "controls-window",
             "net-interface": "",
@@ -2878,6 +2880,9 @@ class EditorWrapper(object):
         self.ctrl_leave_closes = builder.get_object("leave-closes")
         self.ctrl_leave_closes.set_active(settings["leave-closes"])
 
+        self.ctrl_click_closes = builder.get_object("click-closes")
+        self.ctrl_click_closes.set_active(settings["click-closes"])
+
         self.ctrl_angle = builder.get_object("angle")
         self.ctrl_angle.set_active_id(str(settings["angle"]))
 
@@ -2945,6 +2950,7 @@ class EditorWrapper(object):
         settings["show-values"] = self.ctrl_show_values.get_active()
         settings["hover-opens"] = self.ctrl_hover_opens.get_active()
         settings["leave-closes"] = self.ctrl_leave_closes.get_active()
+        settings["click-closes"] = self.ctrl_click_closes.get_active()
 
         try:
             settings["angle"] = float(self.ctrl_angle.get_active_id())
