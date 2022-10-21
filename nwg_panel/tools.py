@@ -123,6 +123,9 @@ def get_icon_name(app_name):
         if app_name in key.split("."):
             return nwg_panel.common.name2icon_dict[key]
 
+    # if all above fails
+    return app_name
+
 
 def local_dir():
     local_dir = os.path.join(os.path.join(os.getenv("HOME"), ".local/share/nwg-panel"))
