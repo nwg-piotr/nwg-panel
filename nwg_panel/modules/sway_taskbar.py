@@ -316,18 +316,18 @@ class WindowBox(Gtk.EventBox):
         nwg_panel.common.i3.command(cmd)
 
     def move_scratchpad(self, item):
-        d = {}
-        cmd = "[con_id=\"{}\"] move to scratchpad".format(self.con.id)
-        d["floating_con"] = self.con.type == "floating_con"
+        # d dictionary is to remember con workspace number and floating state,
+        # to bring it back from scratchpad to its original place, in original state.
+        d = {"floating_con": self.con.type == "floating_con"}
         for ws in self.tree.workspaces():
             if ws.find_by_id(self.con.id):
-                print("workspace", ws.num)
                 d["workspace"] = ws.num
-        nwg_panel.common.i3.command(cmd)
+                break
         nwg_panel.common.scratchpad_cons[self.con.id] = d
-        # nwg_panel.common.scratchpad_cons dictionary is to remember con workspace number and floating state,
-        # to bring it back from scratchpad in original state.
         print(nwg_panel.common.scratchpad_cons)
+
+        cmd = "[con_id=\"{}\"] move to scratchpad".format(self.con.id)
+        nwg_panel.common.i3.command(cmd)
 
     def floating_toggle(self, item):
         cmd = "[con_id=\"{}\"] floating toggle".format(self.con.id)
