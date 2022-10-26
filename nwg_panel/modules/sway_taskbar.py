@@ -73,7 +73,7 @@ class SwayTaskbar(Gtk.Box):
                     if all_workspaces or desc.find_focused() is not None:
                         for con in desc.descendants():
                             if con.name or con.app_id:
-                                win_box = WindowBox(con, self.settings, self.position, self.icons_path,
+                                win_box = WindowBox(self.tree, con, self.settings, self.position, self.icons_path,
                                                     floating=con in desc.floating_nodes)
                                 self.ws_box.pack_start(win_box, False, False, self.settings["task-padding"])
                     self.pack_start(self.ws_box, False, False, 0)
@@ -109,7 +109,7 @@ class WorkspaceBox(Gtk.Box):
 
 
 class WindowBox(Gtk.EventBox):
-    def __init__(self, con, settings, position, icons_path, floating=False):
+    def __init__(self, tree, con, settings, position, icons_path, floating=False):
         self.position = position
         self.settings = settings
         Gtk.EventBox.__init__(self)
@@ -120,6 +120,7 @@ class WindowBox(Gtk.EventBox):
         self.con = con
         self.pid = con.pid
         self.icons_path = icons_path
+        self.tree = tree
 
         self.old_name = ""
 
@@ -248,7 +249,7 @@ class WindowBox(Gtk.EventBox):
                 hbox.pack_start(label, True, True, 0)
                 item = Gtk.MenuItem()
                 item.add(hbox)
-                item.connect("activate", self.execute, i)
+                item.connect("activate", self.move_to_workspace, i)
                 item.set_tooltip_text("move to workspace number {}".format(i))
                 menu.append(item)
 
@@ -262,7 +263,7 @@ class WindowBox(Gtk.EventBox):
         hbox.pack_start(img, True, True, 0)
         item = Gtk.MenuItem()
         item.add(hbox)
-        item.connect("activate", self.floating_toggle)
+        item.connect("activate", self.move_scratchpad)
         item.set_tooltip_text("move scratchpad")
         menu.append(item)
 
@@ -307,12 +308,26 @@ class WindowBox(Gtk.EventBox):
 
         return ws_num
 
-    def execute(self, item, ws_num):
+    def move_to_workspace(self, item, ws_num):
         cmd = "[con_id=\"{}\"] move to workspace number {}".format(self.con.id, ws_num)
         nwg_panel.common.i3.command(cmd)
 
         cmd = "[con_id=\"{}\"] focus".format(self.con.id)
         nwg_panel.common.i3.command(cmd)
+
+    def move_scratchpad(self, item):
+        d = {}
+        cmd = "[con_id=\"{}\"] move to scratchpad".format(self.con.id)
+        print("id", self.con.id)
+        print("floating_con", self.con.type == "floating_con")
+        d["floating_con"] = self.con.type == "floating_con"
+        for ws in self.tree.workspaces():
+            if ws.find_by_id(self.con.id):
+                print("workspace", ws.num)
+                d["workspace"] = ws.num
+        nwg_panel.common.i3.command(cmd)
+        nwg_panel.common.scratchpad_cons[self.con.id] = d
+        print(nwg_panel.common.scratchpad_cons)
 
     def floating_toggle(self, item):
         cmd = "[con_id=\"{}\"] floating toggle".format(self.con.id)
