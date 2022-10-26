@@ -73,7 +73,8 @@ class SwayTaskbar(Gtk.Box):
                     if all_workspaces or desc.find_focused() is not None:
                         for con in desc.descendants():
                             if con.name or con.app_id:
-                                win_box = WindowBox(con, self.settings, self.position, self.icons_path, floating=con in desc.floating_nodes)
+                                win_box = WindowBox(con, self.settings, self.position, self.icons_path,
+                                                    floating=con in desc.floating_nodes)
                                 self.ws_box.pack_start(win_box, False, False, self.settings["task-padding"])
                     self.pack_start(self.ws_box, False, False, 0)
         self.show_all()
@@ -112,7 +113,7 @@ class WindowBox(Gtk.EventBox):
         self.position = position
         self.settings = settings
         Gtk.EventBox.__init__(self)
-        self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        self.box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, spacing=0)
         if settings["angle"] != 0.0:
             self.box.set_orientation(Gtk.Orientation.VERTICAL)
         self.add(self.box)
@@ -239,7 +240,7 @@ class WindowBox(Gtk.EventBox):
         for i in workspaces:
             ws_num = self.con_ws_num(self.con)
             if str(i) != str(ws_num):
-                hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+                hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 img = Gtk.Image()
                 update_image(img, "go-next-symbolic", 16, self.icons_path)
                 hbox.pack_start(img, True, True, 0)
@@ -248,13 +249,28 @@ class WindowBox(Gtk.EventBox):
                 item = Gtk.MenuItem()
                 item.add(hbox)
                 item.connect("activate", self.execute, i)
+                item.set_tooltip_text("move to workspace number {}".format(i))
                 menu.append(item)
+
+        # Move to scratchpad
+        hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        img = Gtk.Image()
+        update_image(img, "go-next-symbolic", 16, self.icons_path)
+        hbox.pack_start(img, True, True, 0)
+        img = Gtk.Image()
+        update_image(img, "edit-paste", 16, self.icons_path)
+        hbox.pack_start(img, True, True, 0)
+        item = Gtk.MenuItem()
+        item.add(hbox)
+        item.connect("activate", self.floating_toggle)
+        item.set_tooltip_text("move scratchpad")
+        menu.append(item)
 
         item = Gtk.SeparatorMenuItem()
 
         menu.append(item)
 
-        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         img = Gtk.Image()
         update_image(img, "view-paged-symbolic", 16, self.icons_path)
         hbox.pack_start(img, True, True, 0)
@@ -264,15 +280,17 @@ class WindowBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.floating_toggle)
+        item.set_tooltip_text("floating toggle")
         menu.append(item)
 
-        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         img = Gtk.Image()
         update_image(img, "window-close-symbolic", 16, self.icons_path)
         hbox.pack_start(img, True, True, 0)
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.kill)
+        item.set_tooltip_text("kill")
         menu.append(item)
 
         return menu
