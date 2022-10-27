@@ -264,7 +264,7 @@ class WindowBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.move_scratchpad)
-        item.set_tooltip_text("move scratchpad")
+        item.set_tooltip_text('move scratchpad ("minimize")')
         menu.append(item)
 
         item = Gtk.SeparatorMenuItem()
