@@ -316,13 +316,17 @@ class WindowBox(Gtk.EventBox):
         nwg_panel.common.i3.command(cmd)
 
     def move_scratchpad(self, item):
-        # d dictionary is to remember con workspace number and floating state,
+        # d dictionary is to remember con workspace number, floating state and parent output name,
         # to bring it back from scratchpad to its original place, in original state.
         d = {"floating_con": self.con.type == "floating_con"}
         for ws in self.tree.workspaces():
             if ws.find_by_id(self.con.id):
                 d["workspace"] = ws.num
                 break
+
+        # We'll need the output name to (optionally) filter the Scratchpad module icons by the panel output name.
+        d["output"] = self.con_parent_output_name(self.con)
+
         nwg_panel.common.scratchpad_cons[self.con.id] = d
         # print(nwg_panel.common.scratchpad_cons)
 
@@ -336,3 +340,13 @@ class WindowBox(Gtk.EventBox):
     def kill(self, item):
         cmd = "[con_id=\"{}\"] kill".format(self.con.id)
         nwg_panel.common.i3.command(cmd)
+
+    def con_parent_output_name(self, con):
+        p = con.parent
+        if p:
+            if p.type == "output":
+                return p.name
+            else:
+                return self.con_parent_output_name(p)
+
+        return None

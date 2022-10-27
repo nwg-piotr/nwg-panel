@@ -11,18 +11,20 @@ import nwg_panel.common
 
 
 class Scratchpad(Gtk.Box):
-    def __init__(self, i3, tree, settings, icons_path=""):
+    def __init__(self, i3, tree, settings, output, icons_path=""):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.settings = settings
         self.i3 = i3
         self.tree = tree
         self.content = []
         self.icons_path = icons_path
+        self.output = output
 
         defaults = {
             "css-name": "",
             "icon-size": 16,
-            "angle": 0.0
+            "angle": 0.0,
+            "filter-by-output": True
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
