@@ -7,6 +7,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
 from nwg_panel.tools import check_key, get_icon_name, update_image
+import nwg_panel.common
 
 
 class Scratchpad(Gtk.Box):
@@ -46,7 +47,7 @@ class Scratchpad(Gtk.Box):
                 else:
                     icon = "icon-missing"
 
-                item = {"aid": aid, "pid": pid, "icon": icon, "name": node.name}
+                item = {"aid": aid, "pid": pid, "icon": icon, "name": node.name, "con_id": node.id}
                 content.append(item)
 
         if content != self.content:
@@ -68,16 +69,42 @@ class Scratchpad(Gtk.Box):
                 image = Gtk.Image()
                 update_image(image, item["icon"], self.settings["icon-size"], self.icons_path)
                 eb.add(image)
-                eb.connect("button-press-event", self.on_button_press, item["pid"])
+                eb.connect("button-press-event", self.on_button_press, item["pid"], item["con_id"])
                 if item["name"]:
                     eb.set_tooltip_text(item["name"])
                 self.pack_start(eb, False, False, 3)
 
         self.show_all()
 
-    def on_button_press(self, eb, e, pid):
-        cmd = "[pid={}] scratchpad show".format(pid)
-        self.i3.command(cmd)
+    def on_button_press(self, eb, e, pid, con_id):
+        if con_id in nwg_panel.common.scratchpad_cons:
+            # If moved to scratchpad with the SwayTaskbar context menu, we have stored
+            # the workspace number and floating state. Let's restore them.
+            item = nwg_panel.common.scratchpad_cons[con_id]
+
+            if "workspace" in item:
+                if item["workspace"]:
+                    # move to original workspace
+                    cmd = "[con_id=\"{}\"] move to workspace number {}".format(con_id, item["workspace"])
+                    self.i3.command(cmd)
+
+            if "floating_con" in item:
+                # restore floating state
+                if item["floating_con"]:
+                    cmd = "[con_id=\"{}\"] floating enable".format(con_id)
+                else:
+                    cmd = "[con_id=\"{}\"] floating disable".format(con_id)
+                self.i3.command(cmd)
+
+            # focus restored con
+            cmd = "[con_id=\"{}\"] focus".format(con_id)
+            self.i3.command(cmd)
+
+        else:
+            # If moved to scratchpad in another way, we have no info on WS number and floating state.
+            # Let's just show the item.
+            cmd = "[pid={}] scratchpad show".format(pid)
+            self.i3.command(cmd)
 
     def refresh(self, tree):
         thread = threading.Thread(target=self.check_scratchpad(tree))
