@@ -328,7 +328,6 @@ class WindowBox(Gtk.EventBox):
         d["output"] = self.con_parent_output_name(self.con)
 
         nwg_panel.common.scratchpad_cons[self.con.id] = d
-        # print(nwg_panel.common.scratchpad_cons)
 
         cmd = "[con_id=\"{}\"] move to scratchpad".format(self.con.id)
         nwg_panel.common.i3.command(cmd)

@@ -67,14 +67,25 @@ class Scratchpad(Gtk.Box):
 
         for item in self.content:
             if item["icon"]:
-                eb = Gtk.EventBox()
-                image = Gtk.Image()
-                update_image(image, item["icon"], self.settings["icon-size"], self.icons_path)
-                eb.add(image)
-                eb.connect("button-press-event", self.on_button_press, item["pid"], item["con_id"])
-                if item["name"]:
-                    eb.set_tooltip_text(item["name"])
-                self.pack_start(eb, False, False, 3)
+                if not self.settings["filter-by-output"] or not nwg_panel.common.scratchpad_cons:
+                    eb = Gtk.EventBox()
+                    image = Gtk.Image()
+                    update_image(image, item["icon"], self.settings["icon-size"], self.icons_path)
+                    eb.add(image)
+                    eb.connect("button-press-event", self.on_button_press, item["pid"], item["con_id"])
+                    if item["name"]:
+                        eb.set_tooltip_text(item["name"])
+                    self.pack_start(eb, False, False, 3)
+                else:
+                    if self.output == nwg_panel.common.scratchpad_cons[item["con_id"]]["output"]:
+                        eb = Gtk.EventBox()
+                        image = Gtk.Image()
+                        update_image(image, item["icon"], self.settings["icon-size"], self.icons_path)
+                        eb.add(image)
+                        eb.connect("button-press-event", self.on_button_press, item["pid"], item["con_id"])
+                        if item["name"]:
+                            eb.set_tooltip_text(item["name"])
+                        self.pack_start(eb, False, False, 3)
 
         self.show_all()
 
