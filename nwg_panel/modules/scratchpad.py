@@ -24,7 +24,7 @@ class Scratchpad(Gtk.Box):
             "css-name": "",
             "icon-size": 16,
             "angle": 0.0,
-            "filter-by-output": True
+            "single-output": False
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -67,27 +67,23 @@ class Scratchpad(Gtk.Box):
 
         for item in self.content:
             if item["icon"]:
-                if not self.settings["filter-by-output"] or not nwg_panel.common.scratchpad_cons:
-                    eb = Gtk.EventBox()
-                    image = Gtk.Image()
-                    update_image(image, item["icon"], self.settings["icon-size"], self.icons_path)
-                    eb.add(image)
-                    eb.connect("button-press-event", self.on_button_press, item["pid"], item["con_id"])
-                    if item["name"]:
-                        eb.set_tooltip_text(item["name"])
-                    self.pack_start(eb, False, False, 3)
+                if not self.settings["single-output"] or not nwg_panel.common.scratchpad_cons:
+                    self.add_event_box(item)
                 else:
                     if self.output == nwg_panel.common.scratchpad_cons[item["con_id"]]["output"]:
-                        eb = Gtk.EventBox()
-                        image = Gtk.Image()
-                        update_image(image, item["icon"], self.settings["icon-size"], self.icons_path)
-                        eb.add(image)
-                        eb.connect("button-press-event", self.on_button_press, item["pid"], item["con_id"])
-                        if item["name"]:
-                            eb.set_tooltip_text(item["name"])
-                        self.pack_start(eb, False, False, 3)
+                        self.add_event_box(item)
 
         self.show_all()
+
+    def add_event_box(self, item):
+        eb = Gtk.EventBox()
+        image = Gtk.Image()
+        update_image(image, item["icon"], self.settings["icon-size"], self.icons_path)
+        eb.add(image)
+        eb.connect("button-press-event", self.on_button_press, item["pid"], item["con_id"])
+        if item["name"]:
+            eb.set_tooltip_text(item["name"])
+        self.pack_start(eb, False, False, 3)
 
     def on_button_press(self, eb, e, pid, con_id):
         if con_id in nwg_panel.common.scratchpad_cons:

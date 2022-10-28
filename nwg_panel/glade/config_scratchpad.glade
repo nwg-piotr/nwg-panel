@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
+<!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkFrame" id="frame">
@@ -8,7 +8,7 @@
     <property name="label-xalign">0.5</property>
     <property name="shadow-type">out</property>
     <child>
-      <!-- n-columns=3 n-rows=3 -->
+      <!-- n-columns=3 n-rows=4 -->
       <object class="GtkGrid" id="grid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -102,6 +102,33 @@ the horizontal, in degrees, measured counterclockwise</property>
             <property name="left-attach">0</property>
             <property name="top-attach">2</property>
           </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="single-output">
+            <property name="label" translatable="yes">Single output</property>
+            <property name="name">all-outputs</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="tooltip-text" translatable="yes">This option allows to use separate Scratchpad module instances
+on multiple panels / various displays, preferrably next to the
+SwayTaskbar module. It determines if to show  tasks moved to the 
+scratchpad from this output only, or all tasks. For this to take effect,
+you need to assingn your panels to the outputs, and move tasks to the
+scratchpad with the SwayTaskbar context menu only. Whatever you
+move the other way, will show up on all Scratchpad module instances.</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>

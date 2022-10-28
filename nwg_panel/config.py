@@ -1784,7 +1784,8 @@ class EditorWrapper(object):
         defaults = {
             "css-name": "",
             "icon-size": 16,
-            "angle": 0.0
+            "angle": 0.0,
+            "single-output": False
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1804,6 +1805,9 @@ class EditorWrapper(object):
         self.scratchpad_angle = builder.get_object("angle")
         self.scratchpad_angle.set_active_id(str(settings["angle"]))
 
+        self.scratchpad_single_output = builder.get_object("single-output")
+        self.scratchpad_single_output.set_active(settings["single-output"])
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -1817,6 +1821,8 @@ class EditorWrapper(object):
             settings["angle"] = float(self.scratchpad_angle.get_active_id())
         except:
             settings["angle"] = 0.0
+
+        settings["single-output"] = self.scratchpad_single_output.get_active()
 
         save_json(self.config, self.file)
 
