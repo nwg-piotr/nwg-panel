@@ -212,7 +212,7 @@ def load_json(path):
             return json.load(f)
     except Exception as e:
         eprint("Error loading json: {}".format(e))
-        return None
+        return {}
 
 
 def save_json(src_dict, path):
