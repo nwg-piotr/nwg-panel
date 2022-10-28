@@ -13,6 +13,7 @@ import sys
 
 import gi
 
+import nwg_panel.common
 from nwg_panel.__about__ import __version__
 
 gi.require_version('Gtk', '3.0')
@@ -182,7 +183,8 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 # Added in v0.1.3, so may be undefined in user's config.
                 if item not in panel:
                     panel["scratchpad"] = {}
-                scratchpad = Scratchpad(common.i3, common.i3.get_tree(), panel[item], panel["position"])
+                scratchpad = Scratchpad(common.i3, common.i3.get_tree(), panel[item], panel["output"],
+                                        icons_path=icons_path)
                 container.pack_start(scratchpad, False, False, panel["items-padding"])
                 common.scratchpads_list.append(scratchpad)
             else:
