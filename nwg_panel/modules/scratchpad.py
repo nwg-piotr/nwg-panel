@@ -69,9 +69,12 @@ class Scratchpad(Gtk.Box):
 
         for item in self.content:
             if item["icon"]:
-                if not self.settings["single-output"] or not nwg_panel.common.scratchpad_cons:
+                if not self.settings["single-output"] or not nwg_panel.common.scratchpad_cons or str(
+                        item["con_id"]) not in nwg_panel.common.scratchpad_cons:
+                    # Items to be listed on every scratchpad instance.
                     self.add_event_box(item)
                 elif str(item["con_id"]) in nwg_panel.common.scratchpad_cons:
+                    # Items, that got to the scratchpad by the SwayTaskbar context menu, to be listed per-output.
                     if self.output == nwg_panel.common.scratchpad_cons[str(item["con_id"])]["output"]:
                         self.add_event_box(item)
 
