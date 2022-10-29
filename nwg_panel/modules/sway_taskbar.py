@@ -3,7 +3,8 @@
 import os
 from gi.repository import Gtk, Gdk, GdkPixbuf
 
-from nwg_panel.tools import check_key, get_icon_name, update_image, load_autotiling, get_config_dir, eprint
+from nwg_panel.tools import check_key, get_icon_name, update_image, load_autotiling, get_config_dir, temp_dir, \
+    save_json
 import nwg_panel.common
 
 
@@ -19,6 +20,8 @@ class SwayTaskbar(Gtk.Box):
         check_key(settings, "mark-autotiling", True)
         check_key(settings, "mark-xwayland", True)
         check_key(settings, "angle", 0.0)
+
+        self.cache_file = os.path.join(temp_dir(), "nwg-scratchpad")
 
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=settings["workspaces-spacing"])
         self.settings = settings
@@ -74,7 +77,7 @@ class SwayTaskbar(Gtk.Box):
                         for con in desc.descendants():
                             if con.name or con.app_id:
                                 win_box = WindowBox(self.tree, con, self.settings, self.position, self.icons_path,
-                                                    floating=con in desc.floating_nodes)
+                                                    self.cache_file, floating=con in desc.floating_nodes)
                                 self.ws_box.pack_start(win_box, False, False, self.settings["task-padding"])
                     self.pack_start(self.ws_box, False, False, 0)
         self.show_all()
@@ -109,7 +112,7 @@ class WorkspaceBox(Gtk.Box):
 
 
 class WindowBox(Gtk.EventBox):
-    def __init__(self, tree, con, settings, position, icons_path, floating=False):
+    def __init__(self, tree, con, settings, position, icons_path, cache_file, floating=False):
         self.position = position
         self.settings = settings
         Gtk.EventBox.__init__(self)
@@ -121,6 +124,7 @@ class WindowBox(Gtk.EventBox):
         self.pid = con.pid
         self.icons_path = icons_path
         self.tree = tree
+        self.cache_file = cache_file
 
         self.old_name = ""
 
@@ -327,7 +331,11 @@ class WindowBox(Gtk.EventBox):
         # We'll need the output name to (optionally) filter the Scratchpad module icons by the panel output name.
         d["output"] = self.con_parent_output_name(self.con)
 
-        nwg_panel.common.scratchpad_cons[self.con.id] = d
+        # key must not be a number, as json keys are always strings, and we will try to restore this dict from cache
+        nwg_panel.common.scratchpad_cons[str(self.con.id)] = d
+
+        # save to the cache file, for the information to survive panel restarts
+        save_json(nwg_panel.common.scratchpad_cons, self.cache_file)
 
         cmd = "[con_id=\"{}\"] move to scratchpad".format(self.con.id)
         nwg_panel.common.i3.command(cmd)

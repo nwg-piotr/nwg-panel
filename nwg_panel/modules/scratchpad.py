@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-
+import os.path
 import threading
 import gi
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
-from nwg_panel.tools import check_key, get_icon_name, update_image
+from nwg_panel.tools import check_key, get_icon_name, update_image, temp_dir, save_json
 import nwg_panel.common
 
 
@@ -19,6 +19,8 @@ class Scratchpad(Gtk.Box):
         self.content = []
         self.icons_path = icons_path
         self.output = output
+
+        self.cache_file = os.path.join(temp_dir(), "nwg-scratchpad")
 
         defaults = {
             "css-name": "",
@@ -67,10 +69,13 @@ class Scratchpad(Gtk.Box):
 
         for item in self.content:
             if item["icon"]:
-                if not self.settings["single-output"] or not nwg_panel.common.scratchpad_cons:
+                # Items to be listed on every scratchpad instance.
+                if not self.settings["single-output"] or not nwg_panel.common.scratchpad_cons or str(
+                        item["con_id"]) not in nwg_panel.common.scratchpad_cons:
                     self.add_event_box(item)
-                else:
-                    if self.output == nwg_panel.common.scratchpad_cons[item["con_id"]]["output"]:
+                # Items, that got to the scratchpad by the SwayTaskbar context menu, to be listed per-output.
+                elif str(item["con_id"]) in nwg_panel.common.scratchpad_cons:
+                    if self.output == nwg_panel.common.scratchpad_cons[str(item["con_id"])]["output"]:
                         self.add_event_box(item)
 
         self.show_all()
@@ -86,10 +91,10 @@ class Scratchpad(Gtk.Box):
         self.pack_start(eb, False, False, 3)
 
     def on_button_press(self, eb, e, pid, con_id):
-        if con_id in nwg_panel.common.scratchpad_cons:
+        if str(con_id) in nwg_panel.common.scratchpad_cons:
             # If moved to scratchpad with the SwayTaskbar context menu, we have stored
             # the workspace number and floating state. Let's restore them.
-            item = nwg_panel.common.scratchpad_cons[con_id]
+            item = nwg_panel.common.scratchpad_cons[str(con_id)]
 
             if "workspace" in item:
                 if item["workspace"]:
@@ -108,6 +113,10 @@ class Scratchpad(Gtk.Box):
             # focus restored con
             cmd = "[con_id=\"{}\"] focus".format(con_id)
             self.i3.command(cmd)
+
+            # remove the item from scratchpad cache
+            nwg_panel.common.scratchpad_cons.pop(str(con_id), None)
+            save_json(nwg_panel.common.scratchpad_cons, self.cache_file)
 
         else:
             # If moved to scratchpad in another way, we have no info on WS number and floating state.
