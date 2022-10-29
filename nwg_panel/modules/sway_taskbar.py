@@ -3,7 +3,7 @@
 import os
 from gi.repository import Gtk, Gdk, GdkPixbuf
 
-from nwg_panel.tools import check_key, get_icon_name, update_image, load_autotiling, get_config_dir, get_cache_dir, \
+from nwg_panel.tools import check_key, get_icon_name, update_image, load_autotiling, get_config_dir, temp_dir, \
     save_json
 import nwg_panel.common
 
@@ -21,7 +21,7 @@ class SwayTaskbar(Gtk.Box):
         check_key(settings, "mark-xwayland", True)
         check_key(settings, "angle", 0.0)
 
-        self.cache_file = os.path.join(get_cache_dir(), "nwg-scratchpad")
+        self.cache_file = os.path.join(temp_dir(), "nwg-scratchpad")
 
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=settings["workspaces-spacing"])
         self.settings = settings

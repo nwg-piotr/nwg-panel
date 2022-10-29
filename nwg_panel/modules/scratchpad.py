@@ -6,7 +6,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
-from nwg_panel.tools import check_key, get_icon_name, update_image, get_cache_dir, save_json
+from nwg_panel.tools import check_key, get_icon_name, update_image, temp_dir, save_json
 import nwg_panel.common
 
 
@@ -20,7 +20,7 @@ class Scratchpad(Gtk.Box):
         self.icons_path = icons_path
         self.output = output
 
-        self.cache_file = os.path.join(get_cache_dir(), "nwg-scratchpad")
+        self.cache_file = os.path.join(temp_dir(), "nwg-scratchpad")
 
         defaults = {
             "css-name": "",

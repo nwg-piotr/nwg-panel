@@ -333,7 +333,7 @@ def main():
     cache_dir = get_cache_dir()
     if cache_dir:
         common.dwl_data_file = os.path.join(cache_dir, "nwg-dwl-data")
-        scratchpad_file = os.path.join(cache_dir, "nwg-scratchpad")
+        scratchpad_file = os.path.join(temp_dir(), "nwg-scratchpad")
         if os.path.isfile(scratchpad_file):
             common.scratchpad_cons = load_json(scratchpad_file)
             eprint("Loaded scratchpad info", common.scratchpad_cons)
