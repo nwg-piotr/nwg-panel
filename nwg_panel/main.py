@@ -348,7 +348,7 @@ def main():
         try:
             signal.signal(sig, signal_handler)
         except Exception as exc:
-            eprint("signal subscription error: {}".format(exc))
+            eprint("{} subscription error: {}".format(sig, exc))
 
     check_commands()
     print("Dependencies check:", common.commands)
