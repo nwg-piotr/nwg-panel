@@ -345,7 +345,10 @@ def main():
 
     catchable_sigs = set(signal.Signals) - {signal.SIGKILL, signal.SIGSTOP}
     for sig in catchable_sigs:
-        signal.signal(sig, signal_handler)
+        try:
+            signal.signal(sig, signal_handler)
+        except Exception as exc:
+            eprint("{} subscription error: {}".format(sig, exc))
 
     check_commands()
     print("Dependencies check:", common.commands)
