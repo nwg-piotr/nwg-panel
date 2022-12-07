@@ -182,7 +182,7 @@ class WindowBox(Gtk.EventBox):
             if settings["mark-xwayland"] and not con.app_id:
                 name = "X" + ("|" + name if len(name) > 0 else "")
                 _name = "X|" + _name
-            if len(name) > 0:
+            if settings["show-app-name"]:
                 label = Gtk.Label(name)
                 label.set_angle(settings["angle"])
                 self.box.pack_start(label, False, False, 0)
