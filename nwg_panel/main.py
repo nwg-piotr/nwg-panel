@@ -93,6 +93,8 @@ def signal_handler(sig, frame):
         Gtk.main_quit()
     elif sig == sig_dwl:
         refresh_dwl()
+    else:
+        print("{} signal received".format(sig))
 
 
 def restart():
