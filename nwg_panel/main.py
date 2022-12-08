@@ -100,6 +100,7 @@ def rt_sig_handler(sig, frame):
     for executor in common.executors_list:
         if executor.use_sigrt and executor.sigrt == sig:
             print("Refreshing {} on signal {}".format(executor.name, sig))
+            executor.refresh()
 
 
 def restart():
