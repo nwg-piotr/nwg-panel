@@ -93,8 +93,8 @@ def signal_handler(sig, frame):
         Gtk.main_quit()
     elif sig == sig_dwl:
         refresh_dwl()
-    elif sig != 17:
-        print("{} signal received".format(sig))
+    elif signal.SIGRTMIN > sig <= signal.SIGRTMAX:
+        print("{} RTC signal received".format(sig))
 
 
 def restart():
