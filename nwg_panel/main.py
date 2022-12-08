@@ -93,8 +93,10 @@ def signal_handler(sig, frame):
         Gtk.main_quit()
     elif sig == sig_dwl:
         refresh_dwl()
-    elif signal.SIGRTMIN > sig <= signal.SIGRTMAX:
-        print("{} RTC signal received".format(sig))
+
+
+def rt_sig_handler(sig, frame):
+    print("{} RT signal received".format(sig))
 
 
 def restart():
@@ -349,6 +351,12 @@ def main():
     for sig in catchable_sigs:
         try:
             signal.signal(sig, signal_handler)
+        except Exception as exc:
+            eprint("{} subscription error: {}".format(sig, exc))
+
+    for sig in range(signal.SIGRTMIN, signal.SIGRTMAX):
+        try:
+            signal.signal(sig, rt_sig_handler)
         except Exception as exc:
             eprint("{} subscription error: {}".format(sig, exc))
 
