@@ -93,7 +93,7 @@ def signal_handler(sig, frame):
         Gtk.main_quit()
     elif sig == sig_dwl:
         refresh_dwl()
-    else:
+    elif sig != 17:
         print("{} signal received".format(sig))
 
 
