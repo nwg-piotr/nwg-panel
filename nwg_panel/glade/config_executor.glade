@@ -431,6 +431,7 @@ executor will create a new one.</property>
           <object class="GtkSpinButton" id="sigrt">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
+            <property name="primary-icon-tooltip-text" translatable="yes">Allowed signals in range SIGRTMIN+1 - SIGRTMAX</property>
             <property name="secondary-icon-tooltip-text" translatable="yes">Signal number in range SIRTMIN+1 - SIGRTMAX</property>
           </object>
           <packing>
