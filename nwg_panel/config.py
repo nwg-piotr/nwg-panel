@@ -205,7 +205,7 @@ def signal_handler(sig, frame):
         print("Terminated with {}".format(desc[sig]))
         Gtk.main_quit()
     else:
-        print("{} signal received".format(sig))
+        eprint("{} signal received".format(sig))
 
 
 def handle_keyboard(window, event):
