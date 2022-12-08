@@ -97,6 +97,9 @@ def signal_handler(sig, frame):
 
 def rt_sig_handler(sig, frame):
     print("{} RT signal received".format(sig))
+    for executor in common.executors_list:
+        if executor.use_sigrt and executor.sigrt == sig:
+            print("Refreshing {} on signal {}".format(executor.name, sig))
 
 
 def restart():
@@ -203,8 +206,9 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
         if "executor-" in item:
             if item in panel:
-                executor = Executor(panel[item], icons_path)
+                executor = Executor(panel[item], icons_path, item)
                 container.pack_start(executor, False, False, panel["items-padding"])
+                common.executors_list.append(executor)
             else:
                 print("'{}' not defined in this panel instance".format(item))
 

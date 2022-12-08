@@ -13,6 +13,7 @@ taskbars_list = []
 scratchpads_list = []
 workspaces_list = []
 controls_list = []
+executors_list = []
 tray_list = []
 config_dir = ""
 dwl_data_file = None

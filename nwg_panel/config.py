@@ -2232,7 +2232,9 @@ class EditorWrapper(object):
             "icon-placement": "left",
             "icon-size": 16,
             "interval": 1,
-            "angle": 0.0
+            "angle": 0.0,
+            "sigrt": signal.SIGRTMIN+1,
+            "use-sigrt": False
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -2289,6 +2291,15 @@ class EditorWrapper(object):
         self.executor_angle = builder.get_object("angle")
         self.executor_angle.set_active_id(str(settings["angle"]))
 
+        self.executor_sigrt = builder.get_object("sigrt")
+        self.executor_sigrt.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=signal.SIGRTMIN+1, upper=signal.SIGRTMAX+1, step_increment=1, page_increment=1, page_size=1)
+        self.executor_sigrt.configure(adj, 1, 0)
+        self.executor_sigrt.set_value(settings["sigrt"])
+
+        self.executor_use_sigrt = builder.get_object("use-sigrt")
+        self.executor_use_sigrt.set_active(settings["use-sigrt"])
+
         self.executor_remove = builder.get_object("remove")
 
         self.executor_save_to_db_btn = builder.get_object("save-to-database")
@@ -2341,6 +2352,9 @@ class EditorWrapper(object):
                 settings["angle"] = float(self.executor_angle.get_active_id())
             except:
                 settings["angle"] = 0.0
+
+            settings["sigrt"] = int(self.executor_sigrt.get_value())
+            settings["use-sigrt"] = self.executor_use_sigrt.get_active()
 
             self.panel[config_key] = settings
         else:
