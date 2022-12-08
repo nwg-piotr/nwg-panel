@@ -354,7 +354,7 @@ def main():
         except Exception as exc:
             eprint("{} subscription error: {}".format(sig, exc))
 
-    for sig in range(signal.SIGRTMIN, signal.SIGRTMAX+1):
+    for sig in range(signal.SIGRTMIN+1, signal.SIGRTMAX+1):
         try:
             signal.signal(sig, rt_sig_handler)
         except Exception as exc:
