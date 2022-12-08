@@ -99,7 +99,7 @@ def rt_sig_handler(sig, frame):
     print("{} RT signal received".format(sig))
     for executor in common.executors_list:
         if executor.use_sigrt and executor.sigrt == sig:
-            print("Refreshing {} on signal {}".format(executor.name, sig))
+            eprint("Refreshing {} on signal {}".format(executor.name, sig))
             executor.refresh()
 
 
