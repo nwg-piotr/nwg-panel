@@ -2284,7 +2284,7 @@ class EditorWrapper(object):
 
         self.executor_interval = builder.get_object("interval")
         self.executor_interval.set_numeric(True)
-        adj = Gtk.Adjustment(value=0, lower=1, upper=3600, step_increment=1, page_increment=10, page_size=1)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=3600, step_increment=1, page_increment=10, page_size=1)
         self.executor_interval.configure(adj, 1, 0)
         self.executor_interval.set_value(settings["interval"])
 
