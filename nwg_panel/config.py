@@ -208,6 +208,12 @@ def signal_handler(sig, frame):
         eprint("{} signal received".format(sig))
 
 
+def rt_sig_handler(sig, frame):
+    # just catch and do nothing
+    print("{} RT signal received".format(sig))
+
+
+
 def handle_keyboard(window, event):
     if event.type == Gdk.EventType.KEY_RELEASE and event.keyval == Gdk.KEY_Escape:
         window.close()
@@ -3366,6 +3372,12 @@ def main():
     catchable_sigs = set(signal.Signals) - {signal.SIGKILL, signal.SIGSTOP}
     for sig in catchable_sigs:
         signal.signal(sig, signal_handler)
+
+    for sig in range(signal.SIGRTMIN, signal.SIGRTMAX+1):
+        try:
+            signal.signal(sig, rt_sig_handler)
+        except Exception as exc:
+            eprint("{} subscription error: {}".format(sig, exc))
 
     Gtk.main()
 
