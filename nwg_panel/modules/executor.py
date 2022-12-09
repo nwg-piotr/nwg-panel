@@ -41,7 +41,7 @@ class Executor(Gtk.EventBox):
         check_key(settings, "on-scroll-up", "")
         check_key(settings, "on-scroll-down", "")
         check_key(settings, "angle", 0.0)
-        check_key(settings, "sigrt", signal.SIGRTMIN + 1)
+        check_key(settings, "sigrt", signal.SIGRTMIN)
         check_key(settings, "use-sigrt", False)
 
         self.label.set_angle(settings["angle"])

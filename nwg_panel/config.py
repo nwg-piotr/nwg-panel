@@ -2233,7 +2233,7 @@ class EditorWrapper(object):
             "icon-size": 16,
             "interval": 1,
             "angle": 0.0,
-            "sigrt": signal.SIGRTMIN+1,
+            "sigrt": signal.SIGRTMIN,
             "use-sigrt": False
         }
         for key in defaults:
@@ -2293,7 +2293,7 @@ class EditorWrapper(object):
 
         self.executor_sigrt = builder.get_object("sigrt")
         self.executor_sigrt.set_numeric(True)
-        adj = Gtk.Adjustment(value=0, lower=signal.SIGRTMIN+1, upper=signal.SIGRTMAX+1, step_increment=1, page_increment=1, page_size=1)
+        adj = Gtk.Adjustment(value=0, lower=signal.SIGRTMIN, upper=signal.SIGRTMAX+1, step_increment=1, page_increment=1, page_size=1)
         self.executor_sigrt.configure(adj, 1, 0)
         self.executor_sigrt.set_value(settings["sigrt"])
 
