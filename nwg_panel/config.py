@@ -205,7 +205,13 @@ def signal_handler(sig, frame):
         print("Terminated with {}".format(desc[sig]))
         Gtk.main_quit()
     else:
-        print("{} signal received".format(sig))
+        eprint("{} signal received".format(sig))
+
+
+def rt_sig_handler(sig, frame):
+    # just catch and do nothing
+    print("{} RT signal received".format(sig))
+
 
 
 def handle_keyboard(window, event):
@@ -2232,7 +2238,9 @@ class EditorWrapper(object):
             "icon-placement": "left",
             "icon-size": 16,
             "interval": 1,
-            "angle": 0.0
+            "angle": 0.0,
+            "sigrt": signal.SIGRTMIN,
+            "use-sigrt": False
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -2282,12 +2290,21 @@ class EditorWrapper(object):
 
         self.executor_interval = builder.get_object("interval")
         self.executor_interval.set_numeric(True)
-        adj = Gtk.Adjustment(value=0, lower=1, upper=3600, step_increment=1, page_increment=10, page_size=1)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=3600, step_increment=1, page_increment=10, page_size=1)
         self.executor_interval.configure(adj, 1, 0)
         self.executor_interval.set_value(settings["interval"])
 
         self.executor_angle = builder.get_object("angle")
         self.executor_angle.set_active_id(str(settings["angle"]))
+
+        self.executor_sigrt = builder.get_object("sigrt")
+        self.executor_sigrt.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=signal.SIGRTMIN, upper=signal.SIGRTMAX+1, step_increment=1, page_increment=1, page_size=1)
+        self.executor_sigrt.configure(adj, 1, 0)
+        self.executor_sigrt.set_value(settings["sigrt"])
+
+        self.executor_use_sigrt = builder.get_object("use-sigrt")
+        self.executor_use_sigrt.set_active(settings["use-sigrt"])
 
         self.executor_remove = builder.get_object("remove")
 
@@ -2341,6 +2358,9 @@ class EditorWrapper(object):
                 settings["angle"] = float(self.executor_angle.get_active_id())
             except:
                 settings["angle"] = 0.0
+
+            settings["sigrt"] = int(self.executor_sigrt.get_value())
+            settings["use-sigrt"] = self.executor_use_sigrt.get_active()
 
             self.panel[config_key] = settings
         else:
@@ -3352,6 +3372,12 @@ def main():
     catchable_sigs = set(signal.Signals) - {signal.SIGKILL, signal.SIGSTOP}
     for sig in catchable_sigs:
         signal.signal(sig, signal_handler)
+
+    for sig in range(signal.SIGRTMIN, signal.SIGRTMAX+1):
+        try:
+            signal.signal(sig, rt_sig_handler)
+        except Exception as exc:
+            eprint("{} subscription error: {}".format(sig, exc))
 
     Gtk.main()
 

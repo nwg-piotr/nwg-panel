@@ -95,6 +95,14 @@ def signal_handler(sig, frame):
         refresh_dwl()
 
 
+def rt_sig_handler(sig, frame):
+    print("{} RT signal received".format(sig))
+    for executor in common.executors_list:
+        if executor.use_sigrt and executor.sigrt == sig:
+            eprint("Refreshing {} on signal {}".format(executor.name, sig))
+            executor.refresh()
+
+
 def restart():
     subprocess.Popen(restart_cmd, shell=True)
 
@@ -199,8 +207,9 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
         if "executor-" in item:
             if item in panel:
-                executor = Executor(panel[item], icons_path)
+                executor = Executor(panel[item], icons_path, item)
                 container.pack_start(executor, False, False, panel["items-padding"])
+                common.executors_list.append(executor)
             else:
                 print("'{}' not defined in this panel instance".format(item))
 
@@ -347,6 +356,12 @@ def main():
     for sig in catchable_sigs:
         try:
             signal.signal(sig, signal_handler)
+        except Exception as exc:
+            eprint("{} subscription error: {}".format(sig, exc))
+
+    for sig in range(signal.SIGRTMIN, signal.SIGRTMAX+1):
+        try:
+            signal.signal(sig, rt_sig_handler)
         except Exception as exc:
             eprint("{} subscription error: {}".format(sig, exc))
 

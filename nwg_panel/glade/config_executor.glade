@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
+<!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkFrame" id="frame">
@@ -8,7 +8,7 @@
     <property name="label-xalign">0.5</property>
     <property name="shadow-type">out</property>
     <child>
-      <!-- n-columns=3 n-rows=16 -->
+      <!-- n-columns=3 n-rows=17 -->
       <object class="GtkGrid" id="grid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -202,6 +202,7 @@
 an icon name / path and a label 
 in 1 or 2 lines of text. See Wiki 
 for details.</property>
+            <property name="halign">start</property>
             <property name="icon-name">help-about</property>
           </object>
           <packing>
@@ -238,6 +239,7 @@ for details.</property>
             <property name="can-focus">False</property>
             <property name="tooltip-text" translatable="yes">Attention! Renaming an existing
 executor will create a new one.</property>
+            <property name="halign">start</property>
             <property name="icon-name">dialog-warning</property>
           </object>
           <packing>
@@ -362,18 +364,6 @@ executor will create a new one.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkButton" id="save-to-database">
-            <property name="label" translatable="yes">Save to database</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">15</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkComboBoxText" id="angle">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -389,19 +379,6 @@ executor will create a new one.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkCheckButton" id="remove">
-            <property name="label" translatable="yes">Remove executor</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">15</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -414,7 +391,79 @@ executor will create a new one.</property>
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkButton" id="save-to-database">
+            <property name="label" translatable="yes">Save to database</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">16</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="remove">
+            <property name="label" translatable="yes">Remove executor</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">16</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Refresh on signal :</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">15</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="sigrt">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="primary-icon-tooltip-text" translatable="yes">Allowed signals in range SIGRTMIN+1 - SIGRTMAX</property>
+            <property name="secondary-icon-tooltip-text" translatable="yes">Signal number in range SIRTMIN+1 - SIGRTMAX</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">15</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="use-sigrt">
+            <property name="label" translatable="yes">use signal</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">15</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">Executor refresh interval in seconds. Set 0 for no auto-refresh.</property>
+            <property name="halign">start</property>
+            <property name="icon-name">help-about</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">13</property>
+          </packing>
         </child>
         <child>
           <placeholder/>

@@ -2,6 +2,7 @@
 
 import subprocess
 import threading
+import signal
 
 import gi
 from gi.repository import GLib
@@ -15,8 +16,10 @@ from gi.repository import Gtk, Gdk, GdkPixbuf
 
 
 class Executor(Gtk.EventBox):
-    def __init__(self, settings, icons_path):
+    def __init__(self, settings, icons_path, executor_name):
+        self.name = executor_name
         self.settings = settings
+        print("executor name:", self.name)
         self.icons_path = icons_path
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
@@ -38,8 +41,14 @@ class Executor(Gtk.EventBox):
         check_key(settings, "on-scroll-up", "")
         check_key(settings, "on-scroll-down", "")
         check_key(settings, "angle", 0.0)
+        check_key(settings, "sigrt", signal.SIGRTMIN)
+        check_key(settings, "use-sigrt", False)
 
         self.label.set_angle(settings["angle"])
+
+        # refresh signal in range SIGRTMIN+1 - SIGRTMAX
+        self.sigrt = settings["sigrt"]
+        self.use_sigrt = settings["use-sigrt"]
 
         if settings["angle"] != 0.0:
             self.box.set_orientation(Gtk.Orientation.VERTICAL)
