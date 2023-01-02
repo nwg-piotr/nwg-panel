@@ -19,7 +19,6 @@ class Executor(Gtk.EventBox):
     def __init__(self, settings, icons_path, executor_name):
         self.name = executor_name
         self.settings = settings
-        print("executor name:", self.name)
         self.icons_path = icons_path
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)

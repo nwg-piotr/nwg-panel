@@ -213,15 +213,43 @@ def rt_sig_handler(sig, frame):
     print("{} RT signal received".format(sig))
 
 
-
 def handle_keyboard(window, event):
     if event.type == Gdk.EventType.KEY_RELEASE and event.keyval == Gdk.KEY_Escape:
         window.close()
 
 
+def build_common_settings_window():
+    win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
+    # win.connect("key-release-event", handle_keyboard)
+    # win.connect('destroy', Gtk.main_quit)
+
+    vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+    vbox.set_property("margin", 6)
+    win.add(vbox)
+
+    frame = Gtk.Frame()
+    frame.set_label("nwg-panel: Common settings")
+    vbox.pack_start(frame, True, True, 6)
+
+    hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
+    vbox.pack_start(hbox, False, False, 6)
+    btn = Gtk.Button.new_with_label("Close")
+    btn.connect("clicked", close_common_settings, win)
+    hbox.pack_end(btn, False, False, 6)
+
+    win.show_all()
+
+    return win
+
+
+def close_common_settings(btn, window):
+    window.close()
+
+
 class PanelSelector(Gtk.Window):
     def __init__(self):
         super(PanelSelector, self).__init__()
+        self.common_settings_window = None
         self.to_delete = []
         self.connect("key-release-event", handle_keyboard)
         self.connect('destroy', Gtk.main_quit)
@@ -270,14 +298,20 @@ class PanelSelector(Gtk.Window):
         inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         hbox.pack_start(inner_hbox, True, True, 12)
 
+        btn = Gtk.Button.new_with_label("Settings")
+        btn.set_tooltip_text("Common nwg-panel settings")
+        btn.connect("clicked", self.show_common_settings)
+        inner_hbox.pack_start(btn, False, False, 3)
+
         label = Gtk.Label()
         label.set_text("New file:")
         label.set_halign(Gtk.Align.START)
-        inner_hbox.pack_start(label, False, False, 6)
+        inner_hbox.pack_start(label, False, False, 3)
 
         self.new_file_entry = Gtk.Entry()
         self.new_file_entry.set_width_chars(15)
         self.new_file_entry.set_placeholder_text("filename")
+        self.new_file_entry.set_tooltip_text("New panel config file name")
         self.new_file_entry.connect("changed", validate_name)
         inner_hbox.pack_start(self.new_file_entry, False, False, 0)
 
@@ -292,6 +326,12 @@ class PanelSelector(Gtk.Window):
         self.show_all()
 
         self.connect("show", self.refresh)
+
+    def show_common_settings(self, btn):
+        if self.common_settings_window:
+            self.common_settings_window.destroy()
+
+        self.common_settings_window = build_common_settings_window()
 
     def refresh(self, *args, reload=True):
         if reload:
