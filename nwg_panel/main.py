@@ -104,7 +104,6 @@ def rt_sig_handler(sig, frame):
 
 
 def restart():
-    time.sleep(5)
     subprocess.Popen(restart_cmd, shell=True)
 
 
@@ -115,6 +114,7 @@ def check_tree():
         if tree.ipc_data != common.ipc_data:
             if len(common.i3.get_outputs()) != common.outputs_num:
                 print("Number of outputs changed")
+                Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 2000, check_tree)
                 restart()
 
             for item in common.taskbars_list:
