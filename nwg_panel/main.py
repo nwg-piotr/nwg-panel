@@ -114,8 +114,7 @@ def check_tree():
         if tree.ipc_data != common.ipc_data:
             if len(common.i3.get_outputs()) != common.outputs_num:
                 print("Number of outputs changed")
-                Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 5000, check_tree)
-                restart()
+                Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 5000, restart)
 
             for item in common.taskbars_list:
                 item.refresh(tree)
