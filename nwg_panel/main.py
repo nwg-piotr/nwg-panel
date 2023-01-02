@@ -104,6 +104,7 @@ def rt_sig_handler(sig, frame):
 
 
 def restart():
+    time.sleep(5)
     subprocess.Popen(restart_cmd, shell=True)
 
 
