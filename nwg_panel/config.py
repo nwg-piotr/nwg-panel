@@ -262,7 +262,7 @@ def build_common_settings_window():
     sb.connect("changed", on_restart_delay_changed)
     sb.set_tooltip_text("If, after turning a display off and back on, panels don't appear on it, it may mean\n"
                         "the display responds too slowly (e.g. if turned via HDMI). Try adding some delay.\n"
-                        "Starting from 500 ms is a good idea.")
+                        "Starting from 500 ms may be a good idea.")
     grid.attach(sb, 1, 0, 1, 1)
 
     hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
