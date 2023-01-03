@@ -270,9 +270,11 @@ def build_common_settings_window():
 
     btn = Gtk.Button.new_with_label("Apply")
     btn.connect("clicked", apply_common_settings, win)
+    btn.set_tooltip_text("Apply changes, restart nwg-panel")
     hbox.pack_end(btn, False, False, 6)
 
     btn = Gtk.Button.new_with_label("Close")
+    btn.set_tooltip_text("Close window w/o applying changes")
     btn.connect("clicked", close_common_settings, win)
     hbox.pack_end(btn, False, False, 6)
 
