@@ -23,6 +23,22 @@ sway = os.getenv('SWAYSOCK') is not None
 config_dir = get_config_dir()
 data_home = os.getenv('XDG_DATA_HOME') if os.getenv('XDG_DATA_HOME') else os.path.join(os.getenv("HOME"),
                                                                                        ".local/share")
+cs_file = os.path.join(config_dir, "common-settings.json")
+if not os.path.isfile(cs_file):
+    common_settings = {
+        "restart-delay": 0
+    }
+    save_json(common_settings, cs_file)
+else:
+    common_settings = load_json(cs_file)
+print("Common settings:", common_settings)
+
+args_file = os.path.join(data_home, "nwg-panel", "args")
+args = load_string(args_file) if os.path.isfile(args_file) else ""
+restart_cmd = "nwg-panel {}".format(args)
+print("Restart command: ", restart_cmd)
+
+
 configs = {}
 editor = None
 selector_window = None
@@ -220,19 +236,42 @@ def handle_keyboard(window, event):
 
 def build_common_settings_window():
     win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
-    # win.connect("key-release-event", handle_keyboard)
-    # win.connect('destroy', Gtk.main_quit)
+    win.set_modal(True)
 
     vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
     vbox.set_property("margin", 6)
     win.add(vbox)
 
     frame = Gtk.Frame()
-    frame.set_label("nwg-panel: Common settings")
+    frame.set_label("  nwg-panel: Common settings  ")
+    frame.set_label_align(0.5, 0.5)
     vbox.pack_start(frame, True, True, 6)
+
+    grid = Gtk.Grid()
+    frame.add(grid)
+    grid.set_column_spacing(6)
+    grid.set_row_spacing(6)
+    grid.set_property("margin", 12)
+
+    lbl = Gtk.Label.new("Restart delay [ms]:")
+    lbl.set_property("halign", Gtk.Align.END)
+    grid.attach(lbl, 0, 0, 1, 1)
+
+    sb = Gtk.SpinButton.new_with_range(0, 10000, 100)
+    sb.set_value(common_settings["restart-delay"])
+    sb.connect("changed", on_restart_delay_changed)
+    sb.set_tooltip_text("If, after turning a display off and back on, panels don't appear on it, it may mean\n"
+                        "the display responds too slowly (e.g. if turned via HDMI). Try adding some delay.\n"
+                        "Starting from 500 ms is a good idea.")
+    grid.attach(sb, 1, 0, 1, 1)
 
     hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
     vbox.pack_start(hbox, False, False, 6)
+
+    btn = Gtk.Button.new_with_label("Apply")
+    btn.connect("clicked", apply_common_settings, win)
+    hbox.pack_end(btn, False, False, 6)
+
     btn = Gtk.Button.new_with_label("Close")
     btn.connect("clicked", close_common_settings, win)
     hbox.pack_end(btn, False, False, 6)
@@ -242,7 +281,19 @@ def build_common_settings_window():
     return win
 
 
+def on_restart_delay_changed(sb):
+    global common_settings
+    common_settings["restart-delay"] = int(sb.get_value())
+
+
 def close_common_settings(btn, window):
+    window.close()
+
+
+def apply_common_settings(btn, window):
+    save_json(common_settings, cs_file)
+    print(restart_cmd)
+    subprocess.Popen(restart_cmd, shell=True)
     window.close()
 
 
@@ -2339,7 +2390,8 @@ class EditorWrapper(object):
 
         self.executor_sigrt = builder.get_object("sigrt")
         self.executor_sigrt.set_numeric(True)
-        adj = Gtk.Adjustment(value=0, lower=signal.SIGRTMIN, upper=signal.SIGRTMAX+1, step_increment=1, page_increment=1, page_size=1)
+        adj = Gtk.Adjustment(value=0, lower=signal.SIGRTMIN, upper=signal.SIGRTMAX + 1, step_increment=1,
+                             page_increment=1, page_size=1)
         self.executor_sigrt.configure(adj, 1, 0)
         self.executor_sigrt.set_value(settings["sigrt"])
 
@@ -3413,7 +3465,7 @@ def main():
     for sig in catchable_sigs:
         signal.signal(sig, signal_handler)
 
-    for sig in range(signal.SIGRTMIN, signal.SIGRTMAX+1):
+    for sig in range(signal.SIGRTMIN, signal.SIGRTMAX + 1):
         try:
             signal.signal(sig, rt_sig_handler)
         except Exception as exc:
