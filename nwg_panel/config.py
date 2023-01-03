@@ -267,7 +267,7 @@ def build_common_settings_window():
     lbl.set_property("halign", Gtk.Align.END)
     grid.attach(lbl, 0, 1, 1, 1)
 
-    sb = Gtk.SpinButton.new_with_range(0, 10000, 100)
+    sb = Gtk.SpinButton.new_with_range(0, 30000, 100)
     sb.set_value(common_settings["restart-delay"])
     sb.connect("changed", on_restart_delay_changed)
     sb.set_tooltip_text("If, after turning a display off and back on, panels don't appear on it, it may mean\n"
