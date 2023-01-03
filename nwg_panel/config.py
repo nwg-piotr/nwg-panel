@@ -292,8 +292,9 @@ def close_common_settings(btn, window):
 
 def apply_common_settings(btn, window):
     save_json(common_settings, cs_file)
-    print(restart_cmd)
+    print("Saving common settings: {}".format(common_settings))
     subprocess.Popen(restart_cmd, shell=True)
+    print("Restarting: {}".format(restart_cmd))
     window.close()
 
 
