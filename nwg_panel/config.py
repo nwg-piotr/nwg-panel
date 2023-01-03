@@ -269,7 +269,7 @@ def build_common_settings_window():
 
     sb = Gtk.SpinButton.new_with_range(0, 30000, 100)
     sb.set_value(common_settings["restart-delay"])
-    sb.connect("changed", on_restart_delay_changed)
+    sb.connect("value-changed", on_restart_delay_changed)
     sb.set_tooltip_text("If, after turning a display off and back on, panels don't appear on it, it may mean\n"
                         "the display responds too slowly (e.g. if turned via HDMI). Try adding some delay.\n"
                         "Starting from 500 ms may be a good idea.")
