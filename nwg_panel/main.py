@@ -114,7 +114,7 @@ def check_tree():
         # Do if tree changed
         if tree.ipc_data != common.ipc_data:
             num = num_active_outputs()
-            if common_settings["restart-on-displays"] and num != common.outputs_num:
+            if num != common.outputs_num:
                 print("Number of active outputs changed: {}".format(num))
                 Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, common_settings["restart-delay"], restart)
 
@@ -346,8 +346,7 @@ def main():
     cs_file = os.path.join(common.config_dir, "common-settings.json")
     if not os.path.isfile(cs_file):
         common_settings = {
-            "restart-on-displays": True,
-            "restart-delay": 0
+            "restart-delay": 500
         }
         save_json(common_settings, cs_file)
     else:
