@@ -113,8 +113,9 @@ def check_tree():
     if tree:
         # Do if tree changed
         if tree.ipc_data != common.ipc_data:
-            if common_settings["restart-on-displays"] and len(common.i3.get_outputs()) != common.outputs_num:
-                print("Number of outputs changed")
+            num = num_active_outputs()
+            if common_settings["restart-on-displays"] and num != common.outputs_num:
+                print("Number of active outputs changed: {}".format(num))
                 Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, common_settings["restart-delay"], restart)
 
             for item in common.taskbars_list:
@@ -674,10 +675,11 @@ def main():
             window.show_all()
 
     if sway:
-        common.outputs_num = len(common.i3.get_outputs())
+        common.outputs_num = num_active_outputs()
     else:
         common.outputs = list_outputs(sway=sway, tree=tree, silent=True)
         common.outputs_num = len(common.outputs)
+
     Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 200, check_tree)
 
     if tray_available and len(common.tray_list) > 0:

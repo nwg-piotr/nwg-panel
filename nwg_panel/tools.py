@@ -253,6 +253,14 @@ def load_autotiling():
     return autotiling
 
 
+def num_active_outputs():
+    a = 0
+    for o in nwg_panel.common.i3.get_outputs():
+        if o.active:
+            a += 1
+    return a
+
+
 def list_outputs(sway=False, tree=None, silent=False):
     """
     Get output names and geometry from i3 tree, assign to Gdk.Display monitors.
