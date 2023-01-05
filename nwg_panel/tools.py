@@ -256,7 +256,7 @@ def load_autotiling():
 def num_active_outputs():
     a = 0
     for o in nwg_panel.common.i3.get_outputs():
-        if o.active:
+        if o.active and o.dpms:
             a += 1
     return a
 
