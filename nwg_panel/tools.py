@@ -258,7 +258,6 @@ def num_active_outputs(tree):
     for item in tree:
         if item.type == "output" and not item.name.startswith("__"):
             a += 1
-    print("num_active_outputs", a)
     return a
 
 
