@@ -121,7 +121,8 @@ def check_tree():
                 else:
                     print("Number of outputs increased ({}); restart in {} ms."
                           .format(num, common_settings["restart-delay"]))
-                    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, common_settings["restart-delay"], restart)
+                    # Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, common_settings["restart-delay"], restart)
+                    restart()
 
             for item in common.taskbars_list:
                 item.refresh(tree)
