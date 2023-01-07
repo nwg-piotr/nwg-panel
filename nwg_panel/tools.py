@@ -253,9 +253,8 @@ def load_autotiling():
     return autotiling
 
 
-def num_active_outputs():
+def num_active_outputs(tree):
     a = 0
-    tree = nwg_panel.common.i3.get_tree()
     for item in tree:
         if item.type == "output" and not item.name.startswith("__"):
             a += 1
