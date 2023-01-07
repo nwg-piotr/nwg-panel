@@ -116,10 +116,11 @@ def check_tree():
             num = num_active_outputs()
             if num != common.outputs_num:
                 if num < common.outputs_num:
-                    print("Number of outputs decreased:", num)
+                    print("Number of outputs decreased {}, restarting".format(num))
                     restart()
                 else:
-                    print("Number of outputs increased:", num)
+                    print("Number of outputs increased ({}); restart in {} ms.".format(num,
+                                                                                      common_settings["restart-delay"]))
                     Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, common_settings["restart-delay"], restart)
 
             for item in common.taskbars_list:
@@ -378,7 +379,7 @@ def main():
         except Exception as exc:
             eprint("{} subscription error: {}".format(sig, exc))
 
-    for sig in range(signal.SIGRTMIN, signal.SIGRTMAX+1):
+    for sig in range(signal.SIGRTMIN, signal.SIGRTMAX + 1):
         try:
             signal.signal(sig, rt_sig_handler)
         except Exception as exc:
