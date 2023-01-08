@@ -116,7 +116,6 @@ def check_tree():
             num = num_active_outputs(tree)
             if num != common.outputs_num:
                 if num < common.outputs_num:
-                    restart()
                     print("Number of outputs decreased {}, restarting".format(num))
                     restart()
                 else:
