@@ -355,6 +355,7 @@ def main():
     cs_file = os.path.join(common.config_dir, "common-settings.json")
     if not os.path.isfile(cs_file):
         common_settings = {
+            "restart-on-display": True,
             "restart-delay": 500
         }
         save_json(common_settings, cs_file)

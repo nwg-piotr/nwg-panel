@@ -26,6 +26,7 @@ data_home = os.getenv('XDG_DATA_HOME') if os.getenv('XDG_DATA_HOME') else os.pat
 cs_file = os.path.join(config_dir, "common-settings.json")
 if not os.path.isfile(cs_file):
     common_settings = {
+        "restart-on-display": True,
         "restart-delay": 500
     }
     save_json(common_settings, cs_file)
@@ -236,7 +237,8 @@ def handle_keyboard(window, event):
 
 def build_common_settings_window():
     global common_settings
-    check_key(common_settings, "restart-delay", 0)
+    check_key(common_settings, "restart-on-display", True)
+    check_key(common_settings, "restart-delay", 500)
 
     win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
     win.set_modal(True)
@@ -256,16 +258,21 @@ def build_common_settings_window():
     grid.set_row_spacing(6)
     grid.set_property("margin", 12)
 
+    cb = Gtk.CheckButton.new_with_label("Restart on display connected")
+    cb.set_active(common_settings["restart-on-display"])
+    cb.connect("toggled", on_restart_check_button)
+    grid.attach(cb, 0, 0, 3, 1)
+
     lbl = Gtk.Label.new("Restart delay [ms]:")
     lbl.set_property("halign", Gtk.Align.END)
-    grid.attach(lbl, 0, 0, 1, 1)
+    grid.attach(lbl, 0, 1, 1, 1)
 
     sb = Gtk.SpinButton.new_with_range(0, 30000, 100)
     sb.set_value(common_settings["restart-delay"])
     sb.connect("value-changed", on_restart_delay_changed)
     sb.set_tooltip_text("If, after turning a display off and back on, panels don't appear on it, it may mean\n"
                         "the display responds too slowly (e.g. if turned via HDMI). Try increasing this value.")
-    grid.attach(sb, 1, 0, 1, 1)
+    grid.attach(sb, 1, 1, 1, 1)
 
     hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
     vbox.pack_start(hbox, False, False, 6)
@@ -288,6 +295,11 @@ def build_common_settings_window():
 def on_restart_delay_changed(sb):
     global common_settings
     common_settings["restart-delay"] = int(sb.get_value())
+
+
+def on_restart_check_button(cb):
+    global common_settings
+    common_settings["restart-on-display"] = cb.get_active()
 
 
 def close_common_settings(btn, window):
