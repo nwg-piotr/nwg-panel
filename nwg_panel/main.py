@@ -115,14 +115,15 @@ def check_tree():
         if tree.ipc_data != common.ipc_data:
             num = num_active_outputs(tree)
             if num != common.outputs_num:
-                if num < common.outputs_num:
-                    print("Number of outputs decreased {}, restarting".format(num))
-                    # restart()
-                    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 0, restart)
-                else:
-                    print("Number of outputs increased ({}); restart in {} ms."
-                          .format(num, common_settings["restart-delay"]))
-                    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 0, restart)
+                Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 0, restart)
+                # if num < common.outputs_num:
+                #     print("Number of outputs decreased {}, restarting".format(num))
+                #     # restart()
+                #     Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 0, restart)
+                # else:
+                #     print("Number of outputs increased ({}); restart in {} ms."
+                #           .format(num, common_settings["restart-delay"]))
+                #     Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 0, restart)
 
             for item in common.taskbars_list:
                 item.refresh(tree)
