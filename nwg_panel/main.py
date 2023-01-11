@@ -79,6 +79,7 @@ if sway:
     from nwg_panel.modules.sway_taskbar import SwayTaskbar
     from nwg_panel.modules.sway_workspaces import SwayWorkspaces
 
+common_settings = {}
 restart_cmd = ""
 sig_dwl = 0
 
@@ -112,9 +113,15 @@ def check_tree():
     if tree:
         # Do if tree changed
         if tree.ipc_data != common.ipc_data:
-            if len(common.i3.get_outputs()) != common.outputs_num:
-                print("Number of outputs changed")
-                restart()
+            if common_settings["restart-on-display"]:
+                num = num_active_outputs(tree)
+
+                if num > common.outputs_num:
+                    print("Number of outputs increased ({}); restart in {} ms."
+                          .format(num, common_settings["restart-delay"]))
+                    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, common_settings["restart-delay"], restart)
+
+                common.outputs_num = num
 
             for item in common.taskbars_list:
                 item.refresh(tree)
@@ -339,6 +346,20 @@ def main():
     save_string(str(own_pid), pid_file)
 
     common.config_dir = get_config_dir()
+
+    global common_settings
+    cs_file = os.path.join(common.config_dir, "common-settings.json")
+    if not os.path.isfile(cs_file):
+        common_settings = {
+            "restart-on-display": True,
+            "restart-delay": 500
+        }
+        save_json(common_settings, cs_file)
+    else:
+        common_settings = load_json(cs_file)
+
+    print("Common settings", common_settings)
+
     cache_dir = get_cache_dir()
     if cache_dir:
         common.dwl_data_file = os.path.join(cache_dir, "nwg-dwl-data")
@@ -359,7 +380,7 @@ def main():
         except Exception as exc:
             eprint("{} subscription error: {}".format(sig, exc))
 
-    for sig in range(signal.SIGRTMIN, signal.SIGRTMAX+1):
+    for sig in range(signal.SIGRTMIN, signal.SIGRTMAX + 1):
         try:
             signal.signal(sig, rt_sig_handler)
         except Exception as exc:
@@ -659,10 +680,11 @@ def main():
             window.show_all()
 
     if sway:
-        common.outputs_num = len(common.i3.get_outputs())
+        common.outputs_num = num_active_outputs(common.i3.get_tree())
     else:
         common.outputs = list_outputs(sway=sway, tree=tree, silent=True)
         common.outputs_num = len(common.outputs)
+
     Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 200, check_tree)
 
     if tray_available and len(common.tray_list) > 0:

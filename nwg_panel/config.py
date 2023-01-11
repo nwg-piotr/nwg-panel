@@ -23,6 +23,23 @@ sway = os.getenv('SWAYSOCK') is not None
 config_dir = get_config_dir()
 data_home = os.getenv('XDG_DATA_HOME') if os.getenv('XDG_DATA_HOME') else os.path.join(os.getenv("HOME"),
                                                                                        ".local/share")
+cs_file = os.path.join(config_dir, "common-settings.json")
+if not os.path.isfile(cs_file):
+    common_settings = {
+        "restart-on-display": True,
+        "restart-delay": 500
+    }
+    save_json(common_settings, cs_file)
+else:
+    common_settings = load_json(cs_file)
+print("Common settings:", common_settings)
+
+args_file = os.path.join(data_home, "nwg-panel", "args")
+args = load_string(args_file) if os.path.isfile(args_file) else ""
+restart_cmd = "nwg-panel {}".format(args)
+print("Restart command: ", restart_cmd)
+
+
 configs = {}
 editor = None
 selector_window = None
@@ -213,15 +230,94 @@ def rt_sig_handler(sig, frame):
     print("{} RT signal received".format(sig))
 
 
-
 def handle_keyboard(window, event):
     if event.type == Gdk.EventType.KEY_RELEASE and event.keyval == Gdk.KEY_Escape:
         window.close()
 
 
+def build_common_settings_window():
+    global common_settings
+    check_key(common_settings, "restart-on-display", True)
+    check_key(common_settings, "restart-delay", 500)
+
+    win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
+    win.set_modal(True)
+
+    vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+    vbox.set_property("margin", 6)
+    win.add(vbox)
+
+    frame = Gtk.Frame()
+    frame.set_label("  nwg-panel: Common settings  ")
+    frame.set_label_align(0.5, 0.5)
+    vbox.pack_start(frame, True, True, 6)
+
+    grid = Gtk.Grid()
+    frame.add(grid)
+    grid.set_column_spacing(6)
+    grid.set_row_spacing(6)
+    grid.set_property("margin", 12)
+
+    cb = Gtk.CheckButton.new_with_label("Restart on display connected")
+    cb.set_active(common_settings["restart-on-display"])
+    cb.connect("toggled", on_restart_check_button)
+    grid.attach(cb, 0, 0, 3, 1)
+
+    lbl = Gtk.Label.new("Restart delay [ms]:")
+    lbl.set_property("halign", Gtk.Align.END)
+    grid.attach(lbl, 0, 1, 1, 1)
+
+    sb = Gtk.SpinButton.new_with_range(0, 30000, 100)
+    sb.set_value(common_settings["restart-delay"])
+    sb.connect("value-changed", on_restart_delay_changed)
+    sb.set_tooltip_text("If, after turning a display off and back on, panels don't appear on it, it may mean\n"
+                        "the display responds too slowly (e.g. if turned via HDMI). Try increasing this value.")
+    grid.attach(sb, 1, 1, 1, 1)
+
+    hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
+    vbox.pack_start(hbox, False, False, 6)
+
+    btn = Gtk.Button.new_with_label("Apply")
+    btn.connect("clicked", apply_common_settings, win)
+    btn.set_tooltip_text("Apply changes, restart nwg-panel")
+    hbox.pack_end(btn, False, False, 6)
+
+    btn = Gtk.Button.new_with_label("Close")
+    btn.set_tooltip_text("Close window w/o applying changes")
+    btn.connect("clicked", close_common_settings, win)
+    hbox.pack_end(btn, False, False, 6)
+
+    win.show_all()
+
+    return win
+
+
+def on_restart_delay_changed(sb):
+    global common_settings
+    common_settings["restart-delay"] = int(sb.get_value())
+
+
+def on_restart_check_button(cb):
+    global common_settings
+    common_settings["restart-on-display"] = cb.get_active()
+
+
+def close_common_settings(btn, window):
+    window.close()
+
+
+def apply_common_settings(btn, window):
+    save_json(common_settings, cs_file)
+    print("Saving common settings: {}".format(common_settings))
+    subprocess.Popen(restart_cmd, shell=True)
+    print("Restarting: {}".format(restart_cmd))
+    window.close()
+
+
 class PanelSelector(Gtk.Window):
     def __init__(self):
         super(PanelSelector, self).__init__()
+        self.common_settings_window = None
         self.to_delete = []
         self.connect("key-release-event", handle_keyboard)
         self.connect('destroy', Gtk.main_quit)
@@ -270,14 +366,20 @@ class PanelSelector(Gtk.Window):
         inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         hbox.pack_start(inner_hbox, True, True, 12)
 
+        btn = Gtk.Button.new_with_label("Common")
+        btn.set_tooltip_text("Common nwg-panel settings")
+        btn.connect("clicked", self.show_common_settings)
+        inner_hbox.pack_start(btn, False, False, 3)
+
         label = Gtk.Label()
         label.set_text("New file:")
         label.set_halign(Gtk.Align.START)
-        inner_hbox.pack_start(label, False, False, 6)
+        inner_hbox.pack_start(label, False, False, 3)
 
         self.new_file_entry = Gtk.Entry()
         self.new_file_entry.set_width_chars(15)
         self.new_file_entry.set_placeholder_text("filename")
+        self.new_file_entry.set_tooltip_text("New panel config file name")
         self.new_file_entry.connect("changed", validate_name)
         inner_hbox.pack_start(self.new_file_entry, False, False, 0)
 
@@ -292,6 +394,12 @@ class PanelSelector(Gtk.Window):
         self.show_all()
 
         self.connect("show", self.refresh)
+
+    def show_common_settings(self, btn):
+        if self.common_settings_window:
+            self.common_settings_window.destroy()
+
+        self.common_settings_window = build_common_settings_window()
 
     def refresh(self, *args, reload=True):
         if reload:
@@ -2299,7 +2407,8 @@ class EditorWrapper(object):
 
         self.executor_sigrt = builder.get_object("sigrt")
         self.executor_sigrt.set_numeric(True)
-        adj = Gtk.Adjustment(value=0, lower=signal.SIGRTMIN, upper=signal.SIGRTMAX+1, step_increment=1, page_increment=1, page_size=1)
+        adj = Gtk.Adjustment(value=0, lower=signal.SIGRTMIN, upper=signal.SIGRTMAX + 1, step_increment=1,
+                             page_increment=1, page_size=1)
         self.executor_sigrt.configure(adj, 1, 0)
         self.executor_sigrt.set_value(settings["sigrt"])
 
@@ -3373,7 +3482,7 @@ def main():
     for sig in catchable_sigs:
         signal.signal(sig, signal_handler)
 
-    for sig in range(signal.SIGRTMIN, signal.SIGRTMAX+1):
+    for sig in range(signal.SIGRTMIN, signal.SIGRTMAX + 1):
         try:
             signal.signal(sig, rt_sig_handler)
         except Exception as exc:
