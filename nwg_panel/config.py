@@ -366,7 +366,7 @@ class PanelSelector(Gtk.Window):
         inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         hbox.pack_start(inner_hbox, True, True, 12)
 
-        btn = Gtk.Button.new_with_label("Settings")
+        btn = Gtk.Button.new_with_label("Common")
         btn.set_tooltip_text("Common nwg-panel settings")
         btn.connect("clicked", self.show_common_settings)
         inner_hbox.pack_start(btn, False, False, 3)
