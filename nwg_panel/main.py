@@ -115,12 +115,13 @@ def check_tree():
         if tree.ipc_data != common.ipc_data:
             if common_settings["restart-on-display"]:
                 num = num_active_outputs(tree)
+
                 if num > common.outputs_num:
                     print("Number of outputs increased ({}); restart in {} ms."
                           .format(num, common_settings["restart-delay"]))
                     Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, common_settings["restart-delay"], restart)
 
-                    common.outputs_num = num
+                common.outputs_num = num
 
             for item in common.taskbars_list:
                 item.refresh(tree)
