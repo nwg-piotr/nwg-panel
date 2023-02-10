@@ -526,7 +526,7 @@ def get_battery():
 
     if not success and nwg_panel.common.commands["upower"]:
         lines = subprocess.check_output(
-            "upower -i $(upower -e | grep devices/battery) | grep --color=never -E 'state|to\ full|to\ empty|percentage'",
+            "upower -i $(upower -e | grep devices/battery) | grep --color=never -E 'state|to[[:space:]]full|to[[:space:]]empty|percentage'",
             shell=True).decode("utf-8").strip().splitlines()
         for line in lines:
             if "state:" in line:
