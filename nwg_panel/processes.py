@@ -32,9 +32,8 @@ def list_processes(widget):
 
     user = os.getenv('USER')
     for proc in psutil.process_iter(['pid', 'ppid', 'name', 'username']):
-        print(proc.info['ppid'])
         if proc.info['username'] == os.getenv('USER') or not common_settings["processes-own-only"]:
-            # if proc.info['ppid'] == 1:
+            # if proc.info['ppid'] not in pids:
             processes[proc.info['pid']] = proc.info
 
     for child in scrolled_window.get_children():
