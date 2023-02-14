@@ -9,7 +9,6 @@ from gi.repository import Gtk, Gdk, GLib
 from nwg_panel.tools import get_config_dir, load_json, save_json, check_key, eprint
 
 common_settings = {}
-protected = ["systemd", "bash"]
 scrolled_window = None
 grid = Gtk.Grid()
 
@@ -22,9 +21,13 @@ def handle_keyboard(win, event):
 
 
 def terminate(btn, pid):
-    print("Killing {}".format(pid))
-    os.kill(pid, 2)
-    list_processes(None)
+    print("Terminating {}".format(pid))
+    try:
+        print(os.kill(pid, 15))
+    except Exception as e:
+        eprint(e)
+    # Wait a second for children processes to die
+    GLib.timeout_add(1000, list_processes, None)
 
 
 def list_processes(widget):
@@ -34,7 +37,6 @@ def list_processes(widget):
     user = os.getenv('USER')
     for proc in psutil.process_iter(['pid', 'ppid', 'name', 'username']):
         if proc.info['username'] == os.getenv('USER') or not common_settings["processes-own-only"]:
-            # if proc.info['ppid'] not in pids:
             processes[proc.info['pid']] = proc.info
 
     for child in scrolled_window.get_children():
@@ -92,7 +94,7 @@ def list_processes(widget):
             lbl.set_property("halign", Gtk.Align.START)
             grid.attach(lbl, 4, idx, 1, 1)
 
-            if processes[pid]["name"] not in protected and processes[pid]["username"] == user:
+            if processes[pid]["username"] == user:
                 btn = Gtk.Button.new_from_icon_name("gtk-close", Gtk.IconSize.MENU)
                 btn.connect("clicked", terminate, pid)
                 grid.attach(btn, 0, idx, 1, 1)
@@ -103,6 +105,8 @@ def list_processes(widget):
                     win_name = cons[0].app_id
                 elif cons[0].window_class:
                     win_name = cons[0].window_class
+                elif cons[0].name:
+                    win_name = cons[0].name
                 elif cons[0].window_title:
                     win_name = cons[0].window_title
 
@@ -114,13 +118,11 @@ def list_processes(widget):
             idx += 1
     scrolled_window.show_all()
     scrolled_window.get_vadjustment().set_value(0)
-    # return True
 
 
 def on_background_cb(check_button):
     common_settings["processes-background-only"] = check_button.get_active()
-    GLib.timeout_add(1000, list_processes, None)
-    # list_processes(None)
+    list_processes(None)
 
 
 def on_own_cb(check_button):
@@ -159,12 +161,14 @@ def main():
     box.pack_start(hbox, False, False, 0)
 
     cb = Gtk.CheckButton.new_with_label("Background only")
+    cb.set_tooltip_text("Processes that don't belong to the sway tree")
     cb.set_active(common_settings["processes-background-only"])
     cb.connect("toggled", on_background_cb)
     hbox.pack_start(cb, False, False, 6)
 
     cb = Gtk.CheckButton.new_with_label("{}'s only".format(os.getenv('USER')))
-    cb.set_active(common_settings["processes-background-only"])
+    cb.set_tooltip_text("Processes that belong to the current $USER")
+    cb.set_active(common_settings["processes-own-only"])
     cb.connect("toggled", on_own_cb)
     hbox.pack_start(cb, False, False, 6)
 
@@ -180,7 +184,6 @@ def main():
 
     list_processes(None)
 
-    # GLib.timeout_add(1000, list_processes, None, scrolled_window)
     Gtk.main()
 
 
