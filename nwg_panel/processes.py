@@ -24,6 +24,7 @@ def handle_keyboard(win, event):
 def terminate(btn, pid):
     print("Killing {}".format(pid))
     os.kill(pid, 2)
+    list_processes(None)
 
 
 def list_processes(widget):
@@ -118,6 +119,7 @@ def list_processes(widget):
 
 def on_background_cb(check_button):
     common_settings["processes-background-only"] = check_button.get_active()
+    # GLib.timeout_add(100, list_processes, None)
     list_processes(None)
 
 
