@@ -114,13 +114,13 @@ def list_processes(widget):
             idx += 1
     scrolled_window.show_all()
     scrolled_window.get_vadjustment().set_value(0)
-    return True
+    # return True
 
 
 def on_background_cb(check_button):
     common_settings["processes-background-only"] = check_button.get_active()
-    # GLib.timeout_add(100, list_processes, None)
-    list_processes(None)
+    GLib.timeout_add(1000, list_processes, None)
+    # list_processes(None)
 
 
 def on_own_cb(check_button):
