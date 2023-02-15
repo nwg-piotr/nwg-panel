@@ -35,7 +35,7 @@ def list_processes(widget):
     processes = {}
 
     user = os.getenv('USER')
-    for proc in psutil.process_iter(['pid', 'ppid', 'name', 'username']):
+    for proc in psutil.process_iter(['pid', 'name', 'username', 'cpu_percent', 'memory_percent']):
         if proc.info['username'] == os.getenv('USER') or not common_settings["processes-own-only"]:
             processes[proc.info['pid']] = proc.info
 
@@ -49,7 +49,7 @@ def list_processes(widget):
     grid = Gtk.Grid.new()
     grid.set_row_spacing(3)
     grid.set_row_homogeneous(True)
-    grid.set_column_spacing(6)
+    grid.set_column_spacing(9)
     scrolled_window.add(grid)
 
     lbl = Gtk.Label()
@@ -63,14 +63,24 @@ def list_processes(widget):
     grid.attach(lbl, 2, 0, 1, 1)
 
     lbl = Gtk.Label()
+    lbl.set_markup("<b>CPU</b>")
+    lbl.set_property("halign", Gtk.Align.END)
+    grid.attach(lbl, 3, 0, 1, 1)
+
+    lbl = Gtk.Label()
+    lbl.set_markup("<b>Mem</b>")
+    lbl.set_property("halign", Gtk.Align.END)
+    grid.attach(lbl, 4, 0, 1, 1)
+
+    lbl = Gtk.Label()
     lbl.set_markup("<b>Name</b>")
     lbl.set_property("halign", Gtk.Align.START)
-    grid.attach(lbl, 4, 0, 1, 1)
+    grid.attach(lbl, 6, 0, 1, 1)
 
     lbl = Gtk.Label()
     lbl.set_markup("<b>Window</b>")
     lbl.set_property("halign", Gtk.Align.START)
-    grid.attach(lbl, 5, 0, 1, 1)
+    grid.attach(lbl, 7, 0, 1, 1)
 
     idx = 1
     for pid in processes:
@@ -84,15 +94,23 @@ def list_processes(widget):
             lbl.set_property("halign", Gtk.Align.END)
             grid.attach(lbl, 2, idx, 1, 1)
 
+            lbl = Gtk.Label.new("{}%".format(str(processes[pid]["cpu_percent"])))
+            lbl.set_property("halign", Gtk.Align.END)
+            grid.attach(lbl, 3, idx, 1, 1)
+
+            lbl = Gtk.Label.new("{}%".format(str(round(processes[pid]["memory_percent"], 1))))
+            lbl.set_property("halign", Gtk.Align.END)
+            grid.attach(lbl, 4, idx, 1, 1)
+
             name = processes[pid]["name"]
             if theme.lookup_icon(name, 16, Gtk.IconLookupFlags.FORCE_SYMBOLIC):
                 img = Gtk.Image.new_from_icon_name(name, Gtk.IconSize.MENU)
                 img.set_property("halign", Gtk.Align.END)
-                grid.attach(img, 3, idx, 1, 1)
+                grid.attach(img, 5, idx, 1, 1)
 
             lbl = Gtk.Label.new(name)
             lbl.set_property("halign", Gtk.Align.START)
-            grid.attach(lbl, 4, idx, 1, 1)
+            grid.attach(lbl, 6, idx, 1, 1)
 
             if processes[pid]["username"] == user:
                 btn = Gtk.Button.new_from_icon_name("gtk-close", Gtk.IconSize.MENU)
@@ -113,7 +131,7 @@ def list_processes(widget):
             if win_name:
                 lbl = Gtk.Label.new(win_name)
                 lbl.set_property("halign", Gtk.Align.START)
-                grid.attach(lbl, 5, idx, 1, 1)
+                grid.attach(lbl, 7, idx, 1, 1)
 
             idx += 1
     scrolled_window.show_all()
