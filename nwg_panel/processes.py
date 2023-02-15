@@ -11,6 +11,7 @@ from nwg_panel.tools import get_config_dir, load_json, save_json, check_key, epr
 common_settings = {}
 scrolled_window = None
 grid = Gtk.Grid()
+scroll = 0.0
 
 theme = Gtk.IconTheme.get_default()
 
@@ -27,7 +28,21 @@ def terminate(btn, pid):
     except Exception as e:
         eprint(e)
     # Wait a second for children processes to die
-    GLib.timeout_add(1000, list_processes, None)
+    # GLib.timeout_add(1000, list_processes, None)
+
+
+def on_scroll(s_window, event):
+    adj = s_window.get_vadjustment()
+    global scroll
+    scroll = adj.get_value()
+
+
+
+def on_list_changed(s_window, rect):
+    s_window.show_all()
+    adj = s_window.get_vadjustment()
+    adj.set_value(scroll)
+    print("scroll:", scroll, "upper:", adj.get_upper(), "current:", adj.get_value())
 
 
 def list_processes(widget):
@@ -55,6 +70,7 @@ def list_processes(widget):
     lbl = Gtk.Label()
     lbl.set_markup("<b>PID</b>")
     lbl.set_property("halign", Gtk.Align.END)
+    lbl.set_size_request(100, 0)
     grid.attach(lbl, 1, 0, 1, 1)
 
     lbl = Gtk.Label()
@@ -65,11 +81,13 @@ def list_processes(widget):
     lbl = Gtk.Label()
     lbl.set_markup("<b>CPU</b>")
     lbl.set_property("halign", Gtk.Align.END)
+    lbl.set_size_request(50, 0)
     grid.attach(lbl, 3, 0, 1, 1)
 
     lbl = Gtk.Label()
     lbl.set_markup("<b>Mem</b>")
     lbl.set_property("halign", Gtk.Align.END)
+    lbl.set_size_request(50, 0)
     grid.attach(lbl, 4, 0, 1, 1)
 
     lbl = Gtk.Label()
@@ -88,6 +106,7 @@ def list_processes(widget):
         if not cons or not common_settings["processes-background-only"]:
             lbl = Gtk.Label.new(str(pid))
             lbl.set_property("halign", Gtk.Align.END)
+            lbl.set_size_request(100, 0)
             grid.attach(lbl, 1, idx, 1, 1)
 
             lbl = Gtk.Label.new(processes[pid]["username"])
@@ -96,10 +115,12 @@ def list_processes(widget):
 
             lbl = Gtk.Label.new("{}%".format(str(processes[pid]["cpu_percent"])))
             lbl.set_property("halign", Gtk.Align.END)
+            lbl.set_size_request(50, 0)
             grid.attach(lbl, 3, idx, 1, 1)
 
             lbl = Gtk.Label.new("{}%".format(str(round(processes[pid]["memory_percent"], 1))))
             lbl.set_property("halign", Gtk.Align.END)
+            lbl.set_size_request(50, 0)
             grid.attach(lbl, 4, idx, 1, 1)
 
             name = processes[pid]["name"]
@@ -134,8 +155,11 @@ def list_processes(widget):
                 grid.attach(lbl, 7, idx, 1, 1)
 
             idx += 1
-    scrolled_window.show_all()
-    scrolled_window.get_vadjustment().set_value(0)
+    grid.show_all()
+
+    scrolled_window.get_vadjustment().set_value(scroll)
+
+    return True
 
 
 def on_background_cb(check_button):
@@ -171,8 +195,10 @@ def main():
     global scrolled_window
     scrolled_window = Gtk.ScrolledWindow.new(None, None)
     scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.ALWAYS)
-    scrolled_window.set_propagate_natural_width(True)
-    scrolled_window.set_propagate_natural_height(True)
+    # scrolled_window.set_propagate_natural_width(True)
+    # scrolled_window.set_propagate_natural_height(True)
+    # scrolled_window.connect("size-allocate", on_list_changed)
+    scrolled_window.connect("scroll-event", on_scroll)
     box.pack_start(scrolled_window, True, True, 0)
 
     hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 12)
@@ -201,6 +227,7 @@ def main():
     win.show_all()
 
     list_processes(None)
+    GLib.timeout_add(1000, list_processes, None)
 
     Gtk.main()
 
