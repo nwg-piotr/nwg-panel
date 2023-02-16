@@ -28,8 +28,6 @@ def terminate(btn, pid):
         os.kill(pid, 15)
     except Exception as e:
         eprint(e)
-    # Wait a second for children processes to die
-    # GLib.timeout_add(1000, list_processes, None)
 
 
 def on_scroll(s_window, event):
@@ -55,7 +53,6 @@ def list_processes(widget):
         if proc.info['username'] == os.getenv('USER') or not common_settings["processes-own-only"]:
             processes[proc.info['pid']] = proc.info
 
-
     if scrolled_window and scrolled_window.get_children():
         viewport = scrolled_window.get_children()[0]
     else:
@@ -78,13 +75,13 @@ def list_processes(widget):
     lbl = Gtk.Label()
     lbl.set_markup("<b>PID</b>")
     lbl.set_property("halign", Gtk.Align.END)
-    lbl.set_size_request(50, 0)
+    # lbl.set_size_request(50, 0)
     grid.attach(lbl, 1, 0, 1, 1)
 
     lbl = Gtk.Label()
     lbl.set_markup("<b>PPID</b>")
     lbl.set_property("halign", Gtk.Align.END)
-    lbl.set_size_request(50, 0)
+    # lbl.set_size_request(50, 0)
     grid.attach(lbl, 2, 0, 1, 1)
 
     lbl = Gtk.Label()
@@ -119,13 +116,13 @@ def list_processes(widget):
         cons = tree.find_by_pid(pid)
         if not cons or not common_settings["processes-background-only"]:
             lbl = Gtk.Label.new(str(pid))
+            # lbl.set_size_request(50, 0)
             lbl.set_property("halign", Gtk.Align.END)
-            lbl.set_size_request(50, 0)
             grid.attach(lbl, 1, idx, 1, 1)
 
             lbl = Gtk.Label.new(str(processes[pid]["ppid"]))
+            # lbl.set_size_request(50, 0)
             lbl.set_property("halign", Gtk.Align.END)
-            lbl.set_size_request(50, 0)
             grid.attach(lbl, 2, idx, 1, 1)
 
             lbl = Gtk.Label.new(processes[pid]["username"])
@@ -234,8 +231,8 @@ def main():
     global scrolled_window
     scrolled_window = Gtk.ScrolledWindow.new(None, None)
     scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.ALWAYS)
-    # scrolled_window.set_propagate_natural_width(True)
-    # scrolled_window.set_propagate_natural_height(True)
+    scrolled_window.set_propagate_natural_width(True)
+    scrolled_window.set_propagate_natural_height(True)
 
     scrolled_window.connect("scroll-event", on_scroll)
     box.pack_start(scrolled_window, True, True, 0)
