@@ -12,6 +12,7 @@ common_settings = {}
 scrolled_window = None
 grid = Gtk.Grid()
 scroll = 0.0
+max_num_items = 0
 
 theme = Gtk.IconTheme.get_default()
 
@@ -24,7 +25,7 @@ def handle_keyboard(win, event):
 def terminate(btn, pid):
     print("Terminating {}".format(pid))
     try:
-        print(os.kill(pid, 15))
+        os.kill(pid, 15)
     except Exception as e:
         eprint(e)
     # Wait a second for children processes to die
@@ -50,12 +51,15 @@ def list_processes(widget):
     processes = {}
 
     user = os.getenv('USER')
-    for proc in psutil.process_iter(['pid', 'name', 'username', 'cpu_percent', 'memory_percent']):
+    for proc in psutil.process_iter(['pid', 'ppid', 'name', 'username', 'cpu_percent', 'memory_percent']):
         if proc.info['username'] == os.getenv('USER') or not common_settings["processes-own-only"]:
             processes[proc.info['pid']] = proc.info
 
-    for child in scrolled_window.get_children():
-        scrolled_window.remove(child)
+
+    if scrolled_window and scrolled_window.get_children():
+        viewport = scrolled_window.get_children()[0]
+    else:
+        viewport = None
 
     global grid
     if grid:
@@ -65,7 +69,11 @@ def list_processes(widget):
     grid.set_row_spacing(3)
     grid.set_row_homogeneous(True)
     grid.set_column_spacing(9)
-    scrolled_window.add(grid)
+
+    if viewport:
+        viewport.add(grid)
+    else:
+        scrolled_window.add(grid)
 
     lbl = Gtk.Label()
     lbl.set_markup("<b>PID</b>")
@@ -104,7 +112,7 @@ def list_processes(widget):
     for pid in processes:
         cons = tree.find_by_pid(pid)
         if not cons or not common_settings["processes-background-only"]:
-            lbl = Gtk.Label.new(str(pid))
+            lbl = Gtk.Label.new("{}->{}".format(str( processes[pid]["ppid"]), str(pid)))
             lbl.set_property("halign", Gtk.Align.END)
             lbl.set_size_request(100, 0)
             grid.attach(lbl, 1, idx, 1, 1)
@@ -155,6 +163,17 @@ def list_processes(widget):
                 grid.attach(lbl, 7, idx, 1, 1)
 
             idx += 1
+
+    global max_num_items
+    if max_num_items < idx:
+        max_num_items = idx
+
+    if idx < max_num_items:
+        for i in range(idx, max_num_items):
+            lbl = Gtk.Label()
+            lbl.set_markup("    ")
+            grid.attach(lbl, 0, i, 1, 1)
+
     grid.show_all()
 
     scrolled_window.get_vadjustment().set_value(scroll)
@@ -164,11 +183,15 @@ def list_processes(widget):
 
 def on_background_cb(check_button):
     common_settings["processes-background-only"] = check_button.get_active()
+    global max_num_items
+    max_num_items = 0
     list_processes(None)
 
 
 def on_own_cb(check_button):
     common_settings["processes-own-only"] = check_button.get_active()
+    global max_num_items
+    max_num_items = 0
     list_processes(None)
 
 
@@ -177,7 +200,7 @@ def main():
     global common_settings
     common_settings = load_json(os.path.join(get_config_dir(), "common-settings.json"))
     defaults = {
-        "processes-background-only": True,
+        "processes-background-only": False,
         "processes-own-only": True
     }
     for key in defaults:
