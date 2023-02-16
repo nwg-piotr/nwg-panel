@@ -78,73 +78,69 @@ def list_processes(widget):
     lbl = Gtk.Label()
     lbl.set_markup("<b>PID</b>")
     lbl.set_property("halign", Gtk.Align.END)
-    lbl.set_size_request(100, 0)
+    lbl.set_size_request(50, 0)
     grid.attach(lbl, 1, 0, 1, 1)
+
+    lbl = Gtk.Label()
+    lbl.set_markup("<b>PPID</b>")
+    lbl.set_property("halign", Gtk.Align.END)
+    lbl.set_size_request(50, 0)
+    grid.attach(lbl, 2, 0, 1, 1)
 
     lbl = Gtk.Label()
     lbl.set_markup("<b>Owner</b>")
     lbl.set_property("halign", Gtk.Align.END)
-    grid.attach(lbl, 2, 0, 1, 1)
-
-    lbl = Gtk.Label()
-    lbl.set_markup("<b>CPU</b>")
-    lbl.set_property("halign", Gtk.Align.END)
-    lbl.set_size_request(50, 0)
     grid.attach(lbl, 3, 0, 1, 1)
 
     lbl = Gtk.Label()
-    lbl.set_markup("<b>Mem</b>")
+    lbl.set_markup("<b>CPU%</b>")
     lbl.set_property("halign", Gtk.Align.END)
     lbl.set_size_request(50, 0)
     grid.attach(lbl, 4, 0, 1, 1)
 
     lbl = Gtk.Label()
+    lbl.set_markup("<b>Mem%</b>")
+    lbl.set_property("halign", Gtk.Align.END)
+    lbl.set_size_request(50, 0)
+    grid.attach(lbl, 5, 0, 1, 1)
+
+    lbl = Gtk.Label()
     lbl.set_markup("<b>Name</b>")
     lbl.set_property("halign", Gtk.Align.START)
-    grid.attach(lbl, 6, 0, 1, 1)
+    grid.attach(lbl, 7, 0, 1, 1)
 
     lbl = Gtk.Label()
     lbl.set_markup("<b>Window</b>")
     lbl.set_property("halign", Gtk.Align.START)
-    grid.attach(lbl, 7, 0, 1, 1)
+    grid.attach(lbl, 8, 0, 1, 1)
 
     idx = 1
     for pid in processes:
         cons = tree.find_by_pid(pid)
         if not cons or not common_settings["processes-background-only"]:
-            lbl = Gtk.Label.new("{}->{}".format(str( processes[pid]["ppid"]), str(pid)))
+            lbl = Gtk.Label.new(str(pid))
             lbl.set_property("halign", Gtk.Align.END)
-            lbl.set_size_request(100, 0)
+            lbl.set_size_request(50, 0)
             grid.attach(lbl, 1, idx, 1, 1)
+
+            lbl = Gtk.Label.new(str(processes[pid]["ppid"]))
+            lbl.set_property("halign", Gtk.Align.END)
+            lbl.set_size_request(50, 0)
+            grid.attach(lbl, 2, idx, 1, 1)
 
             lbl = Gtk.Label.new(processes[pid]["username"])
             lbl.set_property("halign", Gtk.Align.END)
-            grid.attach(lbl, 2, idx, 1, 1)
+            grid.attach(lbl, 3, idx, 1, 1)
 
             lbl = Gtk.Label.new("{}%".format(str(processes[pid]["cpu_percent"])))
             lbl.set_property("halign", Gtk.Align.END)
             lbl.set_size_request(50, 0)
-            grid.attach(lbl, 3, idx, 1, 1)
+            grid.attach(lbl, 4, idx, 1, 1)
 
             lbl = Gtk.Label.new("{}%".format(str(round(processes[pid]["memory_percent"], 1))))
             lbl.set_property("halign", Gtk.Align.END)
             lbl.set_size_request(50, 0)
-            grid.attach(lbl, 4, idx, 1, 1)
-
-            name = processes[pid]["name"]
-            if theme.lookup_icon(name, 16, Gtk.IconLookupFlags.FORCE_SYMBOLIC):
-                img = Gtk.Image.new_from_icon_name(name, Gtk.IconSize.MENU)
-                img.set_property("halign", Gtk.Align.END)
-                grid.attach(img, 5, idx, 1, 1)
-
-            lbl = Gtk.Label.new(name)
-            lbl.set_property("halign", Gtk.Align.START)
-            grid.attach(lbl, 6, idx, 1, 1)
-
-            if processes[pid]["username"] == user:
-                btn = Gtk.Button.new_from_icon_name("gtk-close", Gtk.IconSize.MENU)
-                btn.connect("clicked", terminate, pid)
-                grid.attach(btn, 0, idx, 1, 1)
+            grid.attach(lbl, 5, idx, 1, 1)
 
             win_name = ""
             if cons:
@@ -160,7 +156,27 @@ def list_processes(widget):
             if win_name:
                 lbl = Gtk.Label.new(win_name)
                 lbl.set_property("halign", Gtk.Align.START)
-                grid.attach(lbl, 7, idx, 1, 1)
+                grid.attach(lbl, 8, idx, 1, 1)
+
+            name = processes[pid]["name"]
+            if theme.lookup_icon(name, 16, Gtk.IconLookupFlags.FORCE_SYMBOLIC):
+                img = Gtk.Image.new_from_icon_name(name, Gtk.IconSize.MENU)
+                img.set_property("halign", Gtk.Align.END)
+                grid.attach(img, 6, idx, 1, 1)
+            # fallback icon name
+            elif win_name and theme.lookup_icon(win_name, 16, Gtk.IconLookupFlags.FORCE_SYMBOLIC):
+                img = Gtk.Image.new_from_icon_name(win_name, Gtk.IconSize.MENU)
+                img.set_property("halign", Gtk.Align.END)
+                grid.attach(img, 6, idx, 1, 1)
+
+            lbl = Gtk.Label.new(name)
+            lbl.set_property("halign", Gtk.Align.START)
+            grid.attach(lbl, 7, idx, 1, 1)
+
+            if processes[pid]["username"] == user:
+                btn = Gtk.Button.new_from_icon_name("gtk-close", Gtk.IconSize.MENU)
+                btn.connect("clicked", terminate, pid)
+                grid.attach(btn, 0, idx, 1, 1)
 
             idx += 1
 
@@ -220,7 +236,7 @@ def main():
     scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.ALWAYS)
     # scrolled_window.set_propagate_natural_width(True)
     # scrolled_window.set_propagate_natural_height(True)
-    # scrolled_window.connect("size-allocate", on_list_changed)
+
     scrolled_window.connect("scroll-event", on_scroll)
     box.pack_start(scrolled_window, True, True, 0)
 
@@ -250,7 +266,7 @@ def main():
     win.show_all()
 
     list_processes(None)
-    GLib.timeout_add(1000, list_processes, None)
+    GLib.timeout_add(2000, list_processes, None)
 
     Gtk.main()
 
