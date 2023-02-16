@@ -8,6 +8,15 @@ from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, load_json, save_json, check_key, eprint
 
+W_KILL = 5
+W_PID = 7
+W_PPID = 7
+W_OWNER = 20
+W_CPU = 6
+W_MEM = 6
+W_NAME = 20
+W_WINDOW = 20
+
 common_settings = {}
 scrolled_window = None
 grid = Gtk.Grid()
@@ -34,7 +43,6 @@ def on_scroll(s_window, event):
     adj = s_window.get_vadjustment()
     global scroll
     scroll = adj.get_value()
-
 
 
 def on_list_changed(s_window, rect):
@@ -72,71 +80,33 @@ def list_processes(widget):
     else:
         scrolled_window.add(grid)
 
-    lbl = Gtk.Label()
-    lbl.set_markup("<b>PID</b>")
-    lbl.set_property("halign", Gtk.Align.END)
-    # lbl.set_size_request(50, 0)
-    grid.attach(lbl, 1, 0, 1, 1)
-
-    lbl = Gtk.Label()
-    lbl.set_markup("<b>PPID</b>")
-    lbl.set_property("halign", Gtk.Align.END)
-    # lbl.set_size_request(50, 0)
-    grid.attach(lbl, 2, 0, 1, 1)
-
-    lbl = Gtk.Label()
-    lbl.set_markup("<b>Owner</b>")
-    lbl.set_property("halign", Gtk.Align.END)
-    grid.attach(lbl, 3, 0, 1, 1)
-
-    lbl = Gtk.Label()
-    lbl.set_markup("<b>CPU%</b>")
-    lbl.set_property("halign", Gtk.Align.END)
-    lbl.set_size_request(50, 0)
-    grid.attach(lbl, 4, 0, 1, 1)
-
-    lbl = Gtk.Label()
-    lbl.set_markup("<b>Mem%</b>")
-    lbl.set_property("halign", Gtk.Align.END)
-    lbl.set_size_request(50, 0)
-    grid.attach(lbl, 5, 0, 1, 1)
-
-    lbl = Gtk.Label()
-    lbl.set_markup("<b>Name</b>")
-    lbl.set_property("halign", Gtk.Align.START)
-    grid.attach(lbl, 7, 0, 1, 1)
-
-    lbl = Gtk.Label()
-    lbl.set_markup("<b>Window</b>")
-    lbl.set_property("halign", Gtk.Align.START)
-    grid.attach(lbl, 8, 0, 1, 1)
-
     idx = 1
     for pid in processes:
         cons = tree.find_by_pid(pid)
         if not cons or not common_settings["processes-background-only"]:
             lbl = Gtk.Label.new(str(pid))
-            # lbl.set_size_request(50, 0)
+            lbl.set_width_chars(W_PID)
             lbl.set_property("halign", Gtk.Align.END)
             grid.attach(lbl, 1, idx, 1, 1)
 
             lbl = Gtk.Label.new(str(processes[pid]["ppid"]))
-            # lbl.set_size_request(50, 0)
+            lbl.set_width_chars(W_PPID)
             lbl.set_property("halign", Gtk.Align.END)
             grid.attach(lbl, 2, idx, 1, 1)
 
             lbl = Gtk.Label.new(processes[pid]["username"])
+            lbl.set_width_chars(W_OWNER)
             lbl.set_property("halign", Gtk.Align.END)
             grid.attach(lbl, 3, idx, 1, 1)
 
             lbl = Gtk.Label.new("{}%".format(str(processes[pid]["cpu_percent"])))
+            lbl.set_width_chars(W_CPU)
             lbl.set_property("halign", Gtk.Align.END)
-            lbl.set_size_request(50, 0)
             grid.attach(lbl, 4, idx, 1, 1)
 
             lbl = Gtk.Label.new("{}%".format(str(round(processes[pid]["memory_percent"], 1))))
+            lbl.set_width_chars(W_MEM)
             lbl.set_property("halign", Gtk.Align.END)
-            lbl.set_size_request(50, 0)
             grid.attach(lbl, 5, idx, 1, 1)
 
             win_name = ""
@@ -152,6 +122,7 @@ def list_processes(widget):
 
             if win_name:
                 lbl = Gtk.Label.new(win_name)
+                lbl.set_width_chars(W_WINDOW)
                 lbl.set_property("halign", Gtk.Align.START)
                 grid.attach(lbl, 8, idx, 1, 1)
 
@@ -167,6 +138,7 @@ def list_processes(widget):
                 grid.attach(img, 6, idx, 1, 1)
 
             lbl = Gtk.Label.new(name)
+            lbl.set_width_chars(W_NAME)
             lbl.set_property("halign", Gtk.Align.START)
             grid.attach(lbl, 7, idx, 1, 1)
 
@@ -227,6 +199,59 @@ def main():
     box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 6)
     box.set_property("margin", 12)
     win.add(box)
+
+    wrapper = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+    box.pack_start(wrapper, False, False, 0)
+    desc_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+    wrapper.pack_start(desc_box, False, True, 0)
+
+    lbl = Gtk.Label()
+    lbl.set_markup("<b>Kill</b>")
+    lbl.set_property("halign", Gtk.Align.START)
+    lbl.set_width_chars(W_KILL)
+    desc_box.pack_start(lbl, False, True, 0)
+
+    lbl = Gtk.Label()
+    lbl.set_markup("<b>PID</b>")
+    lbl.set_property("halign", Gtk.Align.START)
+    lbl.set_width_chars(W_PID)
+    desc_box.pack_start(lbl, False, True, 0)
+
+    lbl_ppid = Gtk.Label()
+    lbl_ppid.set_markup("<b>PPID</b>")
+    lbl_ppid.set_property("halign", Gtk.Align.START)
+    lbl.set_width_chars(W_PPID)
+    desc_box.pack_start(lbl_ppid, False, True, 0)
+
+    lbl = Gtk.Label()
+    lbl.set_markup("<b>Owner</b>")
+    lbl.set_property("halign", Gtk.Align.START)
+    lbl.set_width_chars(W_OWNER)
+    desc_box.pack_start(lbl, False, True, 0)
+
+    lbl = Gtk.Label()
+    lbl.set_markup("<b>CPU%</b>")
+    lbl.set_property("halign", Gtk.Align.START)
+    lbl.set_width_chars(W_CPU)
+    desc_box.pack_start(lbl, True, True, 0)
+
+    lbl = Gtk.Label()
+    lbl.set_markup("<b>Mem%</b>")
+    lbl.set_property("halign", Gtk.Align.START)
+    lbl.set_width_chars(W_MEM)
+    desc_box.pack_start(lbl, True, True, 0)
+
+    lbl = Gtk.Label()
+    lbl.set_markup("<b>Name</b>")
+    lbl.set_property("halign", Gtk.Align.START)
+    lbl.set_width_chars(W_NAME)
+    desc_box.pack_start(lbl, True, True, 0)
+
+    lbl = Gtk.Label()
+    lbl.set_markup("<b>Window</b>")
+    lbl.set_property("halign", Gtk.Align.START)
+    lbl.set_width_chars(W_WINDOW)
+    desc_box.pack_start(lbl, True, True, 0)
 
     global scrolled_window
     scrolled_window = Gtk.ScrolledWindow.new(None, None)
