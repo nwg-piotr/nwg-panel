@@ -22,7 +22,7 @@ scrolled_window = None
 grid = Gtk.Grid()
 window_lbl = None
 scroll = 0.0
-max_num_items = 0
+# max_num_items = 0
 
 theme = Gtk.IconTheme.get_default()
 
@@ -39,18 +39,13 @@ def terminate(btn, pid):
     except Exception as e:
         eprint(e)
 
+    list_processes(None)
+
 
 def on_scroll(s_window, event):
     adj = s_window.get_vadjustment()
     global scroll
     scroll = adj.get_value()
-
-
-def on_list_changed(s_window, rect):
-    s_window.show_all()
-    adj = s_window.get_vadjustment()
-    adj.set_value(scroll)
-    print("scroll:", scroll, "upper:", adj.get_upper(), "current:", adj.get_value())
 
 
 def list_processes(widget):
@@ -102,12 +97,17 @@ def list_processes(widget):
             lbl.set_xalign(0)
             grid.attach(lbl, 3, idx, 1, 1)
 
-            lbl = Gtk.Label.new("{}%".format(str(processes[pid]["cpu_percent"])))
+            percent = processes[pid]["cpu_percent"]
+            if percent == 0:
+                lbl = Gtk.Label.new("{}%".format(str(percent)))
+            else:
+                lbl = Gtk.Label()
+                lbl.set_markup("<b>{}</b>".format(str(percent)))
             lbl.set_width_chars(W_CPU)
             lbl.set_xalign(0)
             grid.attach(lbl, 4, idx, 1, 1)
 
-            lbl = Gtk.Label.new("{}%".format(str(round(processes[pid]["memory_percent"], 1))))
+            lbl = Gtk.Label.new("{}%".format(str(round(processes[pid]["memory_percent"], 2))))
             lbl.set_width_chars(W_MEM)
             lbl.set_xalign(0)
             grid.attach(lbl, 5, idx, 1, 1)
@@ -159,19 +159,19 @@ def list_processes(widget):
 
             idx += 1
 
-    global max_num_items
-    if max_num_items < idx:
-        max_num_items = idx
-
-    if idx < max_num_items:
-        for i in range(idx, max_num_items):
-            lbl = Gtk.Label()
-            lbl.set_markup("    ")
-            grid.attach(lbl, 0, i, 1, 1)
+    # global max_num_items
+    # if max_num_items < idx:
+    #     max_num_items = idx
+    #
+    # if idx < max_num_items:
+    #     for i in range(idx, max_num_items):
+    #         lbl = Gtk.Label()
+    #         lbl.set_markup("    ")
+    #         grid.attach(lbl, 0, i, 1, 1)
 
     grid.show_all()
 
-    scrolled_window.get_vadjustment().set_value(scroll)
+    # scrolled_window.get_vadjustment().set_value(scroll)
 
     return True
 
@@ -263,11 +263,9 @@ def main():
 
     global scrolled_window
     scrolled_window = Gtk.ScrolledWindow.new(None, None)
-    scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.ALWAYS)
-    scrolled_window.set_propagate_natural_width(True)
+    scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
     scrolled_window.set_propagate_natural_height(True)
-
-    scrolled_window.connect("scroll-event", on_scroll)
+    # scrolled_window.connect("scroll-event", on_scroll)
     box.pack_start(scrolled_window, True, True, 0)
 
     hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 12)
