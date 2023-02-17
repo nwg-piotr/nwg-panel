@@ -210,6 +210,7 @@ def main():
 
     box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 6)
     box.set_property("margin", 6)
+    box.set_property("vexpand", True)
     win.add(box)
 
     wrapper = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
@@ -268,6 +269,10 @@ def main():
     scrolled_window.set_propagate_natural_height(True)
     # scrolled_window.connect("scroll-event", on_scroll)
     box.pack_start(scrolled_window, True, True, 0)
+
+    dist = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+    dist.set_property("vexpand", True)
+    box.pack_start(dist, True, True, 0)
 
     hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 12)
     box.pack_start(hbox, False, False, 0)
