@@ -17,7 +17,7 @@ W_MEM = 7
 W_NAME = 24
 W_WINDOW = 24
 
-common_settings = {}
+settings = {}  # nwg-panel common settings
 scrolled_window = None
 grid = Gtk.Grid()
 window_lbl = None
@@ -46,7 +46,7 @@ def list_processes(widget):
 
     user = os.getenv('USER')
     for proc in psutil.process_iter(['pid', 'ppid', 'name', 'username', 'cpu_percent', 'memory_percent']):
-        if proc.info['username'] == os.getenv('USER') or not common_settings["processes-own-only"]:
+        if proc.info['username'] == os.getenv('USER') or not settings["processes-own-only"]:
             processes[proc.info['pid']] = proc.info
 
     if scrolled_window and scrolled_window.get_children():
@@ -70,7 +70,7 @@ def list_processes(widget):
     idx = 1
     for pid in processes:
         cons = tree.find_by_pid(pid)
-        if not cons or not common_settings["processes-background-only"]:
+        if not cons or not settings["processes-background-only"]:
             lbl = Gtk.Label.new(str(pid))
             lbl.set_width_chars(W_PID)
             lbl.set_xalign(0)
@@ -157,32 +157,33 @@ def list_processes(widget):
 
 
 def on_background_cb(check_button):
-    common_settings["processes-background-only"] = check_button.get_active()
-    save_json(common_settings, os.path.join(get_config_dir(), "common-settings.json"))
+    settings["processes-background-only"] = check_button.get_active()
+    save_json(settings, os.path.join(get_config_dir(), "common-settings.json"))
     if window_lbl:
-        window_lbl.set_visible(not common_settings["processes-background-only"])
+        window_lbl.set_visible(not settings["processes-background-only"])
 
     list_processes(None)
 
 
 def on_own_cb(check_button):
-    common_settings["processes-own-only"] = check_button.get_active()
-    save_json(common_settings, os.path.join(get_config_dir(), "common-settings.json"))
+    settings["processes-own-only"] = check_button.get_active()
+    save_json(settings, os.path.join(get_config_dir(), "common-settings.json"))
 
     list_processes(None)
 
 
 def main():
     GLib.set_prgname('nwg-processes')
-    global common_settings
-    common_settings = load_json(os.path.join(get_config_dir(), "common-settings.json"))
+    global settings
+    settings = load_json(os.path.join(get_config_dir(), "common-settings.json"))
     defaults = {
         "processes-background-only": False,
-        "processes-own-only": True
+        "processes-own-only": True,
+        "processes-interval-ms": 2000
     }
     for key in defaults:
-        check_key(common_settings, key, defaults[key])
-    eprint("Common settings", common_settings)
+        check_key(settings, key, defaults[key])
+    eprint("Common settings", settings)
 
     win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
     win.connect('destroy', Gtk.main_quit)
@@ -266,13 +267,13 @@ def main():
 
     cb = Gtk.CheckButton.new_with_label("Background only")
     cb.set_tooltip_text("Processes that don't belong to the sway tree")
-    cb.set_active(common_settings["processes-background-only"])
+    cb.set_active(settings["processes-background-only"])
     cb.connect("toggled", on_background_cb)
     hbox.pack_start(cb, False, False, 6)
 
     cb = Gtk.CheckButton.new_with_label("{}'s only".format(os.getenv('USER')))
     cb.set_tooltip_text("Processes that belong to the current $USER")
-    cb.set_active(common_settings["processes-own-only"])
+    cb.set_active(settings["processes-own-only"])
     cb.connect("toggled", on_own_cb)
     hbox.pack_start(cb, False, False, 6)
 
@@ -294,7 +295,7 @@ def main():
     win.show_all()
 
     list_processes(None)
-    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 2000, list_processes, None)
+    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, settings["processes-interval-ms"], list_processes, None)
 
     Gtk.main()
 
