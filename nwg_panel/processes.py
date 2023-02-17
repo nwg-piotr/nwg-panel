@@ -3,23 +3,24 @@ import os
 import psutil
 from i3ipc import Connection
 import gi
+
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, load_json, save_json, check_key, eprint
 
-W_KILL = 5
-W_PID = 7
-W_PPID = 7
-W_OWNER = 20
-W_CPU = 6
-W_MEM = 6
-W_NAME = 20
-W_WINDOW = 20
+W_PID = 10
+W_PPID = 10
+W_OWNER = 10
+W_CPU = 7
+W_MEM = 7
+W_NAME = 24
+W_WINDOW = 24
 
 common_settings = {}
 scrolled_window = None
 grid = Gtk.Grid()
+window_lbl = None
 scroll = 0.0
 max_num_items = 0
 
@@ -73,7 +74,6 @@ def list_processes(widget):
     grid = Gtk.Grid.new()
     grid.set_row_spacing(3)
     grid.set_row_homogeneous(True)
-    grid.set_column_spacing(9)
 
     if viewport:
         viewport.add(grid)
@@ -86,27 +86,27 @@ def list_processes(widget):
         if not cons or not common_settings["processes-background-only"]:
             lbl = Gtk.Label.new(str(pid))
             lbl.set_width_chars(W_PID)
-            lbl.set_property("halign", Gtk.Align.END)
+            lbl.set_xalign(0)
             grid.attach(lbl, 1, idx, 1, 1)
 
             lbl = Gtk.Label.new(str(processes[pid]["ppid"]))
             lbl.set_width_chars(W_PPID)
-            lbl.set_property("halign", Gtk.Align.END)
+            lbl.set_xalign(0)
             grid.attach(lbl, 2, idx, 1, 1)
 
             lbl = Gtk.Label.new(processes[pid]["username"])
             lbl.set_width_chars(W_OWNER)
-            lbl.set_property("halign", Gtk.Align.END)
+            lbl.set_xalign(0)
             grid.attach(lbl, 3, idx, 1, 1)
 
             lbl = Gtk.Label.new("{}%".format(str(processes[pid]["cpu_percent"])))
             lbl.set_width_chars(W_CPU)
-            lbl.set_property("halign", Gtk.Align.END)
+            lbl.set_xalign(0)
             grid.attach(lbl, 4, idx, 1, 1)
 
             lbl = Gtk.Label.new("{}%".format(str(round(processes[pid]["memory_percent"], 1))))
             lbl.set_width_chars(W_MEM)
-            lbl.set_property("halign", Gtk.Align.END)
+            lbl.set_xalign(0)
             grid.attach(lbl, 5, idx, 1, 1)
 
             win_name = ""
@@ -123,27 +123,34 @@ def list_processes(widget):
             if win_name:
                 lbl = Gtk.Label.new(win_name)
                 lbl.set_width_chars(W_WINDOW)
-                lbl.set_property("halign", Gtk.Align.START)
+                lbl.set_xalign(0)
                 grid.attach(lbl, 8, idx, 1, 1)
 
             name = processes[pid]["name"]
             if theme.lookup_icon(name, 16, Gtk.IconLookupFlags.FORCE_SYMBOLIC):
                 img = Gtk.Image.new_from_icon_name(name, Gtk.IconSize.MENU)
+                img.set_property("name", "icon")
                 img.set_property("halign", Gtk.Align.END)
                 grid.attach(img, 6, idx, 1, 1)
             # fallback icon name
             elif win_name and theme.lookup_icon(win_name, 16, Gtk.IconLookupFlags.FORCE_SYMBOLIC):
                 img = Gtk.Image.new_from_icon_name(win_name, Gtk.IconSize.MENU)
+                img.set_property("name", "icon")
                 img.set_property("halign", Gtk.Align.END)
                 grid.attach(img, 6, idx, 1, 1)
 
+            if len(name) > W_NAME:
+                name = "{}…".format(name[:W_NAME - 1])
             lbl = Gtk.Label.new(name)
             lbl.set_width_chars(W_NAME)
-            lbl.set_property("halign", Gtk.Align.START)
+            lbl.set_xalign(0)
             grid.attach(lbl, 7, idx, 1, 1)
 
             if processes[pid]["username"] == user:
                 btn = Gtk.Button.new_from_icon_name("gtk-close", Gtk.IconSize.MENU)
+                btn.set_property("name", "btn-kill")
+                btn.set_property("hexpand", False)
+                btn.set_property("halign", Gtk.Align.START)
                 btn.connect("clicked", terminate, pid)
                 grid.attach(btn, 0, idx, 1, 1)
 
@@ -170,6 +177,8 @@ def on_background_cb(check_button):
     common_settings["processes-background-only"] = check_button.get_active()
     global max_num_items
     max_num_items = 0
+    if window_lbl:
+        window_lbl.set_visible(not common_settings["processes-background-only"])
     list_processes(None)
 
 
@@ -205,53 +214,53 @@ def main():
     desc_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
     wrapper.pack_start(desc_box, False, True, 0)
 
-    lbl = Gtk.Label()
-    lbl.set_markup("<b>Kill</b>")
-    lbl.set_property("halign", Gtk.Align.START)
-    lbl.set_width_chars(W_KILL)
-    desc_box.pack_start(lbl, False, True, 0)
+    # lbl = Gtk.Label()
+    # lbl.set_markup(" ")
+    # lbl.set_width_chars(W_KILL)
+    # lbl.set_xalign(0)
+    img = Gtk.Image()
+    img.set_property("name", "img-empty")
+    desc_box.pack_start(img, False, False, 0)
 
-    lbl = Gtk.Label()
-    lbl.set_markup("<b>PID</b>")
-    lbl.set_property("halign", Gtk.Align.START)
+    lbl = Gtk.Label.new("PID")
     lbl.set_width_chars(W_PID)
-    desc_box.pack_start(lbl, False, True, 0)
+    lbl.set_xalign(0)
+    desc_box.pack_start(lbl, False, False, 0)
 
-    lbl_ppid = Gtk.Label()
-    lbl_ppid.set_markup("<b>PPID</b>")
-    lbl_ppid.set_property("halign", Gtk.Align.START)
+    lbl = Gtk.Label.new("PPID")
     lbl.set_width_chars(W_PPID)
-    desc_box.pack_start(lbl_ppid, False, True, 0)
+    lbl.set_xalign(0)
+    desc_box.pack_start(lbl, False, False, 0)
 
-    lbl = Gtk.Label()
-    lbl.set_markup("<b>Owner</b>")
-    lbl.set_property("halign", Gtk.Align.START)
+    lbl = Gtk.Label.new("Owner")
     lbl.set_width_chars(W_OWNER)
-    desc_box.pack_start(lbl, False, True, 0)
+    lbl.set_xalign(0)
+    desc_box.pack_start(lbl, False, False, 0)
 
-    lbl = Gtk.Label()
-    lbl.set_markup("<b>CPU%</b>")
-    lbl.set_property("halign", Gtk.Align.START)
+    lbl = Gtk.Label.new("CPU%")
     lbl.set_width_chars(W_CPU)
+    lbl.set_xalign(0)
     desc_box.pack_start(lbl, True, True, 0)
 
-    lbl = Gtk.Label()
-    lbl.set_markup("<b>Mem%</b>")
-    lbl.set_property("halign", Gtk.Align.START)
+    lbl = Gtk.Label.new("Mem%")
     lbl.set_width_chars(W_MEM)
+    lbl.set_xalign(0)
     desc_box.pack_start(lbl, True, True, 0)
 
-    lbl = Gtk.Label()
-    lbl.set_markup("<b>Name</b>")
-    lbl.set_property("halign", Gtk.Align.START)
+    img = Gtk.Image()
+    img.set_property("name", "icon")
+    desc_box.pack_start(img, True, True, 0)
+
+    lbl = Gtk.Label.new("Name")
     lbl.set_width_chars(W_NAME)
+    lbl.set_xalign(0)
     desc_box.pack_start(lbl, True, True, 0)
 
-    lbl = Gtk.Label()
-    lbl.set_markup("<b>Window</b>")
-    lbl.set_property("halign", Gtk.Align.START)
-    lbl.set_width_chars(W_WINDOW)
-    desc_box.pack_start(lbl, True, True, 0)
+    global window_lbl
+    window_lbl = Gtk.Label.new("Window")
+    window_lbl.set_width_chars(W_WINDOW)
+    window_lbl.set_xalign(0)
+    desc_box.pack_start(window_lbl, True, True, 0)
 
     global scrolled_window
     scrolled_window = Gtk.ScrolledWindow.new(None, None)
@@ -281,9 +290,19 @@ def main():
     hbox.pack_end(btn, False, False, 0)
     btn.connect("clicked", Gtk.main_quit)
 
-    btn = Gtk.Button.new_with_label("Refresh")
-    hbox.pack_end(btn, False, False, 0)
-    btn.connect("clicked", list_processes)
+    # btn = Gtk.Button.new_with_label("Refresh")
+    # hbox.pack_end(btn, False, False, 0)
+    # btn.connect("clicked", list_processes)
+
+    screen = Gdk.Screen.get_default()
+    provider = Gtk.CssProvider()
+    style_context = Gtk.StyleContext()
+    style_context.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+    css = b""" #icon { margin-right: 6px } """
+    css += b""" #img-empty { margin-right: 15px; border: 1px } """
+    css += b""" #btn-kill { padding: 0; border: 0; margin-right: 6px } """
+    css += b""" label { font-family: DejaVu Sans Mono, monospace } """
+    provider.load_from_data(css)
 
     win.show_all()
 
