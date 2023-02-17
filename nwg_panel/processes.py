@@ -158,13 +158,17 @@ def list_processes(widget):
 
 def on_background_cb(check_button):
     common_settings["processes-background-only"] = check_button.get_active()
+    save_json(common_settings, os.path.join(get_config_dir(), "common-settings.json"))
     if window_lbl:
         window_lbl.set_visible(not common_settings["processes-background-only"])
+
     list_processes(None)
 
 
 def on_own_cb(check_button):
     common_settings["processes-own-only"] = check_button.get_active()
+    save_json(common_settings, os.path.join(get_config_dir(), "common-settings.json"))
+
     list_processes(None)
 
 
