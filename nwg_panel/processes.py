@@ -209,10 +209,11 @@ def main():
     win.connect("key-release-event", handle_keyboard)
 
     box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 6)
-    box.set_property("margin", 12)
+    box.set_property("margin", 6)
     win.add(box)
 
     wrapper = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+    wrapper.set_property("name", "header")
     box.pack_start(wrapper, False, False, 0)
     desc_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
     wrapper.pack_start(desc_box, False, True, 0)
@@ -295,7 +296,8 @@ def main():
     provider = Gtk.CssProvider()
     style_context = Gtk.StyleContext()
     style_context.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-    css = b""" #icon { margin-right: 6px } """
+    css = b""" #header { background-color: rgba(0, 0, 0, 0.3) } """
+    css += b""" #icon { margin-right: 6px } """
     css += b""" #img-empty { margin-right: 15px; border: 1px } """
     css += b""" #btn-kill { padding: 0; border: 0; margin-right: 6px } """
     css += b""" label { font-family: DejaVu Sans Mono, monospace } """
