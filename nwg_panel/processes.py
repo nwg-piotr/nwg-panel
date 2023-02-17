@@ -290,7 +290,7 @@ def main():
     win.show_all()
 
     list_processes(None)
-    GLib.timeout_add(2000, list_processes, None)
+    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 2000, list_processes, None)
 
     Gtk.main()
 
