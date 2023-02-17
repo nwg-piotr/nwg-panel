@@ -21,8 +21,6 @@ common_settings = {}
 scrolled_window = None
 grid = Gtk.Grid()
 window_lbl = None
-scroll = 0.0
-# max_num_items = 0
 
 theme = Gtk.IconTheme.get_default()
 
@@ -40,12 +38,6 @@ def terminate(btn, pid):
         eprint(e)
 
     list_processes(None)
-
-
-def on_scroll(s_window, event):
-    adj = s_window.get_vadjustment()
-    global scroll
-    scroll = adj.get_value()
 
 
 def list_processes(widget):
@@ -267,7 +259,6 @@ def main():
     scrolled_window = Gtk.ScrolledWindow.new(None, None)
     scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
     scrolled_window.set_propagate_natural_height(True)
-    # scrolled_window.connect("scroll-event", on_scroll)
     box.pack_start(scrolled_window, True, True, 0)
 
     dist = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
