@@ -95,8 +95,8 @@ def list_processes(widget):
             grid.attach(lbl, 2, idx, 1, 1)
 
             owner = processes[pid]["username"]
-            if len(owner) > W_OWNER:
-                owner = "{}…".format(owner[:W_OWNER - 1])
+            if len(owner) > W_OWNER - 1:
+                owner = "{}…".format(owner[:W_OWNER - 2])
             lbl = Gtk.Label.new(owner)
             lbl.set_width_chars(W_OWNER)
             lbl.set_xalign(0)
@@ -142,8 +142,8 @@ def list_processes(widget):
                 img.set_property("halign", Gtk.Align.END)
                 grid.attach(img, 6, idx, 1, 1)
 
-            if len(name) > W_NAME:
-                name = "{}…".format(name[:W_NAME - 1])
+            if len(name) > W_NAME - 1:
+                name = "{}…".format(name[:W_NAME - 2])
             lbl = Gtk.Label.new(name)
             lbl.set_width_chars(W_NAME)
             lbl.set_xalign(0)
