@@ -151,27 +151,13 @@ def list_processes(widget):
 
             idx += 1
 
-    # global max_num_items
-    # if max_num_items < idx:
-    #     max_num_items = idx
-    #
-    # if idx < max_num_items:
-    #     for i in range(idx, max_num_items):
-    #         lbl = Gtk.Label()
-    #         lbl.set_markup("    ")
-    #         grid.attach(lbl, 0, i, 1, 1)
-
     grid.show_all()
-
-    # scrolled_window.get_vadjustment().set_value(scroll)
 
     return True
 
 
 def on_background_cb(check_button):
     common_settings["processes-background-only"] = check_button.get_active()
-    global max_num_items
-    max_num_items = 0
     if window_lbl:
         window_lbl.set_visible(not common_settings["processes-background-only"])
     list_processes(None)
@@ -179,8 +165,6 @@ def on_background_cb(check_button):
 
 def on_own_cb(check_button):
     common_settings["processes-own-only"] = check_button.get_active()
-    global max_num_items
-    max_num_items = 0
     list_processes(None)
 
 
@@ -265,8 +249,16 @@ def main():
     dist.set_property("vexpand", True)
     box.pack_start(dist, True, True, 0)
 
-    hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 12)
+    hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
+    hbox.set_property("margin", 6)
     box.pack_start(hbox, False, False, 0)
+
+    img = Gtk.Image.new_from_icon_name("nwg-processes", Gtk.IconSize.LARGE_TOOLBAR)
+    hbox.pack_start(img, False, False, 0)
+
+    lbl = Gtk.Label()
+    lbl.set_markup("<b>nwg-processes</b>")
+    hbox.pack_start(lbl, False, False, 0)
 
     cb = Gtk.CheckButton.new_with_label("Background only")
     cb.set_tooltip_text("Processes that don't belong to the sway tree")
@@ -283,10 +275,6 @@ def main():
     btn = Gtk.Button.new_with_label("Close")
     hbox.pack_end(btn, False, False, 0)
     btn.connect("clicked", Gtk.main_quit)
-
-    # btn = Gtk.Button.new_with_label("Refresh")
-    # hbox.pack_end(btn, False, False, 0)
-    # btn.connect("clicked", list_processes)
 
     screen = Gdk.Screen.get_default()
     provider = Gtk.CssProvider()
