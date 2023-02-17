@@ -280,11 +280,11 @@ def main():
     provider = Gtk.CssProvider()
     style_context = Gtk.StyleContext()
     style_context.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-    css = b""" #header { background-color: rgba(0, 0, 0, 0.3) } """
-    css += b""" #icon { margin-right: 6px } """
-    css += b""" #img-empty { margin-right: 15px; border: 1px } """
-    css += b""" #btn-kill { padding: 0; border: 0; margin-right: 6px } """
-    css += b""" label { font-family: DejaVu Sans Mono, monospace } """
+    css = b""" #header { background-color: rgba(0, 0, 0, 0.3) }
+        #icon { margin-right: 6px }
+        #img-empty { margin-right: 15px; border: 1px }
+        #btn-kill { padding: 0; border: 0; margin-right: 6px }
+        label { font-family: DejaVu Sans Mono, monospace } """
     provider.load_from_data(css)
 
     win.show_all()
