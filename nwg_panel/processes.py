@@ -94,7 +94,10 @@ def list_processes(widget):
             lbl.set_xalign(0)
             grid.attach(lbl, 2, idx, 1, 1)
 
-            lbl = Gtk.Label.new(processes[pid]["username"])
+            owner = processes[pid]["username"]
+            if len(owner) > W_OWNER:
+                owner = "{}…".format(owner[:W_OWNER - 1])
+            lbl = Gtk.Label.new(owner)
             lbl.set_width_chars(W_OWNER)
             lbl.set_xalign(0)
             grid.attach(lbl, 3, idx, 1, 1)
@@ -214,10 +217,6 @@ def main():
     desc_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
     wrapper.pack_start(desc_box, False, True, 0)
 
-    # lbl = Gtk.Label()
-    # lbl.set_markup(" ")
-    # lbl.set_width_chars(W_KILL)
-    # lbl.set_xalign(0)
     img = Gtk.Image()
     img.set_property("name", "img-empty")
     desc_box.pack_start(img, False, False, 0)
