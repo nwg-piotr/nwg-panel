@@ -2870,7 +2870,8 @@ class EditorWrapper(object):
                 "net",
                 "brightness",
                 "volume",
-                "battery"
+                "battery",
+                "processes"
             ],
             "commands": {
             },
@@ -2954,6 +2955,9 @@ class EditorWrapper(object):
 
         self.ctrl_comp_battery = builder.get_object("ctrl-comp-battery")
         self.ctrl_comp_battery.set_active("battery" in settings["components"])
+
+        self.ctrl_comp_processes = builder.get_object("ctrl-comp-processes")
+        self.ctrl_comp_processes.set_active("processes" in settings["components"])
 
         self.ctrl_cdm_net = builder.get_object("ctrl-cmd-net")
         check_key(settings["commands"], "net", "")
@@ -3068,6 +3072,13 @@ class EditorWrapper(object):
         else:
             if "battery" in settings["components"]:
                 settings["components"].remove("battery")
+
+        if self.ctrl_comp_processes.get_active():
+            if "processes" not in settings["components"]:
+                settings["components"].append("processes")
+        else:
+            if "processes" in settings["components"]:
+                settings["components"].remove("processes")
 
         settings["commands"]["net"] = self.ctrl_cdm_net.get_text()
         settings["net-interface"] = self.ctrl_net_name.get_text()

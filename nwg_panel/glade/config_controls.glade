@@ -65,176 +65,6 @@
           </packing>
         </child>
         <child>
-          <object class="GtkEntry" id="ctrl-cmd-battery">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="placeholder-text" translatable="yes">on click command</property>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">5</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Depends on `python-psutil`.</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">5</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkCheckButton" id="ctrl-comp-battery">
-            <property name="label" translatable="yes">Battery</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="halign">start</property>
-            <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">5</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkEntry" id="ctrl-cmd-bluetooth">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="placeholder-text" translatable="yes">on click command</property>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">4</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Depends on `bluez-utils`.</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">4</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkCheckButton" id="ctrl-comp-bluetooth">
-            <property name="label" translatable="yes">Bluetooth</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="halign">start</property>
-            <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">4</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkEntry" id="ctrl-net-name">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="width-chars">6</property>
-            <property name="placeholder-text" translatable="yes">name</property>
-          </object>
-          <packing>
-            <property name="left-attach">3</property>
-            <property name="top-attach">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkEntry" id="ctrl-cmd-net">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="placeholder-text" translatable="yes">on click command</property>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Network interface status;
-use `ifconfig` to check names,
-e.g. `enp6s0`or `wlo1`.
-Depends on `python-netifaces`.</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkCheckButton" id="ctrl-comp-net">
-            <property name="label" translatable="yes">Interface</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="halign">start</property>
-            <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Depends on the `pamixer` package.</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkCheckButton" id="ctrl-comp-volume">
-            <property name="label" translatable="yes">Volume</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="halign">start</property>
-            <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkCheckButton" id="ctrl-comp-brightness">
-            <property name="label" translatable="yes">Brightness</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="halign">start</property>
-            <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -267,20 +97,6 @@ Depends on `python-netifaces`.</property>
           <packing>
             <property name="left-attach">2</property>
             <property name="top-attach">8</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkCheckButton" id="output-switcher">
-            <property name="label" translatable="yes">output switcher</property>
-            <property name="name">pactl</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">2</property>
           </packing>
         </child>
         <child>
@@ -401,64 +217,6 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Depends on `light` or `brightnessctl`.</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Backlight device path (for 'light')
-or name (for 'brightnessctl')
-or I2C bus number (for 'ddcutil').
-Use 'light -L' or 'brightnessctl -l'
-or 'ddcutil --help' to
-check available devices.
-LEAVE BLANK IF EVERYTHING WORKS</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">4</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkEntry" id="backlight-device">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="placeholder-text" translatable="yes">backlight device</property>
-          </object>
-          <packing>
-            <property name="left-attach">3</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkComboBoxText" id="backlight-controller">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <items>
-              <item id="light" translatable="yes">light</item>
-              <item id="brightnessctl" translatable="yes">brightnessctl</item>
-              <item id="ddcutil" translatable="yes">ddcutil</item>
-            </items>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkBox">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -533,10 +291,273 @@ values in the panel widget</property>
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkCheckButton" id="ctrl-comp-brightness">
+            <property name="label" translatable="yes">Brightness</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">0</property>
+          </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">Depends on `light` or `brightnessctl`.</property>
+            <property name="halign">start</property>
+            <property name="icon-name">help-about</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText" id="backlight-controller">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <items>
+              <item id="light" translatable="yes">light</item>
+              <item id="brightnessctl" translatable="yes">brightnessctl</item>
+              <item id="ddcutil" translatable="yes">ddcutil</item>
+            </items>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="backlight-device">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="placeholder-text" translatable="yes">backlight device</property>
+          </object>
+          <packing>
+            <property name="left-attach">3</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">Backlight device path (for 'light')
+or name (for 'brightnessctl')
+or I2C bus number (for 'ddcutil').
+Use 'light -L' or 'brightnessctl -l'
+or 'ddcutil --help' to
+check available devices.
+LEAVE BLANK IF EVERYTHING WORKS</property>
+            <property name="halign">start</property>
+            <property name="icon-name">help-about</property>
+          </object>
+          <packing>
+            <property name="left-attach">4</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="ctrl-comp-volume">
+            <property name="label" translatable="yes">Volume</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">Depends on the `pamixer` package.</property>
+            <property name="halign">start</property>
+            <property name="icon-name">help-about</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="output-switcher">
+            <property name="label" translatable="yes">output switcher</property>
+            <property name="name">pactl</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="ctrl-comp-net">
+            <property name="label" translatable="yes">Interface</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">Network interface status;
+use `ifconfig` to check names,
+e.g. `enp6s0`or `wlo1`.
+Depends on `python-netifaces`.</property>
+            <property name="halign">start</property>
+            <property name="icon-name">help-about</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="ctrl-cmd-net">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="placeholder-text" translatable="yes">on click command</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="ctrl-net-name">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="width-chars">6</property>
+            <property name="placeholder-text" translatable="yes">name</property>
+          </object>
+          <packing>
+            <property name="left-attach">3</property>
+            <property name="top-attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="ctrl-comp-bluetooth">
+            <property name="label" translatable="yes">Bluetooth</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">Depends on `bluez-utils`.</property>
+            <property name="halign">start</property>
+            <property name="icon-name">help-about</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="ctrl-cmd-bluetooth">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="placeholder-text" translatable="yes">on click command</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="ctrl-comp-battery">
+            <property name="label" translatable="yes">Battery</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">Depends on `python-psutil`.</property>
+            <property name="halign">start</property>
+            <property name="icon-name">help-about</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="ctrl-cmd-battery">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="placeholder-text" translatable="yes">on click command</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="ctrl-comp-processes">
+            <property name="label" translatable="yes">Processes</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">5</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">Determines if to display the task manager menu entry.</property>
+            <property name="halign">start</property>
+            <property name="icon-name">help-about</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">5</property>
+          </packing>
         </child>
         <child>
           <placeholder/>

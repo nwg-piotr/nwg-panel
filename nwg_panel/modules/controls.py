@@ -539,6 +539,31 @@ class PopupWindow(Gtk.Window):
 
             event_box.add(inner_vbox)
 
+        if "processes" in settings["components"]:
+            event_box = Gtk.EventBox()
+            event_box.connect("enter_notify_event", self.on_enter_notify_event)
+            event_box.connect("leave_notify_event", self.on_leave_notify_event)
+            event_box.connect('button-press-event', self.launch, "nwg-processes")
+
+            inner_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+            inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            inner_vbox.pack_start(inner_hbox, True, True, 6)
+            v_box.pack_start(event_box, True, True, 0)
+
+            self.proc_icon_name = "view-refresh-symbolic"
+            self.proc_image = Gtk.Image.new_from_icon_name("nwg-processes", Gtk.IconSize.MENU)
+
+            inner_hbox.pack_start(self.proc_image, False, False, 6)
+
+            self.proc_label = Gtk.Label.new("Processes")
+            inner_hbox.pack_start(self.proc_label, False, True, 6)
+
+            img = Gtk.Image()
+            update_image(img, "pan-end-symbolic", self.icon_size, self.icons_path)
+            inner_hbox.pack_end(img, False, True, 4)
+
+            event_box.add(inner_vbox)
+
         check_key(settings, "custom-items", [])
         if settings["custom-items"]:
             for item in settings["custom-items"]:
