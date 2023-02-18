@@ -59,7 +59,7 @@ def terminate(btn, pid):
     list_processes(None)
 
 
-def list_processes(widget):
+def list_processes(widget, once=False):
     tree = Connection().get_tree()
     processes = {}
 
@@ -180,7 +180,8 @@ def list_processes(widget):
 
     grid.show_all()
 
-    return True
+    if not once:
+        return True
 
 
 def on_background_cb(check_button):
@@ -331,6 +332,8 @@ def main():
 
     if settings["processes-interval-ms"] > 0:
         Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, settings["processes-interval-ms"], list_processes, None)
+    else:
+        GLib.timeout_add(1000, list_processes, None, True)
 
     Gtk.main()
 
