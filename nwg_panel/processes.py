@@ -1,3 +1,14 @@
+#!/usr/bin/env python3
+
+"""
+nwg-shell helper script to preview system processes
+Copyright (c) 2023 Piotr Miller
+e-mail: nwg.piotr@gmail.com
+GitHub: https://github.com/nwg-piotr/nwg-panel
+Project: https://nwg-piotr.github.io/nwg-shell
+License: MIT
+"""
+
 import os
 
 import psutil
@@ -57,6 +68,8 @@ def list_processes(widget):
         if proc.info['username'] == os.getenv('USER') or not settings["processes-own-only"]:
             processes[proc.info['pid']] = proc.info
 
+    # At first, we need to add grid to the scrolled window (as in former add_with_viewport).
+    # In next iterations, we add the grid directly to already existing viewport, to avoid the scrolled window floating.
     if scrolled_window and scrolled_window.get_children():
         viewport = scrolled_window.get_children()[0]
     else:
