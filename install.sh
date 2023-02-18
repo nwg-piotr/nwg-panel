@@ -5,3 +5,4 @@ cp nwg-panel.svg /usr/share/pixmaps/
 cp nwg-shell.svg /usr/share/pixmaps/
 cp nwg-processes.svg /usr/share/pixmaps/
 cp nwg-panel-config.desktop /usr/share/applications/
+cp nwg-processes.desktop /usr/share/applications/
