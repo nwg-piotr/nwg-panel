@@ -19,6 +19,12 @@ W_MEM = 7
 W_NAME = 24
 W_WINDOW = 24
 
+# Fallback icon names dict: win_name -> icon_name
+aliases = {
+    "Gimp-2.10": "gimp",
+    "nwg-panel-config": "nwg-panel"
+}
+
 settings = {}  # nwg-panel common settings
 scrolled_window = None
 grid = Gtk.Grid()
@@ -132,6 +138,12 @@ def list_processes(widget):
             # fallback icon name
             elif win_name and theme.lookup_icon(win_name, 16, Gtk.IconLookupFlags.FORCE_SYMBOLIC):
                 img = Gtk.Image.new_from_icon_name(win_name, Gtk.IconSize.MENU)
+                img.set_property("name", "icon")
+                img.set_property("halign", Gtk.Align.END)
+                grid.attach(img, 6, idx, 1, 1)
+            elif win_name and win_name in aliases and theme.lookup_icon(aliases[win_name], 16,
+                                                                        Gtk.IconLookupFlags.FORCE_SYMBOLIC):
+                img = Gtk.Image.new_from_icon_name(aliases[win_name], Gtk.IconSize.MENU)
                 img.set_property("name", "icon")
                 img.set_property("halign", Gtk.Align.END)
                 grid.attach(img, 6, idx, 1, 1)
