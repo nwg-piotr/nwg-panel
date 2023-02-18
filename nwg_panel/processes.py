@@ -325,7 +325,7 @@ def main():
 
     win.show_all()
 
-    win.set_size_request(0, win.get_allocated_width() * 0.7)
+    win.set_size_request(0, win.get_allocated_width() * 0.5)
 
     list_processes(None)
 
