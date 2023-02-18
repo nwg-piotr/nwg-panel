@@ -300,6 +300,8 @@ def main():
 
     win.show_all()
 
+    win.set_size_request(0, win.get_allocated_width() * 0.7)
+
     list_processes(None)
     Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, settings["processes-interval-ms"], list_processes, None)
 
