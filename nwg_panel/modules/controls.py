@@ -550,8 +550,8 @@ class PopupWindow(Gtk.Window):
             inner_vbox.pack_start(inner_hbox, True, True, 6)
             v_box.pack_start(event_box, True, True, 0)
 
-            self.proc_icon_name = "view-refresh-symbolic"
-            self.proc_image = Gtk.Image.new_from_icon_name("nwg-processes", Gtk.IconSize.MENU)
+            self.proc_image = Gtk.Image()
+            update_image(self.proc_image, "nwg-processes", self.icon_size, self.icons_path)
 
             inner_hbox.pack_start(self.proc_image, False, False, 6)
 
