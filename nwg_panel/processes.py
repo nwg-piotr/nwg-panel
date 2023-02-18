@@ -213,7 +213,6 @@ def main():
         check_key(settings, key, defaults[key])
     if not sway:
         settings["processes-background-only"] = False
-    eprint("Common settings", settings)
 
     win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
     win.connect('destroy', Gtk.main_quit)
