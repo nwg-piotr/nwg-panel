@@ -239,6 +239,7 @@ def build_common_settings_window():
     global common_settings
     check_key(common_settings, "restart-on-display", True)
     check_key(common_settings, "restart-delay", 500)
+    check_key(common_settings, "processes-interval-ms", 2000)
 
     win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
     win.set_modal(True)
@@ -269,10 +270,21 @@ def build_common_settings_window():
 
     sb = Gtk.SpinButton.new_with_range(0, 30000, 100)
     sb.set_value(common_settings["restart-delay"])
-    sb.connect("value-changed", on_restart_delay_changed)
+    sb.connect("value-changed", set_int_from_spin_button, "restart-delay")
     sb.set_tooltip_text("If, after turning a display off and back on, panels don't appear on it, it may mean\n"
                         "the display responds too slowly (e.g. if turned via HDMI). Try increasing this value.")
     grid.attach(sb, 1, 1, 1, 1)
+
+    lbl = Gtk.Label.new("Processes polling rate [ms]:")
+    lbl.set_property("halign", Gtk.Align.END)
+    grid.attach(lbl, 0, 2, 1, 1)
+
+    sb = Gtk.SpinButton.new_with_range(0, 30000, 100)
+    sb.set_value(common_settings["processes-interval-ms"])
+    sb.connect("value-changed", set_int_from_spin_button, "processes-interval-ms")
+    sb.set_tooltip_text("Interval for checking data on system processes by the nwg-processes tool.\n"
+                        "Default: 2000 ms. Set higher values for slower machines. Set 0 to stop refreshing.")
+    grid.attach(sb, 1, 2, 1, 1)
 
     hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
     vbox.pack_start(hbox, False, False, 6)
@@ -292,9 +304,9 @@ def build_common_settings_window():
     return win
 
 
-def on_restart_delay_changed(sb):
+def set_int_from_spin_button(sb, config_key):
     global common_settings
-    common_settings["restart-delay"] = int(sb.get_value())
+    common_settings[config_key] = int(sb.get_value())
 
 
 def on_restart_check_button(cb):
