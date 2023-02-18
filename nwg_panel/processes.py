@@ -9,6 +9,8 @@ from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, load_json, save_json, check_key, eprint
 
+sway = os.getenv('SWAYSOCK')
+
 W_PID = 10
 W_PPID = 10
 W_OWNER = 10
@@ -183,6 +185,8 @@ def main():
     }
     for key in defaults:
         check_key(settings, key, defaults[key])
+    if not sway:
+        settings["processes-background-only"] = False
     eprint("Common settings", settings)
 
     win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
@@ -238,11 +242,12 @@ def main():
     lbl.set_xalign(0)
     desc_box.pack_start(lbl, True, True, 0)
 
-    global window_lbl
-    window_lbl = Gtk.Label.new("Window")
-    window_lbl.set_width_chars(W_WINDOW)
-    window_lbl.set_xalign(0)
-    desc_box.pack_start(window_lbl, True, True, 0)
+    if sway:
+        global window_lbl
+        window_lbl = Gtk.Label.new("Window")
+        window_lbl.set_width_chars(W_WINDOW)
+        window_lbl.set_xalign(0)
+        desc_box.pack_start(window_lbl, True, True, 0)
 
     global scrolled_window
     scrolled_window = Gtk.ScrolledWindow.new(None, None)
@@ -265,11 +270,12 @@ def main():
     lbl.set_markup("<b>nwg-processes</b>")
     hbox.pack_start(lbl, False, False, 0)
 
-    cb = Gtk.CheckButton.new_with_label("Background only")
-    cb.set_tooltip_text("Processes that don't belong to the sway tree")
-    cb.set_active(settings["processes-background-only"])
-    cb.connect("toggled", on_background_cb)
-    hbox.pack_start(cb, False, False, 6)
+    if sway:
+        cb = Gtk.CheckButton.new_with_label("Background only")
+        cb.set_tooltip_text("Processes that don't belong to the sway tree")
+        cb.set_active(settings["processes-background-only"])
+        cb.connect("toggled", on_background_cb)
+        hbox.pack_start(cb, False, False, 6)
 
     cb = Gtk.CheckButton.new_with_label("{}'s only".format(os.getenv('USER')))
     cb.set_tooltip_text("Processes that belong to the current $USER")
