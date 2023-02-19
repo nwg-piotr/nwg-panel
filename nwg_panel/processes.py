@@ -56,10 +56,10 @@ def terminate(btn, pid):
     except Exception as e:
         eprint(e)
 
-    list_processes(None)
+    list_processes()
 
 
-def list_processes(widget, once=False):
+def list_processes(once=False):
     tree = Connection().get_tree()
     processes = {}
 
@@ -190,14 +190,14 @@ def on_background_cb(check_button):
     if window_lbl:
         window_lbl.set_visible(not settings["processes-background-only"])
 
-    list_processes(None)
+    list_processes()
 
 
 def on_own_cb(check_button):
     settings["processes-own-only"] = check_button.get_active()
     save_json(settings, os.path.join(get_config_dir(), "common-settings.json"))
 
-    list_processes(None)
+    list_processes()
 
 
 def main():
@@ -327,12 +327,12 @@ def main():
 
     win.set_size_request(0, win.get_allocated_width() * 0.5)
 
-    list_processes(None)
+    list_processes()
 
     if settings["processes-interval-ms"] > 0:
-        Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, settings["processes-interval-ms"], list_processes, None)
+        Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, settings["processes-interval-ms"], list_processes)
     else:
-        GLib.timeout_add(1000, list_processes, None, True)
+        GLib.timeout_add(1000, list_processes, True)
 
     Gtk.main()
 
