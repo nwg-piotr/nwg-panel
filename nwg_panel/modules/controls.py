@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import threading
+import time
 import subprocess
 
 import gi
@@ -14,6 +15,8 @@ from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volum
     get_interface, update_image, bt_info, eprint, list_sinks, toggle_mute
 
 from nwg_panel.common import commands
+
+bat_critical_last_check = 0
 
 
 class Controls(Gtk.EventBox):
@@ -32,9 +35,11 @@ class Controls(Gtk.EventBox):
         check_key(settings, "leave-closes", True)
         check_key(settings, "click-closes", False)
         check_key(settings, "root-css-name", "controls-overview")
-        check_key(settings, "components", ["net", "brightness", "volume", "battery"])
+        check_key(settings, "components", ["brightness", "battery", "volume", "processes"])
         check_key(settings, "net-interface", "")
         check_key(settings, "angle", 0.0)
+        check_key(settings, "battery-low-level", 20)
+        check_key(settings, "battery-low-interval", 3)
 
         self.set_property("name", settings["root-css-name"])
 
@@ -234,6 +239,14 @@ class Controls(Gtk.EventBox):
 
         if self.bat_label:
             self.bat_label.set_text("{}%".format(value))
+
+        if self.settings["battery-low-interval"] > 0:
+            t = int(time.time())
+            global bat_critical_last_check
+            if not charging and t - bat_critical_last_check >= self.settings["battery-low-interval"] * 60 and value <= \
+                    self.settings["battery-low-level"]:
+                subprocess.Popen('notify-send "Battery low!" -i {}'.format(icon_name), shell=True)
+                bat_critical_last_check = t
 
     def on_button_press(self, w, event, settings):
         if not self.popup_window.get_visible():

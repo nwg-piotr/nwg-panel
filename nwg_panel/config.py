@@ -39,7 +39,6 @@ args = load_string(args_file) if os.path.isfile(args_file) else ""
 restart_cmd = "nwg-panel {}".format(args)
 print("Restart command: ", restart_cmd)
 
-
 configs = {}
 editor = None
 selector_window = None
@@ -76,6 +75,8 @@ SKELETON_PANEL: dict = {
         "root-css-name": "controls-overview",
         "css-name": "controls-window",
         "net-interface": "",
+        "battery-low-level": 20,
+        "battery-low-interval": 3,
         "custom-items": [{"name": "Panel settings", "icon": "nwg-panel", "cmd": "nwg-panel-config"}],
         "menu": {"name": "unnamed", "icon": "", "items": []}
     },
@@ -2902,6 +2903,8 @@ class EditorWrapper(object):
             "root-css-name": "controls-overview",
             "css-name": "controls-window",
             "net-interface": "",
+            "battery-low-level": 20,
+            "battery-low-interval": 3,
             "angle": 0.0,
             "custom-items": [
                 {
@@ -2967,6 +2970,18 @@ class EditorWrapper(object):
 
         self.ctrl_comp_battery = builder.get_object("ctrl-comp-battery")
         self.ctrl_comp_battery.set_active("battery" in settings["components"])
+
+        self.ctrl_comp_battery_low_level = builder.get_object("ctrl-battery-low-level")
+        self.ctrl_comp_battery_low_level.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=1, upper=100, step_increment=1, page_increment=10, page_size=1)
+        self.ctrl_comp_battery_low_level.configure(adj, 1, 0)
+        self.ctrl_comp_battery_low_level.set_value(settings["battery-low-level"])
+
+        self.ctrl_comp_battery_low_interval = builder.get_object("ctrl-battery-low-interval")
+        self.ctrl_comp_battery_low_interval.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=61, step_increment=1, page_increment=10, page_size=1)
+        self.ctrl_comp_battery_low_interval.configure(adj, 1, 0)
+        self.ctrl_comp_battery_low_interval.set_value(settings["battery-low-interval"])
 
         self.ctrl_comp_processes = builder.get_object("ctrl-comp-processes")
         self.ctrl_comp_processes.set_active("processes" in settings["components"])
@@ -3098,6 +3113,9 @@ class EditorWrapper(object):
         settings["commands"]["battery"] = self.ctrl_cdm_battery.get_text()
         settings["root-css-name"] = self.ctrl_root_css_name.get_text()
         settings["css-name"] = self.ctrl_css_name.get_text()
+
+        settings["battery-low-level"] = int(self.ctrl_comp_battery_low_level.get_value())
+        settings["battery-low-interval"] = int(self.ctrl_comp_battery_low_interval.get_value())
 
         settings["window-width"] = int(self.ctrl_window_width.get_value())
         settings["window-margin-horizontal"] = int(self.ctrl_window_margin_horizontal.get_value())
