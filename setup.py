@@ -8,7 +8,7 @@ def read(f_name):
 
 setup(
     name='nwg-panel',
-    version='0.7.16',
+    version='0.7.17',
     description='GTK3-based panel for sway window manager',
     packages=find_packages(),
     include_package_data=True,
@@ -25,7 +25,8 @@ setup(
         'gui_scripts': [
             'nwg-panel = nwg_panel.main:main',
             'nwg-panel-config = nwg_panel.config:main',
-            'nwg-dwl-interface = nwg_panel.dwl_interface:main'
+            'nwg-dwl-interface = nwg_panel.dwl_interface:main',
+            'nwg-processes = nwg_panel.processes:main'
         ]
     }
 )

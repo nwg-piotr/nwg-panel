@@ -352,7 +352,9 @@ def main():
     if not os.path.isfile(cs_file):
         common_settings = {
             "restart-on-display": True,
-            "restart-delay": 500
+            "restart-delay": 500,
+            "processes-backgroud-only": True,
+            "processes-own-only": True
         }
         save_json(common_settings, cs_file)
     else:

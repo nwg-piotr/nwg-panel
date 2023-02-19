@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+
+Name=nwg-processes
+
+GenericName=nwg-shell process manager
+GenericName[pl]=Menadżer zadań nwg-shell
+
+Comment=System process browser
+Comment[pl]=Przeglądarka procesów systemowych
+
+Exec=nwg-processes
+Icon=nwg-processes
+Terminal=false
+Categories=System;Utility;

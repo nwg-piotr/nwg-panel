@@ -39,7 +39,6 @@ args = load_string(args_file) if os.path.isfile(args_file) else ""
 restart_cmd = "nwg-panel {}".format(args)
 print("Restart command: ", restart_cmd)
 
-
 configs = {}
 editor = None
 selector_window = None
@@ -76,6 +75,8 @@ SKELETON_PANEL: dict = {
         "root-css-name": "controls-overview",
         "css-name": "controls-window",
         "net-interface": "",
+        "battery-low-level": 20,
+        "battery-low-interval": 3,
         "custom-items": [{"name": "Panel settings", "icon": "nwg-panel", "cmd": "nwg-panel-config"}],
         "menu": {"name": "unnamed", "icon": "", "items": []}
     },
@@ -239,6 +240,7 @@ def build_common_settings_window():
     global common_settings
     check_key(common_settings, "restart-on-display", True)
     check_key(common_settings, "restart-delay", 500)
+    check_key(common_settings, "processes-interval-ms", 2000)
 
     win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
     win.set_modal(True)
@@ -269,10 +271,21 @@ def build_common_settings_window():
 
     sb = Gtk.SpinButton.new_with_range(0, 30000, 100)
     sb.set_value(common_settings["restart-delay"])
-    sb.connect("value-changed", on_restart_delay_changed)
+    sb.connect("value-changed", set_int_from_spin_button, "restart-delay")
     sb.set_tooltip_text("If, after turning a display off and back on, panels don't appear on it, it may mean\n"
                         "the display responds too slowly (e.g. if turned via HDMI). Try increasing this value.")
     grid.attach(sb, 1, 1, 1, 1)
+
+    lbl = Gtk.Label.new("Processes polling rate [ms]:")
+    lbl.set_property("halign", Gtk.Align.END)
+    grid.attach(lbl, 0, 2, 1, 1)
+
+    sb = Gtk.SpinButton.new_with_range(0, 30000, 100)
+    sb.set_value(common_settings["processes-interval-ms"])
+    sb.connect("value-changed", set_int_from_spin_button, "processes-interval-ms")
+    sb.set_tooltip_text("Interval for checking data on system processes by the nwg-processes tool.\n"
+                        "Default: 2000 ms. Set higher values for slower machines. Set 0 to stop refreshing.")
+    grid.attach(sb, 1, 2, 1, 1)
 
     hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
     vbox.pack_start(hbox, False, False, 6)
@@ -292,9 +305,9 @@ def build_common_settings_window():
     return win
 
 
-def on_restart_delay_changed(sb):
+def set_int_from_spin_button(sb, config_key):
     global common_settings
-    common_settings["restart-delay"] = int(sb.get_value())
+    common_settings[config_key] = int(sb.get_value())
 
 
 def on_restart_check_button(cb):
@@ -2870,7 +2883,8 @@ class EditorWrapper(object):
                 "net",
                 "brightness",
                 "volume",
-                "battery"
+                "battery",
+                "processes"
             ],
             "commands": {
             },
@@ -2889,6 +2903,8 @@ class EditorWrapper(object):
             "root-css-name": "controls-overview",
             "css-name": "controls-window",
             "net-interface": "",
+            "battery-low-level": 20,
+            "battery-low-interval": 3,
             "angle": 0.0,
             "custom-items": [
                 {
@@ -2954,6 +2970,21 @@ class EditorWrapper(object):
 
         self.ctrl_comp_battery = builder.get_object("ctrl-comp-battery")
         self.ctrl_comp_battery.set_active("battery" in settings["components"])
+
+        self.ctrl_comp_battery_low_level = builder.get_object("ctrl-battery-low-level")
+        self.ctrl_comp_battery_low_level.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=1, upper=100, step_increment=1, page_increment=10, page_size=1)
+        self.ctrl_comp_battery_low_level.configure(adj, 1, 0)
+        self.ctrl_comp_battery_low_level.set_value(settings["battery-low-level"])
+
+        self.ctrl_comp_battery_low_interval = builder.get_object("ctrl-battery-low-interval")
+        self.ctrl_comp_battery_low_interval.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=61, step_increment=1, page_increment=10, page_size=1)
+        self.ctrl_comp_battery_low_interval.configure(adj, 1, 0)
+        self.ctrl_comp_battery_low_interval.set_value(settings["battery-low-interval"])
+
+        self.ctrl_comp_processes = builder.get_object("ctrl-comp-processes")
+        self.ctrl_comp_processes.set_active("processes" in settings["components"])
 
         self.ctrl_cdm_net = builder.get_object("ctrl-cmd-net")
         check_key(settings["commands"], "net", "")
@@ -3069,12 +3100,22 @@ class EditorWrapper(object):
             if "battery" in settings["components"]:
                 settings["components"].remove("battery")
 
+        if self.ctrl_comp_processes.get_active():
+            if "processes" not in settings["components"]:
+                settings["components"].append("processes")
+        else:
+            if "processes" in settings["components"]:
+                settings["components"].remove("processes")
+
         settings["commands"]["net"] = self.ctrl_cdm_net.get_text()
         settings["net-interface"] = self.ctrl_net_name.get_text()
         settings["commands"]["bluetooth"] = self.ctrl_cdm_bluetooth.get_text()
         settings["commands"]["battery"] = self.ctrl_cdm_battery.get_text()
         settings["root-css-name"] = self.ctrl_root_css_name.get_text()
         settings["css-name"] = self.ctrl_css_name.get_text()
+
+        settings["battery-low-level"] = int(self.ctrl_comp_battery_low_level.get_value())
+        settings["battery-low-interval"] = int(self.ctrl_comp_battery_low_interval.get_value())
 
         settings["window-width"] = int(self.ctrl_window_width.get_value())
         settings["window-margin-horizontal"] = int(self.ctrl_window_margin_horizontal.get_value())
