@@ -40,6 +40,7 @@ class Controls(Gtk.EventBox):
         check_key(settings, "angle", 0.0)
         check_key(settings, "battery-low-level", 20)
         check_key(settings, "battery-low-interval", 3)
+        check_key(settings, "processes-label", "Processes")
 
         self.set_property("name", settings["root-css-name"])
 
@@ -568,7 +569,7 @@ class PopupWindow(Gtk.Window):
 
             inner_hbox.pack_start(self.proc_image, False, False, 6)
 
-            self.proc_label = Gtk.Label.new("Processes")
+            self.proc_label = Gtk.Label.new(settings["processes-label"])
             inner_hbox.pack_start(self.proc_label, False, True, 6)
 
             img = Gtk.Image()

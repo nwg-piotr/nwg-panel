@@ -616,10 +616,28 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkEntry" id="ctrl-comp-processes-label">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="placeholder-text" translatable="yes">menu label</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">7</property>
+          </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">Processes Controls menu item label</property>
+            <property name="halign">start</property>
+            <property name="icon-name">help-about</property>
+          </object>
+          <packing>
+            <property name="left-attach">3</property>
+            <property name="top-attach">7</property>
+          </packing>
         </child>
         <child>
           <placeholder/>

@@ -2905,6 +2905,7 @@ class EditorWrapper(object):
             "net-interface": "",
             "battery-low-level": 20,
             "battery-low-interval": 3,
+            "processes-label": "Processes",
             "angle": 0.0,
             "custom-items": [
                 {
@@ -2985,6 +2986,9 @@ class EditorWrapper(object):
 
         self.ctrl_comp_processes = builder.get_object("ctrl-comp-processes")
         self.ctrl_comp_processes.set_active("processes" in settings["components"])
+
+        self.ctrl_comp_processes_label = builder.get_object("ctrl-comp-processes-label")
+        self.ctrl_comp_processes_label.set_text(settings["processes-label"])
 
         self.ctrl_cdm_net = builder.get_object("ctrl-cmd-net")
         check_key(settings["commands"], "net", "")
@@ -3111,6 +3115,7 @@ class EditorWrapper(object):
         settings["net-interface"] = self.ctrl_net_name.get_text()
         settings["commands"]["bluetooth"] = self.ctrl_cdm_bluetooth.get_text()
         settings["commands"]["battery"] = self.ctrl_cdm_battery.get_text()
+        settings["processes-label"] = self.ctrl_comp_processes_label.get_text()
         settings["root-css-name"] = self.ctrl_root_css_name.get_text()
         settings["css-name"] = self.ctrl_css_name.get_text()
 
