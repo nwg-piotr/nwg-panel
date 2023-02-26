@@ -33,19 +33,6 @@
           </packing>
         </child>
         <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Depends on `light` or `brightnessctl`.</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">0</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkComboBoxText" id="backlight-controller">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -72,25 +59,6 @@
           </packing>
         </child>
         <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Backlight device path (for 'light')
-or name (for 'brightnessctl')
-or I2C bus number (for 'ddcutil').
-Use 'light -L' or 'brightnessctl -l'
-or 'ddcutil --help' to
-check available devices.
-LEAVE BLANK IF EVERYTHING WORKS</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">4</property>
-            <property name="top-attach">0</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkCheckButton" id="ctrl-comp-volume">
             <property name="label" translatable="yes">Volume</property>
             <property name="visible">True</property>
@@ -101,19 +69,6 @@ LEAVE BLANK IF EVERYTHING WORKS</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Depends on the `pamixer` package.</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
             <property name="top-attach">1</property>
           </packing>
         </child>
@@ -142,22 +97,6 @@ LEAVE BLANK IF EVERYTHING WORKS</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Network interface status;
-use `ifconfig` to check names,
-e.g. `enp6s0`or `wlo1`.
-Depends on `python-netifaces`.</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
             <property name="top-attach">2</property>
           </packing>
         </child>
@@ -199,19 +138,6 @@ Depends on `python-netifaces`.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Depends on `bluez-utils`.</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">3</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkEntry" id="ctrl-cmd-bluetooth">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
@@ -237,19 +163,6 @@ Depends on `python-netifaces`.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Depends on `python-psutil`.</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">4</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkEntry" id="ctrl-cmd-battery">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
@@ -261,7 +174,7 @@ Depends on `python-netifaces`.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-battery-low-notification">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -283,65 +196,6 @@ Depends on `python-netifaces`.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <child>
-              <object class="GtkCheckButton" id="hover-opens">
-                <property name="label" translatable="yes">Widget hover opens</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">False</property>
-                <property name="tooltip-text" translatable="yes">Determines if to open the Controls window
-on panel Controls widget pointed</property>
-                <property name="draw-indicator">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkCheckButton" id="leave-closes">
-                <property name="label" translatable="yes">Window leave closes</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">False</property>
-                <property name="tooltip-text" translatable="yes">Determines if to close the Controls
-window when left</property>
-                <property name="draw-indicator">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkCheckButton" id="click-closes">
-                <property name="label" translatable="yes">Click outside closes</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">False</property>
-                <property name="tooltip-text" translatable="yes">Determines if to close the Controls
-window on mouse click outside it</property>
-                <property name="draw-indicator">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">2</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">17</property>
-            <property name="width">5</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkCheckButton" id="show-values">
             <property name="label" translatable="yes">Values in widget</property>
             <property name="visible">True</property>
@@ -357,7 +211,7 @@ values in the panel widget</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-angle">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -386,7 +240,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-interval">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -408,7 +262,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-icon-size">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -430,7 +284,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-vertical-window-margin">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -452,7 +306,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-horizontal-window-margin">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -474,7 +328,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-window-width">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -496,7 +350,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-css-name">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -519,7 +373,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-root-css-name">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -542,19 +396,6 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Controls window width in pixels; leave 0 for auto.</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">3</property>
-            <property name="top-attach">10</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkCheckButton" id="ctrl-comp-processes">
             <property name="label" translatable="yes">Processes</property>
             <property name="visible">True</property>
@@ -569,22 +410,10 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <object class="GtkImage">
+          <object class="GtkLabel" id="lbl-battery-low-interval">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Determines if to display the task manager menu entry.</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">7</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
+            <property name="halign">end</property>
             <property name="label" translatable="yes">Low level check interval [min]</property>
           </object>
           <packing>
@@ -603,19 +432,6 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Set 0 to disable.</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">3</property>
-            <property name="top-attach">6</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkEntry" id="ctrl-comp-processes-label">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
@@ -627,17 +443,85 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <object class="GtkImage">
+          <object class="GtkCheckButton" id="leave-closes">
+            <property name="label" translatable="yes">Window leave closes</property>
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Processes Controls menu item label</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="tooltip-text" translatable="yes">Determines if to close the Controls
+window when left</property>
+            <property name="draw-indicator">True</property>
           </object>
           <packing>
-            <property name="left-attach">3</property>
-            <property name="top-attach">7</property>
+            <property name="left-attach">0</property>
+            <property name="top-attach">17</property>
           </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="click-closes">
+            <property name="label" translatable="yes">Click outside closes</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="tooltip-text" translatable="yes">Determines if to close the Controls
+window on mouse click outside it</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">17</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="hover-opens">
+            <property name="label" translatable="yes">Widget hover opens</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="tooltip-text" translatable="yes">Determines if to open the Controls window
+on panel Controls widget pointed</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">16</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>

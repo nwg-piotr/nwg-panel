@@ -2874,10 +2874,22 @@ class EditorWrapper(object):
         modules_label = builder.get_object("label")
         modules_label.set_text("{} {}".format(modules_label.get_text(), which.capitalize()))
         frame = builder.get_object("frame")
+        l = ""
+        if which == "left":
+            l = voc["modules-left"]
+        elif which == "center":
+            l = voc["modules-center"]
+        elif which == "right":
+            l = voc["modules-right"]
+        frame.set_label("  {}  ".format(l))
         self.modules_grid = builder.get_object("grid")
         self.modules_combo = builder.get_object("menu")
 
+        btn = builder.get_object("lbl-select")
+        btn.set_label("{}:".format(voc["select"]))
+
         btn = builder.get_object("btn-append")
+        btn.set_label(voc["append"])
         btn.connect("clicked", self.append)
 
         # Built-in stuff first
@@ -2966,15 +2978,15 @@ class EditorWrapper(object):
 
     def controls_menu(self, ebox, event):
         menu = Gtk.Menu()
-        item = Gtk.MenuItem.new_with_label("Settings")
+        item = Gtk.MenuItem.new_with_label(voc["settings"])
         item.connect("activate", self.edit_controls)
         menu.append(item)
 
-        item = Gtk.MenuItem.new_with_label("Custom items")
+        item = Gtk.MenuItem.new_with_label(voc["custom-items"])
         item.connect("activate", self.edit_custom_items)
         menu.append(item)
 
-        item = Gtk.MenuItem.new_with_label("User menu")
+        item = Gtk.MenuItem.new_with_label(voc["user-menu"])
         item.connect("activate", self.edit_user_menu)
         menu.append(item)
 
@@ -3013,7 +3025,7 @@ class EditorWrapper(object):
             "net-interface": "",
             "battery-low-level": 20,
             "battery-low-interval": 3,
-            "processes-label": "Processes",
+            "processes-label": voc["processes"],
             "angle": 0.0,
             "custom-items": [
                 {
@@ -3050,27 +3062,40 @@ class EditorWrapper(object):
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_controls.glade"))
         frame = builder.get_object("frame")
+        frame.set_label("  {}: {}  ".format(voc["controls"], voc["settings"]))
 
         self.ctrl_comp_brightness = builder.get_object("ctrl-comp-brightness")
+        self.ctrl_comp_brightness.set_label(voc["brightness"])
+        self.ctrl_comp_brightness.set_tooltip_text(voc["brightness-tooltip"])
         self.ctrl_comp_brightness.set_active("brightness" in settings["components"])
 
         self.ctrl_backlight_controller = builder.get_object("backlight-controller")
+        self.ctrl_backlight_controller.set_tooltip_text(voc["backlight-controller-tooltip"])
         self.ctrl_backlight_controller.set_active_id(settings["backlight-controller"])
 
         self.ctrl_backlight_device = builder.get_object("backlight-device")
         self.ctrl_backlight_device.set_text(settings["backlight-device"])
+        self.ctrl_backlight_device.set_placeholder_text(voc["backlight-device"])
+        self.ctrl_backlight_device.set_tooltip_text(voc["backlight-device-tooltip"])
 
         self.ctrl_comp_volume = builder.get_object("ctrl-comp-volume")
+        self.ctrl_comp_volume.set_label(voc["volume"])
+        self.ctrl_comp_volume.set_tooltip_text(voc["volume-tooltip"])
         self.ctrl_comp_volume.set_active("volume" in settings["components"])
 
         self.ctrl_comp_switcher = builder.get_object("output-switcher")
+        self.ctrl_comp_switcher.set_label(voc["output-switcher"])
         self.ctrl_comp_switcher.set_sensitive(is_command("pamixer"))
         self.ctrl_comp_switcher.set_active(settings["output-switcher"])
 
         self.ctrl_comp_net = builder.get_object("ctrl-comp-net")
+        self.ctrl_comp_net.set_label(voc["network-interface"])
+        self.ctrl_comp_net.set_tooltip_text(voc["network-interface-tooltip"])
         self.ctrl_comp_net.set_active("net" in settings["components"])
 
         self.ctrl_comp_bluetooth = builder.get_object("ctrl-comp-bluetooth")
+        self.ctrl_comp_bluetooth.set_label(voc["bluetooth"])
+        self.ctrl_comp_bluetooth.set_tooltip_text(voc["bluetooth-tooltip"])
         if is_command("btmgmt"):
             self.ctrl_comp_bluetooth.set_active("bluetooth" in settings["components"])
         else:
@@ -3078,6 +3103,8 @@ class EditorWrapper(object):
             self.ctrl_comp_bluetooth.set_sensitive(False)
 
         self.ctrl_comp_battery = builder.get_object("ctrl-comp-battery")
+        self.ctrl_comp_battery.set_label(voc["battery"])
+        self.ctrl_comp_battery.set_tooltip_text(voc["battery-tooltip"])
         self.ctrl_comp_battery.set_active("battery" in settings["components"])
 
         self.ctrl_comp_battery_low_level = builder.get_object("ctrl-battery-low-level")
@@ -3087,31 +3114,87 @@ class EditorWrapper(object):
         self.ctrl_comp_battery_low_level.set_value(settings["battery-low-level"])
 
         self.ctrl_comp_battery_low_interval = builder.get_object("ctrl-battery-low-interval")
+        self.ctrl_comp_battery_low_interval.set_tooltip_text(voc["battery-low-check-tooltip"])
         self.ctrl_comp_battery_low_interval.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=0, upper=61, step_increment=1, page_increment=10, page_size=1)
         self.ctrl_comp_battery_low_interval.configure(adj, 1, 0)
         self.ctrl_comp_battery_low_interval.set_value(settings["battery-low-interval"])
 
         self.ctrl_comp_processes = builder.get_object("ctrl-comp-processes")
+        self.ctrl_comp_processes.set_label(voc["processes"])
+        self.ctrl_comp_processes.set_tooltip_text(voc["processes-tooltip"])
         self.ctrl_comp_processes.set_active("processes" in settings["components"])
 
         self.ctrl_comp_processes_label = builder.get_object("ctrl-comp-processes-label")
-        self.ctrl_comp_processes_label.set_text(settings["processes-label"])
+        if not settings["processes-label"]:
+            self.ctrl_comp_processes_label.set_placeholder_text(voc["menu-label"])
+        else:
+            self.ctrl_comp_processes_label.set_text(settings["processes-label"])
+        self.ctrl_comp_processes_label.set_tooltip_text(voc["processes-label-tooltip"])
+
+        lbl = builder.get_object("lbl-root-css-name")
+        lbl.set_text("{}:".format(voc["root-css-name"]))
+
+        lbl = builder.get_object("lbl-css-name")
+        lbl.set_text("{}:".format(voc["css-name"]))
 
         self.ctrl_cdm_net = builder.get_object("ctrl-cmd-net")
+        self.ctrl_cdm_net.set_placeholder_text(voc["on-click-command"])
         check_key(settings["commands"], "net", "")
         self.ctrl_cdm_net.set_text(settings["commands"]["net"])
 
         self.ctrl_net_name = builder.get_object("ctrl-net-name")
+        self.ctrl_net_name.set_placeholder_text(voc["name"])
         self.ctrl_net_name.set_text(settings["net-interface"])
 
         self.ctrl_cdm_bluetooth = builder.get_object("ctrl-cmd-bluetooth")
+        self.ctrl_cdm_bluetooth.set_placeholder_text(voc["on-click-command"])
         check_key(settings["commands"], "bluetooth", "")
         self.ctrl_cdm_bluetooth.set_text(settings["commands"]["bluetooth"])
 
         self.ctrl_cdm_battery = builder.get_object("ctrl-cmd-battery")
+        self.ctrl_cdm_battery.set_placeholder_text(voc["on-click-command"])
         check_key(settings["commands"], "battery", "")
         self.ctrl_cdm_battery.set_text(settings["commands"]["battery"])
+
+        lbl = builder.get_object("lbl-battery-low-notification")
+        lbl.set_text("{}:".format(voc["battery-low-notification"]))
+
+        lbl = builder.get_object("lbl-battery-low-interval")
+        lbl.set_text("{}:".format(voc["battery-low-check-interval"]))
+
+        lbl = builder.get_object("lbl-window-width")
+        lbl.set_text("{}:".format(voc["window-width"]))
+
+        lbl = builder.get_object("lbl-horizontal-window-margin")
+        lbl.set_text("{}:".format(voc["horizontal-window-margin"]))
+
+        lbl = builder.get_object("lbl-vertical-window-margin")
+        lbl.set_text("{}:".format(voc["vertical-window-margin"]))
+
+        lbl = builder.get_object("lbl-icon-size")
+        lbl.set_text("{}:".format(voc["icon-size"]))
+
+        lbl = builder.get_object("lbl-interval")
+        lbl.set_text("{}:".format(voc["refresh-interval"]))
+
+        lbl = builder.get_object("lbl-angle")
+        lbl.set_text("{}:".format(voc["angle"]))
+
+        sb = builder.get_object("angle")
+        sb.set_tooltip_text(voc["angle-tooltip"])
+
+        cb = builder.get_object("show-values")
+        cb.set_label(voc["values-in-widget"])
+
+        cb = builder.get_object("hover-opens")
+        cb.set_label(voc["widget-hover-opens"])
+
+        cb = builder.get_object("leave-closes")
+        cb.set_label(voc["window-leave-closes"])
+
+        cb = builder.get_object("click-closes")
+        cb.set_label(voc["click-outside-closes"])
 
         self.ctrl_root_css_name = builder.get_object("root-css-name")
         self.ctrl_root_css_name.set_text(settings["root-css-name"])
@@ -3120,6 +3203,7 @@ class EditorWrapper(object):
         self.ctrl_css_name.set_text(settings["css-name"])
 
         self.ctrl_window_width = builder.get_object("window-width")
+        self.ctrl_window_width.set_tooltip_text(voc["controls-window-width-tooltip"])
         self.ctrl_window_width.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=0, upper=1920, step_increment=1, page_increment=10, page_size=1)
         self.ctrl_window_width.configure(adj, 1, 0)
@@ -3382,7 +3466,7 @@ class ControlsCustomItems(Gtk.Frame):
 
         btn = Gtk.Button.new_from_icon_name("list-add", Gtk.IconSize.MENU)
         btn.set_always_show_image(True)
-        btn.set_label("Append")
+        btn.set_label(voc["append"])
         btn.connect("clicked", self.append)
         hbox.pack_start(btn, True, True, 0)
 
