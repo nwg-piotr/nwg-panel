@@ -12,7 +12,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, local_dir, load_json, save_json, load_string, list_outputs, check_key, \
-    list_configs, create_pixbuf, is_command, check_commands, cmd2string, eprint, temp_dir
+    list_configs, create_pixbuf, is_command, check_commands, cmd2string, eprint, temp_dir, load_shell_data
 
 from nwg_panel.__about__ import __version__
 
@@ -43,6 +43,9 @@ configs = {}
 editor = None
 selector_window = None
 outputs = {}
+
+voc = {}
+shell_data = load_shell_data()
 
 SKELETON_PANEL: dict = {
     "name": "",
@@ -217,6 +220,28 @@ SKELETON_PANEL: dict = {
 }
 
 
+def load_vocabulary():
+    global voc
+    # basic vocabulary (for en_US)
+    voc = load_json(os.path.join(dir_name, "langs", "en_US.json"))
+    if not voc:
+        eprint("Failed loading vocabulary")
+        sys.exit(1)
+
+    lang = os.getenv("LANG").split(".")[0] if not shell_data["interface-locale"] else shell_data["interface-locale"]
+    # translate if necessary
+    if lang != "en_US":
+        loc_file = os.path.join(dir_name, "langs", "{}.json".format(lang))
+        if os.path.isfile(loc_file):
+            # localized vocabulary
+            loc = load_json(loc_file)
+            if not loc:
+                eprint("Failed loading translation into '{}'".format(lang))
+            else:
+                for key in loc:
+                    voc[key] = loc[key]
+
+
 def signal_handler(sig, frame):
     desc = {2: "SIGINT", 15: "SIGTERM"}
     if sig == 2 or sig == 15:
@@ -290,13 +315,13 @@ def build_common_settings_window():
     hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
     vbox.pack_start(hbox, False, False, 6)
 
-    btn = Gtk.Button.new_with_label("Apply")
+    btn = Gtk.Button.new_with_label(voc["apply-restart"])
     btn.connect("clicked", apply_common_settings, win)
-    btn.set_tooltip_text("Apply changes, restart nwg-panel")
+    btn.set_tooltip_text(voc["apply-restart-tooltip"])
     hbox.pack_end(btn, False, False, 6)
 
-    btn = Gtk.Button.new_with_label("Close")
-    btn.set_tooltip_text("Close window w/o applying changes")
+    btn = Gtk.Button.new_with_label(voc["close"])
+    btn.set_tooltip_text(voc["close-tooltip"])
     btn.connect("clicked", close_common_settings, win)
     hbox.pack_end(btn, False, False, 6)
 
@@ -379,28 +404,28 @@ class PanelSelector(Gtk.Window):
         inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         hbox.pack_start(inner_hbox, True, True, 12)
 
-        btn = Gtk.Button.new_with_label("Common")
-        btn.set_tooltip_text("Common nwg-panel settings")
+        btn = Gtk.Button.new_with_label(voc["common"])
+        btn.set_tooltip_text(voc["common-panel-settings"])
         btn.connect("clicked", self.show_common_settings)
         inner_hbox.pack_start(btn, False, False, 3)
 
         label = Gtk.Label()
-        label.set_text("New file:")
+        label.set_text("{}:".format(voc["new-file"]))
         label.set_halign(Gtk.Align.START)
         inner_hbox.pack_start(label, False, False, 3)
 
         self.new_file_entry = Gtk.Entry()
         self.new_file_entry.set_width_chars(15)
-        self.new_file_entry.set_placeholder_text("filename")
-        self.new_file_entry.set_tooltip_text("New panel config file name")
+        self.new_file_entry.set_placeholder_text(voc["filename"])
+        self.new_file_entry.set_tooltip_text(voc["new-panel-config-file-name"])
         self.new_file_entry.connect("changed", validate_name)
         inner_hbox.pack_start(self.new_file_entry, False, False, 0)
 
-        btn = Gtk.Button.new_with_label("Add/delete")
+        btn = Gtk.Button.new_with_label(voc["add-delete"])
         btn.connect("clicked", self.add_delete_files)
         inner_hbox.pack_end(btn, False, False, 0)
 
-        btn = Gtk.Button.new_with_label("Close")
+        btn = Gtk.Button.new_with_label(voc["close"])
         btn.connect("clicked", Gtk.main_quit)
         inner_hbox.pack_end(btn, False, False, 0)
 
@@ -437,7 +462,7 @@ class PanelSelector(Gtk.Window):
             label.set_text(path)
             label.set_halign(Gtk.Align.START)
             hbox.pack_start(label, True, True, 6)
-            checkbox = Gtk.CheckButton.new_with_label("delete file")
+            checkbox = Gtk.CheckButton.new_with_label(voc["delete-file"])
             checkbox.connect("toggled", self.mark_to_delete, path)
             hbox.pack_end(checkbox, False, False, 0)
             vbox.pack_start(hbox, False, False, 10)
@@ -481,7 +506,7 @@ class PanelSelector(Gtk.Window):
                 btn = Gtk.Button.new_from_icon_name("go-up", Gtk.IconSize.MENU)
                 btn.set_always_show_image(True)
                 if panel_idx > 0:
-                    btn.set_tooltip_text("Move up")
+                    btn.set_tooltip_text(voc["move-up"])
                 btn.set_sensitive(panel_idx > 0)
                 btn.connect("clicked", self.move_up, panels, panels[panel_idx])
                 btn_box.pack_start(btn, False, False, 0)
@@ -489,20 +514,20 @@ class PanelSelector(Gtk.Window):
                 btn = Gtk.Button.new_from_icon_name("go-down", Gtk.IconSize.MENU)
                 btn.set_always_show_image(True)
                 if panel_idx < len(panels) - 1:
-                    btn.set_tooltip_text("Move down")
+                    btn.set_tooltip_text(voc["move-down"])
                 btn.set_sensitive(panel_idx < len(panels) - 1)
                 btn.connect("clicked", self.move_down, panels, panels[panel_idx])
                 btn_box.pack_start(btn, False, False, 0)
 
                 btn = Gtk.Button.new_from_icon_name("list-remove", Gtk.IconSize.MENU)
                 btn.set_always_show_image(True)
-                btn.set_tooltip_text("Remove panel")
+                btn.set_tooltip_text(voc["remove-panel"])
                 btn.connect("clicked", self.delete, panels, panels[panel_idx])
                 btn_box.pack_start(btn, False, False, 0)
 
                 btn = Gtk.Button.new_from_icon_name("document-edit", Gtk.IconSize.BUTTON)
                 btn.connect("clicked", self.on_edit_button, path, panel_idx)
-                btn.set_tooltip_text("Edit panel")
+                btn.set_tooltip_text(voc["edit-panel"])
                 btn_box.pack_start(btn, False, False, 0)
 
                 hbox.pack_end(btn_box, False, False, 6)
@@ -523,13 +548,13 @@ class PanelSelector(Gtk.Window):
 
             btn = Gtk.Button.new_from_icon_name("list-add", Gtk.IconSize.MENU)
             btn.set_always_show_image(True)
-            btn.set_label("New")
+            btn.set_label(voc["new"])
             btn.connect("clicked", self.append, path)
             btn_box.pack_start(btn, False, False, 0)
 
             btn = Gtk.Button.new_from_icon_name("object-select", Gtk.IconSize.MENU)
             btn.set_always_show_image(True)
-            btn.set_label("Apply")
+            btn.set_label(voc["apply"])
             btn_box.pack_start(btn, False, False, 0)
             btn.connect("clicked", self.apply, panels, path)
             hbox.pack_end(btn_box, False, False, 6)
@@ -640,6 +665,43 @@ class EditorWrapper(object):
         builder = Gtk.Builder()
         builder.add_from_file(os.path.join(dir_name, "glade/config_main.glade"))
 
+        lbl = builder.get_object("panel")
+        lbl.set_text(voc["panel"])
+        lbl = builder.get_object("modules-left")
+        lbl.set_text(voc["modules-left"])
+        lbl = builder.get_object("modules-center")
+        lbl.set_text(voc["modules-center"])
+        lbl = builder.get_object("modules-right")
+        lbl.set_text(voc["modules-right"])
+        lbl = builder.get_object("controls")
+        lbl.set_text(voc["controls"])
+        lbl = builder.get_object("notifications")
+        lbl.set_text(voc["notifications"])
+        lbl = builder.get_object("tray")
+        lbl.set_text(voc["tray"])
+        lbl = builder.get_object("clock")
+        lbl.set_text(voc["clock"])
+        lbl = builder.get_object("playerctl")
+        lbl.set_text(voc["playerctl"])
+        lbl = builder.get_object("sway-taskbar")
+        lbl.set_text(voc["sway-taskbar"])
+        lbl = builder.get_object("sway-workspaces")
+        lbl.set_text(voc["sway-workspaces"])
+        lbl = builder.get_object("scratchpad")
+        lbl.set_text(voc["scratchpad"])
+        lbl = builder.get_object("openweather")
+        lbl.set_text(voc["openweather"])
+        lbl = builder.get_object("dwl-tags")
+        lbl.set_text(voc["dwl-tags"])
+        lbl = builder.get_object("brightness-slider")
+        lbl.set_text(voc["brightness-slider"])
+        lbl = builder.get_object("executors")
+        lbl.set_text(voc["executors"])
+        lbl = builder.get_object("buttons")
+        lbl.set_text(voc["buttons"])
+        lbl = builder.get_object("menu-start")
+        lbl.set_text(voc["menu-start"])
+
         self.window = builder.get_object("main-window")
         # self.window.set_transient_for(parent)
         self.window.set_keep_above(True)
@@ -652,15 +714,17 @@ class EditorWrapper(object):
 
         Gtk.Widget.set_size_request(self.window, 677, 1)
 
-        self.known_modules = ["clock",
-                              "playerctl",
-                              "sway-taskbar",
-                              "sway-workspaces",
-                              "scratchpad",
-                              "openweather",
-                              "brightness-slider",
-                              "dwl-tags",
-                              "tray"]
+        self.known_modules = [
+            "clock",
+            "playerctl",
+            "sway-taskbar",
+            "sway-workspaces",
+            "scratchpad",
+            "openweather",
+            "brightness-slider",
+            "dwl-tags",
+            "tray"
+        ]
 
         self.scrolled_window = builder.get_object("scrolled-window")
 
@@ -732,12 +796,18 @@ class EditorWrapper(object):
             eb.set_tooltip_text("'nwg-menu' package required")
 
         btn = builder.get_object("btn-close")
+        btn.set_label(voc["close"])
+        btn.set_tooltip_text(voc["close-tooltip"])
         btn.connect("clicked", self.quit)
 
         btn = builder.get_object("btn-apply")
+        btn.set_label(voc["apply"])
+        btn.set_tooltip_text(voc["apply-tooltip"])
         btn.connect("clicked", self.apply_changes)
 
         btn = builder.get_object("btn-apply-restart")
+        btn.set_label(voc["apply-restart"])
+        btn.set_tooltip_text(voc["apply-restart-tooltip"])
         btn.connect("clicked", self.restart_panel)
 
         self.eb_name = None
@@ -760,7 +830,7 @@ class EditorWrapper(object):
 
         self.set_panel()
         self.panel_name_label = builder.get_object("panel-name-label")
-        self.panel_name_label.set_text("Editing: '{}'".format(self.panel["name"]))
+        self.panel_name_label.set_text("{}: '{}'".format(voc["editing"], self.panel["name"]))
 
         self.edit_panel()
 
@@ -822,6 +892,44 @@ class EditorWrapper(object):
         self.edited = "panel"
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_panel.glade"))
         frame = builder.get_object("frame")
+        frame.set_label("  {}  ".format(voc["panel-settings"]))
+
+        lbl = builder.get_object("lbl-panel-name")
+        lbl.set_text("{}:".format(voc["panel-name"]))
+        lbl = builder.get_object("lbl-output")
+        lbl.set_text("{}:".format(voc["output"]))
+        lbl = builder.get_object("lbl-position")
+        lbl.set_text("{}:".format(voc["position"]))
+        lbl = builder.get_object("lbl-layer")
+        lbl.set_text("{}:".format(voc["layer"]))
+        lbl = builder.get_object("lbl-controls")
+        lbl.set_text("{}:".format(voc["controls"]))
+        lbl = builder.get_object("lbl-menu-start")
+        lbl.set_text("{}:".format(voc["menu-start"]))
+        lbl = builder.get_object("lbl-width")
+        lbl.set_text("{}:".format(voc["width"]))
+        lbl = builder.get_object("lbl-height")
+        lbl.set_text("{}:".format(voc["height"]))
+        lbl = builder.get_object("lbl-top-margin")
+        lbl.set_text("{}:".format(voc["top-margin"]))
+        lbl = builder.get_object("lbl-bottom-margin")
+        lbl.set_text("{}:".format(voc["bottom-margin"]))
+        lbl = builder.get_object("lbl-horizontal-padding")
+        lbl.set_text("{}:".format(voc["horizontal-padding"]))
+        lbl = builder.get_object("lbl-vertical-padding")
+        lbl.set_text("{}:".format(voc["vertical-padding"]))
+        lbl = builder.get_object("lbl-spacing")
+        lbl.set_text("{}:".format(voc["spacing"]))
+        lbl = builder.get_object("lbl-icon-set")
+        lbl.set_text("{}:".format(voc["icon-set"]))
+        lbl = builder.get_object("lbl-css-name")
+        lbl.set_text("{}:".format(voc["css-name"]))
+        cb = builder.get_object("homogeneous")
+        cb.set_label(voc["homogeneous"])
+        cb.set_tooltip_text(voc["homogeneous-tooltip"])
+        cb = builder.get_object("exclusive-zone")
+        cb.set_label(voc["enable-exclusive-zone"])
+        cb.set_tooltip_text(voc["enable-exclusive-zone-tooltip"])
 
         self.eb_name = builder.get_object("name")
         self.eb_name.set_text(self.panel["name"])
@@ -3506,6 +3614,7 @@ def main():
     GLib.set_prgname('nwg-panel-config')
 
     check_commands()
+    load_vocabulary()
 
     tree = None
     if sway:
