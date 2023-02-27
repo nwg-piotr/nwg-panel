@@ -1766,6 +1766,31 @@ class EditorWrapper(object):
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_playerctl.glade"))
         frame = builder.get_object("frame")
+        frame.set_label("  {}: {}  ".format(voc["module"], voc["playerctl"]))
+
+        lbl = builder.get_object("lbl-buttons-position")
+        lbl.set_text("{}:".format(voc["buttons-position"]))
+
+        lbl = builder.get_object("lbl-icons-size")
+        lbl.set_text("{}:".format(voc["icons-size"]))
+
+        lbl = builder.get_object("lbl-label-length")
+        lbl.set_text("{}:".format(voc["label-length"]))
+
+        lbl = builder.get_object("lbl-cover-size")
+        lbl.set_text("{}:".format(voc["cover-size"]))
+
+        lbl = builder.get_object("lbl-button-css-name")
+        lbl.set_text("{}:".format(voc["button-css-name"]))
+
+        lbl = builder.get_object("lbl-label-css-name")
+        lbl.set_text("{}:".format(voc["label-css-name"]))
+
+        lbl = builder.get_object("lbl-interval")
+        lbl.set_text("{}:".format(voc["refresh-interval"]))
+
+        lbl = builder.get_object("lbl-angle")
+        lbl.set_text("{}:".format(voc["angle"]))
 
         self.cb_buttons_position = builder.get_object("buttons-position")
         self.cb_buttons_position.set_active_id(settings["buttons-position"])
@@ -1783,6 +1808,7 @@ class EditorWrapper(object):
         self.sc_chars.set_value(settings["chars"])
 
         self.cb_scroll = builder.get_object("scroll")
+        self.cb_scroll.set_label(voc["scroll"])
         self.cb_scroll.set_active(settings["scroll"])
 
         self.sc_cover_size = builder.get_object("cover-size")
@@ -1792,6 +1818,7 @@ class EditorWrapper(object):
         self.sc_cover_size.set_value(settings["cover-size"])
 
         self.cb_show_cover = builder.get_object("show-cover")
+        self.cb_show_cover.set_label(voc["show-cover"])
         self.cb_show_cover.set_active(settings["show-cover"])
 
         self.sc_interval_playerctl = builder.get_object("interval")
