@@ -459,7 +459,7 @@ class PanelSelector(Gtk.Window):
         for path in configs:
             hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
             label = Gtk.Label()
-            label.set_text(path)
+            label.set_text("{}: {}".format(voc["file"], path))
             label.set_halign(Gtk.Align.START)
             hbox.pack_start(label, True, True, 6)
             checkbox = Gtk.CheckButton.new_with_label(voc["delete-file"])

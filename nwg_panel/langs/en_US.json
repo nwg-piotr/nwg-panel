@@ -51,6 +51,7 @@
   "enable-exclusive-zone": "Enable exclusive zone",
   "enable-exclusive-zone-tooltip": "Determines whether the panel is to put other windows away.",
   "executors": "Executors",
+  "file": "File",
   "filename": "filename",
   "format": "Format",
   "height": "Height",

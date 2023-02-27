@@ -51,6 +51,7 @@
   "enable-exclusive-zone": "Włącz strefę wyłączną",
   "enable-exclusive-zone-tooltip": "Określa czy panel ma odsuwać inne okna.",
   "executors": "Egzekutory",
+  "file": "Plik",
   "filename": "nazwa pliku",
   "format": "Format",
   "height": "Wysokość",
