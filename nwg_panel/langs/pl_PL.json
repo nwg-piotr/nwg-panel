@@ -1,5 +1,7 @@
 {
   "add-delete": "Dodaj/usuń",
+  "all-outputs": "Wszystkie wyjścia",
+  "all-workspaces": "Wszyskie obszary robocze",
   "always-show-icon": "Zawsze pokazuj ikonę",
   "angle": "Kąt",
   "angle-tooltip": "Kąt obrotu etykiety w stopniach\nprzeciwnie do ruchu wskazówek zegara.",
@@ -74,6 +76,7 @@
   "move-down": "przesuń w dół",
   "move-up": "przesuń w górę",
   "name": "Nazwa",
+  "name-max-length": "Maks. długość nazwy",
   "network-interface": "Interface sieciowy",
   "network-interface-tooltip": "Status interfejsu sieciowego;\nużyj `ifconfig` by sprawdzić nazwę,\nn.p. `enp6s0` lub `wlo1`.\nZależy od pakietu `python-netifaces`.",
   "new": "Nowy",
@@ -106,11 +109,15 @@
   "select": "Wybierz",
   "settings": "Ustawienia",
   "show-cover": "Pokaż okładkę",
+  "show-icon": "Pokazuj ikonę",
+  "show-layout": "Pokazuj układ",
+  "show-name": "Pokazuj nazwę",
   "smooth-scrolling-threshold": "Próg gładkiego przewijania",
   "spacing": "Odstęp",
   "sway-taskbar": "Pasek zadań Sway",
   "sway-workspaces": "Obszary robocze Sway",
   "swaync": "SwayNC",
+  "task-padding": "Wypełnienie między zadaniami",
   "tooltip-in-date-format": "Podpowiedź w formacie 'date'",
   "tooltip-text": "Tekst podpowiedzi",
   "top-margin": "Margines górny",
@@ -125,5 +132,9 @@
   "widget-hover-opens": "Najechanie na widżet otwiera",
   "width": "Szerokość",
   "window-leave-closes": "Opuszczenie okna zamyka",
-  "window-width": "Szerokość okna"
+  "window-width": "Szerokość okna",
+  "workspaces": "Obszary robocze",
+  "workspaces-tooltip": "Numery używanych obszarów roboczych, oddzielone spacjami.\nNa ich podstawie budujemy menu obszarów roboczych.",
+  "workspace-spacing": "Odstępy między obszarami",
+  "workspaces-as-buttons": "Obszary robocze jako przyciski"
 }

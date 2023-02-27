@@ -1238,8 +1238,28 @@ class EditorWrapper(object):
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_sway_taskbar.glade"))
         frame = builder.get_object("frame")
+        frame.set_label("  {}: SwayTaskbar  ".format(voc["module"]))
+
+        lbl = builder.get_object("lbl-workspaces")
+        lbl.set_text("{}:".format(voc["workspaces"]))
+
+        lbl = builder.get_object("lbl-name-max-length")
+        lbl.set_text("{}:".format(voc["name-max-length"]))
+
+        lbl = builder.get_object("lbl-icon-size")
+        lbl.set_text("{}:".format(voc["icon-size"]))
+
+        lbl = builder.get_object("lbl-workspace-spacing")
+        lbl.set_text("{}:".format(voc["workspace-spacing"]))
+
+        lbl = builder.get_object("lbl-task-padding")
+        lbl.set_text("{}:".format(voc["task-padding"]))
+
+        lbl = builder.get_object("lbl-angle")
+        lbl.set_text("{}:".format(voc["angle"]))
 
         self.eb_workspace_menu = builder.get_object("workspace-menu")
+        self.eb_workspace_menu.set_tooltip_text(voc["workspaces-tooltip"])
         workspaces = settings["workspace-menu"]
         text = ""
         for item in workspaces:
@@ -1272,31 +1292,40 @@ class EditorWrapper(object):
         self.sb_task_padding.set_value(settings["task-padding"])
 
         self.ckb_show_app_icon = builder.get_object("show-app-icon")
+        self.ckb_show_app_icon.set_label(voc["show-icon"])
         self.ckb_show_app_icon.set_active(settings["show-app-icon"])
 
         self.ckb_show_app_name = builder.get_object("show-app-name")
+        self.ckb_show_app_name.set_label(voc["show-name"])
         self.ckb_show_app_name.set_active(settings["show-app-name"])
 
         self.ckb_show_layout = builder.get_object("show-layout")
+        self.ckb_show_layout.set_label(voc["show-layout"])
         self.ckb_show_layout.set_active(settings["show-layout"])
 
         self.workspace_buttons = builder.get_object("workspace-buttons")
+        self.workspace_buttons.set_label(voc["workspaces-as-buttons"])
         self.workspace_buttons.set_active(settings["workspace-buttons"])
 
         self.ckb_all_workspaces = builder.get_object("all-workspaces")
+        self.ckb_all_workspaces.set_label(voc["all-workspaces"])
         self.ckb_all_workspaces.set_active(settings["all-workspaces"])
 
         self.ckb_mark_autotiling = builder.get_object("mark-autotiling")
+        self.ckb_mark_autotiling.set_label(voc["mark-autotiling"])
         self.ckb_mark_autotiling.set_active(settings["mark-autotiling"])
 
         self.ckb_mark_xwayland = builder.get_object("mark-xwayland")
+        self.ckb_mark_xwayland.set_label(voc["mark-xwayland"])
         self.ckb_mark_xwayland.set_active(settings["mark-xwayland"])
 
         self.ckb_all_outputs = builder.get_object("all-outputs")
+        self.ckb_all_outputs.set_label(voc["all-outputs"])
         self.ckb_all_outputs.set_active(settings["all-outputs"])
 
-        self.taskbar_angle = builder.get_object("angle")
-        self.taskbar_angle.set_active_id(str(settings["angle"]))
+        self.sb_angle = builder.get_object("angle")
+        self.sb_angle.set_tooltip_text(voc["angle-tooltip"])
+        self.sb_angle.set_active_id(str(settings["angle"]))
 
         for item in self.scrolled_window.get_children():
             item.destroy()
