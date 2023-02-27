@@ -1516,6 +1516,40 @@ class EditorWrapper(object):
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_swaync.glade"))
         frame = builder.get_object("frame")
+        frame.set_label("  {}: {}  ".format(voc["module"], voc["swaync"]))
+
+        lbl = builder.get_object("lbl-tooltip-text")
+        lbl.set_text("{}:".format(voc["tooltip-text"]))
+
+        lbl = builder.get_object("lbl-on-left-click")
+        lbl.set_text("{}:".format(voc["on-left-click"]))
+
+        lbl = builder.get_object("lbl-on-middle-click")
+        lbl.set_text("{}:".format(voc["on-middle-click"]))
+
+        lbl = builder.get_object("lbl-on-right-click")
+        lbl.set_text("{}:".format(voc["on-right-click"]))
+
+        lbl = builder.get_object("lbl-on-scroll-up")
+        lbl.set_text("{}:".format(voc["on-scroll-up"]))
+
+        lbl = builder.get_object("lbl-on-scroll-down")
+        lbl.set_text("{}:".format(voc["on-scroll-down"]))
+
+        lbl = builder.get_object("lbl-root-css-name")
+        lbl.set_text("{}:".format(voc["root-css-name"]))
+
+        lbl = builder.get_object("lbl-css-name")
+        lbl.set_text("{}:".format(voc["css-name"]))
+
+        lbl = builder.get_object("lbl-icon-placement")
+        lbl.set_text("{}:".format(voc["icon-placement"]))
+
+        lbl = builder.get_object("lbl-icon-size")
+        lbl.set_text("{}:".format(voc["icon-size"]))
+
+        lbl = builder.get_object("lbl-interval")
+        lbl.set_text("{}:".format(voc["refresh-interval"]))
 
         self.nc_tooltip_text = builder.get_object("tooltip-text")
         self.nc_tooltip_text.set_text(settings["tooltip-text"])
@@ -1554,6 +1588,7 @@ class EditorWrapper(object):
         self.nc_interval.set_value(settings["interval"])
 
         self.nc_always_show_icon = builder.get_object("always-show-icon")
+        self.nc_always_show_icon.set_label(voc["always-show-icon"])
         self.nc_always_show_icon.set_active(settings["always-show-icon"])
 
         for item in self.scrolled_window.get_children():
@@ -1601,6 +1636,19 @@ class EditorWrapper(object):
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_tray.glade"))
         frame = builder.get_object("frame")
+        frame.set_label("  {}: {}  ".format(voc["module"], voc["tray"]))
+
+        lbl = builder.get_object("lbl-icon-size")
+        lbl.set_text("{}:".format(voc["icon-size"]))
+
+        lbl = builder.get_object("lbl-root-css-name")
+        lbl.set_text("{}:".format(voc["root-css-name"]))
+
+        lbl = builder.get_object("lbl-css-name")
+        lbl.set_text("{}:".format(voc["css-name"]))
+
+        lbl = builder.get_object("lbl-smooth-scrolling-threshold")
+        lbl.set_text("{}:".format(voc["smooth-scrolling-threshold"]))
 
         self.nc_icon_size = builder.get_object("icon-size")
         self.nc_icon_size.set_numeric(True)
@@ -3362,7 +3410,7 @@ class ControlsCustomItems(Gtk.Frame):
         check_key(panel, "controls-settings", {})
         self.settings = panel["controls-settings"]
         Gtk.Frame.__init__(self)
-        self.set_label("Controls: Custom items")
+        self.set_label("  {}: {}  ".format(voc["controls"], voc["custom-items"]))
         self.grid = Gtk.Grid()
         self.grid.set_column_spacing(6)
         self.grid.set_row_spacing(6)
@@ -3521,7 +3569,7 @@ class ControlsUserMenu(Gtk.Frame):
         check_key(panel, "controls-settings", {})
         self.settings = panel["controls-settings"]
         Gtk.Frame.__init__(self)
-        self.set_label("Controls: User menu")
+        self.set_label("  {}: {}  ".format(voc["controls"], voc["user-menu"]))
         self.grid = Gtk.Grid()
         self.grid.set_column_spacing(10)
         self.grid.set_row_spacing(10)
