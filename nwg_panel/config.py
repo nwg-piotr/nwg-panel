@@ -229,7 +229,7 @@ def load_vocabulary():
         sys.exit(1)
 
     lang = os.getenv("LANG").split(".")[0] if not shell_data["interface-locale"] else shell_data["interface-locale"]
-    # translate if necessary
+    # translate if translation available
     if lang != "en_US":
         loc_file = os.path.join(dir_name, "langs", "{}.json".format(lang))
         if os.path.isfile(loc_file):
@@ -252,7 +252,6 @@ def signal_handler(sig, frame):
 
 
 def rt_sig_handler(sig, frame):
-    # just catch and do nothing
     print("{} RT signal received".format(sig))
 
 
@@ -375,14 +374,13 @@ class PanelSelector(Gtk.Window):
                 max_height = h
             if not h > max_height:
                 max_height = h
-        self.scrolled_window.set_max_content_height(int(max_height * 0.9))
         self.outer_box.add(self.scrolled_window)
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.scrolled_window.add(vbox)
 
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        vbox.pack_start(self.hbox, True, False, 6)
+        vbox.pack_start(self.hbox, True, True, 6)
         listboxes = self.build_listboxes()
         self.hbox.pack_start(listboxes, True, True, 6)
 
@@ -459,7 +457,7 @@ class PanelSelector(Gtk.Window):
         for path in configs:
             hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
             label = Gtk.Label()
-            label.set_markup("<b>{}:</b> {}".format(voc["file"], path))
+            label.set_markup("{}: <b>{}</b>".format(voc["file"], path))
             label.set_halign(Gtk.Align.START)
             hbox.pack_start(label, True, True, 6)
             checkbox = Gtk.CheckButton.new_with_label(voc["delete-file"])
@@ -487,17 +485,17 @@ class PanelSelector(Gtk.Window):
                 ivbox.pack_start(hbox, False, False, 3)
 
                 label = Gtk.Label()
-                label.set_text("{}: '{}'".format(voc["name"], panel["name"])[:20])
+                label.set_markup("{}: '<b>{}</b>'".format(voc["panel"], panel["name"]))
                 label.set_halign(Gtk.Align.START)
                 lbl_box.pack_start(label, True, True, 6)
 
                 label = Gtk.Label()
-                label.set_text("{}: {}".format(voc["output"], panel["output"]))
+                label.set_markup("{}: <b>{}</b>".format(voc["output"], panel["output"]))
                 label.set_halign(Gtk.Align.START)
                 lbl_box.pack_start(label, True, True, 6)
 
                 label = Gtk.Label()
-                label.set_text("{}: {}".format(voc["position"], panel["position"]))
+                label.set_markup("{}: <b>{}</b>".format(voc["position"], panel["position"]))
                 label.set_halign(Gtk.Align.START)
                 lbl_box.pack_start(label, True, True, 6)
 
