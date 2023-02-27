@@ -1380,14 +1380,74 @@ class EditorWrapper(object):
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_clock.glade"))
         frame = builder.get_object("frame")
+        frame.set_label("  {}: {}  ".format(voc["module"], voc["clock"]))
+
+        lbl = builder.get_object("lbl-clock-widget")
+        lbl.set_text(voc["clock-widget"])
+
+        lbl = builder.get_object("lbl-calendar-window")
+        lbl.set_text(voc["calendar-window"])
+
+        lbl = builder.get_object("lbl-format")
+        lbl.set_text("{}:".format(voc["format"]))
+
+        lbl = builder.get_object("lbl-tooltip-text")
+        lbl.set_text("{}:".format(voc["tooltip-text"]))
+
+        lbl = builder.get_object("lbl-on-middle-click")
+        lbl.set_text("{}:".format(voc["on-middle-click"]))
+
+        lbl = builder.get_object("lbl-on-right-click")
+        lbl.set_text("{}:".format(voc["on-right-click"]))
+
+        lbl = builder.get_object("lbl-on-scroll-up")
+        lbl.set_text("{}:".format(voc["on-scroll-up"]))
+
+        lbl = builder.get_object("lbl-on-scroll-down")
+        lbl.set_text("{}:".format(voc["on-scroll-down"]))
+
+        lbl = builder.get_object("lbl-root-css-name")
+        lbl.set_text("{}:".format(voc["root-css-name"]))
+
+        lbl = builder.get_object("lbl-css-name")
+        lbl.set_text("{}:".format(voc["css-name"]))
+
+        lbl = builder.get_object("lbl-interval")
+        lbl.set_text("{}:".format(voc["refresh-interval"]))
+
+        lbl = builder.get_object("lbl-angle")
+        lbl.set_text("{}:".format(voc["angle"]))
+
+        lbl = builder.get_object("lbl-placement")
+        lbl.set_text("{}:".format(voc["placement"]))
+
+        lbl = builder.get_object("lbl-margin-h")
+        lbl.set_text("{}:".format(voc["margin-h"]))
+
+        lbl = builder.get_object("lbl-margin-v")
+        lbl.set_text("{}:".format(voc["margin-v"]))
+
+        lbl = builder.get_object("lbl-css-name-cal")
+        lbl.set_text("{}:".format(voc["css-name"]))
+
+        lbl = builder.get_object("lbl-data-path")
+        lbl.set_text("{}:".format(voc["data-path"]))
+
+        lbl = builder.get_object("lbl-icon-size")
+        lbl.set_text("{}:".format(voc["icon-size"]))
+
+        lbl = builder.get_object("lbl-interval-cal")
+        lbl.set_text("{}:".format(voc["refresh-interval"]))
 
         self.eb_format = builder.get_object("format")
+        self.eb_format.set_tooltip_text(voc["clock-format-tooltip"])
         self.eb_format.set_text(settings["format"])
 
         self.eb_tooltip_text = builder.get_object("tooltip-text")
         self.eb_tooltip_text.set_text(settings["tooltip-text"])
 
         self.eb_tooltip_date = builder.get_object("tooltip-date")
+        self.eb_tooltip_date.set_label(voc["tooltip-in-date-format"])
         self.eb_tooltip_date.set_active(settings["tooltip-date-format"])
 
         self.eb_on_middle_click = builder.get_object("on-middle-click")
@@ -1418,6 +1478,7 @@ class EditorWrapper(object):
         self.cb_angle.set_active_id(str(settings["angle"]))
 
         self.cb_calendar_on = builder.get_object("calendar-on")
+        self.cb_calendar_on.set_label(voc["turned-on"])
         self.cb_calendar_on.set_active(settings["calendar-on"])
 
         self.combo_calendar_placement = builder.get_object("calendar-placement")
@@ -1439,6 +1500,7 @@ class EditorWrapper(object):
         self.eb_calendar_css_name.set_text(settings["calendar-css-name"])
 
         self.eb_calendar_path = builder.get_object("calendar-path")
+        self.eb_calendar_path.set_tooltip_text(voc["data-path-tooltip"])
         self.eb_calendar_path.set_text(settings["calendar-path"])
 
         self.sb_calendar_icon_size = builder.get_object("calendar-icon-size")
