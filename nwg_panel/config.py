@@ -2671,7 +2671,7 @@ class EditorWrapper(object):
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_dwl_tags.glade"))
         frame = builder.get_object("frame")
-        frame.set_label("  {}: DwlTags".format(voc["module"]))
+        frame.set_label("  {}: DwlTags  ".format(voc["module"]))
 
         lbl = builder.get_object("lbl-tag-names")
         lbl.set_text("{}:".format(voc["tag-names"]))
