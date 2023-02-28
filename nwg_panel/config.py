@@ -2546,6 +2546,76 @@ class EditorWrapper(object):
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_brightness_slider.glade"))
         frame = builder.get_object("frame")
+        frame.set_label("  {}: BrightnessSlider  ".format(voc["module"]))
+
+        lbl = builder.get_object("lbl-backlight-device")
+        lbl.set_text("{}:".format(voc["backlight-device"]))
+
+        entry = builder.get_object("backlight-device")
+        entry.set_tooltip_text(voc["backlight-device-tooltip"])
+
+        lbl = builder.get_object("lbl-step-size")
+        lbl.set_text("{}:".format(voc["step-size"]))
+
+        entry = builder.get_object("step-size")
+        entry.set_tooltip_text(voc["step-size-tooltip"])
+
+        lbl = builder.get_object("lbl-icon-placement")
+        lbl.set_text("{}:".format(voc["icon-placement"]))
+
+        cb = builder.get_object("show-values")
+        cb.set_label(voc["values-in-widget"])
+
+        lbl = builder.get_object("lbl-root-css-name")
+        lbl.set_text("{}:".format(voc["widget-css-name"]))
+
+        lbl = builder.get_object("lbl-css-name")
+        lbl.set_text("{}:".format(voc["slider-css-name"]))
+
+        lbl = builder.get_object("lbl-icon-size")
+        lbl.set_text("{}:".format(voc["icon-size"]))
+
+        lbl = builder.get_object("lbl-interval")
+        lbl.set_text("{}:".format(voc["refresh-interval"]))
+
+        lbl = builder.get_object("lbl-angle")
+        lbl.set_text("{}:".format(voc["angle"]))
+
+        entry = builder.get_object("angle")
+        entry.set_tooltip_text(voc["angle-tooltip"])
+
+        lbl = builder.get_object("lbl-popup-horizontal-alignment")
+        lbl.set_text("{}:".format(voc["popup-horizontal-alignment"]))
+
+        lbl = builder.get_object("lbl-popup-vertical-alignment")
+        lbl.set_text("{}:".format(voc["popup-vertical-alignment"]))
+
+        lbl = builder.get_object("lbl-popup-slider-width")
+        lbl.set_text("{}:".format(voc["popup-slider-width"]))
+
+        lbl = builder.get_object("lbl-popup-slider-height")
+        lbl.set_text("{}:".format(voc["popup-slider-height"]))
+
+        lbl = builder.get_object("lbl-popup-horizontal-margin")
+        lbl.set_text("{}:".format(voc["popup-horizontal-margin"]))
+
+        lbl = builder.get_object("lbl-popup-vertical-margin")
+        lbl.set_text("{}:".format(voc["popup-vertical-margin"]))
+
+        lbl = builder.get_object("lbl-slider-orientation")
+        lbl.set_text("{}:".format(voc["slider-orientation"]))
+
+        lbl = builder.get_object("lbl-slider-icon-placement")
+        lbl.set_text("{}:".format(voc["slider-icon-placement"]))
+
+        cb = builder.get_object("slider-inverted")
+        cb.set_label(voc["invert-slider"])
+
+        cb = builder.get_object("hover-opens")
+        cb.set_label(voc["widget-hover-opens"])
+
+        cb = builder.get_object("leave-closes")
+        cb.set_label(voc["window-leave-closes"])
 
         self.brightness_slider_config = {}
         for setting in defaults:
@@ -2601,8 +2671,19 @@ class EditorWrapper(object):
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_dwl_tags.glade"))
         frame = builder.get_object("frame")
+        frame.set_label("  {}: DwlTags".format(voc["module"]))
+
+        lbl = builder.get_object("lbl-tag-names")
+        lbl.set_text("{}:".format(voc["tag-names"]))
+
+        lbl = builder.get_object("lbl-title-max-length")
+        lbl.set_text("{}:".format(voc["title-max-length"]))
+
+        lbl = builder.get_object("lbl-angle")
+        lbl.set_text("{}:".format(voc["angle"]))
 
         self.dwl_tag_names = builder.get_object("tag-names")
+        self.dwl_tag_names.set_tooltip_text(voc["tag-names-tooltip"])
         self.dwl_tag_names.set_text(settings["tag-names"])
 
         self.dwl_tags_title_limit = builder.get_object("title-limit")
@@ -2612,6 +2693,7 @@ class EditorWrapper(object):
         self.dwl_tags_title_limit.set_value(settings["title-limit"])
 
         self.dwl_angle = builder.get_object("angle")
+        self.dwl_angle.set_tooltip_text(voc["angle-tooltip"])
         self.dwl_angle.set_active_id(str(settings["angle"]))
 
         for item in self.scrolled_window.get_children():
