@@ -85,9 +85,6 @@
           <object class="GtkComboBoxText" id="layer">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">For typical panels use 'top' or 'bottom.
-Horizontal and vertical panels should not
-be placed on the same layer.</property>
             <items>
               <item id="background" translatable="yes">background</item>
               <item id="bottom" translatable="yes">bottom</item>

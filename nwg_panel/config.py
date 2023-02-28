@@ -973,6 +973,7 @@ class EditorWrapper(object):
                 self.cb_menu.set_active_id("off")
 
         self.cb_layer = builder.get_object("layer")
+        self.cb_layer.set_tooltip_text(voc["layer-tooltip"])
         self.cb_layer.set_active_id(self.panel["layer"])
 
         self.sb_width = builder.get_object("width")
@@ -1407,7 +1408,7 @@ class EditorWrapper(object):
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_clock.glade"))
         frame = builder.get_object("frame")
-        frame.set_label("  {}: {}  ".format(voc["module"], voc["clock"]))
+        frame.set_label("  {}: Clock  ".format(voc["module"]))
 
         lbl = builder.get_object("lbl-clock-widget")
         lbl.set_text(voc["clock-widget"])
@@ -1725,7 +1726,7 @@ class EditorWrapper(object):
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_tray.glade"))
         frame = builder.get_object("frame")
-        frame.set_label("  {}: {}  ".format(voc["module"], voc["tray"]))
+        frame.set_label("  {}: Tray  ".format(voc["module"]))
 
         lbl = builder.get_object("lbl-icon-size")
         lbl.set_text("{}:".format(voc["icon-size"]))
@@ -1793,7 +1794,7 @@ class EditorWrapper(object):
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_playerctl.glade"))
         frame = builder.get_object("frame")
-        frame.set_label("  {}: {}  ".format(voc["module"], voc["playerctl"]))
+        frame.set_label("  {}: Playerctl  ".format(voc["module"]))
 
         lbl = builder.get_object("lbl-buttons-position")
         lbl.set_text("{}:".format(voc["buttons-position"]))
@@ -1915,8 +1916,28 @@ class EditorWrapper(object):
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_sway_workspaces.glade"))
         frame = builder.get_object("frame")
+        frame.set_label("  {}: SwayWorkspaces  ".format(voc["module"]))
+
+        lbl = builder.get_object("lbl-workspaces-to-show")
+        lbl.set_text("{}:".format(voc["workspaces-to-show"]))
+
+        lbl = builder.get_object("lbl-custom-labels")
+        lbl.set_text("{}:".format(voc["custom-labels"]))
+
+        lbl = builder.get_object("lbl-focused-labels")
+        lbl.set_text("{}:".format(voc["focused-labels"]))
+
+        lbl = builder.get_object("lbl-icon-size")
+        lbl.set_text("{}:".format(voc["icon-size"]))
+
+        lbl = builder.get_object("lbl-window-name-length-limit")
+        lbl.set_text("{}:".format(voc["window-name-length-limit"]))
+
+        lbl = builder.get_object("lbl-angle")
+        lbl.set_text("{}:".format(voc["angle"]))
 
         self.eb_workspaces_menu = builder.get_object("numbers")
+        self.eb_workspaces_menu.set_tooltip_text(voc["workspaces-to-show-tooltip"])
         workspaces = settings["numbers"]
         text = ""
         for item in workspaces:
@@ -1925,6 +1946,7 @@ class EditorWrapper(object):
         self.eb_workspaces_menu.connect("changed", validate_workspaces)
 
         self.ws_custom_labels = builder.get_object("custom-labels")
+        self.ws_custom_labels.set_tooltip_text(voc["custom-labels-tooltip"])
         labels = settings["custom-labels"]
         text = ""
         for item in labels:
@@ -1932,6 +1954,7 @@ class EditorWrapper(object):
         self.ws_custom_labels.set_text(text.strip())
 
         self.ws_focused_labels = builder.get_object("focused-labels")
+        self.ws_focused_labels.set_tooltip_text(voc["custom-labels-tooltip"])
         labels = settings["focused-labels"]
         text = ""
         for item in labels:
@@ -1939,9 +1962,11 @@ class EditorWrapper(object):
         self.ws_focused_labels.set_text(text.strip())
 
         self.ws_show_icon = builder.get_object("show-icon")
+        self.ws_show_icon.set_label(voc["show-focused-window-icon"])
         self.ws_show_icon.set_active(settings["show-icon"])
 
         self.ws_show_name = builder.get_object("show-name")
+        self.ws_show_name.set_label(voc["show-window-name"])
         self.ws_show_name.set_active(settings["show-name"])
 
         self.ws_image_size = builder.get_object("image-size")
@@ -1957,15 +1982,19 @@ class EditorWrapper(object):
         self.ws_name_length.set_value(settings["name-length"])
 
         self.ws_mark_autotiling = builder.get_object("mark-autotiling")
+        self.ws_mark_autotiling.set_label(voc["mark-autotiling"])
         self.ws_mark_autotiling.set_active(settings["mark-autotiling"])
 
         self.ws_mark_content = builder.get_object("mark-content")
+        self.ws_mark_content.set_label(voc["mark-non-empty-ws"])
         self.ws_mark_content.set_active(settings["mark-content"])
 
         self.ws_show_layout = builder.get_object("show-layout")
+        self.ws_show_layout.set_label(voc["show-layout"])
         self.ws_show_layout.set_active(settings["show-layout"])
 
         self.ws_angle = builder.get_object("angle")
+        self.ws_angle.set_tooltip_text(voc["angle-tooltip"])
         self.ws_angle.set_active_id(str(settings["angle"]))
 
         for item in self.scrolled_window.get_children():
@@ -2191,6 +2220,16 @@ class EditorWrapper(object):
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_scratchpad.glade"))
         frame = builder.get_object("frame")
+        frame.set_label("  {}: Scratchpad  ".format(voc["module"]))
+
+        lbl = builder.get_object("lbl-icon-size")
+        lbl.set_text("{}:".format(voc["icon-size"]))
+
+        lbl = builder.get_object("lbl-css-name")
+        lbl.set_text("{}:".format(voc["css-name"]))
+
+        lbl = builder.get_object("lbl-angle")
+        lbl.set_text("{}:".format(voc["angle"]))
 
         self.scratchpad_css_name = builder.get_object("css-name")
         self.scratchpad_css_name.set_text(settings["css-name"])
@@ -2202,9 +2241,11 @@ class EditorWrapper(object):
         self.scratchpad_icon_size.set_value(settings["icon-size"])
 
         self.scratchpad_angle = builder.get_object("angle")
+        self.scratchpad_angle.set_tooltip_text(voc["angle-tooltip"])
         self.scratchpad_angle.set_active_id(str(settings["angle"]))
 
         self.scratchpad_single_output = builder.get_object("single-output")
+        self.scratchpad_single_output.set_tooltip_text(voc["single-output-tooltip"])
         self.scratchpad_single_output.set_active(settings["single-output"])
 
         for item in self.scrolled_window.get_children():
