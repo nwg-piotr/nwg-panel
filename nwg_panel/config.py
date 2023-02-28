@@ -2314,6 +2314,94 @@ class EditorWrapper(object):
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_openweather.glade"))
         frame = builder.get_object("frame")
+        frame.set_label("  {}: OpenWeather  ".format(voc["module"]))
+
+        lbl = builder.get_object("lbl-common")
+        lbl.set_markup("<b>{}</b>".format(voc["common"]))
+
+        lbl = builder.get_object("lbl-api-key")
+        lbl.set_markup("{}:".format(voc["api-key"]))
+
+        lbl = builder.get_object("lbl-latitude")
+        lbl.set_markup("{}:".format(voc["latitude"]))
+
+        lbl = builder.get_object("lbl-longitude")
+        lbl.set_markup("{}:".format(voc["longitude"]))
+
+        lbl = builder.get_object("lbl-language")
+        lbl.set_markup("{}:".format(voc["language"]))
+
+        lbl = builder.get_object("lbl-units")
+        lbl.set_markup("{}:".format(voc["units"]))
+
+        lbl = builder.get_object("lbl-check-interval")
+        lbl.set_markup("{}:".format(voc["check-interval"]))
+
+        lbl = builder.get_object("lbl-weather-icons")
+        lbl.set_markup("{}:".format(voc["weather-icons"]))
+
+        lbl = builder.get_object("lbl-custom-location-name")
+        lbl.set_markup("{}:".format(voc["custom-location-name"]))
+
+        lbl = builder.get_object("lbl-panel-widget")
+        lbl.set_markup("<b>{}</b>".format(voc["panel-widget"]))
+
+        lbl = builder.get_object("lbl-on-right-click")
+        lbl.set_markup("{}:".format(voc["on-right-click"]))
+
+        lbl = builder.get_object("lbl-on-middle-click")
+        lbl.set_markup("{}:".format(voc["on-middle-click"]))
+
+        lbl = builder.get_object("lbl-on-scroll")
+        lbl.set_markup("{}:".format(voc["on-scroll"]))
+
+        lbl = builder.get_object("lbl-icon-placement")
+        lbl.set_markup("{}:".format(voc["icon-placement"]))
+
+        lbl = builder.get_object("lbl-icon-size")
+        lbl.set_markup("{}:".format(voc["icon-size"]))
+
+        lbl = builder.get_object("lbl-css-name")
+        lbl.set_markup("{}:".format(voc["css-name"]))
+
+        lbl = builder.get_object("lbl-angle")
+        lbl.set_markup("{}:".format(voc["angle"]))
+
+        lbl = builder.get_object("lbl-forecast-window")
+        lbl.set_markup("<b>{}</b>".format(voc["forecast-window"]))
+
+        lbl = builder.get_object("lbl-icon-set")
+        lbl.set_markup("{}:".format(voc["icon-set"]))
+
+        lbl = builder.get_object("lbl-header-icon-size")
+        lbl.set_markup("{}:".format(voc["header-icon-size"]))
+
+        lbl = builder.get_object("lbl-icon-size-weather")
+        lbl.set_markup("{}:".format(voc["icon-size"]))
+
+        lbl = builder.get_object("lbl-text-size")
+        lbl.set_markup("{}:".format(voc["text-size"]))
+
+        lbl = builder.get_object("lbl-css-name-weather")
+        lbl.set_markup("{}:".format(voc["css-name"]))
+
+        lbl = builder.get_object("lbl-window-placement")
+        lbl.set_markup("{}:".format(voc["window-placement"]))
+
+        lbl = builder.get_object("lbl-side-margin")
+        lbl.set_markup("{}:".format(voc["side-margin"]))
+
+        lbl = builder.get_object("lbl-top-margin")
+        lbl.set_markup("{}:".format(voc["top-margin"]))
+
+        lbl = builder.get_object("lbl-bottom-margin")
+        lbl.set_markup("{}:".format(voc["bottom-margin"]))
+
+        lbl = builder.get_object("lbl-alerts")
+        lbl.set_markup("{}:".format(voc["alerts"]))
+
+        lbl = builder.get_object("lbl-weatherbit-api-key")
+        lbl.set_markup("{}:".format(voc["weatherbit-api-key"]))
 
         self.ow_appid = builder.get_object("appid")
         self.ow_appid.set_text(settings["appid"])
@@ -2357,6 +2445,7 @@ class EditorWrapper(object):
         self.ow_long.connect("value-changed", self.mark_weather_data_delete)
 
         self.ow_lang = builder.get_object("lang")
+        self.ow_lang.set_tooltip_text(voc["language-tooltip"])
         self.ow_lang.set_text(settings["lang"])
         self.ow_lang.connect("changed", self.mark_weather_data_delete)
 
@@ -2373,6 +2462,7 @@ class EditorWrapper(object):
         self.ow_weather_icons.set_active_id(settings["weather-icons"])
 
         self.ow_loc_name = builder.get_object("loc-name")
+        self.ow_loc_name.set_tooltip_text(voc["custom-location-name-tooltip"])
         self.ow_loc_name.set_text(settings["loc-name"])
 
         self.ow_on_right_click = builder.get_object("on-right-click")
