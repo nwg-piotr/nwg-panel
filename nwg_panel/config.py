@@ -2830,11 +2830,11 @@ class EditorWrapper(object):
 
         item = Gtk.SeparatorMenuItem()
         menu.append(item)
-        item = Gtk.MenuItem.new_with_label("Add new")
+        item = Gtk.MenuItem.new_with_label(voc["add-new"])
         menu.append(item)
         item.connect("activate", self.edit_executor, "executor-unnamed_{}".format(len(executors) + 1), True)
         if self.executors_base:
-            item = Gtk.MenuItem.new_with_label("Database")
+            item = Gtk.MenuItem.new_with_label(voc["database"])
             item.connect("activate", self.import_executor)
             menu.append(item)
 
@@ -3150,7 +3150,7 @@ class EditorWrapper(object):
 
         item = Gtk.SeparatorMenuItem()
         menu.append(item)
-        item = Gtk.MenuItem.new_with_label("Add new")
+        item = Gtk.MenuItem.new_with_label(voc["add-new"])
         menu.append(item)
         item.connect("activate", self.edit_button, "button-unnamed_{}".format(len(buttons) + 1),
                      True)

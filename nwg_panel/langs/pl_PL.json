@@ -1,4 +1,5 @@
 {
+  "add-new": "Dodaj nowy",
   "add-delete": "Dodaj/usuń",
   "alerts": "Ostrzeżenia",
   "all-outputs": "Wszystkie wyjścia",
@@ -53,6 +54,7 @@
   "custom-labels-tooltip": "Jedna wspólna etykieta albo oddzielne etykiety\ndla każdego określonego wyżej obszaru roboczego.",
   "custom-location-name": "Własna nazwa lokalizacji",
   "custom-location-name-tooltip": "Jeśli nie podoba Ci się nazwa zwracana przez geocoder, \ntu możesz zdefiniować własną etykietę.",
+  "database": "Baza danych",
   "data-path": "Ścieżka danych",
   "data-path-tooltip": "Zostaw puste by użyć '/home/$USER/.local/share/nwg-panel/calendar.json'.\nMożesz też użyć np. '~/Dropbox/calendar.json' by synchronizować pomiędzy maszynami.",
   "delete-file": "Usuń plik",

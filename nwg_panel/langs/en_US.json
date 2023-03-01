@@ -1,4 +1,5 @@
 {
+  "add-new": "Add new",
   "add-delete": "Add/delete",
   "alerts": "Alerts",
   "all-outputs": "All outputs",
@@ -53,6 +54,7 @@
   "custom-labels-tooltip": "One single label or multiple custom labels\nfor each workspace number specified above.",
   "custom-location-name": "Custom location name",
   "custom-location-name-tooltip": "If you don't like the location name returned from geocoder, \nyou may define your own label here.",
+  "database": "Database",
   "data-path": "Data path",
   "data-path-tooltip": "Leave blank for default '/home/$USER/.local/share/nwg-panel/calendar.json'.\nOr you may use e.g. '~/Dropbox/calendar.json' to sync data between your machines.",
   "delete-file": "Delete file",
