@@ -97,7 +97,6 @@
           <object class="GtkEntry" id="appid">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">Paste your API key (appid) here.</property>
             <property name="visibility">False</property>
             <property name="invisible-char">*</property>
           </object>
@@ -137,9 +136,6 @@
           <object class="GtkSpinButton" id="interval">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">Specifies how often (in seconds)
-to ask for weather data 
-e.g. (1800 for half an hour).</property>
             <property name="climb-rate">1</property>
           </object>
           <packing>
@@ -237,8 +233,6 @@ e.g. (1800 for half an hour).</property>
           <object class="GtkComboBoxText" id="angle">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">the angle that the baseline of the label makes with 
-the horizontal, in degrees, measured counterclockwise</property>
             <items>
               <item id="0.0" translatable="yes">0°</item>
               <item id="90.0" translatable="yes">90°</item>
@@ -336,7 +330,6 @@ the horizontal, in degrees, measured counterclockwise</property>
           <object class="GtkEntry" id="on-scroll">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">Command to execute on scroll event</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -359,7 +352,6 @@ the horizontal, in degrees, measured counterclockwise</property>
           <object class="GtkEntry" id="on-middle-click">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">Command to execute on middle click event</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -382,7 +374,6 @@ the horizontal, in degrees, measured counterclockwise</property>
           <object class="GtkEntry" id="on-right-click">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">Command to execute on right click event</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -872,7 +863,6 @@ Creative Commons Attribution-ShareAlike 4.0</property>
           <object class="GtkEntry" id="weatherbit-api-key">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">Paste your API key (appid) here.</property>
             <property name="visibility">False</property>
             <property name="invisible-char">●</property>
           </object>

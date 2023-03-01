@@ -2398,22 +2398,26 @@ class EditorWrapper(object):
         lbl.set_markup("{}:".format(voc["bottom-margin"]))
 
         lbl = builder.get_object("lbl-alerts")
-        lbl.set_markup("{}:".format(voc["alerts"]))
+        lbl.set_markup("<b>{}</b>".format(voc["alerts"]))
 
         lbl = builder.get_object("lbl-weatherbit-api-key")
         lbl.set_markup("{}:".format(voc["weatherbit-api-key"]))
 
         self.ow_appid = builder.get_object("appid")
         self.ow_appid.set_text(settings["appid"])
+        self.ow_appid.set_tooltip_text(voc["api-key-tooltip"])
         self.ow_appid.connect("changed", self.mark_weather_data_delete)
 
         key_visibility_switch = builder.get_object("key-visibility-switch")
+        key_visibility_switch.set_label(voc["show"])
         key_visibility_switch.connect("toggled", switch_entry_visibility, self.ow_appid)
 
         self.weatherbit_api_key = builder.get_object("weatherbit-api-key")
+        self.weatherbit_api_key.set_tooltip_text(voc["api-key-tooltip"])
         self.weatherbit_api_key.set_text(settings["weatherbit-api-key"])
 
         key_visibility_switch1 = builder.get_object("key-visibility-switch1")
+        key_visibility_switch1.set_label(voc["show"])
         key_visibility_switch1.connect("toggled", switch_entry_visibility, self.weatherbit_api_key)
 
         # Try to obtain geolocation if unset
@@ -2454,6 +2458,7 @@ class EditorWrapper(object):
         self.ow_units.connect("changed", self.mark_weather_data_delete)
 
         self.ow_interval = builder.get_object("interval")
+        self.ow_interval.set_tooltip_text(voc["check-interval-tooltip"])
         adj = Gtk.Adjustment(value=0, lower=180, upper=86401, step_increment=1, page_increment=10, page_size=1)
         self.ow_interval.configure(adj, 1, 0)
         self.ow_interval.set_value(settings["interval"])
@@ -2486,9 +2491,11 @@ class EditorWrapper(object):
         self.ow_css_name.set_text(settings["css-name"])
 
         self.ow_angle = builder.get_object("angle")
+        self.ow_angle.set_tooltip_text(voc["angle-tooltip"])
         self.ow_angle.set_active_id(str(settings["angle"]))
 
         self.ow_show_name = builder.get_object("show-name")
+        self.ow_show_name.set_label(voc["show-location-name"])
         self.ow_show_name.set_active(settings["show-name"])
 
         self.ow_popup_icons = builder.get_object("ow-popup-icons")
@@ -2529,24 +2536,31 @@ class EditorWrapper(object):
         self.ow_popup_margin_bottom.set_value(settings["popup-margin-bottom"])
 
         self.ow_show_humidity = builder.get_object("show-humidity")
+        self.ow_show_humidity.set_label(voc["show-humidity"])
         self.ow_show_humidity.set_active(settings["show-humidity"])
 
         self.ow_show_wind = builder.get_object("show-wind")
+        self.ow_show_wind.set_label(voc["show-wind"])
         self.ow_show_wind.set_active(settings["show-wind"])
 
         self.ow_show_pressure = builder.get_object("show-pressure")
+        self.ow_show_pressure.set_label(voc["show-pressure"])
         self.ow_show_pressure.set_active(settings["show-pressure"])
 
         self.ow_show_cloudiness = builder.get_object("show-cloudiness")
+        self.ow_show_cloudiness.set_label(voc["show-cloudiness"])
         self.ow_show_cloudiness.set_active(settings["show-cloudiness"])
 
         self.ow_show_visibility = builder.get_object("show-visibility")
+        self.ow_show_visibility.set_label(voc["show-visibility"])
         self.ow_show_visibility.set_active(settings["show-visibility"])
 
         self.ow_show_pop = builder.get_object("show-pop")
+        self.ow_show_pop.set_label(voc["show-precipitation-probability"])
         self.ow_show_pop.set_active(settings["show-pop"])
 
         self.ow_show_volume = builder.get_object("show-volume")
+        self.ow_show_volume.set_label(voc["show-precipitation-volume"])
         self.ow_show_volume.set_active(settings["show-volume"])
 
         self.ow_module_id = builder.get_object("module-id")
