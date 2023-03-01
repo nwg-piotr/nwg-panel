@@ -2867,12 +2867,32 @@ class EditorWrapper(object):
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_executor.glade"))
         frame = builder.get_object("frame")
+        frame.set_label("  {}: Executor".format(voc["module"]))
+
+        builder.get_object("lbl-name").set_text("{}: ".format(voc["name"]))
+        builder.get_object("lbl-script").set_text("{}: ".format(voc["script"]))
+        builder.get_object("lbl-tooltip-text").set_text("{}: ".format(voc["tooltip-text"]))
+        builder.get_object("lbl-on-left-click").set_text("{}: ".format(voc["on-left-click"]))
+        builder.get_object("lbl-on-middle-click").set_text("{}: ".format(voc["on-middle-click"]))
+        builder.get_object("lbl-on-right-click").set_text("{}: ".format(voc["on-right-click"]))
+        builder.get_object("lbl-on-scroll-up").set_text("{}: ".format(voc["on-scroll-up"]))
+        builder.get_object("lbl-on-scroll-down").set_text("{}: ".format(voc["on-scroll-down"]))
+        builder.get_object("lbl-root-css-name").set_text("{}: ".format(voc["root-css-name"]))
+        builder.get_object("lbl-css-name").set_text("{}: ".format(voc["css-name"]))
+        builder.get_object("lbl-icon-placement").set_text("{}: ".format(voc["icon-placement"]))
+        builder.get_object("lbl-icon-size").set_text("{}: ".format(voc["icon-size"]))
+        builder.get_object("lbl-interval").set_text("{}: ".format(voc["refresh-interval"]))
+        builder.get_object("lbl-angle").set_text("{}: ".format(voc["angle"]))
+        builder.get_object("lbl-refresh-on-signal").set_text("{}: ".format(voc["refresh-on-signal"]))
+
+        builder.get_object("executor-name-warning").set_tooltip_text(voc["executor-name-tooltip"])
 
         self.executor_name = builder.get_object("name")
         self.executor_name.set_text(name[9:])
         self.executor_name.connect("changed", validate_name)
 
         self.executor_script = builder.get_object("script")
+        self.executor_script.set_tooltip_text(voc["script-tooltip"])
         self.executor_script.set_text(settings["script"])
 
         self.executor_tooltip_text = builder.get_object("tooltip-text")
@@ -2909,15 +2929,18 @@ class EditorWrapper(object):
         self.executor_icon_size.set_value(settings["icon-size"])
 
         self.executor_interval = builder.get_object("interval")
+        self.executor_interval.set_tooltip_text(voc["refresh-interval-tooltip"])
         self.executor_interval.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=0, upper=3600, step_increment=1, page_increment=10, page_size=1)
         self.executor_interval.configure(adj, 1, 0)
         self.executor_interval.set_value(settings["interval"])
 
         self.executor_angle = builder.get_object("angle")
+        self.executor_angle.set_tooltip_text(voc["angle-tooltip"])
         self.executor_angle.set_active_id(str(settings["angle"]))
 
         self.executor_sigrt = builder.get_object("sigrt")
+        self.executor_sigrt.set_tooltip_text(voc["sigrt-tooltip"])
         self.executor_sigrt.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=signal.SIGRTMIN, upper=signal.SIGRTMAX + 1, step_increment=1,
                              page_increment=1, page_size=1)
@@ -2925,11 +2948,14 @@ class EditorWrapper(object):
         self.executor_sigrt.set_value(settings["sigrt"])
 
         self.executor_use_sigrt = builder.get_object("use-sigrt")
+        self.executor_use_sigrt.set_label(voc["use-signal"])
         self.executor_use_sigrt.set_active(settings["use-sigrt"])
 
         self.executor_remove = builder.get_object("remove")
+        self.executor_remove.set_label(voc["remove-executor"])
 
         self.executor_save_to_db_btn = builder.get_object("save-to-database")
+        self.executor_save_to_db_btn.set_label(voc["save-to-database"])
         self.executor_save_to_db_btn.connect("clicked", self.check_and_save_to_db, name, settings)
         if new:
             self.executor_remove.set_visible(False)
