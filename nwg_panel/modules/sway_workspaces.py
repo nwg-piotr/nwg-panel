@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from gi.repository import Gtk, GdkPixbuf
+from gi.repository import Gtk, GdkPixbuf, Gdk
 
 import nwg_panel.common
 from nwg_panel.tools import check_key, get_icon_name, update_image, load_autotiling
@@ -57,6 +57,8 @@ class SwayWorkspaces(Gtk.Box):
             eb.connect("enter_notify_event", self.on_enter_notify_event)
             eb.connect("leave_notify_event", self.on_leave_notify_event)
             eb.connect("button-release-event", self.on_click, num)
+            eb.add_events(Gdk.EventMask.SCROLL_MASK)
+            eb.connect('scroll-event', self.on_scroll)
             self.pack_start(eb, False, False, 0)
 
             box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
@@ -243,6 +245,12 @@ class SwayWorkspaces(Gtk.Box):
 
     def on_click(self, event_box, event_button, num):
         nwg_panel.common.i3.command("workspace number {}".format(num))
+
+    def on_scroll(self, event_box, event):
+        if event.direction == Gdk.ScrollDirection.UP:
+            nwg_panel.common.i3.command("workspace prev")
+        elif event.direction == Gdk.ScrollDirection.DOWN:
+            nwg_panel.common.i3.command("workspace next")
 
     def on_enter_notify_event(self, widget, event):
         widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
