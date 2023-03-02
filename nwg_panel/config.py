@@ -2094,12 +2094,14 @@ class EditorWrapper(object):
         builder.get_object("lbl-menu-button-icon-size").set_text("{}:".format(voc["menu-button-icon-size"]))
 
         self.ms_window_width = builder.get_object("width")
+        self.ms_window_width.set_tooltip_text(voc["leave-0-for-auto"])
         self.ms_window_width.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=0, upper=1921, step_increment=1, page_increment=10, page_size=1)
         self.ms_window_width.configure(adj, 1, 0)
         self.ms_window_width.set_value(settings["width"])
 
         self.ms_window_height = builder.get_object("height")
+        self.ms_window_height.set_tooltip_text(voc["leave-0-for-auto"])
         self.ms_window_height.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=0, upper=2161, step_increment=1, page_increment=10, page_size=1)
         self.ms_window_height.configure(adj, 1, 0)
@@ -2172,6 +2174,7 @@ class EditorWrapper(object):
         self.ms_terminal.set_text(settings["terminal"])
 
         self.ms_autohide = builder.get_object("autohide")
+        self.ms_autohide.set_label(voc["close-window-when-left"])
         self.ms_autohide.set_active(settings["autohide"])
 
         for item in self.scrolled_window.get_children():
@@ -2739,6 +2742,9 @@ class EditorWrapper(object):
         cb = builder.get_object("leave-closes")
         cb.set_label(voc["window-leave-closes"])
 
+        builder.get_object("popup-width").set_tooltip_text(voc["slider-width-tooltip"])
+        builder.get_object("popup-height").set_tooltip_text(voc["slider-height-tooltip"])
+
         self.brightness_slider_config = {}
         for setting in defaults:
             widget = builder.get_object(setting)
@@ -3066,6 +3072,20 @@ class EditorWrapper(object):
     def import_executor(self, item):
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/executor_import.glade"))
         frame = builder.get_object("frame")
+        frame.set_label("{}: {}".format(voc["executors"], voc["database"]))
+
+        builder.get_object("lbl-select").set_text("{}:".format(voc["select"]))
+        builder.get_object("lbl-script").set_text("{}:".format(voc["script"]))
+        builder.get_object("lbl-interval").set_text("{}:".format(voc["refresh-interval"]))
+        builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
+        builder.get_object("lbl-on-left-click").set_text("{}:".format(voc["on-left-click"]))
+        builder.get_object("lbl-on-middle-click").set_text("{}:".format(voc["on-middle-click"]))
+        builder.get_object("lbl-on-right-click").set_text("{}:".format(voc["on-right-click"]))
+        builder.get_object("lbl-on-scroll-up").set_text("{}:".format(voc["on-scroll-up"]))
+        builder.get_object("lbl-on-scroll-down").set_text("{}:".format(voc["on-scroll-down"]))
+        builder.get_object("lbl-tooltip-text").set_text("{}:".format(voc["tooltip-text"]))
+        builder.get_object("lbl-icon-placement").set_text("{}:".format(voc["icon-placement"]))
+        builder.get_object("lbl-css-name").set_text("{}:".format(voc["css-name"]))
 
         for item in self.scrolled_window.get_children():
             item.destroy()
@@ -3089,9 +3109,10 @@ class EditorWrapper(object):
         self.ie_css_name = builder.get_object("css-name")
 
         self.ie_btn_delete = builder.get_object("btn-delete")
+        self.ie_btn_delete.set_label(voc["delete-from-database"])
         self.ie_btn_delete.connect("clicked", self.ie_show_btn_delete_menu)
         self.ie_btn_import = builder.get_object("btn-import")
-        self.ie_btn_import.set_label("Add to '{}'".format(self.panel["name"]))
+        self.ie_btn_import.set_label("{} '{}'".format(voc["add-to"], self.panel["name"]))
         self.ie_btn_import.connect("clicked", self.ie_on_import_btn)
 
     def ie_on_import_btn(self, btn):
@@ -3891,12 +3912,12 @@ class ControlsCustomItems(Gtk.Frame):
 
         self.new_name = Gtk.Entry()
         self.new_name.set_width_chars(10)
-        self.new_name.set_placeholder_text("label")
+        self.new_name.set_placeholder_text(voc["label"])
         hbox.pack_start(self.new_name, False, False, 0)
 
         self.new_icon = Gtk.Entry()
         self.new_icon.set_width_chars(10)
-        self.new_icon.set_placeholder_text("icon")
+        self.new_icon.set_placeholder_text(voc["icon"])
         update_icon(self.new_icon, self.icons)
         self.new_icon.connect("changed", update_icon, self.icons)
         hbox.pack_start(self.new_icon, False, False, 0)
@@ -3909,7 +3930,7 @@ class ControlsCustomItems(Gtk.Frame):
 
         self.new_command = Gtk.Entry()
         self.new_command.set_width_chars(10)
-        self.new_command.set_placeholder_text("command")
+        self.new_command.set_placeholder_text(voc["command"])
         hbox.pack_start(self.new_command, False, False, 0)
 
         btn = Gtk.Button.new_from_icon_name("list-add", Gtk.IconSize.MENU)
@@ -3992,13 +4013,13 @@ class ControlsUserMenu(Gtk.Frame):
         self.refresh()
 
     def refresh(self):
-
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         vbox.pack_start(hbox, False, False, 6)
 
         label = Gtk.Label()
-        label.set_text("Menu name")
+        label.set_text("{}:".format(voc["menu-name"]))
+        label.set_property("halign", Gtk.Align.END)
         hbox.pack_start(label, False, False, 6)
 
         entry = Gtk.Entry()
@@ -4008,8 +4029,9 @@ class ControlsUserMenu(Gtk.Frame):
         hbox.pack_start(entry, False, False, 0)
 
         label = Gtk.Label()
-        label.set_text("Icon")
-        hbox.pack_start(label, True, False, 6)
+        label.set_property("halign", Gtk.Align.END)
+        label.set_text("{}:".format(voc["icon"]))
+        hbox.pack_start(label, True, True, 6)
 
         entry = Gtk.Entry()
         entry.set_width_chars(20)
@@ -4077,17 +4099,17 @@ class ControlsUserMenu(Gtk.Frame):
 
         self.new_name = Gtk.Entry()
         self.new_name.set_width_chars(10)
-        self.new_name.set_placeholder_text("label")
+        self.new_name.set_placeholder_text(voc["label"])
         hbox.pack_start(self.new_name, False, False, 0)
 
         self.new_command = Gtk.Entry()
         self.new_command.set_width_chars(20)
-        self.new_command.set_placeholder_text("command")
+        self.new_command.set_placeholder_text(voc["command"])
         hbox.pack_start(self.new_command, False, False, 0)
 
         btn = Gtk.Button.new_from_icon_name("list-add", Gtk.IconSize.MENU)
         btn.set_always_show_image(True)
-        btn.set_label("Append")
+        btn.set_label(voc["append"])
         btn.connect("clicked", self.append)
         hbox.pack_start(btn, True, True, 0)
 

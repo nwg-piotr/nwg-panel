@@ -295,7 +295,6 @@
           <object class="GtkEntry" id="calendar-path">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="placeholder-text" translatable="yes">leave blank for default</property>
           </object>
           <packing>
             <property name="left-attach">3</property>
@@ -430,7 +429,6 @@
           <object class="GtkSpinButton" id="calendar-interval">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">Calendar refresh interval in seconds</property>
           </object>
           <packing>
             <property name="left-attach">3</property>
@@ -465,7 +463,6 @@
           <object class="GtkSpinButton" id="calendar-icon-size">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">Calendar refresh interval in seconds</property>
           </object>
           <packing>
             <property name="left-attach">3</property>
