@@ -663,45 +663,26 @@ class EditorWrapper(object):
         builder = Gtk.Builder()
         builder.add_from_file(os.path.join(dir_name, "glade/config_main.glade"))
 
-        lbl = builder.get_object("panel")
-        lbl.set_text(voc["panel"])
-        lbl = builder.get_object("modules-left")
-        lbl.set_text(voc["modules-left"])
-        lbl = builder.get_object("modules-center")
-        lbl.set_text(voc["modules-center"])
-        lbl = builder.get_object("modules-right")
-        lbl.set_text(voc["modules-right"])
-        lbl = builder.get_object("controls")
-        lbl.set_text(voc["controls"])
-        lbl = builder.get_object("notifications")
-        lbl.set_text(voc["notifications"])
-        lbl = builder.get_object("tray")
-        lbl.set_text(voc["tray"])
-        lbl = builder.get_object("clock")
-        lbl.set_text(voc["clock"])
-        lbl = builder.get_object("playerctl")
-        lbl.set_text(voc["playerctl"])
-        lbl = builder.get_object("sway-taskbar")
-        lbl.set_text(voc["sway-taskbar"])
-        lbl = builder.get_object("sway-workspaces")
-        lbl.set_text(voc["sway-workspaces"])
-        lbl = builder.get_object("scratchpad")
-        lbl.set_text(voc["scratchpad"])
-        lbl = builder.get_object("openweather")
-        lbl.set_text(voc["openweather"])
-        lbl = builder.get_object("dwl-tags")
-        lbl.set_text(voc["dwl-tags"])
-        lbl = builder.get_object("brightness-slider")
-        lbl.set_text(voc["brightness-slider"])
-        lbl = builder.get_object("executors")
-        lbl.set_text(voc["executors"])
-        lbl = builder.get_object("buttons")
-        lbl.set_text(voc["buttons"])
-        lbl = builder.get_object("menu-start")
-        lbl.set_text(voc["menu-start"])
+        builder.get_object("panel").set_text(voc["panel"])
+        builder.get_object("modules-left").set_text(voc["modules-left"])
+        builder.get_object("modules-center").set_text(voc["modules-center"])
+        builder.get_object("modules-right").set_text(voc["modules-right"])
+        builder.get_object("controls").set_text(voc["controls"])
+        builder.get_object("notifications").set_text(voc["notifications"])
+        builder.get_object("tray").set_text(voc["tray"])
+        builder.get_object("clock").set_text(voc["clock"])
+        builder.get_object("playerctl").set_text(voc["playerctl"])
+        builder.get_object("sway-taskbar").set_text(voc["sway-taskbar"])
+        builder.get_object("sway-workspaces").set_text(voc["sway-workspaces"])
+        builder.get_object("scratchpad").set_text(voc["scratchpad"])
+        builder.get_object("openweather").set_text(voc["openweather"])
+        builder.get_object("dwl-tags").set_text(voc["dwl-tags"])
+        builder.get_object("brightness-slider").set_text(voc["brightness-slider"])
+        builder.get_object("executors").set_text(voc["executors"])
+        builder.get_object("buttons").set_text(voc["buttons"])
+        builder.get_object("menu-start").set_text(voc["menu-start"])
 
         self.window = builder.get_object("main-window")
-        # self.window.set_transient_for(parent)
         self.window.set_keep_above(True)
         self.window.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.window.connect('destroy', self.show_parent, parent)
@@ -726,20 +707,11 @@ class EditorWrapper(object):
 
         self.scrolled_window = builder.get_object("scrolled-window")
 
-        eb = builder.get_object("eb-panel")
-        eb.connect("button-press-event", self.edit_panel)
-
-        eb = builder.get_object("eb-modules-left")
-        eb.connect("button-press-event", self.edit_modules, "left")
-
-        eb = builder.get_object("eb-modules-center")
-        eb.connect("button-press-event", self.edit_modules, "center")
-
-        eb = builder.get_object("eb-modules-right")
-        eb.connect("button-press-event", self.edit_modules, "right")
-
-        eb = builder.get_object("eb-controls")
-        eb.connect("button-press-event", self.controls_menu)
+        builder.get_object("eb-panel").connect("button-press-event", self.edit_panel)
+        builder.get_object("eb-modules-left").connect("button-press-event", self.edit_modules, "left")
+        builder.get_object("eb-modules-center").connect("button-press-event", self.edit_modules, "center")
+        builder.get_object("eb-modules-right").connect("button-press-event", self.edit_modules, "right")
+        builder.get_object("eb-controls").connect("button-press-event", self.controls_menu)
 
         eb = builder.get_object("eb-swaync")
         if is_command("swaync"):
@@ -756,35 +728,16 @@ class EditorWrapper(object):
             eb.set_sensitive(False)
             eb.set_tooltip_text("'python-dasbus' package required")
 
-        eb = builder.get_object("eb-clock")
-        eb.connect("button-press-event", self.edit_clock)
-
-        eb = builder.get_object("eb-playerctl")
-        eb.connect("button-press-event", self.edit_playerctl)
-
-        eb = builder.get_object("eb-sway-taskbar")
-        eb.connect("button-press-event", self.edit_sway_taskbar)
-
-        eb = builder.get_object("eb-sway-workspaces")
-        eb.connect("button-press-event", self.edit_sway_workspaces)
-
-        eb = builder.get_object("eb-scratchpad")
-        eb.connect("button-press-event", self.edit_scratchpad)
-
-        eb = builder.get_object("eb-openweather")
-        eb.connect("button-press-event", self.edit_openweather)
-
-        eb = builder.get_object("eb-brightness-slider")
-        eb.connect("button-press-event", self.edit_brightness_slider)
-
-        eb = builder.get_object("eb-dwl-tags")
-        eb.connect("button-press-event", self.edit_dwl_tags)
-
-        eb = builder.get_object("eb-executors")
-        eb.connect("button-press-event", self.select_executor)
-
-        eb = builder.get_object("eb-buttons")
-        eb.connect("button-press-event", self.select_button)
+        builder.get_object("eb-clock").connect("button-press-event", self.edit_clock)
+        builder.get_object("eb-playerctl").connect("button-press-event", self.edit_playerctl)
+        builder.get_object("eb-sway-taskbar").connect("button-press-event", self.edit_sway_taskbar)
+        builder.get_object("eb-sway-workspaces").connect("button-press-event", self.edit_sway_workspaces)
+        builder.get_object("eb-scratchpad").connect("button-press-event", self.edit_scratchpad)
+        builder.get_object("eb-openweather").connect("button-press-event", self.edit_openweather)
+        builder.get_object("eb-brightness-slider").connect("button-press-event", self.edit_brightness_slider)
+        builder.get_object("eb-dwl-tags").connect("button-press-event", self.edit_dwl_tags)
+        builder.get_object("eb-executors").connect("button-press-event", self.select_executor)
+        builder.get_object("eb-buttons").connect("button-press-event", self.select_button)
 
         eb = builder.get_object("eb-menu-start")
         if plugin_menu_start:
@@ -892,36 +845,22 @@ class EditorWrapper(object):
         frame = builder.get_object("frame")
         frame.set_label("  {}  ".format(voc["panel-settings"]))
 
-        lbl = builder.get_object("lbl-panel-name")
-        lbl.set_text("{}:".format(voc["panel-name"]))
-        lbl = builder.get_object("lbl-output")
-        lbl.set_text("{}:".format(voc["output"]))
-        lbl = builder.get_object("lbl-position")
-        lbl.set_text("{}:".format(voc["position"]))
-        lbl = builder.get_object("lbl-layer")
-        lbl.set_text("{}:".format(voc["layer"]))
-        lbl = builder.get_object("lbl-controls")
-        lbl.set_text("{}:".format(voc["controls"]))
-        lbl = builder.get_object("lbl-menu-start")
-        lbl.set_text("{}:".format(voc["menu-start"]))
-        lbl = builder.get_object("lbl-width")
-        lbl.set_text("{}:".format(voc["width"]))
-        lbl = builder.get_object("lbl-height")
-        lbl.set_text("{}:".format(voc["height"]))
-        lbl = builder.get_object("lbl-top-margin")
-        lbl.set_text("{}:".format(voc["top-margin"]))
-        lbl = builder.get_object("lbl-bottom-margin")
-        lbl.set_text("{}:".format(voc["bottom-margin"]))
-        lbl = builder.get_object("lbl-horizontal-padding")
-        lbl.set_text("{}:".format(voc["horizontal-padding"]))
-        lbl = builder.get_object("lbl-vertical-padding")
-        lbl.set_text("{}:".format(voc["vertical-padding"]))
-        lbl = builder.get_object("lbl-spacing")
-        lbl.set_text("{}:".format(voc["spacing"]))
-        lbl = builder.get_object("lbl-icon-set")
-        lbl.set_text("{}:".format(voc["icon-set"]))
-        lbl = builder.get_object("lbl-css-name")
-        lbl.set_text("{}:".format(voc["css-name"]))
+        builder.get_object("lbl-panel-name").set_text("{}:".format(voc["panel-name"]))
+        builder.get_object("lbl-output").set_text("{}:".format(voc["output"]))
+        builder.get_object("lbl-position").set_text("{}:".format(voc["position"]))
+        builder.get_object("lbl-layer").set_text("{}:".format(voc["layer"]))
+        builder.get_object("lbl-controls").set_text("{}:".format(voc["controls"]))
+        builder.get_object("lbl-menu-start").set_text("{}:".format(voc["menu-start"]))
+        builder.get_object("lbl-width").set_text("{}:".format(voc["width"]))
+        builder.get_object("lbl-height").set_text("{}:".format(voc["height"]))
+        builder.get_object("lbl-top-margin").set_text("{}:".format(voc["top-margin"]))
+        builder.get_object("lbl-bottom-margin").set_text("{}:".format(voc["bottom-margin"]))
+        builder.get_object("lbl-horizontal-padding").set_text("{}:".format(voc["horizontal-padding"]))
+        builder.get_object("lbl-vertical-padding").set_text("{}:".format(voc["vertical-padding"]))
+        builder.get_object("lbl-spacing").set_text("{}:".format(voc["spacing"]))
+        builder.get_object("lbl-icon-set").set_text("{}:".format(voc["icon-set"]))
+        builder.get_object("lbl-css-name").set_text("{}:".format(voc["css-name"]))
+
         cb = builder.get_object("homogeneous")
         cb.set_label(voc["homogeneous"])
         cb.set_tooltip_text(voc["homogeneous-tooltip"])
@@ -1239,23 +1178,12 @@ class EditorWrapper(object):
         frame = builder.get_object("frame")
         frame.set_label("  {}: SwayTaskbar  ".format(voc["module"]))
 
-        lbl = builder.get_object("lbl-workspaces")
-        lbl.set_text("{}:".format(voc["workspaces"]))
-
-        lbl = builder.get_object("lbl-name-max-length")
-        lbl.set_text("{}:".format(voc["name-max-length"]))
-
-        lbl = builder.get_object("lbl-icon-size")
-        lbl.set_text("{}:".format(voc["icon-size"]))
-
-        lbl = builder.get_object("lbl-workspace-spacing")
-        lbl.set_text("{}:".format(voc["workspace-spacing"]))
-
-        lbl = builder.get_object("lbl-task-padding")
-        lbl.set_text("{}:".format(voc["task-padding"]))
-
-        lbl = builder.get_object("lbl-angle")
-        lbl.set_text("{}:".format(voc["angle"]))
+        builder.get_object("lbl-workspaces").set_text("{}:".format(voc["workspaces"]))
+        builder.get_object("lbl-name-max-length").set_text("{}:".format(voc["name-max-length"]))
+        builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
+        builder.get_object("lbl-workspace-spacing").set_text("{}:".format(voc["workspace-spacing"]))
+        builder.get_object("lbl-task-padding").set_text("{}:".format(voc["task-padding"]))
+        builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
 
         self.eb_workspace_menu = builder.get_object("workspace-menu")
         self.eb_workspace_menu.set_tooltip_text(voc["workspaces-tooltip"])
@@ -1354,19 +1282,12 @@ class EditorWrapper(object):
             settings["task-padding"] = int(val)
 
         settings["show-app-icon"] = self.ckb_show_app_icon.get_active()
-
         settings["show-app-name"] = self.ckb_show_app_name.get_active()
-
         settings["show-layout"] = self.ckb_show_layout.get_active()
-
         settings["workspace-buttons"] = self.workspace_buttons.get_active()
-
         settings["all-workspaces"] = self.ckb_all_workspaces.get_active()
-
         settings["mark-autotiling"] = self.ckb_mark_autotiling.get_active()
-
         settings["mark-xwayland"] = self.ckb_mark_xwayland.get_active()
-
         settings["all-outputs"] = self.ckb_all_outputs.get_active()
 
         try:
@@ -1410,62 +1331,25 @@ class EditorWrapper(object):
         frame = builder.get_object("frame")
         frame.set_label("  {}: Clock  ".format(voc["module"]))
 
-        lbl = builder.get_object("lbl-clock-widget")
-        lbl.set_text(voc["clock-widget"])
-
-        lbl = builder.get_object("lbl-calendar-window")
-        lbl.set_text(voc["calendar-window"])
-
-        lbl = builder.get_object("lbl-format")
-        lbl.set_text("{}:".format(voc["format"]))
-
-        lbl = builder.get_object("lbl-tooltip-text")
-        lbl.set_text("{}:".format(voc["tooltip-text"]))
-
-        lbl = builder.get_object("lbl-on-middle-click")
-        lbl.set_text("{}:".format(voc["on-middle-click"]))
-
-        lbl = builder.get_object("lbl-on-right-click")
-        lbl.set_text("{}:".format(voc["on-right-click"]))
-
-        lbl = builder.get_object("lbl-on-scroll-up")
-        lbl.set_text("{}:".format(voc["on-scroll-up"]))
-
-        lbl = builder.get_object("lbl-on-scroll-down")
-        lbl.set_text("{}:".format(voc["on-scroll-down"]))
-
-        lbl = builder.get_object("lbl-root-css-name")
-        lbl.set_text("{}:".format(voc["root-css-name"]))
-
-        lbl = builder.get_object("lbl-css-name")
-        lbl.set_text("{}:".format(voc["css-name"]))
-
-        lbl = builder.get_object("lbl-interval")
-        lbl.set_text("{}:".format(voc["refresh-interval"]))
-
-        lbl = builder.get_object("lbl-angle")
-        lbl.set_text("{}:".format(voc["angle"]))
-
-        lbl = builder.get_object("lbl-placement")
-        lbl.set_text("{}:".format(voc["placement"]))
-
-        lbl = builder.get_object("lbl-margin-h")
-        lbl.set_text("{}:".format(voc["margin-h"]))
-
-        lbl = builder.get_object("lbl-margin-v")
-        lbl.set_text("{}:".format(voc["margin-v"]))
-
-        lbl = builder.get_object("lbl-css-name-cal")
-        lbl.set_text("{}:".format(voc["css-name"]))
-
-        lbl = builder.get_object("lbl-data-path")
-        lbl.set_text("{}:".format(voc["data-path"]))
-
-        lbl = builder.get_object("lbl-icon-size")
-        lbl.set_text("{}:".format(voc["icon-size"]))
-
-        lbl = builder.get_object("lbl-interval-cal")
-        lbl.set_text("{}:".format(voc["refresh-interval"]))
+        builder.get_object("lbl-clock-widget").set_text(voc["clock-widget"])
+        builder.get_object("lbl-calendar-window").set_text(voc["calendar-window"])
+        builder.get_object("lbl-format").set_text("{}:".format(voc["format"]))
+        builder.get_object("lbl-tooltip-text").set_text("{}:".format(voc["tooltip-text"]))
+        builder.get_object("lbl-on-middle-click").set_text("{}:".format(voc["on-middle-click"]))
+        builder.get_object("lbl-on-right-click").set_text("{}:".format(voc["on-right-click"]))
+        builder.get_object("lbl-on-scroll-up").set_text("{}:".format(voc["on-scroll-up"]))
+        builder.get_object("lbl-on-scroll-down").set_text("{}:".format(voc["on-scroll-down"]))
+        builder.get_object("lbl-root-css-name").set_text("{}:".format(voc["root-css-name"]))
+        builder.get_object("lbl-css-name").set_text("{}:".format(voc["css-name"]))
+        builder.get_object("lbl-interval").set_text("{}:".format(voc["refresh-interval"]))
+        builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
+        builder.get_object("lbl-placement").set_text("{}:".format(voc["placement"]))
+        builder.get_object("lbl-margin-h").set_text("{}:".format(voc["margin-h"]))
+        builder.get_object("lbl-margin-v").set_text("{}:".format(voc["margin-v"]))
+        builder.get_object("lbl-css-name-cal").set_text("{}:".format(voc["css-name"]))
+        builder.get_object("lbl-data-path").set_text("{}:".format(voc["data-path"]))
+        builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
+        builder.get_object("lbl-interval-cal").set_text("{}:".format(voc["refresh-interval"]))
 
         self.eb_format = builder.get_object("format")
         self.eb_format.set_tooltip_text(voc["clock-format-tooltip"])
@@ -1555,7 +1439,6 @@ class EditorWrapper(object):
         settings["tooltip-date-format"] = self.eb_tooltip_date.get_active()
         settings["on-middle-click"] = self.eb_on_middle_click.get_text()
         settings["on-right-click"] = self.eb_on_right_click.get_text()
-
         settings["on-scroll-up"] = self.eb_on_scroll_up.get_text()
         settings["on-scroll-down"] = self.eb_on_scroll_down.get_text()
         settings["root-css-name"] = self.eb_root_css_name_clock.get_text()
@@ -1608,38 +1491,17 @@ class EditorWrapper(object):
         frame = builder.get_object("frame")
         frame.set_label("  {}: {}  ".format(voc["module"], voc["swaync"]))
 
-        lbl = builder.get_object("lbl-tooltip-text")
-        lbl.set_text("{}:".format(voc["tooltip-text"]))
-
-        lbl = builder.get_object("lbl-on-left-click")
-        lbl.set_text("{}:".format(voc["on-left-click"]))
-
-        lbl = builder.get_object("lbl-on-middle-click")
-        lbl.set_text("{}:".format(voc["on-middle-click"]))
-
-        lbl = builder.get_object("lbl-on-right-click")
-        lbl.set_text("{}:".format(voc["on-right-click"]))
-
-        lbl = builder.get_object("lbl-on-scroll-up")
-        lbl.set_text("{}:".format(voc["on-scroll-up"]))
-
-        lbl = builder.get_object("lbl-on-scroll-down")
-        lbl.set_text("{}:".format(voc["on-scroll-down"]))
-
-        lbl = builder.get_object("lbl-root-css-name")
-        lbl.set_text("{}:".format(voc["root-css-name"]))
-
-        lbl = builder.get_object("lbl-css-name")
-        lbl.set_text("{}:".format(voc["css-name"]))
-
-        lbl = builder.get_object("lbl-icon-placement")
-        lbl.set_text("{}:".format(voc["icon-placement"]))
-
-        lbl = builder.get_object("lbl-icon-size")
-        lbl.set_text("{}:".format(voc["icon-size"]))
-
-        lbl = builder.get_object("lbl-interval")
-        lbl.set_text("{}:".format(voc["refresh-interval"]))
+        builder.get_object("lbl-tooltip-text").set_text("{}:".format(voc["tooltip-text"]))
+        builder.get_object("lbl-on-left-click").set_text("{}:".format(voc["on-left-click"]))
+        builder.get_object("lbl-on-middle-click").set_text("{}:".format(voc["on-middle-click"]))
+        builder.get_object("lbl-on-right-click").set_text("{}:".format(voc["on-right-click"]))
+        builder.get_object("lbl-on-scroll-up").set_text("{}:".format(voc["on-scroll-up"]))
+        builder.get_object("lbl-on-scroll-down").set_text("{}:".format(voc["on-scroll-down"]))
+        builder.get_object("lbl-root-css-name").set_text("{}:".format(voc["root-css-name"]))
+        builder.get_object("lbl-css-name").set_text("{}:".format(voc["css-name"]))
+        builder.get_object("lbl-icon-placement").set_text("{}:".format(voc["icon-placement"]))
+        builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
+        builder.get_object("lbl-interval").set_text("{}:".format(voc["refresh-interval"]))
 
         self.nc_tooltip_text = builder.get_object("tooltip-text")
         self.nc_tooltip_text.set_text(settings["tooltip-text"])
@@ -1728,17 +1590,10 @@ class EditorWrapper(object):
         frame = builder.get_object("frame")
         frame.set_label("  {}: Tray  ".format(voc["module"]))
 
-        lbl = builder.get_object("lbl-icon-size")
-        lbl.set_text("{}:".format(voc["icon-size"]))
-
-        lbl = builder.get_object("lbl-root-css-name")
-        lbl.set_text("{}:".format(voc["root-css-name"]))
-
-        lbl = builder.get_object("lbl-css-name")
-        lbl.set_text("{}:".format(voc["css-name"]))
-
-        lbl = builder.get_object("lbl-smooth-scrolling-threshold")
-        lbl.set_text("{}:".format(voc["smooth-scrolling-threshold"]))
+        builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
+        builder.get_object("lbl-root-css-name").set_text("{}:".format(voc["root-css-name"]))
+        builder.get_object("lbl-css-name").set_text("{}:".format(voc["css-name"]))
+        builder.get_object("lbl-smooth-scrolling-threshold").set_text("{}:".format(voc["smooth-scrolling-threshold"]))
 
         self.nc_icon_size = builder.get_object("icon-size")
         self.nc_icon_size.set_numeric(True)
@@ -1796,29 +1651,14 @@ class EditorWrapper(object):
         frame = builder.get_object("frame")
         frame.set_label("  {}: Playerctl  ".format(voc["module"]))
 
-        lbl = builder.get_object("lbl-buttons-position")
-        lbl.set_text("{}:".format(voc["buttons-position"]))
-
-        lbl = builder.get_object("lbl-icons-size")
-        lbl.set_text("{}:".format(voc["icons-size"]))
-
-        lbl = builder.get_object("lbl-label-length")
-        lbl.set_text("{}:".format(voc["label-length"]))
-
-        lbl = builder.get_object("lbl-cover-size")
-        lbl.set_text("{}:".format(voc["cover-size"]))
-
-        lbl = builder.get_object("lbl-button-css-name")
-        lbl.set_text("{}:".format(voc["button-css-name"]))
-
-        lbl = builder.get_object("lbl-label-css-name")
-        lbl.set_text("{}:".format(voc["label-css-name"]))
-
-        lbl = builder.get_object("lbl-interval")
-        lbl.set_text("{}:".format(voc["refresh-interval"]))
-
-        lbl = builder.get_object("lbl-angle")
-        lbl.set_text("{}:".format(voc["angle"]))
+        builder.get_object("lbl-buttons-position").set_text("{}:".format(voc["buttons-position"]))
+        builder.get_object("lbl-icons-size").set_text("{}:".format(voc["icons-size"]))
+        builder.get_object("lbl-label-length").set_text("{}:".format(voc["label-length"]))
+        builder.get_object("lbl-cover-size").set_text("{}:".format(voc["cover-size"]))
+        builder.get_object("lbl-button-css-name").set_text("{}:".format(voc["button-css-name"]))
+        builder.get_object("lbl-label-css-name").set_text("{}:".format(voc["label-css-name"]))
+        builder.get_object("lbl-interval").set_text("{}:".format(voc["refresh-interval"]))
+        builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
 
         self.cb_buttons_position = builder.get_object("buttons-position")
         self.cb_buttons_position.set_active_id(settings["buttons-position"])
@@ -1880,10 +1720,8 @@ class EditorWrapper(object):
         settings["cover-size"] = int(self.sc_cover_size.get_value())
         settings["scroll"] = self.cb_scroll.get_active()
         settings["show-cover"] = self.cb_show_cover.get_active()
-
         settings["button-css-name"] = self.eb_button_css_name.get_text()
         settings["label-css-name"] = self.eb_label_css_name.get_text()
-
         settings["interval"] = int(self.sc_interval_playerctl.get_value())
 
         try:
@@ -1918,23 +1756,12 @@ class EditorWrapper(object):
         frame = builder.get_object("frame")
         frame.set_label("  {}: SwayWorkspaces  ".format(voc["module"]))
 
-        lbl = builder.get_object("lbl-workspaces-to-show")
-        lbl.set_text("{}:".format(voc["workspaces-to-show"]))
-
-        lbl = builder.get_object("lbl-custom-labels")
-        lbl.set_text("{}:".format(voc["custom-labels"]))
-
-        lbl = builder.get_object("lbl-focused-labels")
-        lbl.set_text("{}:".format(voc["focused-labels"]))
-
-        lbl = builder.get_object("lbl-icon-size")
-        lbl.set_text("{}:".format(voc["icon-size"]))
-
-        lbl = builder.get_object("lbl-window-name-length-limit")
-        lbl.set_text("{}:".format(voc["window-name-length-limit"]))
-
-        lbl = builder.get_object("lbl-angle")
-        lbl.set_text("{}:".format(voc["angle"]))
+        builder.get_object("lbl-workspaces-to-show").set_text("{}:".format(voc["workspaces-to-show"]))
+        builder.get_object("lbl-custom-labels").set_text("{}:".format(voc["custom-labels"]))
+        builder.get_object("lbl-focused-labels").set_text("{}:".format(voc["focused-labels"]))
+        builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
+        builder.get_object("lbl-window-name-length-limit").set_text("{}:".format(voc["window-name-length-limit"]))
+        builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
 
         self.eb_workspaces_menu = builder.get_object("numbers")
         self.eb_workspaces_menu.set_tooltip_text(voc["workspaces-to-show-tooltip"])
@@ -2243,14 +2070,9 @@ class EditorWrapper(object):
         frame = builder.get_object("frame")
         frame.set_label("  {}: Scratchpad  ".format(voc["module"]))
 
-        lbl = builder.get_object("lbl-icon-size")
-        lbl.set_text("{}:".format(voc["icon-size"]))
-
-        lbl = builder.get_object("lbl-css-name")
-        lbl.set_text("{}:".format(voc["css-name"]))
-
-        lbl = builder.get_object("lbl-angle")
-        lbl.set_text("{}:".format(voc["angle"]))
+        builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
+        builder.get_object("lbl-css-name").set_text("{}:".format(voc["css-name"]))
+        builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
 
         self.scratchpad_css_name = builder.get_object("css-name")
         self.scratchpad_css_name.set_text(settings["css-name"])
@@ -2337,92 +2159,35 @@ class EditorWrapper(object):
         frame = builder.get_object("frame")
         frame.set_label("  {}: OpenWeather  ".format(voc["module"]))
 
-        lbl = builder.get_object("lbl-common")
-        lbl.set_markup("<b>{}</b>".format(voc["common"]))
-
-        lbl = builder.get_object("lbl-api-key")
-        lbl.set_markup("{}:".format(voc["api-key"]))
-
-        lbl = builder.get_object("lbl-latitude")
-        lbl.set_markup("{}:".format(voc["latitude"]))
-
-        lbl = builder.get_object("lbl-longitude")
-        lbl.set_markup("{}:".format(voc["longitude"]))
-
-        lbl = builder.get_object("lbl-language")
-        lbl.set_markup("{}:".format(voc["language"]))
-
-        lbl = builder.get_object("lbl-units")
-        lbl.set_markup("{}:".format(voc["units"]))
-
-        lbl = builder.get_object("lbl-check-interval")
-        lbl.set_markup("{}:".format(voc["check-interval"]))
-
-        lbl = builder.get_object("lbl-weather-icons")
-        lbl.set_markup("{}:".format(voc["weather-icons"]))
-
-        lbl = builder.get_object("lbl-custom-location-name")
-        lbl.set_markup("{}:".format(voc["custom-location-name"]))
-
-        lbl = builder.get_object("lbl-panel-widget")
-        lbl.set_markup("<b>{}</b>".format(voc["panel-widget"]))
-
-        lbl = builder.get_object("lbl-on-right-click")
-        lbl.set_markup("{}:".format(voc["on-right-click"]))
-
-        lbl = builder.get_object("lbl-on-middle-click")
-        lbl.set_markup("{}:".format(voc["on-middle-click"]))
-
-        lbl = builder.get_object("lbl-on-scroll")
-        lbl.set_markup("{}:".format(voc["on-scroll"]))
-
-        lbl = builder.get_object("lbl-icon-placement")
-        lbl.set_markup("{}:".format(voc["icon-placement"]))
-
-        lbl = builder.get_object("lbl-icon-size")
-        lbl.set_markup("{}:".format(voc["icon-size"]))
-
-        lbl = builder.get_object("lbl-css-name")
-        lbl.set_markup("{}:".format(voc["css-name"]))
-
-        lbl = builder.get_object("lbl-angle")
-        lbl.set_markup("{}:".format(voc["angle"]))
-
-        lbl = builder.get_object("lbl-forecast-window")
-        lbl.set_markup("<b>{}</b>".format(voc["forecast-window"]))
-
-        lbl = builder.get_object("lbl-icon-set")
-        lbl.set_markup("{}:".format(voc["icon-set"]))
-
-        lbl = builder.get_object("lbl-header-icon-size")
-        lbl.set_markup("{}:".format(voc["header-icon-size"]))
-
-        lbl = builder.get_object("lbl-icon-size-weather")
-        lbl.set_markup("{}:".format(voc["icon-size"]))
-
-        lbl = builder.get_object("lbl-text-size")
-        lbl.set_markup("{}:".format(voc["text-size"]))
-
-        lbl = builder.get_object("lbl-css-name-weather")
-        lbl.set_markup("{}:".format(voc["css-name"]))
-
-        lbl = builder.get_object("lbl-window-placement")
-        lbl.set_markup("{}:".format(voc["window-placement"]))
-
-        lbl = builder.get_object("lbl-side-margin")
-        lbl.set_markup("{}:".format(voc["side-margin"]))
-
-        lbl = builder.get_object("lbl-top-margin")
-        lbl.set_markup("{}:".format(voc["top-margin"]))
-
-        lbl = builder.get_object("lbl-bottom-margin")
-        lbl.set_markup("{}:".format(voc["bottom-margin"]))
-
-        lbl = builder.get_object("lbl-alerts")
-        lbl.set_markup("<b>{}</b>".format(voc["alerts"]))
-
-        lbl = builder.get_object("lbl-weatherbit-api-key")
-        lbl.set_markup("{}:".format(voc["weatherbit-api-key"]))
+        builder.get_object("lbl-common").set_markup("<b>{}</b>".format(voc["common"]))
+        builder.get_object("lbl-api-key").set_markup("{}:".format(voc["api-key"]))
+        builder.get_object("lbl-latitude").set_markup("{}:".format(voc["latitude"]))
+        builder.get_object("lbl-longitude").set_markup("{}:".format(voc["longitude"]))
+        builder.get_object("lbl-language").set_markup("{}:".format(voc["language"]))
+        builder.get_object("lbl-units").set_markup("{}:".format(voc["units"]))
+        builder.get_object("lbl-check-interval").set_markup("{}:".format(voc["check-interval"]))
+        builder.get_object("lbl-weather-icons").set_markup("{}:".format(voc["weather-icons"]))
+        builder.get_object("lbl-custom-location-name").set_markup("{}:".format(voc["custom-location-name"]))
+        builder.get_object("lbl-panel-widget").set_markup("<b>{}</b>".format(voc["panel-widget"]))
+        builder.get_object("lbl-on-right-click").set_markup("{}:".format(voc["on-right-click"]))
+        builder.get_object("lbl-on-middle-click").set_markup("{}:".format(voc["on-middle-click"]))
+        builder.get_object("lbl-on-scroll").set_markup("{}:".format(voc["on-scroll"]))
+        builder.get_object("lbl-icon-placement").set_markup("{}:".format(voc["icon-placement"]))
+        builder.get_object("lbl-icon-size").set_markup("{}:".format(voc["icon-size"]))
+        builder.get_object("lbl-css-name").set_markup("{}:".format(voc["css-name"]))
+        builder.get_object("lbl-angle").set_markup("{}:".format(voc["angle"]))
+        builder.get_object("lbl-forecast-window").set_markup("<b>{}</b>".format(voc["forecast-window"]))
+        builder.get_object("lbl-icon-set").set_markup("{}:".format(voc["icon-set"]))
+        builder.get_object("lbl-header-icon-size").set_markup("{}:".format(voc["header-icon-size"]))
+        builder.get_object("lbl-icon-size-weather").set_markup("{}:".format(voc["icon-size"]))
+        builder.get_object("lbl-text-size").set_markup("{}:".format(voc["text-size"]))
+        builder.get_object("lbl-css-name-weather").set_markup("{}:".format(voc["css-name"]))
+        builder.get_object("lbl-window-placement").set_markup("{}:".format(voc["window-placement"]))
+        builder.get_object("lbl-side-margin").set_markup("{}:".format(voc["side-margin"]))
+        builder.get_object("lbl-top-margin").set_markup("{}:".format(voc["top-margin"]))
+        builder.get_object("lbl-bottom-margin").set_markup("{}:".format(voc["bottom-margin"]))
+        builder.get_object("lbl-alerts").set_markup("<b>{}</b>".format(voc["alerts"]))
+        builder.get_object("lbl-weatherbit-api-key").set_markup("{}:".format(voc["weatherbit-api-key"]))
 
         self.ow_appid = builder.get_object("appid")
         self.ow_appid.set_text(settings["appid"])
@@ -2673,75 +2438,29 @@ class EditorWrapper(object):
         frame = builder.get_object("frame")
         frame.set_label("  {}: BrightnessSlider  ".format(voc["module"]))
 
-        lbl = builder.get_object("lbl-backlight-device")
-        lbl.set_text("{}:".format(voc["backlight-device"]))
-
-        entry = builder.get_object("backlight-device")
-        entry.set_tooltip_text(voc["backlight-device-tooltip"])
-
-        lbl = builder.get_object("lbl-step-size")
-        lbl.set_text("{}:".format(voc["step-size"]))
-
-        entry = builder.get_object("step-size")
-        entry.set_tooltip_text(voc["step-size-tooltip"])
-
-        lbl = builder.get_object("lbl-icon-placement")
-        lbl.set_text("{}:".format(voc["icon-placement"]))
-
-        cb = builder.get_object("show-values")
-        cb.set_label(voc["values-in-widget"])
-
-        lbl = builder.get_object("lbl-root-css-name")
-        lbl.set_text("{}:".format(voc["widget-css-name"]))
-
-        lbl = builder.get_object("lbl-css-name")
-        lbl.set_text("{}:".format(voc["slider-css-name"]))
-
-        lbl = builder.get_object("lbl-icon-size")
-        lbl.set_text("{}:".format(voc["icon-size"]))
-
-        lbl = builder.get_object("lbl-interval")
-        lbl.set_text("{}:".format(voc["refresh-interval"]))
-
-        lbl = builder.get_object("lbl-angle")
-        lbl.set_text("{}:".format(voc["angle"]))
-
-        entry = builder.get_object("angle")
-        entry.set_tooltip_text(voc["angle-tooltip"])
-
-        lbl = builder.get_object("lbl-popup-horizontal-alignment")
-        lbl.set_text("{}:".format(voc["popup-horizontal-alignment"]))
-
-        lbl = builder.get_object("lbl-popup-vertical-alignment")
-        lbl.set_text("{}:".format(voc["popup-vertical-alignment"]))
-
-        lbl = builder.get_object("lbl-popup-slider-width")
-        lbl.set_text("{}:".format(voc["popup-slider-width"]))
-
-        lbl = builder.get_object("lbl-popup-slider-height")
-        lbl.set_text("{}:".format(voc["popup-slider-height"]))
-
-        lbl = builder.get_object("lbl-popup-horizontal-margin")
-        lbl.set_text("{}:".format(voc["popup-horizontal-margin"]))
-
-        lbl = builder.get_object("lbl-popup-vertical-margin")
-        lbl.set_text("{}:".format(voc["popup-vertical-margin"]))
-
-        lbl = builder.get_object("lbl-slider-orientation")
-        lbl.set_text("{}:".format(voc["slider-orientation"]))
-
-        lbl = builder.get_object("lbl-slider-icon-placement")
-        lbl.set_text("{}:".format(voc["slider-icon-placement"]))
-
-        cb = builder.get_object("slider-inverted")
-        cb.set_label(voc["invert-slider"])
-
-        cb = builder.get_object("hover-opens")
-        cb.set_label(voc["widget-hover-opens"])
-
-        cb = builder.get_object("leave-closes")
-        cb.set_label(voc["window-leave-closes"])
-
+        builder.get_object("lbl-backlight-device").set_text("{}:".format(voc["backlight-device"]))
+        builder.get_object("backlight-device").set_tooltip_text(voc["backlight-device-tooltip"])
+        builder.get_object("lbl-step-size").set_text("{}:".format(voc["step-size"]))
+        builder.get_object("step-size").set_tooltip_text(voc["step-size-tooltip"])
+        builder.get_object("lbl-icon-placement").set_text("{}:".format(voc["icon-placement"]))
+        builder.get_object("show-values").set_label(voc["values-in-widget"])
+        builder.get_object("lbl-root-css-name").set_text("{}:".format(voc["widget-css-name"]))
+        builder.get_object("lbl-css-name").set_text("{}:".format(voc["slider-css-name"]))
+        builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
+        builder.get_object("lbl-interval").set_text("{}:".format(voc["refresh-interval"]))
+        builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
+        builder.get_object("angle").set_tooltip_text(voc["angle-tooltip"])
+        builder.get_object("lbl-popup-horizontal-alignment").set_text("{}:".format(voc["popup-horizontal-alignment"]))
+        builder.get_object("lbl-popup-vertical-alignment").set_text("{}:".format(voc["popup-vertical-alignment"]))
+        builder.get_object("lbl-popup-slider-width").set_text("{}:".format(voc["popup-slider-width"]))
+        builder.get_object("lbl-popup-slider-height").set_text("{}:".format(voc["popup-slider-height"]))
+        builder.get_object("lbl-popup-horizontal-margin").set_text("{}:".format(voc["popup-horizontal-margin"]))
+        builder.get_object("lbl-popup-vertical-margin").set_text("{}:".format(voc["popup-vertical-margin"]))
+        builder.get_object("lbl-slider-orientation").set_text("{}:".format(voc["slider-orientation"]))
+        builder.get_object("lbl-slider-icon-placement").set_text("{}:".format(voc["slider-icon-placement"]))
+        builder.get_object("slider-inverted").set_label(voc["invert-slider"])
+        builder.get_object("hover-opens").set_label(voc["widget-hover-opens"])
+        builder.get_object("leave-closes").set_label(voc["window-leave-closes"])
         builder.get_object("popup-width").set_tooltip_text(voc["slider-width-tooltip"])
         builder.get_object("popup-height").set_tooltip_text(voc["slider-height-tooltip"])
 
@@ -2801,14 +2520,9 @@ class EditorWrapper(object):
         frame = builder.get_object("frame")
         frame.set_label("  {}: DwlTags  ".format(voc["module"]))
 
-        lbl = builder.get_object("lbl-tag-names")
-        lbl.set_text("{}:".format(voc["tag-names"]))
-
-        lbl = builder.get_object("lbl-title-max-length")
-        lbl.set_text("{}:".format(voc["title-max-length"]))
-
-        lbl = builder.get_object("lbl-angle")
-        lbl.set_text("{}:".format(voc["angle"]))
+        builder.get_object("lbl-tag-names").set_text("{}:".format(voc["tag-names"]))
+        builder.get_object("lbl-title-max-length").set_text("{}:".format(voc["title-max-length"]))
+        builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
 
         self.dwl_tag_names = builder.get_object("tag-names")
         self.dwl_tag_names.set_tooltip_text(voc["tag-names-tooltip"])
@@ -3626,44 +3340,19 @@ class EditorWrapper(object):
         check_key(settings["commands"], "battery", "")
         self.ctrl_cdm_battery.set_text(settings["commands"]["battery"])
 
-        lbl = builder.get_object("lbl-battery-low-notification")
-        lbl.set_text("{}:".format(voc["battery-low-notification"]))
-
-        lbl = builder.get_object("lbl-battery-low-interval")
-        lbl.set_text("{}:".format(voc["battery-low-check-interval"]))
-
-        lbl = builder.get_object("lbl-window-width")
-        lbl.set_text("{}:".format(voc["window-width"]))
-
-        lbl = builder.get_object("lbl-horizontal-window-margin")
-        lbl.set_text("{}:".format(voc["horizontal-window-margin"]))
-
-        lbl = builder.get_object("lbl-vertical-window-margin")
-        lbl.set_text("{}:".format(voc["vertical-window-margin"]))
-
-        lbl = builder.get_object("lbl-icon-size")
-        lbl.set_text("{}:".format(voc["icon-size"]))
-
-        lbl = builder.get_object("lbl-interval")
-        lbl.set_text("{}:".format(voc["refresh-interval"]))
-
-        lbl = builder.get_object("lbl-angle")
-        lbl.set_text("{}:".format(voc["angle"]))
-
-        sb = builder.get_object("angle")
-        sb.set_tooltip_text(voc["angle-tooltip"])
-
-        cb = builder.get_object("show-values")
-        cb.set_label(voc["values-in-widget"])
-
-        cb = builder.get_object("hover-opens")
-        cb.set_label(voc["widget-hover-opens"])
-
-        cb = builder.get_object("leave-closes")
-        cb.set_label(voc["window-leave-closes"])
-
-        cb = builder.get_object("click-closes")
-        cb.set_label(voc["click-outside-closes"])
+        builder.get_object("lbl-battery-low-notification").set_text("{}:".format(voc["battery-low-notification"]))
+        builder.get_object("lbl-battery-low-interval").set_text("{}:".format(voc["battery-low-check-interval"]))
+        builder.get_object("lbl-window-width").set_text("{}:".format(voc["window-width"]))
+        builder.get_object("lbl-horizontal-window-margin").set_text("{}:".format(voc["horizontal-window-margin"]))
+        builder.get_object("lbl-vertical-window-margin").set_text("{}:".format(voc["vertical-window-margin"]))
+        builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
+        builder.get_object("lbl-interval").set_text("{}:".format(voc["refresh-interval"]))
+        builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
+        builder.get_object("angle").set_tooltip_text(voc["angle-tooltip"])
+        builder.get_object("show-values").set_label(voc["values-in-widget"])
+        builder.get_object("hover-opens").set_label(voc["widget-hover-opens"])
+        builder.get_object("leave-closes").set_label(voc["window-leave-closes"])
+        builder.get_object("click-closes").set_label(voc["click-outside-closes"])
 
         self.ctrl_root_css_name = builder.get_object("root-css-name")
         self.ctrl_root_css_name.set_text(settings["root-css-name"])
@@ -3779,16 +3468,13 @@ class EditorWrapper(object):
         settings["processes-label"] = self.ctrl_comp_processes_label.get_text()
         settings["root-css-name"] = self.ctrl_root_css_name.get_text()
         settings["css-name"] = self.ctrl_css_name.get_text()
-
         settings["battery-low-level"] = int(self.ctrl_comp_battery_low_level.get_value())
         settings["battery-low-interval"] = int(self.ctrl_comp_battery_low_interval.get_value())
-
         settings["window-width"] = int(self.ctrl_window_width.get_value())
         settings["window-margin-horizontal"] = int(self.ctrl_window_margin_horizontal.get_value())
         settings["window-margin-vertical"] = int(self.ctrl_window_margin_vertical.get_value())
         settings["icon-size"] = int(self.ctrl_icon_size.get_value())
         settings["interval"] = int(self.ctrl_interval.get_value())
-
         settings["show-values"] = self.ctrl_show_values.get_active()
         settings["hover-opens"] = self.ctrl_hover_opens.get_active()
         settings["leave-closes"] = self.ctrl_leave_closes.get_active()
