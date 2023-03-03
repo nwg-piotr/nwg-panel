@@ -68,7 +68,7 @@ def on_button_press(window, event):
 
 
 class OpenWeather(Gtk.EventBox):
-    def __init__(self, settings, icons_path=""):
+    def __init__(self, settings, voc, icons_path=""):
         self.src_tag = 0
         self.alerts_scrolled_window = None
         defaults = {"appid": "",
@@ -114,20 +114,8 @@ class OpenWeather(Gtk.EventBox):
             check_key(settings, key, defaults[key])
 
         self.set_property("name", settings["css-name"])
-
         self.settings = settings
-
-        self.lang = load_json(os.path.join(config_dir, "langs/weather_en"))
-        if self.settings["lang"]:
-            loc_file = os.path.join(config_dir, "langs/weather_{}".format(self.settings["lang"]))
-            try:
-                loc = load_json(loc_file)
-                for key in loc:
-                    self.lang[key] = loc[key]
-                eprint("Loaded translation from {}".format(loc_file))
-            except:
-                eprint("Translation into '{}' corrupted or does not exist.".format(self.settings["lang"]))
-
+        self.lang = voc
         self.icons_path = icons_path
         self.popup_icons = os.path.join(config_dir, "icons_light") if self.settings[
                                                                           "ow-popup-icons"] == "light" else os.path.join(

@@ -82,6 +82,29 @@ if sway:
 common_settings = {}
 restart_cmd = ""
 sig_dwl = 0
+voc = {}
+
+def load_vocabulary():
+    global voc
+    # basic vocabulary (for en_US)
+    voc = load_json(os.path.join(dir_name, "langs", "en_US.json"))
+    if not voc:
+        eprint("Failed loading vocabulary")
+        sys.exit(1)
+
+    shell_data = load_shell_data()
+    lang = os.getenv("LANG").split(".")[0] if not shell_data["interface-locale"] else shell_data["interface-locale"]
+    # translate if translation available
+    if lang != "en_US":
+        loc_file = os.path.join(dir_name, "langs", "{}.json".format(lang))
+        if os.path.isfile(loc_file):
+            # localized vocabulary
+            loc = load_json(loc_file)
+            if not loc:
+                eprint("Failed loading translation into '{}'".format(lang))
+            else:
+                for key in loc:
+                    voc[key] = loc[key]
 
 
 def signal_handler(sig, frame):
@@ -238,7 +261,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
         if item == "openweather":
             if "python-requests" in common.commands and common.commands["python-requests"]:
                 if item in panel:
-                    openweather = OpenWeather(panel[item], icons_path)
+                    openweather = OpenWeather(panel[item], voc, icons_path=icons_path)
                     container.pack_start(openweather, False, False, panel["items-padding"])
             else:
                 eprint("OpenWeather module needs the 'python-requests' package")
@@ -347,6 +370,8 @@ def main():
 
     common.config_dir = get_config_dir()
 
+    load_vocabulary()
+
     global common_settings
     cs_file = os.path.join(common.config_dir, "common-settings.json")
     if not os.path.isfile(cs_file):
@@ -404,7 +429,7 @@ def main():
     copy_files(os.path.join(dir_name, "icons_light"), os.path.join(common.config_dir, "icons_light"))
     copy_files(os.path.join(dir_name, "icons_dark"), os.path.join(common.config_dir, "icons_dark"))
     copy_files(os.path.join(dir_name, "icons_color"), os.path.join(common.config_dir, "icons_color"))
-    copy_files(os.path.join(dir_name, "langs"), os.path.join(common.config_dir, "langs"))
+    # copy_files(os.path.join(dir_name, "langs"), os.path.join(common.config_dir, "langs"))
     copy_executors(os.path.join(dir_name, "executors"), os.path.join(common.config_dir, "executors"))
     copy_files(os.path.join(dir_name, "config"), common.config_dir, args.restore)
     copy_files(os.path.join(dir_name, "local"), local_dir())

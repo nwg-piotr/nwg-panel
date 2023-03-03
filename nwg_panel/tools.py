@@ -164,11 +164,6 @@ def get_config_dir():
         print("Creating '{}'".format(folder))
         os.makedirs(folder, exist_ok=True)
 
-    folder = os.path.join(config_dir, "langs")
-    if not os.path.isdir(os.path.join(folder)):
-        print("Creating '{}'".format(folder))
-        os.makedirs(folder, exist_ok=True)
-
     folder = os.path.join(config_dir, "executors")
     if not os.path.isdir(os.path.join(folder)):
         print("Creating '{}'".format(folder))

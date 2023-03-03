@@ -19,18 +19,6 @@
         <property name="row-spacing">6</property>
         <property name="column-spacing">12</property>
         <child>
-          <object class="GtkLabel" id="lbl-language">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="halign">end</property>
-            <property name="label" translatable="yes">Language:</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">4</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkLabel" id="lbl-check-interval">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -161,17 +149,6 @@
           <packing>
             <property name="left-attach">1</property>
             <property name="top-attach">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkEntry" id="lang">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">Check available languages at https://openweathermap.org/current#multi</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">4</property>
           </packing>
         </child>
         <child>
@@ -882,6 +859,29 @@ Creative Commons Attribution-ShareAlike 4.0</property>
           <packing>
             <property name="left-attach">2</property>
             <property name="top-attach">33</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="lbl-language">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Language:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="lang">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="tooltip-text" translatable="yes">Check available languages at https://openweathermap.org/current#multi</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">4</property>
           </packing>
         </child>
         <child>
