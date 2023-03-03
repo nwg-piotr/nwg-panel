@@ -32,7 +32,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-output">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -70,7 +70,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-position">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -85,9 +85,6 @@
           <object class="GtkComboBoxText" id="layer">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">For typical panels use 'top' or 'bottom.
-Horizontal and vertical panels should not
-be placed on the same layer.</property>
             <items>
               <item id="background" translatable="yes">background</item>
               <item id="bottom" translatable="yes">bottom</item>
@@ -101,7 +98,7 @@ be placed on the same layer.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-layer">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -128,7 +125,7 @@ be placed on the same layer.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-controls">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -140,7 +137,7 @@ be placed on the same layer.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-css-name">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -163,7 +160,7 @@ be placed on the same layer.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-icon-set">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -190,7 +187,7 @@ be placed on the same layer.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-spacing">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -213,7 +210,7 @@ be placed on the same layer.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-vertical-padding">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -236,7 +233,7 @@ be placed on the same layer.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-horizontal-padding">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -259,7 +256,7 @@ be placed on the same layer.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-bottom-margin">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -282,7 +279,7 @@ be placed on the same layer.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-top-margin">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -305,7 +302,7 @@ be placed on the same layer.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-height">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -329,7 +326,7 @@ be placed on the same layer.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-width">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -377,7 +374,7 @@ be placed on the same layer.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-menu-start">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -404,7 +401,7 @@ be placed on the same layer.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-panel-name">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>

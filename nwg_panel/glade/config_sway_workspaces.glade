@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
+<!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkFrame" id="frame">
@@ -19,21 +19,6 @@
         <property name="row-spacing">10</property>
         <property name="column-spacing">10</property>
         <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Space-separated numbers 
-of workspaces to show</property>
-            <property name="double-buffered">False</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkEntry" id="numbers">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
@@ -44,7 +29,7 @@ of workspaces to show</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-workspaces-to-show">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -84,7 +69,7 @@ of workspaces to show</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-window-name-length-limit">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -106,7 +91,7 @@ of workspaces to show</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-icon-size">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -143,7 +128,7 @@ of workspaces to show</property>
         </child>
         <child>
           <object class="GtkCheckButton" id="mark-autotiling">
-            <property name="label" translatable="yes">Mark-autotiling</property>
+            <property name="label" translatable="yes">Mark autotiling</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
@@ -173,8 +158,6 @@ of workspaces to show</property>
           <object class="GtkComboBoxText" id="angle">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">the angle that the baseline of the label makes with 
-the horizontal, in degrees, measured counterclockwise</property>
             <items>
               <item id="0.0" translatable="yes">0°</item>
               <item id="90.0" translatable="yes">90°</item>
@@ -187,7 +170,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-angle">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -199,7 +182,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-custom-labels">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -211,7 +194,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-focused-labels">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -243,38 +226,13 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">One single label or
-multiple custom labels
-for each workspace
-number specified above</property>
-            <property name="double-buffered">False</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">2</property>
-          </packing>
+          <placeholder/>
         </child>
         <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">One single label or
-multiple custom labels
-for each workspace
-number specified above</property>
-            <property name="double-buffered">False</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">3</property>
-          </packing>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>

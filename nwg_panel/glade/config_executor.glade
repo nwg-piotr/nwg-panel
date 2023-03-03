@@ -29,7 +29,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-css-name">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -51,7 +51,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-root-css-name">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -73,7 +73,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-on-scroll-down">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -95,7 +95,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-on-scroll-up">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -117,7 +117,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-on-right-click">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -139,7 +139,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-on-middle-click">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -161,7 +161,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-on-left-click">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -183,7 +183,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-tooltip-text">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -192,22 +192,6 @@
           <packing>
             <property name="left-attach">0</property>
             <property name="top-attach">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Script to execute: should return 
-an icon name / path and a label 
-in 1 or 2 lines of text. See Wiki 
-for details.</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">2</property>
           </packing>
         </child>
         <child>
@@ -222,7 +206,7 @@ for details.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-script">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -234,7 +218,7 @@ for details.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkImage">
+          <object class="GtkImage" id="executor-name-warning">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="tooltip-text" translatable="yes">Attention! Renaming an existing
@@ -282,7 +266,7 @@ executor will create a new one.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-name">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -304,7 +288,7 @@ executor will create a new one.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-interval">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -316,7 +300,7 @@ executor will create a new one.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-icon-size">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -338,7 +322,7 @@ executor will create a new one.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-icon-placement">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -361,33 +345,6 @@ executor will create a new one.</property>
           <packing>
             <property name="left-attach">1</property>
             <property name="top-attach">11</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkComboBoxText" id="angle">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <items>
-              <item id="0.0" translatable="yes">0°</item>
-              <item id="90.0" translatable="yes">90°</item>
-              <item id="270.0" translatable="yes">270°</item>
-            </items>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">14</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="halign">end</property>
-            <property name="label" translatable="yes">Angle:</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">14</property>
           </packing>
         </child>
         <child>
@@ -416,30 +373,6 @@ executor will create a new one.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="halign">end</property>
-            <property name="label" translatable="yes">Refresh on signal :</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">15</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkSpinButton" id="sigrt">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="primary-icon-tooltip-text" translatable="yes">Allowed signals in range SIGRTMIN+1 - SIGRTMAX</property>
-            <property name="secondary-icon-tooltip-text" translatable="yes">Signal number in range SIRTMIN+1 - SIGRTMAX</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">15</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkCheckButton" id="use-sigrt">
             <property name="label" translatable="yes">use signal</property>
             <property name="visible">True</property>
@@ -453,17 +386,61 @@ executor will create a new one.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkImage">
+          <object class="GtkLabel" id="lbl-refresh-on-signal">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Executor refresh interval in seconds. Set 0 for no auto-refresh.</property>
-            <property name="halign">start</property>
-            <property name="icon-name">help-about</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Refresh on signal :</property>
           </object>
           <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">13</property>
+            <property name="left-attach">0</property>
+            <property name="top-attach">14</property>
           </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="sigrt">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="primary-icon-tooltip-text" translatable="yes">Allowed signals in range SIGRTMIN+1 - SIGRTMAX</property>
+            <property name="secondary-icon-tooltip-text" translatable="yes">Signal number in range SIRTMIN+1 - SIGRTMAX</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">14</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="lbl-angle">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Angle:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">15</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText" id="angle">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <items>
+              <item id="0.0" translatable="yes">0°</item>
+              <item id="90.0" translatable="yes">90°</item>
+              <item id="270.0" translatable="yes">270°</item>
+            </items>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">15</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>

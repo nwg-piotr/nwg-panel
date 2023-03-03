@@ -29,7 +29,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-label">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -52,7 +52,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-icon">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -75,7 +75,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-command">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -87,11 +87,9 @@
           </packing>
         </child>
         <child>
-          <object class="GtkImage">
+          <object class="GtkImage" id="button-name-warning">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Attention! Renaming an existing
-button will create a new one.</property>
             <property name="halign">start</property>
             <property name="icon-name">dialog-warning</property>
           </object>
@@ -135,7 +133,7 @@ button will create a new one.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-name">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -179,7 +177,7 @@ button will create a new one.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-icon-size">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -201,7 +199,7 @@ button will create a new one.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-css-name">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -249,7 +247,7 @@ button will create a new one.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-label-position">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -261,7 +259,7 @@ button will create a new one.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-tooltip-text">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>

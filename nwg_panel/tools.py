@@ -718,3 +718,32 @@ def file_age(path):
 
 def hms():
     return datetime.fromtimestamp(time.time()).strftime("%H:%M:%S")
+
+
+def get_shell_data_dir():
+    data_dir = ""
+    home = os.getenv("HOME")
+    xdg_data_home = os.getenv("XDG_DATA_HOME")
+
+    if xdg_data_home:
+        data_dir = os.path.join(xdg_data_home, "nwg-shell/")
+    else:
+        if home:
+            data_dir = os.path.join(home, ".local/share/nwg-shell/")
+
+    return data_dir
+
+
+def load_shell_data():
+    shell_data_file = os.path.join(get_shell_data_dir(), "data")
+    shell_data = load_json(shell_data_file) if os.path.isfile(shell_data_file) else {}
+
+    defaults = {
+        "interface-locale": ""
+    }
+
+    for key in defaults:
+        if key not in shell_data:
+            shell_data[key] = defaults[key]
+
+    return shell_data

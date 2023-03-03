@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
+<!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkFrame" id="frame">
@@ -19,7 +19,7 @@
         <property name="row-spacing">12</property>
         <property name="column-spacing">12</property>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-interval">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -34,7 +34,6 @@
           <object class="GtkSpinButton" id="interval">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">Refresh interval in seconds</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -52,7 +51,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-css-name">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -74,7 +73,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-root-css-name">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -96,7 +95,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-on-scroll-down">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -108,7 +107,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-on-scroll-up">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -140,7 +139,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-on-right-click">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -162,7 +161,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-on-middle-click">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -174,7 +173,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-tooltip-text">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -208,7 +207,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-format">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -220,7 +219,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-angle">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -252,7 +251,6 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
-            <property name="tooltip-text" translatable="yes">Allow using 'date' format for tooltip text</property>
             <property name="halign">start</property>
             <property name="draw-indicator">True</property>
           </object>
@@ -262,7 +260,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-clock-widget">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">start</property>
@@ -278,7 +276,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-calendar-window">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">start</property>
@@ -297,10 +295,6 @@
           <object class="GtkEntry" id="calendar-path">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">Leave blank for default '/home/$USER/.local/share/nwg-panel/calendar.json'.
-Or you may use e.g. '~/Dropbox/calendar.json' to sync data between your machines.
-Use dirrefent file names for multiple calendars.</property>
-            <property name="placeholder-text" translatable="yes">leave blank for default</property>
           </object>
           <packing>
             <property name="left-attach">3</property>
@@ -308,7 +302,7 @@ Use dirrefent file names for multiple calendars.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-data-path">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -330,7 +324,7 @@ Use dirrefent file names for multiple calendars.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-css-name-cal">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -345,7 +339,6 @@ Use dirrefent file names for multiple calendars.</property>
           <object class="GtkSpinButton" id="calendar-margin-vertical">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">Window vertical margin</property>
           </object>
           <packing>
             <property name="left-attach">3</property>
@@ -353,7 +346,7 @@ Use dirrefent file names for multiple calendars.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-margin-v">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -368,7 +361,6 @@ Use dirrefent file names for multiple calendars.</property>
           <object class="GtkSpinButton" id="calendar-margin-horizontal">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">Window horizontal margin</property>
           </object>
           <packing>
             <property name="left-attach">3</property>
@@ -376,7 +368,7 @@ Use dirrefent file names for multiple calendars.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-margin-h">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -407,7 +399,7 @@ Use dirrefent file names for multiple calendars.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-placement">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -437,7 +429,6 @@ Use dirrefent file names for multiple calendars.</property>
           <object class="GtkSpinButton" id="calendar-interval">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">Calendar refresh interval in seconds</property>
           </object>
           <packing>
             <property name="left-attach">3</property>
@@ -445,7 +436,7 @@ Use dirrefent file names for multiple calendars.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-interval-cal">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -457,7 +448,7 @@ Use dirrefent file names for multiple calendars.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-icon-size">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -472,7 +463,6 @@ Use dirrefent file names for multiple calendars.</property>
           <object class="GtkSpinButton" id="calendar-icon-size">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">Calendar refresh interval in seconds</property>
           </object>
           <packing>
             <property name="left-attach">3</property>

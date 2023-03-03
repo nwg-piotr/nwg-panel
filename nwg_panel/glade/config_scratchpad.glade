@@ -29,19 +29,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Optional name for use in the css file</property>
-            <property name="icon-name">help-about</property>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-css-name">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -53,7 +41,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-icon-size">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -78,8 +66,6 @@
           <object class="GtkComboBoxText" id="angle">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">the angle that the baseline of the label makes with 
-the horizontal, in degrees, measured counterclockwise</property>
             <items>
               <item id="0.0" translatable="yes">0°</item>
               <item id="90.0" translatable="yes">90°</item>
@@ -92,7 +78,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="lbl-angle">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -110,19 +96,15 @@ the horizontal, in degrees, measured counterclockwise</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
-            <property name="tooltip-text" translatable="yes">This option allows to use separate Scratchpad module instances
-on multiple panels / various displays, preferrably next to the
-SwayTaskbar module. It determines if to show  tasks moved to the 
-scratchpad from this output only, or all tasks. For this to take effect,
-you need to assingn your panels to the outputs, and move tasks to the
-scratchpad with the SwayTaskbar context menu only. Whatever you
-move the other way, will show up on all Scratchpad module instances.</property>
             <property name="draw-indicator">True</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
             <property name="top-attach">3</property>
           </packing>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>
