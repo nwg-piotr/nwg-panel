@@ -1,6 +1,5 @@
 {
   "5-day-forecast": "prognoza pięciodniowa",
-  "Menu Start": "Menu Start",
   "add-delete": "Dodaj/usuń",
   "add-new": "Dodaj nowy",
   "add-to": "Dodaj do",
@@ -116,6 +115,7 @@
   "menu-button-icon-size": "Rozmiar ikony przycisku menu",
   "menu-label": "Etykieta menu",
   "menu-name": "Nazwa menu",
+  "menu-start": "Menu Start",
   "module": "Moduł",
   "modules-center": "Moduły środkowe",
   "modules-left": "Moduły lewe",
