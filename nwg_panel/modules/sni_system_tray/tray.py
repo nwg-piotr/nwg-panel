@@ -143,7 +143,7 @@ class Tray(Gtk.EventBox):
 
             if "IconName" in item.properties:
                 update_icon(image, item, self.icon_size, self.icons_path)
-            elif "IconPixmap" in item.properties:
+            elif "IconPixmap" in item.properties and len(item.properties["IconPixmap"]) != 0:
                 update_icon_from_pixmap(image, item, self.icon_size)
 
             if "Tooltip" in item.properties:
@@ -179,7 +179,7 @@ class Tray(Gtk.EventBox):
 
         if "IconThemePath" in changed_properties or "IconName" in changed_properties:
             update_icon(image, item, self.icon_size, self.icons_path)
-        elif "IconPixmap" in changed_properties:
+        elif "IconPixmap" in changed_properties and len(item.properties["IconPixmap"]) != 0:
             update_icon_from_pixmap(image, item, self.icon_size)
             pass
 
