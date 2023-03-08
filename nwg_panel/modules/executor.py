@@ -4,6 +4,8 @@ import subprocess
 import threading
 import signal
 
+from shlex import split
+
 import gi
 from gi.repository import GLib
 
@@ -138,7 +140,7 @@ class Executor(Gtk.EventBox):
     def get_output(self):
         if "script" in self.settings and self.settings["script"]:
             try:
-                output = subprocess.check_output(self.settings["script"].split()).decode("utf-8").splitlines()
+                output = subprocess.check_output(split(self.settings["script"])).decode("utf-8").splitlines()
                 GLib.idle_add(self.update_widget, output)
             except Exception as e:
                 print(e)
