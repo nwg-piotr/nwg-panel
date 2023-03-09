@@ -1230,6 +1230,10 @@ class EditorWrapper(object):
         self.ckb_show_layout.set_label(voc["show-layout"])
         self.ckb_show_layout.set_active(settings["show-layout"])
 
+        self.ckb_hide_empty = builder.get_object("hide-empty")
+        self.ckb_hide_empty.set_label(voc["hide-empty"])
+        self.ckb_hide_empty.set_active(settings["hide-empty"])
+
         self.workspace_buttons = builder.get_object("workspace-buttons")
         self.workspace_buttons.set_label(voc["workspaces-as-buttons"])
         self.workspace_buttons.set_active(settings["workspace-buttons"])
@@ -1284,6 +1288,7 @@ class EditorWrapper(object):
         settings["show-app-icon"] = self.ckb_show_app_icon.get_active()
         settings["show-app-name"] = self.ckb_show_app_name.get_active()
         settings["show-layout"] = self.ckb_show_layout.get_active()
+        settings["hide-empty"] = self.ckb_hide_empty.get_active()
         settings["workspace-buttons"] = self.workspace_buttons.get_active()
         settings["all-workspaces"] = self.ckb_all_workspaces.get_active()
         settings["mark-autotiling"] = self.ckb_mark_autotiling.get_active()
