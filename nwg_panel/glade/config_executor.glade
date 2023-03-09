@@ -206,6 +206,20 @@
           </packing>
         </child>
         <child>
+          <object class="GtkCheckButton" id="continuous">
+            <property name="label" translatable="yes">continuous</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+            <property name="tooltip-text" translatable="yes">Updates the executor each time the script puts two lines of text (icon or empty line and text)</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">2</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkLabel" id="lbl-script">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -348,6 +362,29 @@ executor will create a new one.</property>
           </packing>
         </child>
         <child>
+          <object class="GtkLabel" id="lbl-icon">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Icon:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">16</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="icon">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="width-chars">22</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">16</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkButton" id="save-to-database">
             <property name="label" translatable="yes">Save to database</property>
             <property name="visible">True</property>
@@ -356,7 +393,7 @@ executor will create a new one.</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
-            <property name="top-attach">16</property>
+            <property name="top-attach">17</property>
           </packing>
         </child>
         <child>
@@ -369,7 +406,7 @@ executor will create a new one.</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">16</property>
+            <property name="top-attach">17</property>
           </packing>
         </child>
         <child>
