@@ -1,6 +1,8 @@
 # nwg-panel
 
-This application is a part of the [nwg-shell](https://github.com/nwg-piotr/nwg-shell) project.
+This application is a part of the [nwg-shell](https://nwg-piotr.github.io/nwg-shell) project.
+
+**Contributing:** please read the [general contributing rules for the nwg-shell project](https://nwg-piotr.github.io/nwg-shell/contribution).
 
 I have been using sway since 2019 and find it the most comfortable working environment, but... 
 Have you ever missed all the graphical bells and whistles in your panel, we used to have in tint2? It happens to me. 
