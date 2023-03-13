@@ -1747,7 +1747,9 @@ class EditorWrapper(object):
             "mark-autotiling": True,
             "mark-content": True,
             "show-layout": True,
-            "angle": 0.0
+            "angle": 0.0,
+            "hide-empty": False,
+            "hide-other-outputs": False,
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1796,6 +1798,14 @@ class EditorWrapper(object):
         self.ws_show_name.set_label(voc["show-window-name"])
         self.ws_show_name.set_active(settings["show-name"])
 
+        self.ws_hide_empty = builder.get_object("hide-empty")
+        self.ws_hide_empty.set_label(voc["hide-empty"])
+        self.ws_hide_empty.set_active(settings["hide-empty"])
+
+        self.ws_hide_other_outputs = builder.get_object("hide-other-outputs")
+        self.ws_hide_other_outputs.set_label(voc["hide-other-outputs"])
+        self.ws_hide_other_outputs.set_active(settings["hide-other-outputs"])
+
         self.ws_image_size = builder.get_object("image-size")
         self.ws_image_size.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
@@ -1832,8 +1842,11 @@ class EditorWrapper(object):
         settings = self.panel["sway-workspaces"]
 
         val = self.eb_workspaces_menu.get_text()
-        if val:
+        if val is not None:
+            print('numbers', repr(settings["numbers"]), repr(val.split()))
             settings["numbers"] = val.split()
+            print('numbers', repr(settings["numbers"]), repr(val.split()))
+
 
         val = self.ws_custom_labels.get_text()
         settings["custom-labels"] = val.split()
@@ -1848,6 +1861,14 @@ class EditorWrapper(object):
         val = self.ws_show_name.get_active()
         if val is not None:
             settings["show-name"] = val
+
+        val = self.ws_hide_other_outputs.get_active()
+        if val is not None:
+            settings["hide-other-outputs"] = val
+
+        val = self.ws_hide_empty.get_active()
+        if val is not None:
+            settings["hide-empty"] = val
 
         settings["image-size"] = int(self.ws_image_size.get_value())
 
@@ -2598,7 +2619,9 @@ class EditorWrapper(object):
             "interval": 1,
             "angle": 0.0,
             "sigrt": signal.SIGRTMIN,
-            "use-sigrt": False
+            "use-sigrt": False,
+            "icon": "view-refresh-symbolic",
+            "continuous": False
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -2660,6 +2683,9 @@ class EditorWrapper(object):
         self.executor_icon_placement = builder.get_object("icon-placement")
         self.executor_icon_placement.set_active_id(settings["icon-placement"])
 
+        self.executor_icon = builder.get_object("icon")
+        self.executor_icon.set_text(settings["icon"])
+
         self.executor_icon_size = builder.get_object("icon-size")
         self.executor_icon_size.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
@@ -2688,6 +2714,10 @@ class EditorWrapper(object):
         self.executor_use_sigrt = builder.get_object("use-sigrt")
         self.executor_use_sigrt.set_label(voc["use-signal"])
         self.executor_use_sigrt.set_active(settings["use-sigrt"])
+
+        self.executor_continuous = builder.get_object("continuous")
+        self.executor_continuous.set_label(voc["continuous"])
+        self.executor_continuous.set_active(settings["continuous"])
 
         self.executor_remove = builder.get_object("remove")
         self.executor_remove.set_label(voc["remove-executor"])
@@ -2736,6 +2766,7 @@ class EditorWrapper(object):
             val = self.executor_icon_placement.get_active_id()
             if val:
                 settings["icon-placement"] = val
+            settings["icon"] = self.executor_icon.get_text()
             settings["icon-size"] = int(self.executor_icon_size.get_value())
             settings["interval"] = int(self.executor_interval.get_value())
 
@@ -2746,6 +2777,7 @@ class EditorWrapper(object):
 
             settings["sigrt"] = int(self.executor_sigrt.get_value())
             settings["use-sigrt"] = self.executor_use_sigrt.get_active()
+            settings["continuous"] = self.executor_continuous.get_active()
 
             self.panel[config_key] = settings
         else:
