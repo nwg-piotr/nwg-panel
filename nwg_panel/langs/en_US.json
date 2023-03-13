@@ -82,6 +82,7 @@
   "header-icon-size": "Header icon size",
   "height": "Height",
   "hide-empty": "Hide empty workspaces",
+  "hide-other-outputs": "Hide workspaces on other outputs",
   "homogeneous": "Homogeneous",
   "homogeneous-tooltip": "Sets equal columns width be default if 'Modules center' not empty.",
   "horizontal-padding": "Horizontal padding",

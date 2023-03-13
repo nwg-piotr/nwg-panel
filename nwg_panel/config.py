@@ -1230,10 +1230,6 @@ class EditorWrapper(object):
         self.ckb_show_layout.set_label(voc["show-layout"])
         self.ckb_show_layout.set_active(settings["show-layout"])
 
-        self.ckb_hide_empty = builder.get_object("hide-empty")
-        self.ckb_hide_empty.set_label(voc["hide-empty"])
-        self.ckb_hide_empty.set_active(settings["hide-empty"])
-
         self.workspace_buttons = builder.get_object("workspace-buttons")
         self.workspace_buttons.set_label(voc["workspaces-as-buttons"])
         self.workspace_buttons.set_active(settings["workspace-buttons"])
@@ -1288,7 +1284,6 @@ class EditorWrapper(object):
         settings["show-app-icon"] = self.ckb_show_app_icon.get_active()
         settings["show-app-name"] = self.ckb_show_app_name.get_active()
         settings["show-layout"] = self.ckb_show_layout.get_active()
-        settings["hide-empty"] = self.ckb_hide_empty.get_active()
         settings["workspace-buttons"] = self.workspace_buttons.get_active()
         settings["all-workspaces"] = self.ckb_all_workspaces.get_active()
         settings["mark-autotiling"] = self.ckb_mark_autotiling.get_active()
@@ -1752,7 +1747,9 @@ class EditorWrapper(object):
             "mark-autotiling": True,
             "mark-content": True,
             "show-layout": True,
-            "angle": 0.0
+            "angle": 0.0,
+            "hide-empty": False,
+            "hide-other-outputs": False,
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1801,6 +1798,14 @@ class EditorWrapper(object):
         self.ws_show_name.set_label(voc["show-window-name"])
         self.ws_show_name.set_active(settings["show-name"])
 
+        self.ws_hide_empty = builder.get_object("hide-empty")
+        self.ws_hide_empty.set_label(voc["hide-empty"])
+        self.ws_hide_empty.set_active(settings["hide-empty"])
+
+        self.ws_hide_other_outputs = builder.get_object("hide-other-outputs")
+        self.ws_hide_other_outputs.set_label(voc["hide-other-outputs"])
+        self.ws_hide_other_outputs.set_active(settings["hide-other-outputs"])
+
         self.ws_image_size = builder.get_object("image-size")
         self.ws_image_size.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
@@ -1837,8 +1842,11 @@ class EditorWrapper(object):
         settings = self.panel["sway-workspaces"]
 
         val = self.eb_workspaces_menu.get_text()
-        if val:
+        if val is not None:
+            print('numbers', repr(settings["numbers"]), repr(val.split()))
             settings["numbers"] = val.split()
+            print('numbers', repr(settings["numbers"]), repr(val.split()))
+
 
         val = self.ws_custom_labels.get_text()
         settings["custom-labels"] = val.split()
@@ -1853,6 +1861,14 @@ class EditorWrapper(object):
         val = self.ws_show_name.get_active()
         if val is not None:
             settings["show-name"] = val
+
+        val = self.ws_hide_other_outputs.get_active()
+        if val is not None:
+            settings["hide-other-outputs"] = val
+
+        val = self.ws_hide_empty.get_active()
+        if val is not None:
+            settings["hide-empty"] = val
 
         settings["image-size"] = int(self.ws_image_size.get_value())
 
