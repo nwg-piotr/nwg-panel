@@ -44,14 +44,14 @@ class SwayWorkspaces(Gtk.Box):
         if self.i3.get_tree().find_focused():
             ws_num, win_name, win_id, non_empty, win_layout, numbers = self.find_details()
         
-        if len(self.settings["custom-labels"]) == 1 or len(self.settings["custom-labels"]) == len(self.settings["numbers"]):
+        if len(self.settings["custom-labels"]) == 1:
             self.settings["custom-labels"] *= len(self.settings["numbers"])
-        else:
+        elif len(self.settings["custom-labels"]) != len(self.settings["numbers"]):
             self.settings["custom-labels"] = []
         
-        if len(self.settings["focused-labels"]) == 1 or len(self.settings["focused-labels"]) == len(self.settings["numbers"]):
+        if len(self.settings["focused-labels"]) == 1:
             self.settings["focused-labels"] *= len(self.settings["numbers"])
-        else:
+        elif len(self.settings["focused-labels"]) != len(self.settings["numbers"]):
             self.settings["focused-labels"] = []
 
         self.pack_start(self.num_box, False, False, 0)
