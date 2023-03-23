@@ -33,7 +33,7 @@ from gi.repository import GtkLayerShell, GLib
 try:
     import psutil
 except ModuleNotFoundError:
-    print("You need to install python-psutil package", file=sys.stderr)
+    print("You need to install python-psutil package")
     sys.exit(1)
 
 from nwg_panel.tools import *
@@ -66,19 +66,21 @@ try:
 
     tray_available = True
 except:
-    print("Couldn't load system tray, is 'python-dasbus' installed?", file=sys.stderr)
+    eprint("Couldn't load system tray, is 'python-dasbus' installed?")
 
 sway = os.getenv('SWAYSOCK') is not None
 if sway:
     try:
         from i3ipc import Connection
     except ModuleNotFoundError:
-        print("'python-i3ipc' package required on sway, terminating", file=sys.stderr)
+        eprint("'python-i3ipc' package required on sway, terminating")
         sys.exit(1)
 
     common.i3 = Connection()
     from nwg_panel.modules.sway_taskbar import SwayTaskbar
     from nwg_panel.modules.sway_workspaces import SwayWorkspaces
+
+his = os.getenv('HYPRLAND_INSTANCE_SIGNATURE')
 
 common_settings = {}
 restart_cmd = ""
@@ -133,7 +135,7 @@ def restart():
     subprocess.Popen(restart_cmd, shell=True)
 
 
-def hypr_watcher(his):
+def hypr_watcher():
     import socket
 
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -142,6 +144,15 @@ def hypr_watcher(his):
     while True:
         datagram = client.recv(1024)
         eprint(datagram.decode('utf-8').strip())
+        e_name = datagram.decode('utf-8').split(">>")[0]
+
+        if e_name in ["monitoradded"]:
+            for item in common.h_taskbars_list:
+                item.list_monitors()
+
+        if e_name in ["activewindow"]:
+            for item in common.h_taskbars_list:
+                item.refresh()
 
 
 def check_tree():
@@ -214,9 +225,9 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
                     container.pack_start(taskbar, False, False, panel["items-padding"])
                 else:
-                    print("'sway-taskbar' ignored", file=sys.stderr)
+                    eprint("'sway-taskbar' ignored")
             else:
-                print("'sway-taskbar' not defined in this panel instance")
+                eprint("'sway-taskbar' not defined in this panel instance")
 
         if item == "sway-workspaces":
             if sway:
@@ -227,7 +238,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 else:
                     print("'sway-workspaces' not defined in this panel instance")
             else:
-                print("'sway-workspaces' ignored")
+                eprint("'sway-workspaces' ignored")
 
         if item == "scratchpad":
             if sway:
@@ -239,17 +250,21 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 container.pack_start(scratchpad, False, False, panel["items-padding"])
                 common.scratchpads_list.append(scratchpad)
             else:
-                print("'scratchpad' ignored", file=sys.stderr)
+                eprint("'scratchpad' ignored")
 
         if item == "hyprland-taskbar":
             if "hyprland-taskbar" in panel:
-                his = os.getenv("HYPRLAND_INSTANCE_SIGNATURE")
                 if his:
-                    thread = threading.Thread(target=hypr_watcher, args=(his,))
+                    thread = threading.Thread(target=hypr_watcher)
                     thread.daemon = True
                     thread.start()
+
+                    from nwg_panel.modules.hyprland_taskbar import HyprlandTaskbar
+                    taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"],
+                                          icons_path=icons_path)
+                    common.h_taskbars_list.append(taskbar)
                 else:
-                    eprint("Hyprland Instance Signature unknown, 'hyprland-taskbar' module skipped.")
+                    eprint("'hyprland-taskbar' ignored (HIS unknown).")
 
 
         if "button-" in item:
@@ -311,7 +326,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 if dwl_data:
                     dwl_tags.refresh(dwl_data)
             else:
-                print("{} data file not found".format(common.dwl_data_file), file=sys.stderr)
+                eprint("{} data file not found".format(common.dwl_data_file))
 
         if item == "tray" and tray_available:
             tray_settings = {}
@@ -419,7 +434,7 @@ def main():
             common.scratchpad_cons = load_json(scratchpad_file)
             eprint("Loaded scratchpad info", common.scratchpad_cons)
     else:
-        print("Couldn't determine cache directory", file=sys.stderr)
+        eprint("Couldn't determine cache directory")
 
     global sig_dwl
     sig_dwl = args.sigdwl
@@ -470,7 +485,7 @@ def main():
     try:
         provider.load_from_path(os.path.join(common.config_dir, args.style))
     except Exception as e:
-        print(e, file=sys.stderr)
+        eprint(e)
 
     # Controls background window (invisible): add style missing from the css file
     css = provider.to_string().encode('utf-8')

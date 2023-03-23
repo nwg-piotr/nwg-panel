@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-
+import json
 import os
+import subprocess
+
 from gi.repository import Gtk, Gdk, GdkPixbuf
 
 from nwg_panel.tools import check_key, get_icon_name, update_image, load_autotiling, get_config_dir, temp_dir, \
@@ -9,7 +11,7 @@ import nwg_panel.common
 
 
 class HyprlandTaskbar(Gtk.Box):
-    def __init__(self, settings, i3, position, display_name="", icons_path=""):
+    def __init__(self, settings, position, display_name="", icons_path=""):
         self.position = position
         self.icons_path = icons_path
         check_key(settings, "workspaces-spacing", 0)
@@ -21,6 +23,9 @@ class HyprlandTaskbar(Gtk.Box):
         check_key(settings, "mark-xwayland", True)
         check_key(settings, "angle", 0.0)
 
+        self.monitors = None
+        self.clients = None
+
         self.cache_file = os.path.join(temp_dir(), "nwg-scratchpad")
 
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=settings["workspaces-spacing"])
@@ -29,15 +34,27 @@ class HyprlandTaskbar(Gtk.Box):
             self.set_orientation(Gtk.Orientation.VERTICAL)
 
         self.display_name = display_name
-        self.i3 = i3
-        self.tree = i3.get_tree()
-        self.displays_tree = self.list_tree()
+
+        # self.displays_tree = self.list_tree()
 
         self.autotiling = load_autotiling() if settings["mark-autotiling"] else []
 
-        self.build_box()
-        self.ipc_data = {}
+        self.refresh()
+        # self.build_box()
         self.ws_box = None
+
+    def list_monitors(self):
+        output = subprocess.check_output("hyprctl -j monitors".split()).decode('utf-8')
+        self.monitors = json.loads(output)
+        print(self.monitors)
+
+    def list_clients(self):
+        output = subprocess.check_output("hyprctl -j clients".split()).decode('utf-8')
+        self.clients = json.loads(output)
+        print(self.clients)
+
+    def refresh(self):
+        self.list_clients()
 
     def list_tree(self):
         """
@@ -82,11 +99,11 @@ class HyprlandTaskbar(Gtk.Box):
                     self.pack_start(self.ws_box, False, False, 0)
         self.show_all()
 
-    def refresh(self, tree):
-        self.tree = tree
-        for item in self.get_children():
-            item.destroy()
-        self.build_box()
+    # def refresh(self, tree):
+    #     self.tree = tree
+    #     for item in self.get_children():
+    #         item.destroy()
+    #     self.build_box()
 
 
 class WorkspaceBox(Gtk.Box):
