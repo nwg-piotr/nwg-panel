@@ -10,6 +10,7 @@ License: MIT
 import argparse
 import signal
 import sys
+import threading
 
 import gi
 
@@ -84,6 +85,7 @@ restart_cmd = ""
 sig_dwl = 0
 voc = {}
 
+
 def load_vocabulary():
     global voc
     # basic vocabulary (for en_US)
@@ -129,6 +131,17 @@ def rt_sig_handler(sig, frame):
 
 def restart():
     subprocess.Popen(restart_cmd, shell=True)
+
+
+def hypr_watcher(his):
+    import socket
+
+    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    client.connect("/tmp/hypr/{}/.socket2.sock".format(his))
+
+    while True:
+        datagram = client.recv(1024)
+        eprint(datagram.decode('utf-8').strip())
 
 
 def check_tree():
@@ -227,6 +240,17 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 common.scratchpads_list.append(scratchpad)
             else:
                 print("'scratchpad' ignored", file=sys.stderr)
+
+        if item == "hyprland-taskbar":
+            if "hyprland-taskbar" in panel:
+                his = os.getenv("HYPRLAND_INSTANCE_SIGNATURE")
+                if his:
+                    thread = threading.Thread(target=hypr_watcher, args=(his,))
+                    thread.daemon = True
+                    thread.start()
+                else:
+                    eprint("Hyprland Instance Signature not found, 'hyprland-taskbar' module skipped.")
+
 
         if "button-" in item:
             if item in panel:
