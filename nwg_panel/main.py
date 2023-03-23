@@ -4,7 +4,7 @@
 GTK3-based panel for sway Wayland compositor
 Project: https://github.com/nwg-piotr/nwg-panel
 Author's email: nwg.piotr@gmail.com
-Copyright (c) 2021 Piotr Miller & Contributors
+Copyright (c) 2021-2023 Piotr Miller & Contributors
 License: MIT
 """
 import argparse
@@ -260,12 +260,16 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                     thread.start()
 
                     from nwg_panel.modules.hyprland_taskbar import HyprlandTaskbar
-                    taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"],
-                                          icons_path=icons_path)
+                    if panel["hyprland-taskbar"]["all-outputs"] or "output" not in panel:
+                        taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"], icons_path=icons_path)
+                    else:
+                        taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"],
+                                                  display_name="{}".format(panel["output"]), icons_path=icons_path)
+
                     common.h_taskbars_list.append(taskbar)
+                    container.pack_start(taskbar, False, False, panel["items-padding"])
                 else:
                     eprint("'hyprland-taskbar' ignored (HIS unknown).")
-
 
         if "button-" in item:
             if item in panel:

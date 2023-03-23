@@ -16,15 +16,16 @@ class HyprlandTaskbar(Gtk.Box):
         self.icons_path = icons_path
         check_key(settings, "workspaces-spacing", 0)
         check_key(settings, "image-size", 16)
-        check_key(settings, "workspace-menu", [1, 2, 3, 4, 5, 6, 7, 8])
         check_key(settings, "task-padding", 0)
         check_key(settings, "all-workspaces", True)
-        check_key(settings, "mark-autotiling", True)
         check_key(settings, "mark-xwayland", True)
         check_key(settings, "angle", 0.0)
 
         self.monitors = None
+        self.mon_id2name = {}
         self.clients = None
+        self.ws_nums = []
+        self.workspaces = {}
 
         self.cache_file = os.path.join(temp_dir(), "nwg-scratchpad")
 
@@ -35,10 +36,7 @@ class HyprlandTaskbar(Gtk.Box):
 
         self.display_name = display_name
 
-        # self.displays_tree = self.list_tree()
-
-        self.autotiling = load_autotiling() if settings["mark-autotiling"] else []
-
+        self.list_monitors()
         self.refresh()
         # self.build_box()
         self.ws_box = None
@@ -46,15 +44,50 @@ class HyprlandTaskbar(Gtk.Box):
     def list_monitors(self):
         output = subprocess.check_output("hyprctl -j monitors".split()).decode('utf-8')
         self.monitors = json.loads(output)
-        print(self.monitors)
+        for m in self.monitors:
+            self.mon_id2name[m["id"]] = m["name"]
+        print("monitors: {}".format(self.mon_id2name))
+
+    def list_workspaces(self):
+        output = subprocess.check_output("hyprctl -j workspaces".split()).decode('utf-8')
+        ws = json.loads(output)
+        self.ws_nums = []
+        self.workspaces = {}
+        for item in ws:
+            self.ws_nums.append(item["id"])
+            self.workspaces[item["id"]] = item
 
     def list_clients(self):
         output = subprocess.check_output("hyprctl -j clients".split()).decode('utf-8')
-        self.clients = json.loads(output)
-        print(self.clients)
+        all_clients = json.loads(output)
+        self.clients = []
+        for c in all_clients:
+            if c["monitor"] >= 0:
+                if (self.mon_id2name[c["monitor"]] == self.display_name) or self.settings["all-outputs"]:
+                    self.clients.append(c)
 
     def refresh(self):
+        self.list_workspaces()
         self.list_clients()
+        for item in self.get_children():
+            item.destroy()
+        self.build_box1()
+
+    def build_box1(self):
+        for n in self.ws_nums:
+            ws_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+            self.pack_start(ws_box, False, False, 0)
+            if self.workspaces[n]["monitor"] == self.display_name or self.settings["all-outputs"]:
+                lbl = Gtk.Label.new(self.workspaces[n]["name"])
+                ws_box.pack_start(lbl, False, False, 6)
+                cl_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+                ws_box.pack_start(cl_box, False, False, 0)
+                for c in self.clients:
+                    if c["workspace"]["id"] == n:
+                        lbl = Gtk.Label.new(c["class"])
+                        cl_box.pack_start(lbl, False, False, 6)
+
+        self.show_all()
 
     def list_tree(self):
         """
