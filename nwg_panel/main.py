@@ -249,7 +249,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                     thread.daemon = True
                     thread.start()
                 else:
-                    eprint("Hyprland Instance Signature not found, 'hyprland-taskbar' module skipped.")
+                    eprint("Hyprland Instance Signature unknown, 'hyprland-taskbar' module skipped.")
 
 
         if "button-" in item:
