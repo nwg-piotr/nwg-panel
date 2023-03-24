@@ -81,6 +81,7 @@ if sway:
     from nwg_panel.modules.sway_workspaces import SwayWorkspaces
 
 his = os.getenv('HYPRLAND_INSTANCE_SIGNATURE')
+hypr_watcher_started = False
 
 common_settings = {}
 restart_cmd = ""
@@ -121,6 +122,8 @@ def signal_handler(sig, frame):
         Gtk.main_quit()
     elif sig == sig_dwl:
         refresh_dwl()
+    else:
+        return
 
 
 def rt_sig_handler(sig, frame):
@@ -137,7 +140,6 @@ def restart():
 
 def hypr_watcher():
     import socket
-    import time
 
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     client.connect("/tmp/hypr/{}/.socket2.sock".format(his))
@@ -151,7 +153,7 @@ def hypr_watcher():
             for item in common.h_taskbars_list:
                 GLib.timeout_add(200, item.list_monitors)
 
-        if e_name in ["activewindow"]:
+        if e_name in ["openwindow", "closewindow"]:
             for item in common.h_taskbars_list:
                 GLib.timeout_add(200, item.refresh)
 
@@ -256,9 +258,12 @@ def instantiate_content(panel, container, content_list, icons_path=""):
         if item == "hyprland-taskbar":
             if "hyprland-taskbar" in panel:
                 if his:
-                    thread = threading.Thread(target=hypr_watcher)
-                    thread.daemon = True
-                    thread.start()
+                    global hypr_watcher_started
+                    if not hypr_watcher_started:
+                        thread = threading.Thread(target=hypr_watcher)
+                        thread.daemon = True
+                        thread.start()
+                        hypr_watcher_started = True
 
                     from nwg_panel.modules.hyprland_taskbar import HyprlandTaskbar
                     if panel["hyprland-taskbar"]["all-outputs"] or "output" not in panel:
