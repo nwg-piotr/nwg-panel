@@ -137,6 +137,7 @@ def restart():
 
 def hypr_watcher():
     import socket
+    import time
 
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     client.connect("/tmp/hypr/{}/.socket2.sock".format(his))
@@ -152,7 +153,7 @@ def hypr_watcher():
 
         if e_name in ["activewindow"]:
             for item in common.h_taskbars_list:
-                item.refresh()
+                GLib.timeout_add(0, item.refresh)
 
 
 def check_tree():

@@ -74,6 +74,7 @@ class HyprlandTaskbar(Gtk.Box):
         self.build_box1()
 
     def build_box1(self):
+        print("buildbox1")
         for n in self.ws_nums:
             ws_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
             self.pack_start(ws_box, False, False, 0)
@@ -84,7 +85,7 @@ class HyprlandTaskbar(Gtk.Box):
                 ws_box.pack_start(cl_box, False, False, 0)
                 for c in self.clients:
                     if c["workspace"]["id"] == n:
-                        lbl = Gtk.Label.new(c["class"])
+                        lbl = Gtk.Label.new("{}>>{}".format(c["class"], c["title"][:20]))
                         cl_box.pack_start(lbl, False, False, 6)
 
         self.show_all()
