@@ -149,11 +149,12 @@ def hypr_watcher():
 
         if e_name in ["monitoradded"]:
             for item in common.h_taskbars_list:
+                GLib.timeout_add(100, item.list_monitors)
                 item.list_monitors()
 
         if e_name in ["activewindow"]:
             for item in common.h_taskbars_list:
-                GLib.timeout_add(0, item.refresh)
+                GLib.timeout_add(100, item.refresh)
 
 
 def check_tree():

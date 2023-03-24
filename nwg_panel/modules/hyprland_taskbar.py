@@ -85,39 +85,13 @@ class HyprlandTaskbar(Gtk.Box):
                 ws_box.pack_start(cl_box, False, False, 0)
                 for c in self.clients:
                     if c["workspace"]["id"] == n:
-                        lbl = Gtk.Label.new("{}>>{}".format(c["class"], c["title"][:20]))
+                        lbl = Gtk.Label.new("{}: {}".format(c["class"], c["title"][:20]))
                         cl_box.pack_start(lbl, False, False, 6)
 
         self.show_all()
 
-    def list_tree(self):
-        """
-        display -> workspace -> window -> app_id
-                                       -> parent_layout
-                                       -> name
-                                       -> pid
-                                       -> con
-                             -> window -> (...)
-                -> workspace -> (...)
-        display -> (...)
-        """
-        displays_tree = []
-        if self.display_name:
-            for item in self.tree:
-                if item.type == "output" and item.name == self.display_name:
-                    displays_tree.append(item)
-        else:
-            for item in self.tree:
-                if item.type == "output" and not item.name.startswith("__"):
-                    displays_tree.append(item)
-
-        # sort by x, y coordinates
-        displays_tree = sorted(displays_tree, key=lambda d: (d.rect.x, d.rect.y))
-
-        return displays_tree
-
     def build_box(self):
-        self.displays_tree = self.list_tree()
+        # self.displays_tree = self.list_tree()
         all_workspaces = self.settings["all-workspaces"]
 
         for display in self.displays_tree:
