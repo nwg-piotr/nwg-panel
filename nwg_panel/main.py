@@ -166,6 +166,7 @@ def hypr_watcher():
 
         if event_name in ["activewindowv2"]:
             if client_num and client_num != last_client_num:  # filter out consecutive events from the same client
+                # refresh HyprlandTarskbars
                 for item in common.h_taskbars_list:
                     GLib.timeout_add(200, item.refresh)
                 last_client_num = client_num
