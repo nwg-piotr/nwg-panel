@@ -82,6 +82,7 @@ if sway:
 
 his = os.getenv('HYPRLAND_INSTANCE_SIGNATURE')
 hypr_watcher_started = False
+e_last_full_name = ""
 
 common_settings = {}
 restart_cmd = ""
@@ -146,16 +147,20 @@ def hypr_watcher():
 
     while True:
         datagram = client.recv(1024)
-        eprint(datagram.decode('utf-8').strip())
-        e_name = datagram.decode('utf-8').split(">>")[0]
+        global e_last_full_name
+        e_full_name = datagram.decode('utf-8')
+        eprint(e_full_name)
+        e_name = e_full_name.split(">>")[0]
 
         if e_name in ["monitoradded"]:
             for item in common.h_taskbars_list:
                 GLib.timeout_add(200, item.list_monitors)
 
         if e_name in ["activewindow"]:
-            for item in common.h_taskbars_list:
-                GLib.timeout_add(200, item.refresh)
+            if e_full_name != e_last_full_name:  # avoid consecutive launches for the same window
+                for item in common.h_taskbars_list:
+                    GLib.timeout_add(200, item.refresh)
+                e_last_full_name = e_full_name
 
 
 def check_tree():

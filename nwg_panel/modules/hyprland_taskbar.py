@@ -5,8 +5,7 @@ import subprocess
 
 from gi.repository import Gtk, Gdk, GdkPixbuf
 
-from nwg_panel.tools import check_key, get_icon_name, update_image, load_autotiling, get_config_dir, temp_dir, \
-    save_json
+from nwg_panel.tools import check_key, get_icon_name, update_image, get_config_dir, temp_dir, save_json
 import nwg_panel.common
 
 
@@ -38,7 +37,6 @@ class HyprlandTaskbar(Gtk.Box):
 
         self.list_monitors()
         self.refresh()
-        # self.build_box()
         self.ws_box = None
 
     def list_monitors(self):
@@ -92,7 +90,8 @@ class HyprlandTaskbar(Gtk.Box):
                         icon_theme = Gtk.IconTheme.get_default()
                         try:
                             # This should work if your icon theme provides the icon, or if it's placed in /usr/share/pixmaps
-                            pixbuf = icon_theme.load_icon(name, self.settings["image-size"], Gtk.IconLookupFlags.FORCE_SIZE)
+                            pixbuf = icon_theme.load_icon(name, self.settings["image-size"],
+                                                          Gtk.IconLookupFlags.FORCE_SIZE)
                             image.set_from_pixbuf(pixbuf)
                         except:
                             # If the above fails, let's search .desktop files to find the icon name
