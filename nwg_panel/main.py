@@ -82,7 +82,7 @@ if sway:
 
 his = os.getenv('HYPRLAND_INSTANCE_SIGNATURE')
 hypr_watcher_started = False
-e_last_full_name = ""
+last_client_num = ""
 
 common_settings = {}
 restart_cmd = ""
@@ -139,6 +139,7 @@ def restart():
     subprocess.Popen(restart_cmd, shell=True)
 
 
+# read from Hyprland socket2 on async thread
 def hypr_watcher():
     import socket
 
@@ -147,20 +148,27 @@ def hypr_watcher():
 
     while True:
         datagram = client.recv(1024)
-        global e_last_full_name
-        e_full_name = datagram.decode('utf-8')
-        eprint(e_full_name)
-        e_name = e_full_name.split(">>")[0]
+        e_full_string = datagram.decode('utf-8').strip()
+        eprint("Event: {}".format(e_full_string))
 
-        if e_name in ["monitoradded"]:
+        # remember client address (string) for further event filtering
+        global last_client_num
+        if e_full_string.startswith("activewindowv2"):
+            client_num = e_full_string.split(">>")[1]
+        else:
+            client_num = ""
+
+        event_name = e_full_string.split(">>")[0]
+
+        if event_name in ["monitoradded"]:
             for item in common.h_taskbars_list:
                 GLib.timeout_add(200, item.list_monitors)
 
-        if e_name in ["activewindow"]:
-            if e_full_name != e_last_full_name:  # avoid consecutive launches for the same window
+        if event_name in ["activewindowv2"]:
+            if client_num and client_num != last_client_num:  # filter out consecutive events from the same client
                 for item in common.h_taskbars_list:
                     GLib.timeout_add(200, item.refresh)
-                e_last_full_name = e_full_name
+                last_client_num = client_num
 
 
 def check_tree():
