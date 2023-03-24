@@ -153,7 +153,7 @@ def hypr_watcher():
             for item in common.h_taskbars_list:
                 GLib.timeout_add(200, item.list_monitors)
 
-        if e_name in ["openwindow", "closewindow"]:
+        if e_name in ["activewindow"]:
             for item in common.h_taskbars_list:
                 GLib.timeout_add(200, item.refresh)
 

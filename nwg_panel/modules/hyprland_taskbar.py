@@ -79,13 +79,47 @@ class HyprlandTaskbar(Gtk.Box):
             ws_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
             self.pack_start(ws_box, False, False, 0)
             if self.workspaces[n]["monitor"] == self.display_name or self.settings["all-outputs"]:
-                lbl = Gtk.Label.new(self.workspaces[n]["name"])
+                lbl = Gtk.Label.new("{}:".format(self.workspaces[n]["name"]))
                 ws_box.pack_start(lbl, False, False, 6)
                 cl_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 ws_box.pack_start(cl_box, False, False, 0)
                 for c in self.clients:
                     if c["workspace"]["id"] == n:
-                        lbl = Gtk.Label.new("{}: {}".format(c["class"], c["title"][:20]))
+
+                        name = c["class"]
+
+                        image = Gtk.Image()
+                        icon_theme = Gtk.IconTheme.get_default()
+                        try:
+                            # This should work if your icon theme provides the icon, or if it's placed in /usr/share/pixmaps
+                            pixbuf = icon_theme.load_icon(name, self.settings["image-size"], Gtk.IconLookupFlags.FORCE_SIZE)
+                            image.set_from_pixbuf(pixbuf)
+                        except:
+                            # If the above fails, let's search .desktop files to find the icon name
+                            icon_from_desktop = get_icon_name(name)
+                            if icon_from_desktop:
+                                # trim extension, if given and the definition is not a path
+                                if "/" not in icon_from_desktop and len(icon_from_desktop) > 4 and icon_from_desktop[
+                                    -4] == ".":
+                                    icon_from_desktop = icon_from_desktop[:-4]
+
+                                if "/" not in icon_from_desktop:
+                                    update_image(image, icon_from_desktop, self.settings["image-size"], self.icons_path)
+                                else:
+                                    try:
+                                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop,
+                                                                                        self.settings["image-size"],
+                                                                                        self.settings["image-size"])
+                                    except:
+                                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                                            os.path.join(get_config_dir(), "icons_light/icon-missing.svg"),
+                                            self.settings["image-size"],
+                                            self.settings["image-size"])
+                                    image.set_from_pixbuf(pixbuf)
+
+                        cl_box.pack_start(image, False, False, 4)
+
+                        lbl = Gtk.Label.new(c["title"][:24])
                         cl_box.pack_start(lbl, False, False, 6)
 
         self.show_all()
