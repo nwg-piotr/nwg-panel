@@ -178,7 +178,7 @@ def hypr_watcher():
                 for item in common.h_taskbars_list:
                     GLib.timeout_add(100, item.refresh)
                 last_client_details = client_details
-                buildbox_fired = True
+                buildbox_fired = True  # skip 'activewindowv2' check
 
         if not buildbox_fired and event_name == "activewindowv2":
             # skip window address if previously used
@@ -186,7 +186,7 @@ def hypr_watcher():
                 for item in common.h_taskbars_list:
                     GLib.timeout_add(100, item.refresh)
                 last_client_num = client_num
-                buildbox_fired = False
+                buildbox_fired = False  # clear for next iteration
 
 
 def check_tree():
