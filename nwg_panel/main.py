@@ -83,6 +83,8 @@ if sway:
 his = os.getenv('HYPRLAND_INSTANCE_SIGNATURE')
 hypr_watcher_started = False
 last_client_num = ""
+last_client_details = ""
+buildbox_fired = False
 
 common_settings = {}
 restart_cmd = ""
@@ -151,25 +153,40 @@ def hypr_watcher():
         e_full_string = datagram.decode('utf-8').strip()
         eprint("Event: {}".format(e_full_string))
 
+        global last_client_num, last_client_details
+        client_num, client_details = None, None
+
         # remember client address (string) for further event filtering
-        global last_client_num
         if e_full_string.startswith("activewindowv2"):
-            client_num = e_full_string.split(">>")[1]
-        else:
-            client_num = ""
+            client_num = e_full_string.split(">>")[1].strip()
+
+        # remember client details (string) for further event filtering
+        if e_full_string.startswith("activewindow>>"):
+            client_details = e_full_string.split(">>")[1].strip()
 
         event_name = e_full_string.split(">>")[0]
 
         if event_name in ["monitoradded"]:
             for item in common.h_taskbars_list:
-                GLib.timeout_add(200, item.list_monitors)
+                GLib.timeout_add(100, item.list_monitors)
 
-        if event_name in ["activewindowv2"]:
-            if client_num and client_num != last_client_num:  # filter out consecutive events from the same client
-                # refresh HyprlandTarskbars
+        global buildbox_fired
+
+        if event_name == "activewindow":
+            # skip client details if previously used
+            if client_details != last_client_details:
                 for item in common.h_taskbars_list:
-                    GLib.timeout_add(200, item.refresh)
+                    GLib.timeout_add(100, item.refresh)
+                last_client_details = client_details
+                buildbox_fired = True
+
+        if not buildbox_fired and event_name == "activewindowv2":
+            # skip window address if previously used
+            if client_num != last_client_num:  # filter out consecutive events from the same client
+                for item in common.h_taskbars_list:
+                    GLib.timeout_add(100, item.refresh)
                 last_client_num = client_num
+                buildbox_fired = False
 
 
 def check_tree():
