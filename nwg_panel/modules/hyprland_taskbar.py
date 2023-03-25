@@ -73,78 +73,96 @@ class HyprlandTaskbar(Gtk.Box):
 
     def build_box1(self):
         print("buildbox1")
-        for n in self.ws_nums:
+        for ws_num in self.ws_nums:
             ws_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
             self.pack_start(ws_box, False, False, 0)
-            if self.workspaces[n]["monitor"] == self.display_name or self.settings["all-outputs"]:
-                lbl = Gtk.Label.new("{}:".format(self.workspaces[n]["name"]))
+            if self.workspaces[ws_num]["monitor"] == self.display_name or self.settings["all-outputs"]:
+                lbl = Gtk.Label.new("{}:".format(self.workspaces[ws_num]["name"]))
                 ws_box.pack_start(lbl, False, False, 6)
                 cl_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 ws_box.pack_start(cl_box, False, False, 0)
-                for c in self.clients:
-                    if c["workspace"]["id"] == n:
-
-                        name = c["class"]
-
-                        image = Gtk.Image()
-                        icon_theme = Gtk.IconTheme.get_default()
-                        try:
-                            # This should work if your icon theme provides the icon, or if it's placed in /usr/share/pixmaps
-                            pixbuf = icon_theme.load_icon(name, self.settings["image-size"],
-                                                          Gtk.IconLookupFlags.FORCE_SIZE)
-                            image.set_from_pixbuf(pixbuf)
-                        except:
-                            # If the above fails, let's search .desktop files to find the icon name
-                            icon_from_desktop = get_icon_name(name)
-                            if icon_from_desktop:
-                                # trim extension, if given and the definition is not a path
-                                if "/" not in icon_from_desktop and len(icon_from_desktop) > 4 and icon_from_desktop[
-                                    -4] == ".":
-                                    icon_from_desktop = icon_from_desktop[:-4]
-
-                                if "/" not in icon_from_desktop:
-                                    update_image(image, icon_from_desktop, self.settings["image-size"], self.icons_path)
-                                else:
-                                    try:
-                                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop,
-                                                                                        self.settings["image-size"],
-                                                                                        self.settings["image-size"])
-                                    except:
-                                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                                            os.path.join(get_config_dir(), "icons_light/icon-missing.svg"),
-                                            self.settings["image-size"],
-                                            self.settings["image-size"])
-                                    image.set_from_pixbuf(pixbuf)
-
-                        cl_box.pack_start(image, False, False, 4)
-
-                        lbl = Gtk.Label.new(c["title"][:24])
-                        cl_box.pack_start(lbl, False, False, 6)
+                for client in self.clients:
+                    if client["workspace"]["id"] == ws_num:
+                        client_box = ClientBox(self.settings, client, self.position, self.icons_path)
+                        cl_box.pack_start(client_box, False, False, 6)
 
         self.show_all()
 
-    def build_box(self):
-        # self.displays_tree = self.list_tree()
-        all_workspaces = self.settings["all-workspaces"]
 
-        for display in self.displays_tree:
-            for desc in display.descendants():
-                if desc.type == "workspace":
-                    self.ws_box = WorkspaceBox(desc, self.settings, self.autotiling)
-                    if all_workspaces or desc.find_focused() is not None:
-                        for con in desc.descendants():
-                            if con.name or con.app_id:
-                                win_box = WindowBox(self.tree, con, self.settings, self.position, self.icons_path,
-                                                    self.cache_file, floating=con in desc.floating_nodes)
-                                self.ws_box.pack_start(win_box, False, False, self.settings["task-padding"])
-                    self.pack_start(self.ws_box, False, False, 0)
-        self.show_all()
+def on_enter_notify_event(widget, event):
+    widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
+    widget.set_state_flags(Gtk.StateFlags.SELECTED, clear=False)
 
-    # def refresh(self, tree):
-    #     self.tree = tree
-    #     for item in self.get_children():
-    #         item.destroy()
-    #     self.build_box()
+
+def on_leave_notify_event(widget, event):
+    widget.unset_state_flags(Gtk.StateFlags.DROP_ACTIVE)
+    widget.unset_state_flags(Gtk.StateFlags.SELECTED)
+
+
+class ClientBox(Gtk.EventBox):
+    def __init__(self, settings, client, position, icons_path):
+        self.position = position
+        self.settings = settings
+        self.address = client["address"]
+        self.icons_path = icons_path
+        Gtk.EventBox.__init__(self)
+        self.box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, spacing=0)
+        if settings["angle"] != 0.0:
+            self.box.set_orientation(Gtk.Orientation.VERTICAL)
+        self.add(self.box)
+
+        self.connect('enter-notify-event', on_enter_notify_event)
+        self.connect('leave-notify-event', on_leave_notify_event)
+        self.connect('button-press-event', self.on_click, self.box)
+
+        icon_name = client["class"]
+
+        image = Gtk.Image()
+        icon_theme = Gtk.IconTheme.get_default()
+        try:
+            # This should work if your icon theme provides the icon, or if it's placed in /usr/share/pixmaps
+            pixbuf = icon_theme.load_icon(icon_name, self.settings["image-size"],
+                                          Gtk.IconLookupFlags.FORCE_SIZE)
+            image.set_from_pixbuf(pixbuf)
+        except:
+            # If the above fails, let's search .desktop files to find the icon name
+            icon_from_desktop = get_icon_name(icon_name)
+            if icon_from_desktop:
+                # trim extension, if given and the definition is not a path
+                if "/" not in icon_from_desktop and len(icon_from_desktop) > 4 and icon_from_desktop[
+                    -4] == ".":
+                    icon_from_desktop = icon_from_desktop[:-4]
+
+                if "/" not in icon_from_desktop:
+                    update_image(image, icon_from_desktop, self.settings["image-size"], self.icons_path)
+                else:
+                    try:
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop,
+                                                                        self.settings["image-size"],
+                                                                        self.settings["image-size"])
+                    except:
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                            os.path.join(get_config_dir(), "icons_light/icon-missing.svg"),
+                            self.settings["image-size"],
+                            self.settings["image-size"])
+                    image.set_from_pixbuf(pixbuf)
+
+        self.box.pack_start(image, False, False, 4)
+
+        lbl = Gtk.Label.new(client["title"][:24])
+        self.box.pack_start(lbl, False, False, 6)
+
+    def on_click(self, widget, event, popup_at_widget):
+        if event.button == 1:
+            cmd = "hyprctl dispatch focuswindow address:{}".format(self.address)
+            subprocess.Popen(cmd, shell=True)
+        # if event.button == 3:
+        #     menu = self.context_menu(self.settings["workspace-menu"])
+        #     menu.show_all()
+        #     if self.position == "bottom":
+        #         menu.popup_at_widget(popup_at_widget, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, None)
+        #     else:
+        #         menu.popup_at_widget(popup_at_widget, Gdk.Gravity.NORTH, Gdk.Gravity.SOUTH, None)
 
 
 class WorkspaceBox(Gtk.Box):
