@@ -84,7 +84,7 @@ class HyprlandTaskbar(Gtk.Box):
                 for client in self.clients:
                     if client["workspace"]["id"] == ws_num:
                         client_box = ClientBox(self.settings, client, self.position, self.icons_path)
-                        cl_box.pack_start(client_box, False, False, 6)
+                        cl_box.pack_start(client_box, False, False, 3)
 
         self.show_all()
 
