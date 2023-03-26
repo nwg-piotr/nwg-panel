@@ -188,9 +188,10 @@ class ClientBox(Gtk.EventBox):
 
         # Move to workspace
         for i in range(10):
-            hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+            hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 3)
+            hbox.set_property("halign", Gtk.Align.START)
             img = Gtk.Image()
-            update_image(img, "go-right", 16, self.icons_path)
+            update_image(img, "go-next", 16, self.icons_path)
             hbox.pack_start(img, True, True, 0)
             lbl = Gtk.Label.new(str(i + 1))
             hbox.pack_start(lbl, False, False, 0)
@@ -240,7 +241,7 @@ class ClientBox(Gtk.EventBox):
         # Close
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         img = Gtk.Image()
-        update_image(img, "gtk-close", 16, self.icons_path)
+        update_image(img, "window-close", 16, self.icons_path)
         hbox.pack_start(img, True, True, 0)
         item = Gtk.MenuItem()
         item.add(hbox)
