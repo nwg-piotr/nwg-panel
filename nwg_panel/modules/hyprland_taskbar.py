@@ -55,6 +55,7 @@ class HyprlandTaskbar(Gtk.Box):
         for item in ws:
             self.ws_nums.append(item["id"])
             self.workspaces[item["id"]] = item
+        self.ws_nums.sort()
 
     def list_clients(self):
         output = subprocess.check_output("hyprctl -j clients".split()).decode('utf-8')
