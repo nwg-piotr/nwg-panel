@@ -6,7 +6,7 @@ import subprocess
 
 from gi.repository import Gtk, Gdk, GdkPixbuf
 
-from nwg_panel.tools import check_key, get_icon_name, update_image, get_config_dir, temp_dir, save_json
+from nwg_panel.tools import check_key, get_icon_name, update_image, get_config_dir, temp_dir, eprint
 import nwg_panel.common
 
 
@@ -86,7 +86,7 @@ class HyprlandTaskbar(Gtk.Box):
         self.build_box()
 
     def build_box(self):
-        print(">> buildbox")
+        eprint(">> buildbox")
         for ws_num in self.ws_nums:
             ws_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
             self.pack_start(ws_box, False, False, 0)
@@ -172,8 +172,7 @@ class ClientBox(Gtk.EventBox):
 
     def on_click(self, widget, event, popup_at_widget):
         if event.button == 1:
-            cmd = "hyprctl dispatch focuswindow address:{}".format(self.address)
-            subprocess.Popen(cmd, shell=True)
+            eprint(hyprctl("dispatch focuswindow address:{}".format(self.address)))
         if event.button == 3:
             menu = self.context_menu()
             menu.show_all()
@@ -250,23 +249,16 @@ class ClientBox(Gtk.EventBox):
         return menu
 
     def close(self, *args):
-        cmd = "hyprctl dispatch closewindow address:{}".format(self.address)
-        subprocess.Popen(cmd, shell=True)
+        eprint(hyprctl("dispatch closewindow address:{}".format(self.address)))
 
     def toggle_floating(self, *args):
-        cmd = "hyprctl dispatch togglefloating address:{}".format(self.address)
-        subprocess.Popen(cmd, shell=True)
+        eprint(hyprctl("dispatch togglefloating address:{}".format(self.address)))
 
     def fullscreen(self, *args):
-        cmd = "hyprctl dispatch fullscreen address:{}".format(self.address)
-        subprocess.Popen(cmd, shell=True)
+        eprint(hyprctl("dispatch fullscreen address:{}".format(self.address)))
 
     def pin(self, *args):
-        cmd = "hyprctl dispatch pin address:{}".format(self.address)
-        subprocess.Popen(cmd, shell=True)
+        eprint(hyprctl("dispatch pin address:{}".format(self.address)))
 
     def movetoworkspace(self, menuitem, ws_num):
-        cmd = "hyprctl dispatch movetoworkspace {},address:{}".format(ws_num, self.address)
-        subprocess.Popen(cmd, shell=True)
-        print(ws_num)
-
+        eprint(hyprctl("dispatch movetoworkspace {},address:{}".format(ws_num, self.address)))
