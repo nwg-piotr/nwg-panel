@@ -176,6 +176,11 @@ class ClientBox(Gtk.EventBox):
             update_image(img, "pin", self.settings["image-size"], self.icons_path)
             self.box.pack_start(img, False, False, 0)
 
+        elif client["floating"]:
+            img = Gtk.Image()
+            update_image(img, "focus-windows", self.settings["image-size"], self.icons_path)
+            self.box.pack_start(img, False, False, 0)
+
     def on_click(self, widget, event, client, popup_at_widget):
         if event.button == 1:
             hyprctl("dispatch focuswindow address:{}".format(self.address))
@@ -261,6 +266,7 @@ class ClientBox(Gtk.EventBox):
 
     def toggle_floating(self, *args):
         hyprctl("dispatch togglefloating address:{}".format(self.address))
+        hyprctl("dispatch focuswindow address:{}".format(self.address))
 
     def fullscreen(self, *args):
         hyprctl("dispatch fullscreen address:{}".format(self.address))
