@@ -29,8 +29,9 @@ class HyprlandTaskbar(Gtk.Box):
         check_key(settings, "image-size", 16)
         check_key(settings, "task-padding", 0)
         check_key(settings, "all-workspaces", True)
+        check_key(settings, "all-outputs", False)
         check_key(settings, "mark-xwayland", True)
-        check_key(settings, "name-max-len", 10)
+        check_key(settings, "name-max-len", 15)
         check_key(settings, "angle", 0.0)
 
         self.monitors = None
@@ -127,7 +128,7 @@ class ClientBox(Gtk.EventBox):
 
         self.connect('enter-notify-event', on_enter_notify_event)
         self.connect('leave-notify-event', on_leave_notify_event)
-        self.connect('button-press-event', self.on_click, self.box)
+        self.connect('button-press-event', self.on_click, client, self.box)
 
         icon_name = client["class"]
 
@@ -170,18 +171,18 @@ class ClientBox(Gtk.EventBox):
         lbl.set_text(name)
         self.box.pack_start(lbl, False, False, 6)
 
-    def on_click(self, widget, event, popup_at_widget):
+    def on_click(self, widget, event, client, popup_at_widget):
         if event.button == 1:
             eprint(hyprctl("dispatch focuswindow address:{}".format(self.address)))
         if event.button == 3:
-            menu = self.context_menu()
+            menu = self.context_menu(client)
             menu.show_all()
             if self.position == "bottom":
                 menu.popup_at_widget(popup_at_widget, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, None)
             else:
                 menu.popup_at_widget(popup_at_widget, Gdk.Gravity.NORTH, Gdk.Gravity.SOUTH, None)
 
-    def context_menu(self):
+    def context_menu(self, client):
         menu = Gtk.Menu()
         menu.set_reserve_toggle_size(False)
 
@@ -216,7 +217,7 @@ class ClientBox(Gtk.EventBox):
         # Fullscreen
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         img = Gtk.Image()
-        update_image(img, "window-maximize-symbolic", 16, self.icons_path)
+        update_image(img, "view-fullscreen", 16, self.icons_path)
         hbox.pack_start(img, True, True, 0)
         item = Gtk.MenuItem()
         item.add(hbox)
@@ -225,15 +226,16 @@ class ClientBox(Gtk.EventBox):
         menu.append(item)
 
         # Pin
-        hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-        img = Gtk.Image()
-        update_image(img, "pin", 16, self.icons_path)
-        hbox.pack_start(img, True, True, 0)
-        item = Gtk.MenuItem()
-        item.add(hbox)
-        item.connect("activate", self.pin)
-        item.set_tooltip_text("pin")
-        menu.append(item)
+        if client["floating"]:
+            hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+            img = Gtk.Image()
+            update_image(img, "pin", 16, self.icons_path)
+            hbox.pack_start(img, True, True, 0)
+            item = Gtk.MenuItem()
+            item.add(hbox)
+            item.connect("activate", self.pin)
+            item.set_tooltip_text("pin")
+            menu.append(item)
 
         # Close
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
