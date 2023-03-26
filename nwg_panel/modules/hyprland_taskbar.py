@@ -96,7 +96,8 @@ class HyprlandTaskbar(Gtk.Box):
                 cl_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 ws_box.pack_start(cl_box, False, False, 0)
                 for client in self.clients:
-                    if client["workspace"]["id"] == ws_num:
+                    # if client["title"] prevents from creation of ghost client boxes
+                    if client["title"] and client["workspace"]["id"] == ws_num:
                         client_box = ClientBox(self.settings, client, self.position, self.icons_path)
                         cl_box.pack_start(client_box, False, False, 3)
 
