@@ -1,12 +1,24 @@
 #!/usr/bin/env python3
 import json
 import os
+import socket
 import subprocess
 
 from gi.repository import Gtk, Gdk, GdkPixbuf
 
 from nwg_panel.tools import check_key, get_icon_name, update_image, get_config_dir, temp_dir, save_json
 import nwg_panel.common
+
+
+def hyprctl(cmd):
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    s.connect("/tmp/hypr/{}/.socket.sock".format(os.getenv("HYPRLAND_INSTANCE_SIGNATURE")))
+
+    s.send(cmd.encode("utf-8"))
+    output = s.recv(8192).decode('utf-8')
+    s.close()
+
+    return output
 
 
 class HyprlandTaskbar(Gtk.Box):
@@ -41,14 +53,14 @@ class HyprlandTaskbar(Gtk.Box):
         self.ws_box = None
 
     def list_monitors(self):
-        output = subprocess.check_output("hyprctl -j monitors".split()).decode('utf-8')
+        output = hyprctl("j/monitors")
         self.monitors = json.loads(output)
         for m in self.monitors:
             self.mon_id2name[m["id"]] = m["name"]
         print("monitors: {}".format(self.mon_id2name))
 
     def list_workspaces(self):
-        output = subprocess.check_output("hyprctl -j workspaces".split()).decode('utf-8')
+        output = hyprctl("j/workspaces")
         ws = json.loads(output)
         self.ws_nums = []
         self.workspaces = {}
@@ -58,7 +70,7 @@ class HyprlandTaskbar(Gtk.Box):
         self.ws_nums.sort()
 
     def list_clients(self):
-        output = subprocess.check_output("hyprctl -j clients".split()).decode('utf-8')
+        output = hyprctl("j/clients")
         all_clients = json.loads(output)
         self.clients = []
         for c in all_clients:
