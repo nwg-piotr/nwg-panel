@@ -151,7 +151,11 @@ class ClientBox(Gtk.EventBox):
 
         self.box.pack_start(image, False, False, 4)
 
-        lbl = Gtk.Label.new(client["title"][:24])
+        lbl = Gtk.Label()
+        name = client["title"][:24]
+        if settings["mark-xwayland"] and client["xwayland"]:
+            name = "X|" + name
+        lbl.set_text(name)
         self.box.pack_start(lbl, False, False, 6)
 
     def on_click(self, widget, event, popup_at_widget):

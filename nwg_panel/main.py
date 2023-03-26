@@ -172,7 +172,7 @@ def hypr_watcher():
 
         global buildbox_fired
 
-        if event_name == "activewindow":
+        if event_name in ["activewindow", "closewindow"]:
             # skip client details if previously used
             if client_details != last_client_details:
                 for item in common.h_taskbars_list:
@@ -180,7 +180,7 @@ def hypr_watcher():
                 last_client_details = client_details
                 buildbox_fired = True  # skip 'activewindowv2' check
 
-        if not buildbox_fired and event_name == "activewindowv2":
+        if not buildbox_fired and event_name in ["activewindowv2"]:
             # skip window address if previously used
             if client_num != last_client_num:  # filter out consecutive events from the same client
                 for item in common.h_taskbars_list:
