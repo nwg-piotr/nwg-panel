@@ -87,7 +87,7 @@ class HyprlandTaskbar(Gtk.Box):
         self.build_box()
 
     def build_box(self):
-        eprint(">> buildbox")
+        # eprint(">> buildbox")
         for ws_num in self.ws_nums:
             ws_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
             self.pack_start(ws_box, False, False, 0)
@@ -170,6 +170,11 @@ class ClientBox(Gtk.EventBox):
             name = "X|" + name
         lbl.set_text(name)
         self.box.pack_start(lbl, False, False, 6)
+
+        if client["pinned"]:
+            img = Gtk.Image()
+            update_image(img, "pin", self.settings["image-size"], self.icons_path)
+            self.box.pack_start(img, False, False, 0)
 
     def on_click(self, widget, event, client, popup_at_widget):
         if event.button == 1:
@@ -262,6 +267,8 @@ class ClientBox(Gtk.EventBox):
 
     def pin(self, *args):
         eprint(hyprctl("dispatch pin address:{}".format(self.address)))
+        # dispatch pin triggers no event, so let's focus pinned window to force module refresh
+        eprint(hyprctl("dispatch focuswindow address:{}".format(self.address)))
 
     def movetoworkspace(self, menuitem, ws_num):
         eprint(hyprctl("dispatch movetoworkspace {},address:{}".format(ws_num, self.address)))

@@ -151,7 +151,7 @@ def hypr_watcher():
     while True:
         datagram = client.recv(1024)
         e_full_string = datagram.decode('utf-8').strip()
-        # eprint("Event: {}".format(e_full_string))
+        eprint("Event: {}".format(e_full_string))
 
         global last_client_addr, last_client_details
         client_addr, client_details = None, None
