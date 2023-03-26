@@ -82,7 +82,7 @@ if sway:
 
 his = os.getenv('HYPRLAND_INSTANCE_SIGNATURE')
 hypr_watcher_started = False
-last_client_num = ""
+last_client_addr = ""
 last_client_details = ""
 buildbox_fired = False
 
@@ -153,12 +153,12 @@ def hypr_watcher():
         e_full_string = datagram.decode('utf-8').strip()
         eprint("Event: {}".format(e_full_string))
 
-        global last_client_num, last_client_details
-        client_num, client_details = None, None
+        global last_client_addr, last_client_details
+        client_addr, client_details = None, None
 
         # remember client address (string) for further event filtering
         if e_full_string.startswith("activewindowv2"):
-            client_num = e_full_string.split(">>")[1].strip()
+            client_addr = e_full_string.split(">>")[1].strip()
 
         # remember client details (string) for further event filtering
         if e_full_string.startswith("activewindow>>"):
@@ -182,10 +182,10 @@ def hypr_watcher():
 
         if not buildbox_fired and event_name in ["activewindowv2"]:
             # skip window address if previously used
-            if client_num != last_client_num:  # filter out consecutive events from the same client
+            if client_addr != last_client_addr:  # filter out consecutive events from the same client
                 for item in common.h_taskbars_list:
                     GLib.timeout_add(200, item.refresh)
-                last_client_num = client_num
+                last_client_addr = client_addr
                 buildbox_fired = False  # clear for next iteration
 
 

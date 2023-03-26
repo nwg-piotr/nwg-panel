@@ -71,10 +71,10 @@ class HyprlandTaskbar(Gtk.Box):
         self.list_clients()
         for item in self.get_children():
             item.destroy()
-        self.build_box1()
+        self.build_box()
 
-    def build_box1(self):
-        print("buildbox1")
+    def build_box(self):
+        print(">> buildbox")
         for ws_num in self.ws_nums:
             ws_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
             self.pack_start(ws_box, False, False, 0)
