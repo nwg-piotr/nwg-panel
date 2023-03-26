@@ -2,7 +2,6 @@
 import json
 import os
 import socket
-import subprocess
 
 from gi.repository import Gtk, Gdk, GdkPixbuf
 
@@ -178,7 +177,7 @@ class ClientBox(Gtk.EventBox):
 
     def on_click(self, widget, event, client, popup_at_widget):
         if event.button == 1:
-            eprint(hyprctl("dispatch focuswindow address:{}".format(self.address)))
+            hyprctl("dispatch focuswindow address:{}".format(self.address))
         if event.button == 3:
             menu = self.context_menu(client)
             menu.show_all()
@@ -257,18 +256,18 @@ class ClientBox(Gtk.EventBox):
         return menu
 
     def close(self, *args):
-        eprint(hyprctl("dispatch closewindow address:{}".format(self.address)))
+        hyprctl("dispatch closewindow address:{}".format(self.address))
 
     def toggle_floating(self, *args):
-        eprint(hyprctl("dispatch togglefloating address:{}".format(self.address)))
+        hyprctl("dispatch togglefloating address:{}".format(self.address))
 
     def fullscreen(self, *args):
-        eprint(hyprctl("dispatch fullscreen address:{}".format(self.address)))
+        hyprctl("dispatch fullscreen address:{}".format(self.address))
 
     def pin(self, *args):
-        eprint(hyprctl("dispatch pin address:{}".format(self.address)))
+        hyprctl("dispatch pin address:{}".format(self.address))
         # dispatch pin triggers no event, so let's focus pinned window to force module refresh
-        eprint(hyprctl("dispatch focuswindow address:{}".format(self.address)))
+        hyprctl("dispatch focuswindow address:{}".format(self.address))
 
     def movetoworkspace(self, menuitem, ws_num):
-        eprint(hyprctl("dispatch movetoworkspace {},address:{}".format(ws_num, self.address)))
+        hyprctl("dispatch movetoworkspace {},address:{}".format(ws_num, self.address))
