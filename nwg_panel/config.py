@@ -697,6 +697,7 @@ class EditorWrapper(object):
             "clock",
             "playerctl",
             "sway-taskbar",
+            "hyprland-taskbar"
             "sway-workspaces",
             "scratchpad",
             "openweather",
