@@ -174,7 +174,7 @@ def hypr_watcher():
 
         if event_name == "changefloatingmode":
             for item in common.h_taskbars_list:
-                GLib.timeout_add(200, item.refresh)
+                GLib.timeout_add(0, item.refresh)
             last_client_details = client_details
             buildbox_fired = True  # skip 'activewindowv2' check
 
@@ -182,7 +182,7 @@ def hypr_watcher():
             # skip client details if previously used
             if client_details != last_client_details:
                 for item in common.h_taskbars_list:
-                    GLib.timeout_add(200, item.refresh)
+                    GLib.timeout_add(0, item.refresh)
                 last_client_details = client_details
                 buildbox_fired = True  # skip 'activewindowv2' check
 
@@ -190,7 +190,7 @@ def hypr_watcher():
             # skip window address if previously used
             if client_addr != last_client_addr:  # filter out consecutive events from the same client
                 for item in common.h_taskbars_list:
-                    GLib.timeout_add(200, item.refresh)
+                    GLib.timeout_add(0, item.refresh)
                 last_client_addr = client_addr
             buildbox_fired = False  # clear for next iteration
 
