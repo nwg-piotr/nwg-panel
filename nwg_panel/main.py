@@ -172,6 +172,12 @@ def hypr_watcher():
 
         global buildbox_fired
 
+        if event_name == "changefloatingmode":
+            for item in common.h_taskbars_list:
+                GLib.timeout_add(200, item.refresh)
+            last_client_details = client_details
+            buildbox_fired = True  # skip 'activewindowv2' check
+
         if event_name in ["activewindow", "closewindow"]:
             # skip client details if previously used
             if client_details != last_client_details:
@@ -186,7 +192,7 @@ def hypr_watcher():
                 for item in common.h_taskbars_list:
                     GLib.timeout_add(200, item.refresh)
                 last_client_addr = client_addr
-                buildbox_fired = False  # clear for next iteration
+            buildbox_fired = False  # clear for next iteration
 
 
 def check_tree():

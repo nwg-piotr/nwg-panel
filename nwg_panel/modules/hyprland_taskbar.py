@@ -266,17 +266,14 @@ class ClientBox(Gtk.EventBox):
 
     def toggle_floating(self, *args):
         hyprctl("dispatch togglefloating address:{}".format(self.address))
-        # workaround to trigger activewindow event -> buildbox
-        hyprctl("dispatch focusmonitor 0")
-        hyprctl("dispatch focuswindow address:{}".format(self.address))
 
     def fullscreen(self, *args):
         hyprctl("dispatch fullscreen address:{}".format(self.address))
 
     def pin(self, *args):
         hyprctl("dispatch pin address:{}".format(self.address))
-        # workaround to trigger activewindow event -> buildbox
-        hyprctl("dispatch focusmonitor 0")
+        # The above doesn't trigger any event. We need a workaround:
+        hyprctl("dispatch focuswindow title:''")
         hyprctl("dispatch focuswindow address:{}".format(self.address))
 
     def movetoworkspace(self, menuitem, ws_num):
