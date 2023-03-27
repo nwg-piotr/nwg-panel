@@ -294,6 +294,8 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
         if item == "hyprland-taskbar":
             if "hyprland-taskbar" in panel:
+                if panel["layer"] in ["bottom", "background"]:
+                    panel["layer"] = "top"  # or context menu will remain invisible
                 if his:
                     global hypr_watcher_started
                     if not hypr_watcher_started:

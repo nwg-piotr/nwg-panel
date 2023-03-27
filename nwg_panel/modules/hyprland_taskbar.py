@@ -5,8 +5,7 @@ import socket
 
 from gi.repository import Gtk, Gdk, GdkPixbuf
 
-from nwg_panel.tools import check_key, get_icon_name, update_image, get_config_dir, temp_dir, eprint
-import nwg_panel.common
+from nwg_panel.tools import get_icon_name, update_image, get_config_dir, temp_dir, eprint
 
 
 def hyprctl(cmd):
@@ -22,16 +21,28 @@ def hyprctl(cmd):
 
 class HyprlandTaskbar(Gtk.Box):
     def __init__(self, settings, position, display_name="", icons_path=""):
+        defaults = {
+            "workspace-clickable": False,
+            "name-max-len": 20,
+            "image-size": 16,
+            "workspaces-spacing": 0,
+            "client-padding": 0,
+            "show-app-icon": True,
+            "show-app-name": True,
+            "show-layout": True,
+            "all-workspaces": True,
+            "all-outputs": False,
+            "mark-xwayland": True,
+            "angle": 0.0
+        }
+        for key in defaults:
+            if key not in settings:
+                settings[key] = defaults[key]
+        self.settings = settings
+
         self.position = position
+        self.display_name = display_name
         self.icons_path = icons_path
-        check_key(settings, "workspaces-spacing", 0)
-        check_key(settings, "image-size", 16)
-        check_key(settings, "task-padding", 0)
-        check_key(settings, "all-workspaces", True)
-        check_key(settings, "all-outputs", False)
-        check_key(settings, "mark-xwayland", True)
-        check_key(settings, "name-max-len", 15)
-        check_key(settings, "angle", 0.0)
 
         self.monitors = None
         self.mon_id2name = {}
@@ -39,18 +50,12 @@ class HyprlandTaskbar(Gtk.Box):
         self.ws_nums = []
         self.workspaces = {}
 
-        self.cache_file = os.path.join(temp_dir(), "nwg-scratchpad")
-
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=settings["workspaces-spacing"])
-        self.settings = settings
         if self.settings["angle"] != 0.0:
             self.set_orientation(Gtk.Orientation.VERTICAL)
 
-        self.display_name = display_name
-
         self.list_monitors()
         self.refresh()
-        self.ws_box = None
 
     def list_monitors(self):
         output = hyprctl("j/monitors")
