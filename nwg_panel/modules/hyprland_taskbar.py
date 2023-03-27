@@ -24,7 +24,7 @@ class HyprlandTaskbar(Gtk.Box):
         defaults = {
             "workspace-clickable": False,
             "name-max-len": 24,
-            "icon-size": 16,
+            "image-size": 16,
             "workspaces-spacing": 0,
             "client-padding": 0,
             "show-app-icon": True,
@@ -132,6 +132,7 @@ def on_leave_notify_event(widget, event):
 
 class ClientBox(Gtk.EventBox):
     def __init__(self, settings, client, position, icons_path):
+        print(settings)
         self.position = position
         self.settings = settings
         self.address = client["address"]
@@ -153,7 +154,7 @@ class ClientBox(Gtk.EventBox):
             icon_theme = Gtk.IconTheme.get_default()
             try:
                 # This should work if your icon theme provides the icon, or if it's placed in /usr/share/pixmaps
-                pixbuf = icon_theme.load_icon(icon_name, self.settings["icon-size"],
+                pixbuf = icon_theme.load_icon(icon_name, self.settings["image-size"],
                                               Gtk.IconLookupFlags.FORCE_SIZE)
                 image.set_from_pixbuf(pixbuf)
             except:
@@ -165,17 +166,17 @@ class ClientBox(Gtk.EventBox):
                         icon_from_desktop = icon_from_desktop[:-4]
 
                     if "/" not in icon_from_desktop:
-                        update_image(image, icon_from_desktop, self.settings["icon-size"], self.icons_path)
+                        update_image(image, icon_from_desktop, self.settings["image-size"], self.icons_path)
                     else:
                         try:
                             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop,
-                                                                            self.settings["icon-size"],
-                                                                            self.settings["icon-size"])
+                                                                            self.settings["image-size"],
+                                                                            self.settings["image-size"])
                         except:
                             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
                                 os.path.join(get_config_dir(), "icons_light/icon-missing.svg"),
-                                self.settings["icon-size"],
-                                self.settings["icon-size"])
+                                self.settings["image-size"],
+                                self.settings["image-size"])
                         image.set_from_pixbuf(pixbuf)
 
             self.box.pack_start(image, False, False, 4)
@@ -192,12 +193,12 @@ class ClientBox(Gtk.EventBox):
         if settings["show-layout"]:
             if client["pinned"]:
                 img = Gtk.Image()
-                update_image(img, "pin", self.settings["imiconage-size"], self.icons_path)
+                update_image(img, "pin", self.settings["image-size"], self.icons_path)
                 self.box.pack_start(img, False, False, 0)
 
             elif client["floating"]:
                 img = Gtk.Image()
-                update_image(img, "focus-windows", self.settings["icon-size"], self.icons_path)
+                update_image(img, "focus-windows", self.settings["image-size"], self.icons_path)
                 self.box.pack_start(img, False, False, 0)
 
     def on_click(self, widget, event, client, popup_at_widget):
