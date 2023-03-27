@@ -85,6 +85,7 @@
   "horizontal-padding": "Wypełnienie poziome",
   "horizontal-window-margin": "Margines poziomy okna",
   "humidity": "Wilgotność",
+  "hyprland-taskbar": "Pasek zadań Hyprland",
   "icon": "Ikona",
   "icon-placement": "Położenie ikony",
   "icon-set": "Zestaw ikon",
@@ -242,6 +243,7 @@
   "workspace-spacing": "Odstępy między obszarami",
   "workspaces": "Obszary robocze",
   "workspaces-as-buttons": "Obszary robocze jako przyciski",
+  "workspaces-clickable": "Obszary robocze klikalne",
   "workspaces-to-show": "Obszary do wyświetlania",
   "workspaces-to-show-tooltip": "Numery obszarów roboczych do wyświetlania, oddzielone spacjami.",
   "workspaces-tooltip": "Numery używanych obszarów roboczych, oddzielone spacjami.\nNa ich podstawie budujemy menu obszarów roboczych."
