@@ -711,12 +711,12 @@ class EditorWrapper(object):
             "clock",
             "playerctl",
             "sway-taskbar",
-            "hyprland-taskbar"
             "sway-workspaces",
             "scratchpad",
             "openweather",
             "brightness-slider",
             "dwl-tags",
+            "hyprland-taskbar",
             "tray"
         ]
 
@@ -1277,11 +1277,7 @@ class EditorWrapper(object):
         self.scrolled_window.add(frame)
 
     def update_sway_taskbar(self):
-        settings = self.panel["sway-taskbar"]
-
-        val = self.eb_workspace_menu.get_text()
-        if val:
-            settings["workspace-menu"] = val.split()
+        settings = self.panel["hyprland-taskbar"]
 
         val = self.sb_name_max_len.get_value()
         if val is not None:
@@ -1302,9 +1298,7 @@ class EditorWrapper(object):
         settings["show-app-icon"] = self.ckb_show_app_icon.get_active()
         settings["show-app-name"] = self.ckb_show_app_name.get_active()
         settings["show-layout"] = self.ckb_show_layout.get_active()
-        settings["workspace-buttons"] = self.workspace_buttons.get_active()
-        settings["all-workspaces"] = self.ckb_all_workspaces.get_active()
-        settings["mark-autotiling"] = self.ckb_mark_autotiling.get_active()
+        settings["workspace-clickable"] = self.workspace_clickable.get_active()
         settings["mark-xwayland"] = self.ckb_mark_xwayland.get_active()
         settings["all-outputs"] = self.ckb_all_outputs.get_active()
 

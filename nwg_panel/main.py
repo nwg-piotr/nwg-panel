@@ -305,6 +305,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                         hypr_watcher_started = True
 
                     from nwg_panel.modules.hyprland_taskbar import HyprlandTaskbar
+                    check_key(panel["hyprland-taskbar"], "all-outputs", False)
                     if panel["hyprland-taskbar"]["all-outputs"] or "output" not in panel:
                         taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"], icons_path=icons_path)
                     else:
