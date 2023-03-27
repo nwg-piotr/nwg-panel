@@ -132,7 +132,6 @@ def on_leave_notify_event(widget, event):
 
 class ClientBox(Gtk.EventBox):
     def __init__(self, settings, client, position, icons_path):
-        print(settings)
         self.position = position
         self.settings = settings
         self.address = client["address"]
