@@ -14,7 +14,7 @@ def hyprctl(cmd):
     s.connect("/tmp/hypr/{}/.socket.sock".format(os.getenv("HYPRLAND_INSTANCE_SIGNATURE")))
 
     s.send(cmd.encode("utf-8"))
-    output = s.recv(8192).decode('utf-8')
+    output = s.recv(20480).decode('utf-8')
     s.close()
 
     return output
