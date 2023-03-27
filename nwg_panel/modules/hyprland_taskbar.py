@@ -96,8 +96,15 @@ class HyprlandTaskbar(Gtk.Box):
             ws_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
             self.pack_start(ws_box, False, False, 0)
             if self.workspaces[ws_num]["monitor"] == self.display_name or self.settings["all-outputs"]:
+                eb = Gtk.EventBox()
+                if self.settings["workspace-clickable"]:
+                    eb.connect('enter-notify-event', on_enter_notify_event)
+                    eb.connect('leave-notify-event', on_leave_notify_event)
+                    eb.connect('button-press-event', self.on_ws_click, ws_num)
+
+                ws_box.pack_start(eb, False, False, 6)
                 lbl = Gtk.Label.new("{}:".format(self.workspaces[ws_num]["name"]))
-                ws_box.pack_start(lbl, False, False, 6)
+                eb.add(lbl)
                 cl_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 ws_box.pack_start(cl_box, False, False, 0)
                 for client in self.clients:
@@ -107,6 +114,9 @@ class HyprlandTaskbar(Gtk.Box):
                         cl_box.pack_start(client_box, False, False, 3)
 
         self.show_all()
+
+    def on_ws_click(self, widget, event, ws_num):
+        hyprctl("dispatch workspace {}".format(ws_num))
 
 
 def on_enter_notify_event(widget, event):
