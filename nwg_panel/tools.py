@@ -275,6 +275,19 @@ def list_outputs(sway=False, tree=None, silent=False):
                                            "height": item.rect.height,
                                            "monitor": None}
 
+    elif os.getenv('HYPRLAND_INSTANCE_SIGNATURE') is not None:
+        if not silent:
+            print("Running on Hyprland")
+        cmd = "hyprctl -j monitors"
+        output = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
+        monitors = json.loads(output)
+        for item in monitors:
+            outputs_dict[item["name"]] = {"x": item["x"],
+                                       "y": item["y"],
+                                       "width": item["width"],
+                                       "height": item["height"],
+                                       "monitor": None}
+
     elif os.getenv('WAYLAND_DISPLAY') is not None:
         if not silent:
             print("Running on Wayland, but not sway")

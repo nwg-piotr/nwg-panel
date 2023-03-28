@@ -641,7 +641,7 @@ class PopupWindow(Gtk.Window):
         self.bcg_window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
 
         GtkLayerShell.init_for_window(self.bcg_window)
-        GtkLayerShell.set_layer(self.bcg_window, GtkLayerShell.Layer.OVERLAY)
+        GtkLayerShell.set_layer(self.bcg_window, GtkLayerShell.Layer.TOP)
         GtkLayerShell.set_anchor(self.bcg_window, GtkLayerShell.Edge.TOP, True)
         GtkLayerShell.set_anchor(self.bcg_window, GtkLayerShell.Edge.BOTTOM, True)
         GtkLayerShell.set_anchor(self.bcg_window, GtkLayerShell.Edge.LEFT, True)

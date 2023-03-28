@@ -33,6 +33,7 @@ commands = {
     "netifaces": False,
     "btmgmt": False,
     "wlr-randr": False,
+    "hyprctl":False,
     "upower": False,
     "swaync": False
 }
