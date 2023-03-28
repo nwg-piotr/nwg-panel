@@ -45,6 +45,7 @@ class HyprlandTaskbar(Gtk.Box):
 
         self.monitors = None
         self.mon_id2name = {}
+        self.active_workspaces = []
         self.clients = None
         self.ws_nums = []
         self.workspaces = {}
@@ -59,9 +60,10 @@ class HyprlandTaskbar(Gtk.Box):
     def list_monitors(self):
         output = hyprctl("j/monitors")
         self.monitors = json.loads(output)
+        self.active_workspaces = []
         for m in self.monitors:
             self.mon_id2name[m["id"]] = m["name"]
-        print("monitors: {}".format(self.mon_id2name))
+            self.active_workspaces.append(m["activeWorkspace"]["id"])
 
     def list_workspaces(self):
         output = hyprctl("j/workspaces")
@@ -83,6 +85,7 @@ class HyprlandTaskbar(Gtk.Box):
                     self.clients.append(c)
 
     def refresh(self):
+        self.list_monitors()
         self.list_workspaces()
         self.list_clients()
         for item in self.get_children():
@@ -104,7 +107,11 @@ class HyprlandTaskbar(Gtk.Box):
                     eb.connect('button-press-event', self.on_ws_click, ws_num)
 
                 ws_box.pack_start(eb, False, False, 6)
-                lbl = Gtk.Label.new("{}:".format(self.workspaces[ws_num]["name"]))
+                lbl = Gtk.Label()
+                if ws_num in self.active_workspaces:
+                    lbl.set_markup("<u><b>{}</b></u>:".format(self.workspaces[ws_num]["name"]))
+                else:
+                    lbl.set_text("{}:".format(self.workspaces[ws_num]["name"]))
                 eb.add(lbl)
                 cl_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 ws_box.pack_start(cl_box, False, False, 0)
