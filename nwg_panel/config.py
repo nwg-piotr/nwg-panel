@@ -1313,8 +1313,8 @@ class EditorWrapper(object):
     def edit_hyprland_taskbar(self, *args):
         self.load_panel()
         self.edited = "sway-taskbar"
-        check_key(self.panel, "sway-taskbar", {})
-        settings = self.panel["sway-taskbar"]
+        check_key(self.panel, "hyprland-taskbar", {})
+        settings = self.panel["hyprland-taskbar"]
         defaults = {
             "name-max-len": 24,
             "icon-size": 16,
