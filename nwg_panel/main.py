@@ -4,12 +4,13 @@
 GTK3-based panel for sway Wayland compositor
 Project: https://github.com/nwg-piotr/nwg-panel
 Author's email: nwg.piotr@gmail.com
-Copyright (c) 2021 Piotr Miller & Contributors
+Copyright (c) 2021-2023 Piotr Miller & Contributors
 License: MIT
 """
 import argparse
 import signal
 import sys
+import threading
 
 import gi
 
@@ -32,7 +33,7 @@ from gi.repository import GtkLayerShell, GLib
 try:
     import psutil
 except ModuleNotFoundError:
-    print("You need to install python-psutil package", file=sys.stderr)
+    print("You need to install python-psutil package")
     sys.exit(1)
 
 from nwg_panel.tools import *
@@ -65,24 +66,31 @@ try:
 
     tray_available = True
 except:
-    print("Couldn't load system tray, is 'python-dasbus' installed?", file=sys.stderr)
+    eprint("Couldn't load system tray, is 'python-dasbus' installed?")
 
 sway = os.getenv('SWAYSOCK') is not None
 if sway:
     try:
         from i3ipc import Connection
     except ModuleNotFoundError:
-        print("'python-i3ipc' package required on sway, terminating", file=sys.stderr)
+        eprint("'python-i3ipc' package required on sway, terminating")
         sys.exit(1)
 
     common.i3 = Connection()
     from nwg_panel.modules.sway_taskbar import SwayTaskbar
     from nwg_panel.modules.sway_workspaces import SwayWorkspaces
 
+his = os.getenv('HYPRLAND_INSTANCE_SIGNATURE')
+hypr_watcher_started = False
+last_client_addr = ""
+last_client_details = ""
+buildbox_fired = False
+
 common_settings = {}
 restart_cmd = ""
 sig_dwl = 0
 voc = {}
+
 
 def load_vocabulary():
     global voc
@@ -117,6 +125,8 @@ def signal_handler(sig, frame):
         Gtk.main_quit()
     elif sig == sig_dwl:
         refresh_dwl()
+    else:
+        return
 
 
 def rt_sig_handler(sig, frame):
@@ -129,6 +139,60 @@ def rt_sig_handler(sig, frame):
 
 def restart():
     subprocess.Popen(restart_cmd, shell=True)
+
+
+# read from Hyprland socket2 on async thread
+def hypr_watcher():
+    import socket
+
+    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    client.connect("/tmp/hypr/{}/.socket2.sock".format(his))
+
+    while True:
+        datagram = client.recv(1024)
+        e_full_string = datagram.decode('utf-8').strip()
+        # eprint("Event: {}".format(e_full_string))
+
+        global last_client_addr, last_client_details
+        client_addr, client_details = None, None
+
+        # remember client address (string) for further event filtering
+        if e_full_string.startswith("activewindowv2"):
+            client_addr = e_full_string.split(">>")[1].strip()
+
+        # remember client details (string) for further event filtering
+        if e_full_string.startswith("activewindow>>"):
+            client_details = e_full_string.split(">>")[1].strip()
+
+        event_name = e_full_string.split(">>")[0]
+
+        if event_name in ["monitoradded"]:
+            for item in common.h_taskbars_list:
+                GLib.timeout_add(0, item.list_monitors)
+
+        global buildbox_fired
+
+        if event_name == "changefloatingmode":
+            for item in common.h_taskbars_list:
+                GLib.timeout_add(0, item.refresh)
+            last_client_details = client_details
+            buildbox_fired = True  # skip 'activewindowv2' check
+
+        if event_name in ["activewindow", "closewindow"]:
+            # skip client details if previously used
+            if client_details != last_client_details:
+                for item in common.h_taskbars_list:
+                    GLib.timeout_add(0, item.refresh)
+                last_client_details = client_details
+                buildbox_fired = True  # skip 'activewindowv2' check
+
+        if not buildbox_fired and event_name in ["activewindowv2"]:
+            # skip window address if previously used
+            if client_addr != last_client_addr:  # filter out consecutive events from the same client
+                for item in common.h_taskbars_list:
+                    GLib.timeout_add(0, item.refresh)
+                last_client_addr = client_addr
+            buildbox_fired = False  # clear for next iteration
 
 
 def check_tree():
@@ -201,9 +265,9 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
                     container.pack_start(taskbar, False, False, panel["items-padding"])
                 else:
-                    print("'sway-taskbar' ignored", file=sys.stderr)
+                    eprint("'sway-taskbar' ignored")
             else:
-                print("'sway-taskbar' not defined in this panel instance")
+                eprint("'sway-taskbar' not defined in this panel instance")
 
         if item == "sway-workspaces":
             if sway:
@@ -214,7 +278,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 else:
                     print("'sway-workspaces' not defined in this panel instance")
             else:
-                print("'sway-workspaces' ignored")
+                eprint("'sway-workspaces' ignored")
 
         if item == "scratchpad":
             if sway:
@@ -226,7 +290,32 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 container.pack_start(scratchpad, False, False, panel["items-padding"])
                 common.scratchpads_list.append(scratchpad)
             else:
-                print("'scratchpad' ignored", file=sys.stderr)
+                eprint("'scratchpad' ignored")
+
+        if item == "hyprland-taskbar":
+            if "hyprland-taskbar" in panel:
+                if panel["layer"] in ["bottom", "background"]:
+                    panel["layer"] = "top"  # or context menu will remain invisible
+                if his:
+                    global hypr_watcher_started
+                    if not hypr_watcher_started:
+                        thread = threading.Thread(target=hypr_watcher)
+                        thread.daemon = True
+                        thread.start()
+                        hypr_watcher_started = True
+
+                    from nwg_panel.modules.hyprland_taskbar import HyprlandTaskbar
+                    check_key(panel["hyprland-taskbar"], "all-outputs", False)
+                    if panel["hyprland-taskbar"]["all-outputs"] or "output" not in panel:
+                        taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"], icons_path=icons_path)
+                    else:
+                        taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"],
+                                                  display_name="{}".format(panel["output"]), icons_path=icons_path)
+
+                    common.h_taskbars_list.append(taskbar)
+                    container.pack_start(taskbar, False, False, panel["items-padding"])
+                else:
+                    eprint("'hyprland-taskbar' ignored (HIS unknown).")
 
         if "button-" in item:
             if item in panel:
@@ -287,7 +376,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 if dwl_data:
                     dwl_tags.refresh(dwl_data)
             else:
-                print("{} data file not found".format(common.dwl_data_file), file=sys.stderr)
+                eprint("{} data file not found".format(common.dwl_data_file))
 
         if item == "tray" and tray_available:
             tray_settings = {}
@@ -395,7 +484,7 @@ def main():
             common.scratchpad_cons = load_json(scratchpad_file)
             eprint("Loaded scratchpad info", common.scratchpad_cons)
     else:
-        print("Couldn't determine cache directory", file=sys.stderr)
+        eprint("Couldn't determine cache directory")
 
     global sig_dwl
     sig_dwl = args.sigdwl
@@ -446,7 +535,7 @@ def main():
     try:
         provider.load_from_path(os.path.join(common.config_dir, args.style))
     except Exception as e:
-        print(e, file=sys.stderr)
+        eprint(e)
 
     # Controls background window (invisible): add style missing from the css file
     css = provider.to_string().encode('utf-8')

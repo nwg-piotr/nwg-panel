@@ -117,6 +117,19 @@ SKELETON_PANEL: dict = {
         "mark-xwayland": True,
         "all-outputs": False
     },
+    "hyprland-taskbar": {
+        "name-max-len": 24,
+        "icon-size": 16,
+        "workspaces-spacing": 0,
+        "client-padding": 0,
+        "show-app-icon": True,
+        "show-app-name": True,
+        "show-layout": True,
+        "all-outputs": False,
+        "mark-xwayland": True,
+        "workspace-clickable": False,
+        "angle": 0.0
+    },
     "sway-workspaces": {
         "numbers": ["1", "2", "3", "4", "5", "6", "7", "8"],
         "show-icon": True,
@@ -677,6 +690,7 @@ class EditorWrapper(object):
         builder.get_object("scratchpad").set_text(voc["scratchpad"])
         builder.get_object("openweather").set_text(voc["openweather"])
         builder.get_object("dwl-tags").set_text(voc["dwl-tags"])
+        builder.get_object("hyprland-taskbar").set_text(voc["hyprland-taskbar"])
         builder.get_object("brightness-slider").set_text(voc["brightness-slider"])
         builder.get_object("executors").set_text(voc["executors"])
         builder.get_object("buttons").set_text(voc["buttons"])
@@ -702,6 +716,7 @@ class EditorWrapper(object):
             "openweather",
             "brightness-slider",
             "dwl-tags",
+            "hyprland-taskbar",
             "tray"
         ]
 
@@ -736,6 +751,7 @@ class EditorWrapper(object):
         builder.get_object("eb-openweather").connect("button-press-event", self.edit_openweather)
         builder.get_object("eb-brightness-slider").connect("button-press-event", self.edit_brightness_slider)
         builder.get_object("eb-dwl-tags").connect("button-press-event", self.edit_dwl_tags)
+        builder.get_object("eb-hyprland-taskbar").connect("button-press-event", self.edit_hyprland_taskbar)
         builder.get_object("eb-executors").connect("button-press-event", self.select_executor)
         builder.get_object("eb-buttons").connect("button-press-event", self.select_button)
 
@@ -1115,6 +1131,8 @@ class EditorWrapper(object):
             self.update_menu_start()
         elif self.edited == "dwl-tags":
             self.update_dwl_tags()
+        elif self.edited == "hyprland-taskbar":
+            self.update_hyprland_taskbar()
         elif self.edited == "openweather":
             self.update_openweather()
         elif self.edited == "brightness-slider":
@@ -1259,11 +1277,7 @@ class EditorWrapper(object):
         self.scrolled_window.add(frame)
 
     def update_sway_taskbar(self):
-        settings = self.panel["sway-taskbar"]
-
-        val = self.eb_workspace_menu.get_text()
-        if val:
-            settings["workspace-menu"] = val.split()
+        settings = self.panel["hyprland-taskbar"]
 
         val = self.sb_name_max_len.get_value()
         if val is not None:
@@ -1284,14 +1298,134 @@ class EditorWrapper(object):
         settings["show-app-icon"] = self.ckb_show_app_icon.get_active()
         settings["show-app-name"] = self.ckb_show_app_name.get_active()
         settings["show-layout"] = self.ckb_show_layout.get_active()
-        settings["workspace-buttons"] = self.workspace_buttons.get_active()
-        settings["all-workspaces"] = self.ckb_all_workspaces.get_active()
+        settings["workspace-clickable"] = self.workspace_clickable.get_active()
+        settings["mark-xwayland"] = self.ckb_mark_xwayland.get_active()
+        settings["all-outputs"] = self.ckb_all_outputs.get_active()
+
+        try:
+            settings["angle"] = float(self.sb_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
+
+        save_json(self.config, self.file)
+
+
+    def edit_hyprland_taskbar(self, *args):
+        self.load_panel()
+        self.edited = "sway-taskbar"
+        check_key(self.panel, "hyprland-taskbar", {})
+        settings = self.panel["hyprland-taskbar"]
+        defaults = {
+            "name-max-len": 24,
+            "icon-size": 16,
+            "workspaces-spacing": 0,
+            "client-padding": 0,
+            "show-app-icon": True,
+            "show-app-name": True,
+            "show-layout": True,
+            "all-outputs": False,
+            "mark-xwayland": True,
+            "workspace-clickable": False,
+            "angle": 0.0
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_hyprland_taskbar.glade"))
+        frame = builder.get_object("frame")
+        frame.set_label("  {}: HyprlandTaskbar  ".format(voc["module"]))
+
+        builder.get_object("lbl-name-max-length").set_text("{}:".format(voc["name-max-length"]))
+        builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
+        builder.get_object("lbl-workspace-spacing").set_text("{}:".format(voc["workspace-spacing"]))
+        builder.get_object("lbl-task-padding").set_text("{}:".format(voc["task-padding"]))
+        builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
+
+        self.sb_name_max_len = builder.get_object("name-max-len")
+        self.sb_name_max_len.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=1, upper=257, step_increment=1, page_increment=10, page_size=1)
+        self.sb_name_max_len.configure(adj, 1, 0)
+        self.sb_name_max_len.set_value(settings["name-max-len"])
+
+        self.sb_image_size = builder.get_object("icon-size")
+        self.sb_image_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
+        self.sb_image_size.configure(adj, 1, 0)
+        self.sb_image_size.set_value(settings["icon-size"])
+
+        self.sb_workspace_spacing = builder.get_object("workspaces-spacing")
+        self.sb_workspace_spacing.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=1000, step_increment=1, page_increment=10, page_size=1)
+        self.sb_workspace_spacing.configure(adj, 1, 0)
+        self.sb_workspace_spacing.set_value(settings["workspaces-spacing"])
+
+        self.sb_task_padding = builder.get_object("task-padding")
+        self.sb_task_padding.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=257, step_increment=1, page_increment=10, page_size=1)
+        self.sb_task_padding.configure(adj, 1, 0)
+        self.sb_task_padding.set_value(settings["client-padding"])
+
+        self.ckb_show_app_icon = builder.get_object("show-app-icon")
+        self.ckb_show_app_icon.set_label(voc["show-icon"])
+        self.ckb_show_app_icon.set_active(settings["show-app-icon"])
+
+        self.ckb_show_app_name = builder.get_object("show-app-name")
+        self.ckb_show_app_name.set_label(voc["show-name"])
+        self.ckb_show_app_name.set_active(settings["show-app-name"])
+
+        self.ckb_show_layout = builder.get_object("show-layout")
+        self.ckb_show_layout.set_label(voc["show-layout"])
+        self.ckb_show_layout.set_active(settings["show-layout"])
+
+        self.workspace_clickable = builder.get_object("workspace-clickable")
+        self.workspace_clickable.set_label(voc["workspaces-clickable"])
+        self.workspace_clickable.set_active(settings["workspace-clickable"])
+
+        self.ckb_mark_xwayland = builder.get_object("mark-xwayland")
+        self.ckb_mark_xwayland.set_label(voc["mark-xwayland"])
+        self.ckb_mark_xwayland.set_active(settings["mark-xwayland"])
+
+        self.ckb_all_outputs = builder.get_object("all-outputs")
+        self.ckb_all_outputs.set_label(voc["all-outputs"])
+        self.ckb_all_outputs.set_active(settings["all-outputs"])
+
+        self.sb_angle = builder.get_object("angle")
+        self.sb_angle.set_tooltip_text(voc["angle-tooltip"])
+        self.sb_angle.set_active_id(str(settings["angle"]))
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(frame)
+
+    def update_hyprland_taskbar(self):
+        settings = self.panel["sway-taskbar"]
+
+        val = self.sb_name_max_len.get_value()
+        if val is not None:
+            settings["name-max-len"] = int(val)
+
+        val = self.sb_image_size.get_value()
+        if val is not None:
+            settings["image-size"] = int(val)
+
+        val = self.sb_workspace_spacing.get_value()
+        if val is not None:
+            settings["workspaces-spacing"] = int(val)
+
+        val = self.sb_task_padding.get_value()
+        if val is not None:
+            settings["task-padding"] = int(val)
+
+        settings["show-app-icon"] = self.ckb_show_app_icon.get_active()
+        settings["show-app-name"] = self.ckb_show_app_name.get_active()
+        settings["show-layout"] = self.ckb_show_layout.get_active()
+        settings["workspace-clickable"] = self.workspace_clickable.get_active()
         settings["mark-autotiling"] = self.ckb_mark_autotiling.get_active()
         settings["mark-xwayland"] = self.ckb_mark_xwayland.get_active()
         settings["all-outputs"] = self.ckb_all_outputs.get_active()
 
         try:
-            settings["angle"] = float(self.taskbar_angle.get_active_id())
+            settings["angle"] = float(self.sb_angle.get_active_id())
         except:
             settings["angle"] = 0.0
 

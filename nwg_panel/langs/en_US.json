@@ -85,6 +85,7 @@
   "horizontal-padding": "Horizontal padding",
   "horizontal-window-margin": "Horizontal window margin",
   "humidity": "Humidity",
+  "hyprland-taskbar": "Hyprland Taskbar",
   "icon": "Icon",
   "icon-placement": "Icon placement",
   "icon-set": "Icon set",
@@ -242,6 +243,7 @@
   "workspace-spacing": "Workspace spacing",
   "workspaces": "Workspaces",
   "workspaces-as-buttons": "Workspaces as buttons",
+  "workspaces-clickable": "Workspaces clickable",
   "workspaces-to-show": "Workspaces to show",
   "workspaces-to-show-tooltip": "Space-separated numbers of workspaces to show.",
   "workspaces-tooltip": "Space-separated numbers of workspaces \nyou defined in sway config. We'll build the \ncontext menu out of them."

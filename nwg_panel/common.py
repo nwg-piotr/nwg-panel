@@ -10,6 +10,7 @@ outputs = {}
 outputs_num = 0
 windows_list = []
 taskbars_list = []
+h_taskbars_list = []
 scratchpads_list = []
 workspaces_list = []
 controls_list = []
