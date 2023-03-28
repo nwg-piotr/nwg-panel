@@ -287,6 +287,10 @@ def list_outputs(sway=False, tree=None, silent=False):
                                        "width": item["width"],
                                        "height": item["height"],
                                        "monitor": None}
+            # swap for rotated displays
+            if item["transform"] in [1, 3, 5, 7]:
+                outputs_dict[item["name"]]["width"] = item["height"]
+                outputs_dict[item["name"]]["height"] = item["width"]
 
     elif os.getenv('WAYLAND_DISPLAY') is not None:
         if not silent:
@@ -316,7 +320,7 @@ def list_outputs(sway=False, tree=None, silent=False):
 
                     if name is not None and w is not None and h is not None and x is not None and y is not None \
                             and transform is not None:
-                        if transform == "normal":
+                        if transform == "normal":  # which other values it returns for not rotated displays?
                             outputs_dict[name] = {'name': name,
                                                   'x': x,
                                                   'y': y,
