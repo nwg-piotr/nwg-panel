@@ -9,7 +9,10 @@ Project: https://nwg-piotr.github.io/nwg-shell
 License: MIT
 """
 
+import json
 import os
+import socket
+import sys
 
 import psutil
 from i3ipc import Connection
@@ -20,7 +23,24 @@ from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, load_json, save_json, check_key, eprint
 
-sway = os.getenv('SWAYSOCK')
+swaysock = os.getenv('SWAYSOCK')
+his = os.getenv("HYPRLAND_INSTANCE_SIGNATURE")
+
+
+def hyprctl(cmd):
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    s.connect("/tmp/hypr/{}/.socket.sock".format(os.getenv("HYPRLAND_INSTANCE_SIGNATURE")))
+
+    s.send(cmd.encode("utf-8"))
+    output = s.recv(20480).decode('utf-8')
+    s.close()
+
+    return output
+
+
+if not swaysock and not his:
+    eprint("Neither sway nor hyprland socket detected, terminating.")
+    sys.exit(1)
 
 W_PID = 10
 W_PPID = 10
@@ -60,7 +80,12 @@ def terminate(btn, pid):
 
 
 def list_processes(once=False):
-    tree = Connection().get_tree()
+    if swaysock:
+        tree = Connection().get_tree()
+    elif his:
+        output = hyprctl("j/clients")
+        clients = json.loads(output)
+
     processes = {}
 
     user = os.getenv('USER')
@@ -90,7 +115,16 @@ def list_processes(once=False):
 
     idx = 1
     for pid in processes:
-        cons = tree.find_by_pid(pid)
+        cons = None
+        mapped = {}
+        if swaysock:
+            cons = tree.find_by_pid(pid)
+        elif his:
+            for client in clients:
+                if client["pid"] == pid and client["mapped"]:
+                    mapped["pid"] = client["title"]
+                    break
+
         if not cons or not settings["processes-background-only"]:
             lbl = Gtk.Label.new(str(pid))
             lbl.set_width_chars(W_PID)
@@ -135,6 +169,8 @@ def list_processes(once=False):
                     win_name = cons[0].name
                 elif cons[0].window_title:
                     win_name = cons[0].window_title
+            elif mapped:
+                win_name = mapped["pid"]
 
             if win_name:
                 lbl = Gtk.Label.new(win_name)
@@ -211,7 +247,7 @@ def main():
     }
     for key in defaults:
         check_key(settings, key, defaults[key])
-    if not sway:
+    if not swaysock:
         settings["processes-background-only"] = False
 
     win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
@@ -267,7 +303,7 @@ def main():
     lbl.set_xalign(0)
     desc_box.pack_start(lbl, True, True, 0)
 
-    if sway:
+    if swaysock:
         global window_lbl
         window_lbl = Gtk.Label.new("Window")
         window_lbl.set_width_chars(W_WINDOW)
@@ -295,7 +331,7 @@ def main():
     lbl.set_markup("<b>nwg-processes</b>")
     hbox.pack_start(lbl, False, False, 0)
 
-    if sway:
+    if swaysock:
         cb = Gtk.CheckButton.new_with_label("Background only")
         cb.set_tooltip_text("Processes that don't belong to the sway tree")
         cb.set_active(settings["processes-background-only"])
