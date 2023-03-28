@@ -109,7 +109,7 @@ class HyprlandTaskbar(Gtk.Box):
                 ws_box.pack_start(eb, False, False, 6)
                 lbl = Gtk.Label()
                 if ws_num in self.active_workspaces:
-                    lbl.set_markup("<u><b>{}</b></u>:".format(self.workspaces[ws_num]["name"]))
+                    lbl.set_markup("<u>{}</u>:".format(self.workspaces[ws_num]["name"]))
                 else:
                     lbl.set_text("{}:".format(self.workspaces[ws_num]["name"]))
                 eb.add(lbl)
