@@ -122,7 +122,7 @@ def list_processes(once=False):
         elif his:
             for client in clients:
                 if client["pid"] == pid and client["mapped"]:
-                    mapped["pid"] = client["title"]
+                    mapped["pid"] = client["class"]
                     break
 
         if not cons or not settings["processes-background-only"]:
