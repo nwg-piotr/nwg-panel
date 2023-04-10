@@ -55,7 +55,7 @@ class SwayNC(Gtk.EventBox):
 
         if settings["on-left-click"] or settings["on-right-click"] or settings["on-middle-click"] or settings[
             "on-scroll-up"] or settings["on-scroll-down"]:
-            self.connect('button-press-event', self.on_button_press)
+            self.connect('button-release-event', self.on_button_release)
             self.add_events(Gdk.EventMask.SCROLL_MASK)
             self.connect('scroll-event', self.on_scroll)
 
@@ -120,7 +120,7 @@ class SwayNC(Gtk.EventBox):
         widget.unset_state_flags(Gtk.StateFlags.DROP_ACTIVE)
         widget.unset_state_flags(Gtk.StateFlags.SELECTED)
 
-    def on_button_press(self, widget, event):
+    def on_button_release(self, widget, event):
         if event.button == 1 and self.settings["on-left-click"]:
             self.launch(self.settings["on-left-click"])
         elif event.button == 2 and self.settings["on-middle-click"]:
