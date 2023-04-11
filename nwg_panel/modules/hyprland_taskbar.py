@@ -84,10 +84,15 @@ class HyprlandTaskbar(Gtk.Box):
                 if (self.mon_id2name[c["monitor"]] == self.display_name) or self.settings["all-outputs"]:
                     self.clients.append(c)
 
+    def get_activewindow(self):
+        output = hyprctl("j/activewindow")
+        self.activewindow = json.loads(output)
+
     def refresh(self):
         self.list_monitors()
         self.list_workspaces()
         self.list_clients()
+        self.get_activewindow()
         for item in self.get_children():
             item.destroy()
         self.build_box()
@@ -119,6 +124,10 @@ class HyprlandTaskbar(Gtk.Box):
                     # if client["title"] prevents from creation of ghost client boxes
                     if client["title"] and client["workspace"]["id"] == ws_num:
                         client_box = ClientBox(self.settings, client, self.position, self.icons_path)
+                        if self.activewindow and client["address"] == self.activewindow["address"]:
+                            client_box.box.set_property("name", "task-box-focused")
+                        else:
+                            client_box.box.set_property("name", "task-box")
                         cl_box.pack_start(client_box, False, False, self.settings["client-padding"])
 
         self.show_all()
