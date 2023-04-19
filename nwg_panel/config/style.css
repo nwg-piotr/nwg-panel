@@ -45,6 +45,9 @@ button {
     background: #36364f;
     color: #eeeeee
 }
+#controls-window scale value {
+    color: #eeeeee
+}
 
 /* Brightness slider popup window in sample config uses this name */
 #brightness-popup {
