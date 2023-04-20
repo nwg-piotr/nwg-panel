@@ -206,9 +206,19 @@
           </packing>
         </child>
         <child>
-          <object class="GtkEntry" id="custom-labels">
+          <object class="GtkScrolledWindow">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
+            <property name="shadow-type">in</property>
+            <property name="propagate-natural-width">True</property>
+            <property name="propagate-natural-height">True</property>
+            <child>
+              <object class="GtkTextView" id="custom-labels">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="monospace">True</property>
+              </object>
+            </child>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -216,9 +226,19 @@
           </packing>
         </child>
         <child>
-          <object class="GtkEntry" id="focused-labels">
+          <object class="GtkScrolledWindow">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
+            <property name="shadow-type">in</property>
+            <property name="propagate-natural-width">True</property>
+            <property name="propagate-natural-height">True</property>
+            <child>
+              <object class="GtkTextView" id="focused-labels">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="monospace">True</property>
+              </object>
+            </child>
           </object>
           <packing>
             <property name="left-attach">1</property>
