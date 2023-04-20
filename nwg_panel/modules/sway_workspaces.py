@@ -43,12 +43,12 @@ class SwayWorkspaces(Gtk.Box):
         ws_num = -1
         if self.i3.get_tree().find_focused():
             ws_num, win_name, win_id, non_empty, win_layout, numbers = self.find_details()
-        
+
         if len(self.settings["custom-labels"]) == 1:
             self.settings["custom-labels"] *= len(self.settings["numbers"])
         elif len(self.settings["custom-labels"]) != len(self.settings["numbers"]):
             self.settings["custom-labels"] = []
-        
+
         if len(self.settings["focused-labels"]) == 1:
             self.settings["focused-labels"] *= len(self.settings["numbers"])
         elif len(self.settings["focused-labels"]) != len(self.settings["numbers"]):
@@ -103,6 +103,7 @@ class SwayWorkspaces(Gtk.Box):
             lbl = Gtk.Label("{}{}".format(autotiling, label))
         else:
             lbl = Gtk.Label("{}".format(label))
+        lbl.set_use_markup(True)
         if self.settings["angle"] != 0.0:
             lbl.set_angle(self.settings["angle"])
             self.name_label.set_angle(self.settings["angle"])
@@ -163,8 +164,8 @@ class SwayWorkspaces(Gtk.Box):
                         else:
                             if text.endswith("."):
                                 text = text[0:-1]
-                    
-                    lbl.set_text(text)
+
+                    lbl.set_markup(text)
 
                     if num == str(ws_num):
                         self.ws_num2box[num].set_property("name", "task-box-focused")
