@@ -4,6 +4,8 @@ import subprocess
 import threading
 import signal
 
+from shlex import split
+
 import gi
 from gi.repository import GLib
 
@@ -26,9 +28,11 @@ class Executor(Gtk.EventBox):
         self.image = Gtk.Image()
         self.label = Gtk.Label("")
         self.icon_path = None
+        self.process = None
 
         check_key(settings, "script", "")
         check_key(settings, "interval", 0)
+        check_key(settings, "icon", "view-refresh-symbolic")
         check_key(settings, "root-css-name", "root-executor")
         check_key(settings, "css-name", "")
         check_key(settings, "icon-placement", "left")
@@ -42,6 +46,7 @@ class Executor(Gtk.EventBox):
         check_key(settings, "angle", 0.0)
         check_key(settings, "sigrt", signal.SIGRTMIN)
         check_key(settings, "use-sigrt", False)
+        check_key(settings, "continuous", False)
 
         self.label.set_angle(settings["angle"])
 
@@ -52,7 +57,10 @@ class Executor(Gtk.EventBox):
         if settings["angle"] != 0.0:
             self.box.set_orientation(Gtk.Orientation.VERTICAL)
 
-        update_image(self.image, "view-refresh-symbolic", self.settings["icon-size"], self.icons_path)
+        if self.settings["icon"] is None or len(self.settings["icon"]) == 0:
+            self.image.hide()
+        else:
+            update_image(self.image, self.settings["icon"], self.settings["icon-size"], self.icons_path)
 
         self.set_property("name", settings["root-css-name"])
 
@@ -83,6 +91,7 @@ class Executor(Gtk.EventBox):
     def update_widget(self, output):
         if output:
             if len(output) == 1:
+                print("output1 {}".format(output))
                 if output[0].endswith(".svg") or output[0].endswith(".png"):
                     new_path = output[0].strip()
                     if new_path != self.icon_path:
@@ -110,7 +119,10 @@ class Executor(Gtk.EventBox):
 
             elif len(output) == 2:
                 new_path = output[0].strip()
-                if "/" not in new_path and "." not in new_path:  # name given instead of path
+                if new_path == "":
+                    if self.image.get_visible():
+                        self.image.hide()
+                elif "/" not in new_path and "." not in new_path:  # name given instead of path
                     update_image(self.image, new_path, self.settings["icon-size"], self.icons_path)
                     self.icon_path = new_path
                 else:
@@ -137,9 +149,32 @@ class Executor(Gtk.EventBox):
 
     def get_output(self):
         if "script" in self.settings and self.settings["script"]:
+            script = split(self.settings["script"])
+            continuous = self.settings["continuous"]
             try:
-                output = subprocess.check_output(self.settings["script"].split()).decode("utf-8").splitlines()
-                GLib.idle_add(self.update_widget, output)
+                if not continuous:
+                    subprocess.check_output(script)
+                    output = subprocess.check_output(split(self.settings["script"])).decode("utf-8").splitlines()
+                    GLib.idle_add(self.update_widget, output)
+                    return
+
+                if self.process is not None and self.process.poll() is None:
+                    # Last process has not yet finished
+                    # Wait for it, possibly this is a continuous output
+                    return
+
+                self.process = subprocess.Popen(script,
+                                                stdout = subprocess.PIPE)
+                first_line = None
+                while True:
+                    line = self.process.stdout.readline().decode('utf-8')
+                    if line is None or len(line) == 0: break
+
+                    if first_line is None:
+                        first_line = line
+                    else:
+                        GLib.idle_add(self.update_widget, [first_line, line])
+                        first_line = None
             except Exception as e:
                 print(e)
 

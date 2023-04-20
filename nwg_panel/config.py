@@ -2732,7 +2732,9 @@ class EditorWrapper(object):
             "interval": 1,
             "angle": 0.0,
             "sigrt": signal.SIGRTMIN,
-            "use-sigrt": False
+            "use-sigrt": False,
+            "icon": "view-refresh-symbolic",
+            "continuous": False
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -2794,6 +2796,9 @@ class EditorWrapper(object):
         self.executor_icon_placement = builder.get_object("icon-placement")
         self.executor_icon_placement.set_active_id(settings["icon-placement"])
 
+        self.executor_icon = builder.get_object("icon")
+        self.executor_icon.set_text(settings["icon"])
+
         self.executor_icon_size = builder.get_object("icon-size")
         self.executor_icon_size.set_numeric(True)
         adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
@@ -2822,6 +2827,10 @@ class EditorWrapper(object):
         self.executor_use_sigrt = builder.get_object("use-sigrt")
         self.executor_use_sigrt.set_label(voc["use-signal"])
         self.executor_use_sigrt.set_active(settings["use-sigrt"])
+
+        self.executor_continuous = builder.get_object("continuous")
+        self.executor_continuous.set_label(voc["continuous"])
+        self.executor_continuous.set_active(settings["continuous"])
 
         self.executor_remove = builder.get_object("remove")
         self.executor_remove.set_label(voc["remove-executor"])
@@ -2870,6 +2879,7 @@ class EditorWrapper(object):
             val = self.executor_icon_placement.get_active_id()
             if val:
                 settings["icon-placement"] = val
+            settings["icon"] = self.executor_icon.get_text()
             settings["icon-size"] = int(self.executor_icon_size.get_value())
             settings["interval"] = int(self.executor_interval.get_value())
 
@@ -2880,6 +2890,7 @@ class EditorWrapper(object):
 
             settings["sigrt"] = int(self.executor_sigrt.get_value())
             settings["use-sigrt"] = self.executor_use_sigrt.get_active()
+            settings["continuous"] = self.executor_continuous.get_active()
 
             self.panel[config_key] = settings
         else:
