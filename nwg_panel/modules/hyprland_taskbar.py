@@ -3,9 +3,9 @@ import json
 import os
 import socket
 
-from gi.repository import Gtk, Gdk, GdkPixbuf
+from gi.repository import Gtk, Gdk
 
-from nwg_panel.tools import get_icon_name, update_image, get_config_dir, temp_dir, eprint
+from nwg_panel.tools import update_image, update_image_fallback_desktop
 
 
 def hyprctl(cmd):
@@ -162,38 +162,11 @@ class ClientBox(Gtk.EventBox):
         self.connect('leave-notify-event', on_leave_notify_event)
         self.connect('button-press-event', self.on_click, client, self.box)
 
-        icon_name = client["class"]
-
         if settings["show-app-icon"]:
+            name = client["class"]
+
             image = Gtk.Image()
-            icon_theme = Gtk.IconTheme.get_default()
-            try:
-                # This should work if your icon theme provides the icon, or if it's placed in /usr/share/pixmaps
-                pixbuf = icon_theme.load_icon(icon_name, self.settings["image-size"],
-                                              Gtk.IconLookupFlags.FORCE_SIZE)
-                image.set_from_pixbuf(pixbuf)
-            except:
-                # If the above fails, let's search .desktop files to find the icon name
-                icon_from_desktop = get_icon_name(icon_name)
-                if icon_from_desktop:
-                    # trim extension, if given and the definition is not a path
-                    if "/" not in icon_from_desktop and len(icon_from_desktop) > 4 and icon_from_desktop[-4] == ".":
-                        icon_from_desktop = icon_from_desktop[:-4]
-
-                    if "/" not in icon_from_desktop:
-                        update_image(image, icon_from_desktop, self.settings["image-size"], self.icons_path)
-                    else:
-                        try:
-                            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop,
-                                                                            self.settings["image-size"],
-                                                                            self.settings["image-size"])
-                        except:
-                            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                                os.path.join(get_config_dir(), "icons_light/icon-missing.svg"),
-                                self.settings["image-size"],
-                                self.settings["image-size"])
-                        image.set_from_pixbuf(pixbuf)
-
+            update_image_fallback_desktop(image, name, settings["image-size"], icons_path)
             self.box.pack_start(image, False, False, 4)
 
         if settings["show-app-name"]:

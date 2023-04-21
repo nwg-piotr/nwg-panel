@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
+import os
 
-from gi.repository import Gtk, GdkPixbuf, Gdk
+from gi.repository import Gtk, Gdk
 
 import nwg_panel.common
-from nwg_panel.tools import check_key, get_icon_name, update_image, load_autotiling
+from nwg_panel.tools import check_key, get_icon_name, update_image, update_image_fallback_desktop, load_autotiling
 
 
 class SwayWorkspaces(Gtk.Box):
@@ -201,25 +202,22 @@ class SwayWorkspaces(Gtk.Box):
                         self.layout_icon.hide()
 
     def update_icon(self, win_id, win_name):
+        loaded_icon = False
         if win_id and win_name:
-            icon_from_desktop = get_icon_name(win_id)
-            if icon_from_desktop:
-                if "/" not in icon_from_desktop and not icon_from_desktop.endswith(
-                        ".svg") and not icon_from_desktop.endswith(".png"):
-                    update_image(self.icon, icon_from_desktop, self.settings["image-size"], self.icons_path)
-                else:
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop, self.settings["image-size"],
-                                                                    self.settings["image-size"])
-                    self.icon.set_from_pixbuf(pixbuf)
-            else:
-                image = Gtk.Image()
-                update_image(image, win_id, self.settings["image-size"], self.icons_path)
+            try:
+                update_image_fallback_desktop(self.icon,
+                                              win_id,
+                                              self.settings["image-size"],
+                                              self.icons_path,
+                                              fallback=False)
+                loaded_icon = True
+                if not self.icon.get_visible():
+                    self.icon.show()
+            except:
+                pass
 
-            if not self.icon.get_visible():
-                self.icon.show()
-        else:
-            if self.icon.get_visible():
-                self.icon.hide()
+        if not loaded_icon and self.icon.get_visible():
+            self.icon.hide()
 
     def find_details(self):
         tree = self.i3.get_tree()

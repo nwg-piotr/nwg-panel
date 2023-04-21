@@ -7,7 +7,7 @@ import subprocess
 import threading
 from datetime import datetime
 
-from nwg_panel.tools import check_key, eprint, local_dir, load_json, save_json, update_image, create_pixbuf
+from nwg_panel.tools import check_key, eprint, local_dir, load_json, save_json, update_image, update_gtk_entry
 
 import gi
 
@@ -213,9 +213,9 @@ class Clock(Gtk.EventBox):
         self.note_entry.set_property("margin-top", 6)
         self.note_entry.connect("changed", self.on_note_changed)
         self.note_entry.connect("icon-release", self.on_note_icon_click)
-
-        pixbuf = create_pixbuf("edit-clear", self.settings["calendar-icon-size"], self.icons_path)
-        self.note_entry.set_icon_from_pixbuf(Gtk.EntryIconPosition.SECONDARY, pixbuf)
+        update_gtk_entry(self.note_entry, Gtk.EntryIconPosition.SECONDARY,
+                         "edit-clear", self.settings["calendar-icon-size"],
+                         self.icons_path)
 
         vbox.pack_start(self.note_box, False, False, 0)
         self.note_box.pack_start(self.note_entry, True, True, 0)
