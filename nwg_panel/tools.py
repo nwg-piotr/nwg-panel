@@ -640,40 +640,29 @@ def update_image(image, icon_name, icon_size, icons_path=""):
 
 
 def create_pixbuf(icon_name, icon_size, icons_path=""):
-    # In case a full path was given
-    if icon_name.startswith("/"):
-        try:
+    try:
+        # In case a full path was given
+        if icon_name.startswith("/"):
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
                 icon_name, icon_size, icon_size)
-            return pixbuf
-        except:
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), icon_size, icon_size)
-            return pixbuf
-
-    icon_theme = Gtk.IconTheme.get_default()
-    if icons_path:
-        path = "{}/{}.svg".format(icons_path, icon_name)
-        try:
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                path, icon_size, icon_size)
-            return pixbuf
-        except:
+        else:
             try:
-                pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
-                return pixbuf
+                if icons_path:
+                    path = "{}/{}.svg".format(icons_path, icon_name)
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                        path, icon_size, icon_size)
+                else:
+                    raise ValueError("icons_path not supplied.")
             except:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                    os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), icon_size, icon_size)
-                return pixbuf
-    else:
-        try:
-            pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
-            return pixbuf
-        except:
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), icon_size, icon_size)
-            return pixbuf
+                icon_theme = Gtk.IconTheme.get_default()
+                try:
+                    pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+                except:
+                    pixbuf = icon_theme.load_icon(icon_name.lower(), icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
+    except:
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+            os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), icon_size, icon_size)
+    return pixbuf
 
 
 def bt_info():
