@@ -4,7 +4,7 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 
-from gi.repository import Gtk, GLib, GdkPixbuf
+from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
 
 from nwg_panel.tools import check_key, create_pixbuf
 from .item import StatusNotifierItem
@@ -29,10 +29,14 @@ def resize_pix_buf(image, pixbuf, icon_size):
         factor = icon_size / h
     pixbuf = pixbuf.scale_simple(w * factor, h * factor, GdkPixbuf.InterpType.BILINEAR)
 
-    image.set_from_pixbuf(pixbuf)
+    scale = image.get_scale_factor()
+    surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf, scale, image.get_window())
+    image.set_from_surface(surface)
 
 
 def load_icon(image, icon_name: str, icon_size, icon_path=""):
+    scale = image.get_scale_factor()
+    icon_size *= scale
     pixbuf = create_pixbuf(icon_name, icon_size, icon_path)
     resize_pix_buf(image, pixbuf, icon_size)
 

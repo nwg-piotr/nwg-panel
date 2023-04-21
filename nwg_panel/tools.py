@@ -602,8 +602,11 @@ def player_metadata():
 
 
 def update_image(image, icon_name, icon_size, icons_path="", fallback=True):
+    scale = image.get_scale_factor()
+    icon_size *= scale
     pixbuf = create_pixbuf(icon_name, icon_size, icons_path, fallback)
-    image.set_from_pixbuf(pixbuf)
+    surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf, scale, image.get_window())
+    image.set_from_surface(surface)
 
 
 def update_image_fallback_desktop(image, icon_name, icon_size, icons_path, fallback=True):
@@ -622,6 +625,8 @@ def update_image_fallback_desktop(image, icon_name, icon_size, icons_path, fallb
 
 
 def update_gtk_entry(entry, icon_pos, icon_name, icon_size, icons_path=""):
+    scale = entry.get_scale_factor()
+    icon_size *= scale
     pixbuf = create_pixbuf(icon_name, icon_size, icons_path)
     entry.set_icon_from_pixbuf(icon_pos, pixbuf)
 
