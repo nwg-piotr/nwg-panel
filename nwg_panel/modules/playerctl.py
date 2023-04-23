@@ -14,7 +14,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
-from gi.repository import Gtk, Gdk, GdkPixbuf
+from gi.repository import Gtk, Gdk
 
 from urllib.parse import unquote, urlparse
 
@@ -75,11 +75,9 @@ class Playerctl(Gtk.EventBox):
         try:
             r = requests.get(url, allow_redirects=True)
             cover_path = os.path.join(local_dir(), "cover.jpg")
-            open(cover_path, 'wb').write(r.content)
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(cover_path,
-                                                            self.settings["cover-size"],
-                                                            self.settings["cover-size"])
-            self.cover_img.set_from_pixbuf(pixbuf)
+            with open(cover_path, 'wb') as f:
+                f.write(r.content)
+            update_image(self.cover_img, cover_path, self.settings["cover-size"], fallback=False)
             self.cover_img.show()
         except Exception as e:
             eprint("Couldn't update remote cover: {}".format(e))
@@ -88,10 +86,7 @@ class Playerctl(Gtk.EventBox):
     def update_cover_image(self, url):
         if url.startswith("file:"):
             try:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(unquote(urlparse(url).path),
-                                                                self.settings["cover-size"],
-                                                                self.settings["cover-size"])
-                self.cover_img.set_from_pixbuf(pixbuf)
+                update_image(self.cover_img, unquote(urlparse(url).path), self.settings["cover-size"], fallback=False)
                 self.cover_img.show()
             except Exception as e:
                 eprint("Error creating pixbuf: {}".format(e))

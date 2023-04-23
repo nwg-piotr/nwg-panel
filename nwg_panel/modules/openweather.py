@@ -25,7 +25,7 @@ dir_name = os.path.dirname(__file__)
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
-from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GtkLayerShell
+from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
 
 def on_enter_notify_event(widget, event):
@@ -296,17 +296,17 @@ class OpenWeather(Gtk.EventBox):
                 new_path = os.path.join(self.weather_icons, "ow-{}.svg".format(self.weather["weather"][0]["icon"]))
                 if self.icon_path != new_path:
                     try:
-                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                            new_path, self.settings["icon-size"], self.settings["icon-size"])
-                        self.image.set_from_pixbuf(pixbuf)
+                        update_image(self.image, new_path, self.settings["icon-size"], fallback=False)
                         self.icon_path = new_path
                     except:
                         print("Failed setting image from {}".format(new_path))
 
             if self.alerts_json and self.alerts_json["alerts"]:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join(self.weather_icons, "exclamation.svg"),
-                                                                self.settings["icon-size"], self.settings["icon-size"])
-                self.alert_image.set_from_pixbuf(pixbuf)
+                alert_path = os.path.join(self.weather_icons, "exclamation.svg")
+                try:
+                    update_image(self.alert_image, alert_path, self.settings["icon-size"], fallback=False)
+                except:
+                    print("Failed setting alert image from {}".format(alert_path))
             else:
                 self.alert_image = Gtk.Image()
                 self.alert_image.set_size_request(0, 0)
@@ -337,9 +337,8 @@ class OpenWeather(Gtk.EventBox):
         icon_path = os.path.join(self.popup_icons, file_name) if not weather else os.path.join(self.weather_icons,
                                                                                                file_name)
         try:
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, self.settings["popup-icon-size"],
-                                                            self.settings["popup-icon-size"])
-            img = Gtk.Image.new_from_pixbuf(pixbuf)
+            img = Gtk.Image()
+            update_image(img, icon_path, self.settings["popup-icon-size"], fallback=False)
         except Exception as e:
             eprint(e)
             img = Gtk.Image.new_from_icon_name("image-missing", Gtk.IconSize.MENU)
@@ -396,9 +395,8 @@ class OpenWeather(Gtk.EventBox):
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
         if "icon" in self.weather["weather"][0]:
             icon_path = os.path.join(self.weather_icons, "ow-{}.svg".format(self.weather["weather"][0]["icon"]))
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, self.settings["popup-header-icon-size"],
-                                                            self.settings["popup-header-icon-size"])
-            img = Gtk.Image.new_from_pixbuf(pixbuf)
+            img = Gtk.Image()
+            update_image(img, icon_path, self.settings["popup-header-icon-size"])
             img.set_property("halign", Gtk.Align.END)
             hbox.pack_start(img, True, True, 0)
 

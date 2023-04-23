@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 import os
-from gi.repository import Gtk, Gdk, GdkPixbuf
+from gi.repository import Gtk, Gdk
 
 from nwg_panel.tools import check_key, get_icon_name, update_image, load_autotiling, get_config_dir, temp_dir, \
-    save_json
+    save_json, update_image, update_image_fallback_desktop
 import nwg_panel.common
 
 
@@ -144,31 +144,7 @@ class WindowBox(Gtk.EventBox):
             name = con.app_id if con.app_id else con.window_class
 
             image = Gtk.Image()
-            icon_theme = Gtk.IconTheme.get_default()
-            try:
-                # This should work if your icon theme provides the icon, or if it's placed in /usr/share/pixmaps
-                pixbuf = icon_theme.load_icon(name, settings["image-size"], Gtk.IconLookupFlags.FORCE_SIZE)
-                image.set_from_pixbuf(pixbuf)
-            except:
-                # If the above fails, let's search .desktop files to find the icon name
-                icon_from_desktop = get_icon_name(name)
-                if icon_from_desktop:
-                    # trim extension, if given and the definition is not a path
-                    if "/" not in icon_from_desktop and len(icon_from_desktop) > 4 and icon_from_desktop[-4] == ".":
-                        icon_from_desktop = icon_from_desktop[:-4]
-
-                    if "/" not in icon_from_desktop:
-                        update_image(image, icon_from_desktop, settings["image-size"], icons_path)
-                    else:
-                        try:
-                            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_from_desktop, settings["image-size"],
-                                                                            settings["image-size"])
-                        except:
-                            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                                os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), settings["image-size"],
-                                settings["image-size"])
-                        image.set_from_pixbuf(pixbuf)
-
+            update_image_fallback_desktop(image, name, settings["image-size"], icons_path)
             self.box.pack_start(image, False, False, 4)
 
         if con.name:

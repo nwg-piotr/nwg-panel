@@ -4,9 +4,9 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 
-from gi.repository import Gtk, GLib, GdkPixbuf
+from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
 
-from nwg_panel.tools import check_key, get_config_dir
+from nwg_panel.tools import check_key, create_pixbuf
 from .item import StatusNotifierItem
 from .menu import Menu
 
@@ -29,37 +29,15 @@ def resize_pix_buf(image, pixbuf, icon_size):
         factor = icon_size / h
     pixbuf = pixbuf.scale_simple(w * factor, h * factor, GdkPixbuf.InterpType.BILINEAR)
 
-    image.set_from_pixbuf(pixbuf)
+    scale = image.get_scale_factor()
+    surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf, scale, image.get_window())
+    image.set_from_surface(surface)
 
 
-def load_icon(image, icon_name: str, icon_size, icons_path=""):
-    icon_theme = Gtk.IconTheme.get_default()
-    search_path = icon_theme.get_search_path()
-    try:
-        if icons_path:
-            search_path.append(icons_path)
-            icon_theme.set_search_path(search_path)
-
-        if icon_theme.has_icon(icon_name):
-            pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
-        elif icon_theme.has_icon(icon_name.lower()):
-            pixbuf = icon_theme.load_icon(icon_name.lower(), icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
-        elif icon_name.startswith("/"):
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_name, icon_size, icon_size)
-        else:
-            pixbuf = icon_theme.load_icon(icon_name, icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
-
-    except GLib.GError:
-        """print(
-            "tray -> update_icon: icon not found\n  icon_name: {}\n  search_path: {}".format(
-                icon_name,
-                search_path
-            ),
-            file=sys.stderr
-        )"""
-        path = os.path.join(get_config_dir(), "icons_light/icon-missing.svg")
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, icon_size, icon_size)
-
+def load_icon(image, icon_name: str, icon_size, icon_path=""):
+    scale = image.get_scale_factor()
+    icon_size *= scale
+    pixbuf = create_pixbuf(icon_name, icon_size, icon_path)
     resize_pix_buf(image, pixbuf, icon_size)
 
 

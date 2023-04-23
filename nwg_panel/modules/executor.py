@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import subprocess
 import threading
 import signal
@@ -12,7 +13,7 @@ from nwg_panel.tools import check_key, update_image
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
-from gi.repository import Gtk, Gdk, GdkPixbuf
+from gi.repository import Gtk, Gdk
 
 
 class Executor(Gtk.EventBox):
@@ -81,55 +82,46 @@ class Executor(Gtk.EventBox):
             Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
 
     def update_widget(self, output):
+        # parse output
+        label = new_path = None
         if output:
+            output = [o.strip() for o in output]
             if len(output) == 1:
-                if output[0].endswith(".svg") or output[0].endswith(".png"):
-                    new_path = output[0].strip()
-                    if new_path != self.icon_path:
-                        if "/" not in new_path and "." not in new_path:  # name given instead of path
-                            update_image(self.image, new_path, self.settings["icon-size"], self.icons_path)
-                            self.icon_path = new_path
-                        else:
-                            try:
-                                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                                    new_path, self.settings["icon-size"], self.settings["icon-size"])
-                                self.image.set_from_pixbuf(pixbuf)
-                                self.icon_path = new_path
-                            except:
-                                print("Failed setting image from {}".format(output[0].strip()))
-                            if not self.image.get_visible():
-                                self.image.show()
-                            if self.label.get_visible():
-                                self.label.hide()
+                if os.path.splitext(output[0])[1] in ('.svg', '.png'):
+                    new_path = output[0]
                 else:
-                    if self.image.get_visible():
-                        self.image.hide()
-                    self.label.set_text(output[0].strip())
-                    if not self.label.get_visible():
-                        self.label.show()
-
+                    label = output[0]
             elif len(output) == 2:
-                new_path = output[0].strip()
-                if "/" not in new_path and "." not in new_path:  # name given instead of path
-                    update_image(self.image, new_path, self.settings["icon-size"], self.icons_path)
-                    self.icon_path = new_path
-                else:
-                    if new_path != self.icon_path:
-                        try:
-                            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                                new_path, self.settings["icon-size"], self.settings["icon-size"])
-                            self.image.set_from_pixbuf(pixbuf)
-                            self.icon_path = new_path
-                        except:
-                            print("Failed setting image from {}".format(output[0].strip()))
+                new_path, label = output
 
-                self.label.set_text(output[1].strip())
+        # update widget contents
+        if new_path and new_path != self.icon_path:
+            try:
+                update_image(self.image,
+                             new_path,
+                             self.settings["icon-size"],
+                             self.icons_path,
+                             fallback=False)
+                self.icon_path = new_path
+            except:
+                print("Failed setting image from {}".format(new_path))
+                new_path = None
+
+        if label:
+            self.label.set_text(label)
+
+        # update widget visibility
+        if new_path:
+            if not self.image.get_visible():
                 self.image.show()
-                if self.label.get_text():
-                    self.label.show()
         else:
             if self.image.get_visible():
                 self.image.hide()
+
+        if label:
+            if not self.label.get_visible():
+                self.label.show()
+        else:
             if self.label.get_visible():
                 self.label.hide()
 
