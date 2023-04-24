@@ -1909,18 +1909,12 @@ class EditorWrapper(object):
         self.ws_custom_labels = builder.get_object("custom-labels")
         self.ws_custom_labels.set_tooltip_text(voc["custom-labels-tooltip"])
         labels = settings["custom-labels"]
-        text = ""
-        for item in labels:
-            text += str(item) + " "
-        self.ws_custom_labels.set_text(text.strip())
+        self.ws_custom_labels.get_buffer().set_text('\n'.join(labels))
 
         self.ws_focused_labels = builder.get_object("focused-labels")
         self.ws_focused_labels.set_tooltip_text(voc["custom-labels-tooltip"])
         labels = settings["focused-labels"]
-        text = ""
-        for item in labels:
-            text += str(item) + " "
-        self.ws_focused_labels.set_text(text.strip())
+        self.ws_focused_labels.get_buffer().set_text('\n'.join(labels))
 
         self.ws_show_icon = builder.get_object("show-icon")
         self.ws_show_icon.set_label(voc["show-focused-window-icon"])
@@ -1969,11 +1963,13 @@ class EditorWrapper(object):
         if val:
             settings["numbers"] = val.split()
 
-        val = self.ws_custom_labels.get_text()
-        settings["custom-labels"] = val.split()
+        buffer = self.ws_custom_labels.get_buffer()
+        val = buffer.get_text(*buffer.get_bounds(), False)
+        settings["custom-labels"] = val.splitlines()
 
-        val = self.ws_focused_labels.get_text()
-        settings["focused-labels"] = val.split()
+        buffer = self.ws_focused_labels.get_buffer()
+        val = buffer.get_text(*buffer.get_bounds(), False)
+        settings["focused-labels"] = val.splitlines()
 
         val = self.ws_show_icon.get_active()
         if val is not None:
