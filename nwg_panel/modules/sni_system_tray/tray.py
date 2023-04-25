@@ -119,7 +119,7 @@ class Tray(Gtk.EventBox):
             event_box = Gtk.EventBox()
             image = Gtk.Image()
 
-            if "IconName" in item.properties:
+            if "IconName" in item.properties and len(item.properties['IconName']) > 0:
                 update_icon(image, item, self.icon_size, self.icons_path)
             elif "IconPixmap" in item.properties and len(item.properties["IconPixmap"]) != 0:
                 update_icon_from_pixmap(image, item, self.icon_size)
@@ -155,7 +155,7 @@ class Tray(Gtk.EventBox):
         event_box = self.items[full_service_name]["event_box"]
         image = self.items[full_service_name]["image"]
 
-        if "IconThemePath" in changed_properties or "IconName" in changed_properties:
+        if "IconThemePath" in changed_properties or ("IconName" in changed_properties and len(item.properties['IconName']) > 0):
             update_icon(image, item, self.icon_size, self.icons_path)
         elif "IconPixmap" in changed_properties and len(item.properties["IconPixmap"]) != 0:
             update_icon_from_pixmap(image, item, self.icon_size)
