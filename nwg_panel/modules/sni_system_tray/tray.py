@@ -29,14 +29,14 @@ def resize_pix_buf(image, pixbuf, icon_size):
         factor = icon_size / h
     pixbuf = pixbuf.scale_simple(w * factor, h * factor, GdkPixbuf.InterpType.BILINEAR)
 
-    scale = image.get_scale_factor()
-    surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf, scale, image.get_window())
+    surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf,
+                                                   image.get_scale_factor(),
+                                                   image.get_window())
     image.set_from_surface(surface)
 
 
 def load_icon(image, icon_name: str, icon_size, icon_path=""):
-    scale = image.get_scale_factor()
-    icon_size *= scale
+    icon_size *= image.get_scale_factor()
     pixbuf = create_pixbuf(icon_name, icon_size, icon_path)
     resize_pix_buf(image, pixbuf, icon_size)
 
@@ -65,6 +65,7 @@ def update_icon_from_pixmap(image, item, icon_size):
         largest_height,
         4 * largest_width
     )
+    icon_size *= image.get_scale_factor()
     resize_pix_buf(image, pixbuf, icon_size)
 
 
