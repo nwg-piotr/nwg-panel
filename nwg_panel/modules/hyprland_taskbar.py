@@ -1,23 +1,9 @@
 #!/usr/bin/env python3
 import json
-import os
-import socket
 
 from gi.repository import Gtk, Gdk
 
-from nwg_panel.tools import update_image, update_image_fallback_desktop
-
-
-def hyprctl(cmd):
-    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    s.connect("/tmp/hypr/{}/.socket.sock".format(os.getenv("HYPRLAND_INSTANCE_SIGNATURE")))
-
-    s.send(cmd.encode("utf-8"))
-    output = s.recv(20480).decode('utf-8')
-    s.close()
-
-    return output
-
+from nwg_panel.tools import hyprctl, update_image, update_image_fallback_desktop
 
 class HyprlandTaskbar(Gtk.Box):
     def __init__(self, settings, position, display_name="", icons_path=""):

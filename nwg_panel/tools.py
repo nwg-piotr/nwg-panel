@@ -6,6 +6,7 @@ import json
 import subprocess
 import stat
 import time
+import socket
 
 import gi
 
@@ -748,3 +749,13 @@ def load_shell_data():
             shell_data[key] = defaults[key]
 
     return shell_data
+
+def hyprctl(cmd, buf_size=20480):
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    s.connect("/tmp/hypr/{}/.socket.sock".format(os.getenv("HYPRLAND_INSTANCE_SIGNATURE")))
+
+    s.send(cmd.encode("utf-8"))
+    output = s.recv(buf_size).decode('utf-8')
+    s.close()
+
+    return output

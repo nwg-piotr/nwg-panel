@@ -81,6 +81,9 @@ if sway:
     from nwg_panel.modules.sway_workspaces import SwayWorkspaces
 
 his = os.getenv('HYPRLAND_INSTANCE_SIGNATURE')
+if his:
+    from nwg_panel.modules.hyprland_taskbar import HyprlandTaskbar
+    from nwg_panel.modules.hyprland_workspaces import HyprlandWorkspaces
 hypr_watcher_started = False
 last_client_addr = ""
 last_client_details = ""
@@ -280,6 +283,18 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             else:
                 eprint("'sway-workspaces' ignored")
 
+        if item == "hyprland-workspaces":
+            if his:
+                if "hyprland-workspaces" not in panel:
+                    panel["hyprland-workspaces"] = {}
+                    workspaces = HyprlandWorkspaces(panel["hyprland-workspaces"], icons_path=icons_path)
+                    container.pack_start(workspaces, False, False, panel["items-padding"])
+                    common.workspaces_list.append(workspaces)
+                else:
+                    print("'hyprland-workspaces' not defined in this panel instance")
+            else:
+                eprint("'hyprland-workspaces' ignored")
+
         if item == "scratchpad":
             if sway:
                 # Added in v0.1.3, so may be undefined in user's config.
@@ -307,7 +322,6 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                         thread.start()
                         hypr_watcher_started = True
 
-                    from nwg_panel.modules.hyprland_taskbar import HyprlandTaskbar
                     check_key(panel["hyprland-taskbar"], "all-outputs", False)
                     if panel["hyprland-taskbar"]["all-outputs"] or "output" not in panel:
                         taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"], icons_path=icons_path)
