@@ -56,8 +56,14 @@ def update_icon_from_pixmap(image, item, icon_size):
             largest_data = data
             largest_width = width
             largest_height = height
-    pixbuf = GdkPixbuf.Pixbuf.new_from_bytes(
-        GLib.Bytes().new(largest_data),
+
+    # ARGB -> RGBA
+    rgba_data = []
+    for i in range(0, len(largest_data), 4):
+        rgba_data += largest_data[i + 1:i + 4] + [largest_data[i]]
+
+    pixbuf = GdkPixbuf.Pixbuf.new_from_data(
+        rgba_data,
         GdkPixbuf.Colorspace.RGB,
         True,
         8,
