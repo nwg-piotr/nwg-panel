@@ -15,12 +15,13 @@ class HyprlandWorkspaces(Gtk.Box):
         self.ws_id2name = {}
         self.name_label = Gtk.Label()
         self.icon = Gtk.Image()
-        self.layout_icon = Gtk.Image()
+        self.floating_icon = Gtk.Image()
         self.icons_path = icons_path
 
         self.ws_nums = []
 
         self.build_box()
+        update_image_fallback_desktop(self.floating_icon, "view-dual-symbolic", self.settings["image-size"], self.icons_path)
         self.refresh()
 
     def build_box(self):
@@ -35,7 +36,7 @@ class HyprlandWorkspaces(Gtk.Box):
         check_key(self.settings, "mark-content", True)
         check_key(self.settings, "show-empty", True)
         check_key(self.settings, "show-names", True)
-        check_key(self.settings, "show-layout", True)
+        check_key(self.settings, "show-floating", True)
         check_key(self.settings, "angle", 0.0)
 
         if self.settings["angle"] != 0.0:
@@ -53,12 +54,8 @@ class HyprlandWorkspaces(Gtk.Box):
         if self.settings["show-name"]:
             self.pack_start(self.name_label, False, False, 0)
 
-        if self.settings["show-layout"]:
-            self.pack_start(self.layout_icon, False, False, 6)
-
-        self.show_all()
-        update_image(self.layout_icon, "window-pop-out-symbolic", self.settings["image-size"], self.icons_path)
-        self.layout_icon.hide()
+        if self.settings["show-floating"]:
+            self.pack_start(self.floating_icon, False, False, 6)
 
     def build_number(self, num, add_dot=False):
         eb = Gtk.EventBox()
@@ -99,6 +96,16 @@ class HyprlandWorkspaces(Gtk.Box):
             self.ws_id2name[ws["id"]] = ws["name"]
         occupied_workspaces.sort()
 
+        for c in self.num_box.get_children():
+            c.destroy()
+
+        for num in self.ws_nums:
+            if num in occupied_workspaces or self.settings["show-empty"]:
+                dot = num in occupied_workspaces and self.settings["show-empty"]
+                eb, lbl = self.build_number(num, dot)
+                self.num_box.pack_start(eb, False, False, 0)
+                self.num_box.show_all()
+
         output = hyprctl("j/activewindow")
         active_window = json.loads(output)
 
@@ -115,21 +122,12 @@ class HyprlandWorkspaces(Gtk.Box):
             self.update_icon(client_class, client_title)
         if self.settings["show-name"]:
             self.name_label.set_text(client_title)
-        if self.settings["show-layout"]:
+        if self.settings["show-floating"]:
             if floating:
-                self.layout_icon.show()
+                update_image_fallback_desktop(self.floating_icon, "focus-windows", self.settings["image-size"], self.icons_path)
             else:
-                self.layout_icon.hide()
-
-        for c in self.num_box.get_children():
-            c.destroy()
-
-        for num in self.ws_nums:
-            if num in occupied_workspaces or self.settings["show-empty"]:
-                dot = num in occupied_workspaces and self.settings["show-empty"]
-                eb, lbl = self.build_number(num, dot)
-                self.num_box.pack_start(eb, False, False, 0)
-                self.num_box.show_all()
+                update_image_fallback_desktop(self.floating_icon, "blank", self.settings["image-size"],
+                                              self.icons_path)
 
     def update_icon(self, client_class, client_title):
         loaded_icon = False
