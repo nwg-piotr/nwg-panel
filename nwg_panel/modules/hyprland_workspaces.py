@@ -135,10 +135,18 @@ class HyprlandWorkspaces(Gtk.Box):
                 occupied_workspaces.append(ws["id"])
 
             self.ws_id2name[ws["id"]] = ws["name"]
-
         occupied_workspaces.sort()
-        print("occupied_workspaces", occupied_workspaces)
-        print("wsID2name", self.ws_id2name)
+
+        output = hyprctl("j/activewindow")
+        active_window = json.loads(output)
+        if active_window:
+            client_class = active_window["class"]
+        else:
+            client_class = ""
+        if self.settings["show-icon"]:
+                self.update_icon(client_class, client_class)
+        if self.settings["show-name"]:
+            self.name_label.set_text(client_class)
 
         for c in self.num_box.get_children():
             c.destroy()
