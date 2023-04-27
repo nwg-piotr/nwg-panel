@@ -320,13 +320,6 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                         "settings. Changing to 'top'.".format(panel["name"], panel["layer"]))
                     panel["layer"] = "top"  # or context menu will remain invisible
                 if his:
-                    global hypr_watcher_started
-                    if not hypr_watcher_started:
-                        thread = threading.Thread(target=hypr_watcher)
-                        thread.daemon = True
-                        thread.start()
-                        hypr_watcher_started = True
-
                     check_key(panel["hyprland-taskbar"], "all-outputs", False)
                     if panel["hyprland-taskbar"]["all-outputs"] or "output" not in panel:
                         taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"], icons_path=icons_path)
@@ -407,6 +400,14 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             tray = sni_system_tray.Tray(tray_settings, panel["position"], icons_path)
             common.tray_list.append(tray)
             container.pack_start(tray, False, False, panel["items-padding"])
+
+        if his and len(common.taskbars_list) > 0 or len(common.workspaces_list) > 0:
+            global hypr_watcher_started
+            if not hypr_watcher_started:
+                thread = threading.Thread(target=hypr_watcher)
+                thread.daemon = True
+                thread.start()
+                hypr_watcher_started = True
 
 
 def main():
