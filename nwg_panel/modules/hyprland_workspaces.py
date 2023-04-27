@@ -141,12 +141,14 @@ class HyprlandWorkspaces(Gtk.Box):
         active_window = json.loads(output)
         if active_window:
             client_class = active_window["class"]
+            client_title = active_window["title"][:self.settings["name-length"]]
         else:
             client_class = ""
+            client_title = ""
         if self.settings["show-icon"]:
-                self.update_icon(client_class, client_class)
+                self.update_icon(client_class, client_title)
         if self.settings["show-name"]:
-            self.name_label.set_text(client_class)
+            self.name_label.set_text(client_title)
 
         for c in self.num_box.get_children():
             c.destroy()
