@@ -139,6 +139,7 @@ class HyprlandWorkspaces(Gtk.Box):
 
         output = hyprctl("j/activewindow")
         active_window = json.loads(output)
+
         if active_window:
             client_class = active_window["class"]
             client_title = active_window["title"][:self.settings["name-length"]]
@@ -146,7 +147,7 @@ class HyprlandWorkspaces(Gtk.Box):
             client_class = ""
             client_title = ""
         if self.settings["show-icon"]:
-                self.update_icon(client_class, client_title)
+            self.update_icon(client_class, client_title)
         if self.settings["show-name"]:
             self.name_label.set_text(client_title)
 
@@ -158,99 +159,14 @@ class HyprlandWorkspaces(Gtk.Box):
                 dot = num in occupied_workspaces and self.settings["show-empty"]
                 eb, lbl = self.build_number(num, dot)
                 self.num_box.pack_start(eb, False, False, 0)
+                self.num_box.show_all()
 
-        # if self.i3.get_tree().find_focused():
-        #     ws_num, win_name, win_id, non_empty, win_layout, numbers = self.find_details()
-        #
-        #     if len(self.settings["numbers"]) > 0:
-        #         numbers = self.settings["numbers"]
-        #
-        #     if ws_num > 0:
-        #         for num in self.ws_num2lbl:
-        #             self.ws_num2lbl[num].hide()
-        #
-        #         for _idx, num in enumerate(numbers):
-        #             idx = None
-        #             if num in self.settings["numbers"]:
-        #                 idx = self.settings["numbers"].index(num)
-        #             try:
-        #                 int_num = int(num)
-        #             except:
-        #                 int_num = 0
-        #
-        #             if idx is None:
-        #                 text = str(num)
-        #             elif num == str(ws_num) and self.settings["focused-labels"]:
-        #                 text = self.settings["focused-labels"][idx]
-        #             elif self.settings["custom-labels"]:
-        #                 text = self.settings["custom-labels"][idx]
-        #             else:
-        #                 text = str(num)
-        #
-        #             if num not in self.ws_num2lbl:
-        #                 eb, lbl = self.build_number(num, text)
-        #                 self.num_box.pack_start(eb, False, False, 0)
-        #                 eb.show_all()
-        #
-        #             lbl = self.ws_num2lbl[num]
-        #
-        #             if not self.settings["hide-empty"] or int_num in non_empty or num == str(ws_num):
-        #                 lbl.show()
-        #             else:
-        #                 lbl.hide()
-        #
-        #             # mark non-empty WS with a dot
-        #             if self.settings["mark-content"]:
-        #                 if int_num in non_empty:
-        #                     if not text.endswith("."):
-        #                         text += "."
-        #                 else:
-        #                     if text.endswith("."):
-        #                         text = text[0:-1]
-        #
-        #             lbl.set_markup(text)
-        #
-        #             if num == str(ws_num):
-        #                 self.ws_num2box[num].set_property("name", "task-box-focused")
-        #             else:
-        #                 self.ws_num2box[num].set_property("name", "task-box")
-        #
-        #         if self.settings["show-icon"] and win_id != self.win_id:
-        #             self.update_icon(win_id, win_name)
-        #             self.win_id = win_id
-        #
-        #     if self.settings["show-name"]:
-        #         self.name_label.set_text(win_name)
-        #
-        #     if self.settings["show-layout"]:
-        #         if win_name:
-        #             if win_layout == "splith":
-        #                 update_image(self.layout_icon, "go-next-symbolic", self.settings["image-size"], self.icons_path)
-        #             elif win_layout == "splitv":
-        #                 update_image(self.layout_icon, "go-down-symbolic", self.settings["image-size"], self.icons_path)
-        #             elif win_layout == "tabbed":
-        #                 update_image(self.layout_icon, "view-dual-symbolic", self.settings["image-size"],
-        #                              self.icons_path)
-        #             elif win_layout == "stacked":
-        #                 update_image(self.layout_icon, "view-paged-symbolic", self.settings["image-size"],
-        #                              self.icons_path)
-        #             else:
-        #                 update_image(self.layout_icon, "window-pop-out-symbolic", self.settings["image-size"],
-        #                              self.icons_path)
-        #
-        #             if not self.layout_icon.get_visible():
-        #                 self.layout_icon.show()
-        #         else:
-        #             if self.layout_icon.get_visible():
-        #                 self.layout_icon.hide()
-        self.show_all()
-
-    def update_icon(self, win_id, win_name):
+    def update_icon(self, client_class, client_title):
         loaded_icon = False
-        if win_id and win_name:
+        if client_class and client_title:
             try:
                 update_image_fallback_desktop(self.icon,
-                                              win_id,
+                                              client_class,
                                               self.settings["image-size"],
                                               self.icons_path,
                                               fallback=False)
@@ -259,6 +175,8 @@ class HyprlandWorkspaces(Gtk.Box):
                     self.icon.show()
             except:
                 pass
+        else:
+            self.icon.hide()
 
         if not loaded_icon and self.icon.get_visible():
             self.icon.hide()
