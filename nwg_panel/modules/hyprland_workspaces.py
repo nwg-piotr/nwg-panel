@@ -21,7 +21,8 @@ class HyprlandWorkspaces(Gtk.Box):
         self.ws_nums = []
 
         self.build_box()
-        update_image_fallback_desktop(self.floating_icon, "view-dual-symbolic", self.settings["image-size"], self.icons_path)
+        update_image_fallback_desktop(self.floating_icon, "view-dual-symbolic", self.settings["image-size"],
+                                      self.icons_path)
         self.refresh()
 
     def build_box(self):
@@ -124,7 +125,8 @@ class HyprlandWorkspaces(Gtk.Box):
             self.name_label.set_text(client_title)
         if self.settings["show-floating"]:
             if floating:
-                update_image_fallback_desktop(self.floating_icon, "focus-windows", self.settings["image-size"], self.icons_path)
+                update_image_fallback_desktop(self.floating_icon, "focus-windows", self.settings["image-size"],
+                                              self.icons_path)
             else:
                 update_image_fallback_desktop(self.floating_icon, "blank", self.settings["image-size"],
                                               self.icons_path)
