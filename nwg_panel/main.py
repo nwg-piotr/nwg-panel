@@ -152,7 +152,7 @@ def hypr_watcher():
     client.connect("/tmp/hypr/{}/.socket2.sock".format(his))
 
     while True:
-        datagram = client.recv(1024)
+        datagram = client.recv(2048)
         e_full_string = datagram.decode('utf-8').strip()
         # eprint("Event: {}".format(e_full_string))
 
@@ -198,7 +198,7 @@ def hypr_watcher():
             buildbox_fired = False  # clear for next iteration
 
         # refresh HyprlandWorkspaces
-        if event_name in ["activewindowv2", "changefloatingmode"] and len(common.workspaces_list) > 0:
+        if event_name in ["activewindowv2", "activewindow", "changefloatingmode"] and len(common.workspaces_list) > 0:
             for item in common.workspaces_list:
                 GLib.timeout_add(0, item.refresh)
 

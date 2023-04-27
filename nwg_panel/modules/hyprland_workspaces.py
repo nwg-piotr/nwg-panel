@@ -88,11 +88,17 @@ class HyprlandWorkspaces(Gtk.Box):
     def refresh(self):
         output = hyprctl("j/workspaces")
         workspaces = json.loads(output)
+
+        output = hyprctl("j/clients")
+        clients = json.loads(output)
+
         occupied_workspaces = []
         self.ws_id2name = {}
         for ws in workspaces:
-            if ws["id"] not in occupied_workspaces:
-                occupied_workspaces.append(ws["id"])
+            for client in clients:
+                if client["workspace"]["id"] == ws["id"] and ws["id"] not in occupied_workspaces:
+                    occupied_workspaces.append(ws["id"])
+                    break
 
             self.ws_id2name[ws["id"]] = ws["name"]
         occupied_workspaces.sort()
