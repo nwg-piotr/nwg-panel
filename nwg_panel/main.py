@@ -197,6 +197,11 @@ def hypr_watcher():
                 last_client_addr = client_addr
             buildbox_fired = False  # clear for next iteration
 
+        # refresh HyprlandWorkspaces
+        if event_name in "activewindowv2" and len(common.workspaces_list) > 0:
+            for item in common.workspaces_list:
+                GLib.timeout_add(0, item.refresh)
+
 
 def check_tree():
     tree = common.i3.get_tree() if sway else None

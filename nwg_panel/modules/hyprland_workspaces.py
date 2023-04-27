@@ -14,6 +14,7 @@ class HyprlandWorkspaces(Gtk.Box):
         self.num_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         self.ws_num2box = {}
         self.ws_num2lbl = {}
+        self.ws_id2name = {}  # new
         self.name_label = Gtk.Label()
         self.win_id = ""
         self.win_pid = None
@@ -21,7 +22,7 @@ class HyprlandWorkspaces(Gtk.Box):
         self.layout_icon = Gtk.Image()
         self.icons_path = icons_path
 
-        self.workspaces = []
+        self.ws_nums = []
 
         self.build_box()
         self.refresh()
@@ -36,7 +37,8 @@ class HyprlandWorkspaces(Gtk.Box):
         check_key(self.settings, "show-name", True)
         check_key(self.settings, "name-length", 40)
         check_key(self.settings, "mark-content", True)
-        check_key(self.settings, "hide-empty", False)
+        check_key(self.settings, "show-empty", True)
+        check_key(self.settings, "show-names", True)
         check_key(self.settings, "show-layout", True)
         check_key(self.settings, "angle", 0.0)
         if self.settings["angle"] != 0.0:
@@ -60,7 +62,7 @@ class HyprlandWorkspaces(Gtk.Box):
         #     self.settings["focused-labels"] = []
 
         for i in range(1, self.settings["num-ws"] + 1):
-            self.workspaces.append(i)
+            self.ws_nums.append(i)
 
         # for num in self.workspaces:
         #     eb, lbl = self.build_number(num, str(num))
@@ -106,7 +108,11 @@ class HyprlandWorkspaces(Gtk.Box):
             box.set_orientation(Gtk.Orientation.VERTICAL)
         eb.add(box)
 
-        lbl = Gtk.Label.new("{}".format(str(num))) if not add_dot else Gtk.Label.new("{}.".format(str(num)))
+        name = str(num)
+        if self.settings["show-names"] and num in self.ws_id2name and self.ws_id2name[num] != str(num):
+            name = "{} {}".format(num, self.ws_id2name[num])
+
+        lbl = Gtk.Label.new("{}".format(name)) if not add_dot else Gtk.Label.new("{}.".format(name))
         lbl.set_use_markup(True)
         if self.settings["angle"] != 0.0:
             lbl.set_angle(self.settings["angle"])
@@ -123,17 +129,23 @@ class HyprlandWorkspaces(Gtk.Box):
         output = hyprctl("j/workspaces")
         workspaces = json.loads(output)
         occupied_workspaces = []
+        self.ws_id2name = {}
         for ws in workspaces:
             if ws["id"] not in occupied_workspaces:
                 occupied_workspaces.append(ws["id"])
+
+            self.ws_id2name[ws["id"]] = ws["name"]
+
         occupied_workspaces.sort()
-        print(occupied_workspaces)
+        print("occupied_workspaces", occupied_workspaces)
+        print("wsID2name", self.ws_id2name)
+
         for c in self.num_box.get_children():
             c.destroy()
 
-        for num in self.workspaces:
-            if num in occupied_workspaces or not self.settings["hide-empty"]:
-                dot = num in occupied_workspaces and not self.settings["hide-empty"]
+        for num in self.ws_nums:
+            if num in occupied_workspaces or self.settings["show-empty"]:
+                dot = num in occupied_workspaces and self.settings["show-empty"]
                 eb, lbl = self.build_number(num, dot)
                 self.num_box.pack_start(eb, False, False, 0)
 
@@ -221,6 +233,7 @@ class HyprlandWorkspaces(Gtk.Box):
         #         else:
         #             if self.layout_icon.get_visible():
         #                 self.layout_icon.hide()
+        self.show_all()
 
     def update_icon(self, win_id, win_name):
         loaded_icon = False
