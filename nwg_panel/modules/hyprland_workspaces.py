@@ -4,7 +4,7 @@ import json
 from gi.repository import Gtk, Gdk
 
 import nwg_panel.common
-from nwg_panel.tools import check_key, update_image_fallback_desktop, hyprctl
+from nwg_panel.tools import check_key, update_image, update_image_fallback_desktop, hyprctl
 
 
 class HyprlandWorkspaces(Gtk.Box):
@@ -37,6 +37,7 @@ class HyprlandWorkspaces(Gtk.Box):
         check_key(self.settings, "show-names", True)
         check_key(self.settings, "show-layout", True)
         check_key(self.settings, "angle", 0.0)
+
         if self.settings["angle"] != 0.0:
             self.set_orientation(Gtk.Orientation.VERTICAL)
             self.num_box.set_orientation(Gtk.Orientation.VERTICAL)
@@ -56,6 +57,8 @@ class HyprlandWorkspaces(Gtk.Box):
             self.pack_start(self.layout_icon, False, False, 6)
 
         self.show_all()
+        update_image(self.layout_icon, "window-pop-out-symbolic", self.settings["image-size"], self.icons_path)
+        self.layout_icon.hide()
 
     def build_number(self, num, add_dot=False):
         eb = Gtk.EventBox()
@@ -102,13 +105,21 @@ class HyprlandWorkspaces(Gtk.Box):
         if active_window:
             client_class = active_window["class"]
             client_title = active_window["title"][:self.settings["name-length"]]
+            floating = active_window["floating"]
         else:
             client_class = ""
             client_title = ""
+            floating = False
+
         if self.settings["show-icon"]:
             self.update_icon(client_class, client_title)
         if self.settings["show-name"]:
             self.name_label.set_text(client_title)
+        if self.settings["show-layout"]:
+            if floating:
+                self.layout_icon.show()
+            else:
+                self.layout_icon.hide()
 
         for c in self.num_box.get_children():
             c.destroy()

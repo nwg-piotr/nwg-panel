@@ -198,7 +198,7 @@ def hypr_watcher():
             buildbox_fired = False  # clear for next iteration
 
         # refresh HyprlandWorkspaces
-        if event_name in ["activewindowv2"] and len(common.workspaces_list) > 0:
+        if event_name in ["activewindowv2", "changefloatingmode"] and len(common.workspaces_list) > 0:
             for item in common.workspaces_list:
                 GLib.timeout_add(0, item.refresh)
 
