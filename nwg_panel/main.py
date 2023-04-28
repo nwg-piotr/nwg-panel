@@ -290,8 +290,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
         if item == "hyprland-workspaces":
             if his:
-                if "hyprland-workspaces" not in panel:
-                    panel["hyprland-workspaces"] = {}
+                if "hyprland-workspaces" in panel:
                     workspaces = HyprlandWorkspaces(panel["hyprland-workspaces"], icons_path=icons_path)
                     container.pack_start(workspaces, False, False, panel["items-padding"])
                     common.workspaces_list.append(workspaces)
