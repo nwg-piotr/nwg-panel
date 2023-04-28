@@ -30,10 +30,10 @@ class HyprlandWorkspaces(Gtk.Box):
         check_key(self.settings, "image-size", 16)
         check_key(self.settings, "show-name", True)
         check_key(self.settings, "name-length", 40)
-        check_key(self.settings, "mark-content", True)
         check_key(self.settings, "show-empty", True)
+        check_key(self.settings, "mark-content", True)
         check_key(self.settings, "show-names", True)
-        check_key(self.settings, "show-floating", True)
+        check_key(self.settings, "mark-floating", True)
         check_key(self.settings, "angle", 0.0)
 
         if self.settings["angle"] != 0.0:
@@ -51,7 +51,7 @@ class HyprlandWorkspaces(Gtk.Box):
         if self.settings["show-name"]:
             self.pack_start(self.name_label, False, False, 0)
 
-        if self.settings["show-floating"]:
+        if self.settings["mark-floating"]:
             self.pack_start(self.floating_icon, False, False, 6)
 
     def build_number(self, num, add_dot=False):
@@ -126,7 +126,7 @@ class HyprlandWorkspaces(Gtk.Box):
             self.update_icon(client_class, client_title)
         if self.settings["show-name"]:
             self.name_label.set_text(client_title)
-        if self.settings["show-floating"]:
+        if self.settings["mark-floating"]:
             if floating:
                 update_image_fallback_desktop(self.floating_icon, "focus-windows", self.settings["image-size"],
                                               self.icons_path)
@@ -159,9 +159,9 @@ class HyprlandWorkspaces(Gtk.Box):
 
     def on_scroll(self, event_box, event):
         if event.direction == Gdk.ScrollDirection.UP:
-            hyprctl("dispatch workspace e+1")
-        elif event.direction == Gdk.ScrollDirection.DOWN:
             hyprctl("dispatch workspace e-1")
+        elif event.direction == Gdk.ScrollDirection.DOWN:
+            hyprctl("dispatch workspace e+1")
 
     def on_enter_notify_event(self, widget, event):
         widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)

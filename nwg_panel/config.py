@@ -140,6 +140,18 @@ SKELETON_PANEL: dict = {
         "mark-content": True,
         "show-layout": True
     },
+    "hyprland-workspaces": {
+        "num-ws", 10,
+        "show-icon", True,
+        "image-size", 16,
+        "show-name", True,
+        "name-length", 40,
+        "show-empty", True,
+        "mark-content", True,
+        "show-names", True,
+        "mark-floating", True,
+        "angle", 0.0
+    },
     "clock": {
         "format": "%a, %d. %b  %H:%M:%S",
         "tooltip-text": "",
@@ -691,6 +703,7 @@ class EditorWrapper(object):
         builder.get_object("openweather").set_text(voc["openweather"])
         builder.get_object("dwl-tags").set_text(voc["dwl-tags"])
         builder.get_object("hyprland-taskbar").set_text(voc["hyprland-taskbar"])
+        builder.get_object("hyprland-workspaces").set_text(voc["hyprland-workspaces"])
         builder.get_object("brightness-slider").set_text(voc["brightness-slider"])
         builder.get_object("executors").set_text(voc["executors"])
         builder.get_object("buttons").set_text(voc["buttons"])
@@ -717,6 +730,7 @@ class EditorWrapper(object):
             "brightness-slider",
             "dwl-tags",
             "hyprland-taskbar",
+            "hyprland-workspaces",
             "tray"
         ]
 
@@ -752,6 +766,7 @@ class EditorWrapper(object):
         builder.get_object("eb-brightness-slider").connect("button-press-event", self.edit_brightness_slider)
         builder.get_object("eb-dwl-tags").connect("button-press-event", self.edit_dwl_tags)
         builder.get_object("eb-hyprland-taskbar").connect("button-press-event", self.edit_hyprland_taskbar)
+        builder.get_object("eb-hyprland-workspaces").connect("button-press-event", self.edit_hyprland_workspaces)
         builder.get_object("eb-executors").connect("button-press-event", self.select_executor)
         builder.get_object("eb-buttons").connect("button-press-event", self.select_button)
 
@@ -1133,6 +1148,8 @@ class EditorWrapper(object):
             self.update_dwl_tags()
         elif self.edited == "hyprland-taskbar":
             self.update_hyprland_taskbar()
+        elif self.edited == "hyprland-workspaces":
+            self.update_hyprland_workspaces()
         elif self.edited == "openweather":
             self.update_openweather()
         elif self.edited == "brightness-slider":
@@ -1995,6 +2012,106 @@ class EditorWrapper(object):
         if val is not None:
             settings["show-layout"] = val
 
+        try:
+            settings["angle"] = float(self.ws_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
+
+        save_json(self.config, self.file)
+
+    def edit_hyprland_workspaces(self, *args):
+        self.load_panel()
+        self.edited = "hyprland-workspaces"
+        check_key(self.panel, "hyprland-workspaces", {})
+        settings = self.panel["hyprland-workspaces"]
+        defaults = {
+            "num-ws": 10,
+            "show-icon": True,
+            "image-size": 16,
+            "show-name": True,
+            "name-length": 40,
+            "show-empty": True,
+            "mark-content": True,
+            "show-names": True,
+            "mark-floating": True,
+            "angle": 0.0
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_hyprland_workspaces.glade"))
+        frame = builder.get_object("frame")
+        frame.set_label("  {}: HyprlandWorkspaces  ".format(voc["module"]))
+
+        builder.get_object("lbl-num-workspaces").set_text("{}:".format(voc["number-of-workspaces"]))
+        builder.get_object("show-icon").set_label("{}:".format(voc["show-focused-window-icon"]))
+        builder.get_object("show-name").set_label("{}:".format(voc["show-focused-window-name"]))
+        builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
+        builder.get_object("lbl-window-name-length-limit").set_text("{}:".format(voc["window-name-length-limit"]))
+        builder.get_object("show-empty").set_label("{}".format(voc["show-empty-ws"]))
+        builder.get_object("mark-content").set_label("{}".format(voc["mark-non-empty-ws"]))
+        builder.get_object("show-names").set_label("{}".format(voc["show-ws-names"]))
+        builder.get_object("mark-floating").set_label("{}".format(voc["mark-floating-win"]))
+        builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
+
+        self.sb_ws_num = builder.get_object("num-workspaces")
+        self.sb_ws_num.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=4, upper=100, step_increment=1, page_increment=1, page_size=1)
+        self.sb_ws_num.configure(adj, 1, 0)
+        self.sb_ws_num.set_value(settings["num-ws"])
+
+        self.ws_show_icon = builder.get_object("show-icon")
+        self.ws_show_icon.set_label(voc["show-focused-window-icon"])
+        self.ws_show_icon.set_active(settings["show-icon"])
+
+        self.ws_show_name = builder.get_object("show-name")
+        self.ws_show_name.set_label(voc["show-window-name"])
+        self.ws_show_name.set_active(settings["show-name"])
+
+        self.ws_image_size = builder.get_object("image-size")
+        self.ws_image_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
+        self.ws_image_size.configure(adj, 1, 0)
+        self.ws_image_size.set_value(settings["image-size"])
+
+        self.ws_name_length = builder.get_object("name-length")
+        self.ws_name_length.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=1, upper=256, step_increment=1, page_increment=10, page_size=1)
+        self.ws_name_length.configure(adj, 1, 0)
+        self.ws_name_length.set_value(settings["name-length"])
+
+        self.ws_show_empty = builder.get_object("show-empty")
+        self.ws_show_empty.set_active(settings["show-empty"])
+
+        self.ws_mark_content = builder.get_object("mark-content")
+        self.ws_mark_content.set_active(settings["mark-content"])
+
+        self.ws_show_names = builder.get_object("show-names")
+        self.ws_show_names.set_active(settings["show-names"])
+
+        self.ws_mark_floating = builder.get_object("mark-floating")
+        self.ws_mark_floating.set_active(settings["mark-floating"])
+
+        self.ws_angle = builder.get_object("angle")
+        self.ws_angle.set_tooltip_text(voc["angle-tooltip"])
+        self.ws_angle.set_active_id(str(settings["angle"]))
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(frame)
+
+    def update_hyprland_workspaces(self):
+        settings = self.panel["hyprland-workspaces"]
+
+        settings["num-ws"] = int(self.sb_ws_num.get_value())
+        settings["show-icon"] = self.ws_show_icon.get_active()
+        settings["image-size"] = int(self.ws_image_size.get_value())
+        settings["show-name"] = self.ws_show_name.get_active()
+        settings["name-length"] = int(self.ws_name_length.get_value())
+        settings["show-empty"] = self.ws_show_empty.get_active()
+        settings["mark-content"] = self.ws_mark_content.get_active()
+        settings["show-names"] = self.ws_show_names.get_active()
+        settings["mark-floating"] = self.ws_mark_floating.get_active()
         try:
             settings["angle"] = float(self.ws_angle.get_active_id())
         except:
