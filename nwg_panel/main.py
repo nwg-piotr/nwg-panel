@@ -81,6 +81,9 @@ if sway:
     from nwg_panel.modules.sway_workspaces import SwayWorkspaces
 
 his = os.getenv('HYPRLAND_INSTANCE_SIGNATURE')
+if his:
+    from nwg_panel.modules.hyprland_taskbar import HyprlandTaskbar
+    from nwg_panel.modules.hyprland_workspaces import HyprlandWorkspaces
 hypr_watcher_started = False
 last_client_addr = ""
 last_client_details = ""
@@ -149,7 +152,7 @@ def hypr_watcher():
     client.connect("/tmp/hypr/{}/.socket2.sock".format(his))
 
     while True:
-        datagram = client.recv(1024)
+        datagram = client.recv(2048)
         e_full_string = datagram.decode('utf-8').strip()
         # eprint("Event: {}".format(e_full_string))
 
@@ -193,6 +196,11 @@ def hypr_watcher():
                     GLib.timeout_add(0, item.refresh)
                 last_client_addr = client_addr
             buildbox_fired = False  # clear for next iteration
+
+        # refresh HyprlandWorkspaces
+        if event_name in ["activewindowv2", "activewindow", "changefloatingmode"] and len(common.workspaces_list) > 0:
+            for item in common.workspaces_list:
+                GLib.timeout_add(0, item.refresh)
 
 
 def check_tree():
@@ -280,6 +288,17 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             else:
                 eprint("'sway-workspaces' ignored")
 
+        if item == "hyprland-workspaces":
+            if his:
+                if "hyprland-workspaces" in panel:
+                    workspaces = HyprlandWorkspaces(panel["hyprland-workspaces"], icons_path=icons_path)
+                    container.pack_start(workspaces, False, False, panel["items-padding"])
+                    common.workspaces_list.append(workspaces)
+                else:
+                    print("'hyprland-workspaces' not defined in this panel instance")
+            else:
+                eprint("'hyprland-workspaces' ignored")
+
         if item == "scratchpad":
             if sway:
                 # Added in v0.1.3, so may be undefined in user's config.
@@ -300,14 +319,6 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                         "settings. Changing to 'top'.".format(panel["name"], panel["layer"]))
                     panel["layer"] = "top"  # or context menu will remain invisible
                 if his:
-                    global hypr_watcher_started
-                    if not hypr_watcher_started:
-                        thread = threading.Thread(target=hypr_watcher)
-                        thread.daemon = True
-                        thread.start()
-                        hypr_watcher_started = True
-
-                    from nwg_panel.modules.hyprland_taskbar import HyprlandTaskbar
                     check_key(panel["hyprland-taskbar"], "all-outputs", False)
                     if panel["hyprland-taskbar"]["all-outputs"] or "output" not in panel:
                         taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"], icons_path=icons_path)
@@ -388,6 +399,14 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             tray = sni_system_tray.Tray(tray_settings, panel["position"], icons_path)
             common.tray_list.append(tray)
             container.pack_start(tray, False, False, panel["items-padding"])
+
+        if his and len(common.taskbars_list) > 0 or len(common.workspaces_list) > 0:
+            global hypr_watcher_started
+            if not hypr_watcher_started:
+                thread = threading.Thread(target=hypr_watcher)
+                thread.daemon = True
+                thread.start()
+                hypr_watcher_started = True
 
 
 def main():
