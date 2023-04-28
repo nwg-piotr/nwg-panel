@@ -70,7 +70,8 @@ except:
 sway = os.getenv('SWAYSOCK') is not None
 if sway:
     try:
-        from i3ipc import Connection
+        import i3ipc
+        from i3ipc import Connection, Event
     except ModuleNotFoundError:
         eprint("'python-i3ipc' package required on sway, terminating")
         sys.exit(1)
@@ -204,21 +205,23 @@ def hypr_watcher():
                 GLib.timeout_add(0, item.refresh)
 
 
+def on_i3ipc_event(i3conn, event):
+    if common_settings["restart-on-display"]:
+        num = num_active_outputs(i3conn.get_outputs())
+        if num > common.outputs_num:
+            print("Number of outputs increased ({}); restart in {} ms.".format(
+                num, common_settings["restart-delay"]))
+            GLib.timeout_add(common_settings["restart-delay"],
+                             restart,
+                             priority=GLib.PRIORITY_HIGH)
+        common.outputs_num = num
+
+
 def check_tree():
     tree = common.i3.get_tree() if sway else None
     if tree:
         # Do if tree changed
         if tree.ipc_data != common.ipc_data:
-            if common_settings["restart-on-display"]:
-                num = num_active_outputs(tree)
-
-                if num > common.outputs_num:
-                    print("Number of outputs increased ({}); restart in {} ms."
-                          .format(num, common_settings["restart-delay"]))
-                    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, common_settings["restart-delay"], restart)
-
-                common.outputs_num = num
-
             for item in common.taskbars_list:
                 item.refresh(tree)
 
@@ -811,13 +814,23 @@ def main():
             window.show_all()
 
     if sway:
-        common.outputs_num = num_active_outputs(common.i3.get_tree())
+        common.outputs_num = num_active_outputs(common.i3.get_outputs())
     else:
         common.outputs = list_outputs(sway=sway, tree=tree, silent=True)
         common.outputs_num = len(common.outputs)
 
     if sway:
         Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 200, check_tree)
+
+        # Notice: Don't use Event.OUTPUT, it's not supported on old sway releases.
+        common.i3.on(Event.WORKSPACE, on_i3ipc_event)
+
+        # We monitor i3ipc events in a separate thread, and callbacks will also
+        # be executed there. Hence, UI operations MUST be scheduled by
+        # Gdk.threads_add_*() or their GLib counterpart to make them happen in
+        # Gtk's main loop.
+        thread = threading.Thread(target=common.i3.main, daemon=True)
+        thread.start()
 
     if his:
         if len(common.h_taskbars_list) > 0 or len(common.workspaces_list) > 0:

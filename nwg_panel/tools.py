@@ -249,10 +249,10 @@ def load_autotiling():
     return autotiling
 
 
-def num_active_outputs(tree):
+def num_active_outputs(outputs):
     a = 0
-    for item in tree:
-        if item.type == "output" and not item.name.startswith("__"):
+    for output in outputs:
+        if output.active:
             a += 1
     return a
 
