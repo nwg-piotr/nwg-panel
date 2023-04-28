@@ -3,7 +3,6 @@ import json
 
 from gi.repository import Gtk, Gdk
 
-import nwg_panel.common
 from nwg_panel.tools import check_key, update_image_fallback_desktop, hyprctl
 
 
@@ -12,7 +11,7 @@ class HyprlandWorkspaces(Gtk.Box):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.settings = settings
         self.num_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-        self.ws_id2name = {}
+        self.ws_id2name = None
         self.name_label = Gtk.Label()
         self.icon = Gtk.Image()
         self.floating_icon = Gtk.Image()
@@ -26,10 +25,7 @@ class HyprlandWorkspaces(Gtk.Box):
         self.refresh()
 
     def build_box(self):
-        check_key(self.settings, "numbers", [])  # del
-        check_key(self.settings, "custom-labels", [])  # del
-        check_key(self.settings, "focused-labels", [])  # del
-        check_key(self.settings, "num-ws", 10)  # new
+        check_key(self.settings, "num-ws", 10)
         check_key(self.settings, "show-icon", True)
         check_key(self.settings, "image-size", 16)
         check_key(self.settings, "show-name", True)
@@ -94,6 +90,7 @@ class HyprlandWorkspaces(Gtk.Box):
 
         occupied_workspaces = []
         self.ws_id2name = {}
+
         for ws in workspaces:
             for client in clients:
                 if client["workspace"]["id"] == ws["id"] and ws["id"] not in occupied_workspaces:
@@ -108,7 +105,7 @@ class HyprlandWorkspaces(Gtk.Box):
 
         for num in self.ws_nums:
             if num in occupied_workspaces or self.settings["show-empty"]:
-                dot = num in occupied_workspaces and self.settings["show-empty"]
+                dot = num in occupied_workspaces and self.settings["show-empty"] and self.settings["mark-content"]
                 eb, lbl = self.build_number(num, dot)
                 self.num_box.pack_start(eb, False, False, 0)
                 self.num_box.show_all()
@@ -158,13 +155,13 @@ class HyprlandWorkspaces(Gtk.Box):
             self.icon.hide()
 
     def on_click(self, event_box, event_button, num):
-        nwg_panel.common.i3.command("workspace number {}".format(num))
+        hyprctl("dispatch workspace {}".format(num))
 
     def on_scroll(self, event_box, event):
         if event.direction == Gdk.ScrollDirection.UP:
-            nwg_panel.common.i3.command("workspace prev")
+            hyprctl("dispatch workspace e+1")
         elif event.direction == Gdk.ScrollDirection.DOWN:
-            nwg_panel.common.i3.command("workspace next")
+            hyprctl("dispatch workspace e-1")
 
     def on_enter_notify_event(self, widget, event):
         widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
