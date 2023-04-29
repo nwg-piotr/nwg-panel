@@ -141,16 +141,16 @@ SKELETON_PANEL: dict = {
         "show-layout": True
     },
     "hyprland-workspaces": {
-        "num-ws", 10,
-        "show-icon", True,
-        "image-size", 16,
-        "show-name", True,
-        "name-length", 40,
-        "show-empty", True,
-        "mark-content", True,
-        "show-names", True,
-        "mark-floating", True,
-        "angle", 0.0
+        "num-ws": 10,
+        "show-icon": True,
+        "image-size": 16,
+        "show-name": True,
+        "name-length": 40,
+        "show-empty": True,
+        "mark-content": True,
+        "show-names": True,
+        "mark-floating": True,
+        "angle": 0.0
     },
     "clock": {
         "format": "%a, %d. %b  %H:%M:%S",
@@ -1315,7 +1315,7 @@ class EditorWrapper(object):
         settings["show-app-icon"] = self.ckb_show_app_icon.get_active()
         settings["show-app-name"] = self.ckb_show_app_name.get_active()
         settings["show-layout"] = self.ckb_show_layout.get_active()
-        settings["workspace-clickable"] = self.workspace_clickable.get_active()
+        settings["workspace-buttons"] = self.workspace_buttons.get_active()
         settings["mark-xwayland"] = self.ckb_mark_xwayland.get_active()
         settings["all-outputs"] = self.ckb_all_outputs.get_active()
 
