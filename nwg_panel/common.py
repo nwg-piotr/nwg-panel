@@ -9,7 +9,6 @@ ipc_data = None
 outputs = {}
 outputs_num = 0
 windows_list = []
-taskbars_list = []
 h_taskbars_list = []
 scratchpads_list = []
 workspaces_list = []

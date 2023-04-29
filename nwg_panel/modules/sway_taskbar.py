@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import os
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gdk, GLib
+from i3ipc import Event
 
 from nwg_panel.tools import check_key, get_icon_name, update_image, load_autotiling, get_config_dir, temp_dir, \
     save_json, update_image, update_image_fallback_desktop
@@ -36,8 +37,12 @@ class SwayTaskbar(Gtk.Box):
         self.autotiling = load_autotiling() if settings["mark-autotiling"] else []
 
         self.build_box()
-        self.ipc_data = {}
         self.ws_box = None
+        self.subscribe()
+
+    def subscribe(self):
+        self.i3.on(Event.WINDOW, self.on_i3ipc_event)
+        self.i3.on(Event.WORKSPACE, self.on_i3ipc_event)
 
     def list_tree(self):
         """
@@ -81,6 +86,11 @@ class SwayTaskbar(Gtk.Box):
                                 self.ws_box.pack_start(win_box, False, False, self.settings["task-padding"])
                     self.pack_start(self.ws_box, False, False, 0)
         self.show_all()
+
+    def on_i3ipc_event(self, i3conn, event):
+        GLib.idle_add(self.refresh,
+                      i3conn.get_tree(),
+                      priority=GLib.PRIORITY_HIGH)
 
     def refresh(self, tree):
         self.tree = tree

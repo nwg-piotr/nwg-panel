@@ -222,9 +222,6 @@ def check_tree():
     if tree:
         # Do if tree changed
         if tree.ipc_data != common.ipc_data:
-            for item in common.taskbars_list:
-                item.refresh(tree)
-
             for item in common.scratchpads_list:
                 item.refresh(tree)
 
@@ -273,7 +270,6 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                     else:
                         taskbar = SwayTaskbar(panel["sway-taskbar"], common.i3, panel["position"],
                                               display_name="{}".format(panel["output"]), icons_path=icons_path)
-                    common.taskbars_list.append(taskbar)
 
                     container.pack_start(taskbar, False, False, panel["items-padding"])
                 else:
