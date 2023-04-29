@@ -141,16 +141,16 @@ SKELETON_PANEL: dict = {
         "show-layout": True
     },
     "hyprland-workspaces": {
-        "num-ws", 10,
-        "show-icon", True,
-        "image-size", 16,
-        "show-name", True,
-        "name-length", 40,
-        "show-empty", True,
-        "mark-content", True,
-        "show-names", True,
-        "mark-floating", True,
-        "angle", 0.0
+        "num-ws": 10,
+        "show-icon": True,
+        "image-size": 16,
+        "show-name": True,
+        "name-length": 40,
+        "show-empty": True,
+        "mark-content": True,
+        "show-names": True,
+        "mark-floating": True,
+        "angle": 0.0
     },
     "clock": {
         "format": "%a, %d. %b  %H:%M:%S",
