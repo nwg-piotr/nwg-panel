@@ -56,28 +56,29 @@ class Playerctl(Gtk.EventBox):
             cover_path = os.path.join(local_dir(), "cover.jpg")
             with open(cover_path, 'wb') as f:
                 f.write(r.content)
-            update_image(self.cover_img, cover_path, self.settings["cover-size"], fallback=False)
-            self.cover_img.show()
+            cover_path = "file://" + cover_path
         except Exception as e:
             eprint("Couldn't update remote cover: {}".format(e))
-            update_image(self.cover_img, "music", self.settings["cover-size"], self.icons_path)
+            cover_path = ""
+        GLib.idle_add(self.update_cover_image, cover_path)
 
     def update_cover_image(self, url):
-        if url.startswith("file:"):
+        url = urlparse(url)
+        path = unquote(url.path)
+
+        if url.scheme.startswith("http"):
+            threading.Thread(target=self.update_remote_cover(url.geturl()), daemon=True).start()
+            return
+
+        if url.scheme == "file" and path:
             try:
-                update_image(self.cover_img, unquote(urlparse(url).path), self.settings["cover-size"], fallback=False)
-                self.cover_img.show()
+                update_image(self.cover_img, path, self.settings["cover-size"], fallback=False)
             except Exception as e:
                 eprint("Error creating pixbuf: {}".format(e))
-                update_image(self.cover_img, "music", self.settings["cover-size"], self.icons_path)
+                path = ""
 
-        if url.startswith("http"):
-            thread = threading.Thread(target=self.update_remote_cover(url))
-            thread.daemon = True
-            thread.start()
-
-        elif not url:
-            self.cover_img.hide()
+        if not path:
+            update_image(self.cover_img, "music", self.settings["cover-size"], self.icons_path)
 
     def update_widget(self, status, metadata):
         text = metadata["text"]
