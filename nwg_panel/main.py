@@ -160,12 +160,18 @@ def hypr_watcher():
         client_addr, client_details = None, None
 
         # remember client address (string) for further event filtering
-        if e_full_string.startswith("activewindowv2"):
-            client_addr = e_full_string.split(">>")[1].strip()
+        if "activewindowv2" in e_full_string:
+            lines = e_full_string.splitlines()
+            for line in lines:
+                if line.startswith("activewindowv2"):
+                    client_addr = e_full_string.split("activewindowv2>>")[1].strip().split()[0]
 
         # remember client details (string) for further event filtering
-        if e_full_string.startswith("activewindow>>"):
-            client_details = e_full_string.split(">>")[1].strip()
+        if "activewindow>>" in e_full_string:
+            lines = e_full_string.splitlines()
+            for line in lines:
+                if line.startswith("activewindow>>"):
+                    client_details = e_full_string.split("activewindow>>")[1].strip()
 
         event_name = e_full_string.split(">>")[0]
 
@@ -181,7 +187,7 @@ def hypr_watcher():
             last_client_details = client_details
             buildbox_fired = True  # skip 'activewindowv2' check
 
-        if event_name in ["activewindow", "closewindow"]:
+        if event_name in ["closewindow"]:
             # skip client details if previously used
             if client_details != last_client_details:
                 for item in common.h_taskbars_list:
@@ -191,16 +197,18 @@ def hypr_watcher():
 
         if not buildbox_fired and event_name in ["activewindowv2"]:
             # skip window address if previously used
-            if client_addr != last_client_addr:  # filter out consecutive events from the same client
+            if client_addr and client_addr != last_client_addr:  # filter out consecutive events from the same client
                 for item in common.h_taskbars_list:
                     GLib.timeout_add(0, item.refresh)
                 last_client_addr = client_addr
             buildbox_fired = False  # clear for next iteration
 
         # refresh HyprlandWorkspaces
-        if event_name in ["activewindowv2", "activewindow", "changefloatingmode"] and len(common.workspaces_list) > 0:
-            for item in common.workspaces_list:
-                GLib.timeout_add(0, item.refresh)
+        if len(common.workspaces_list) > 0 and event_name in ["activewindowv2", "activewindow", "changefloatingmode"] and len(common.workspaces_list) > 0:
+            if client_addr and client_addr != last_client_addr:
+                last_client_addr = client_addr
+                for item in common.workspaces_list:
+                    GLib.timeout_add(0, item.refresh)
 
 
 def check_tree():
@@ -400,7 +408,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             common.tray_list.append(tray)
             container.pack_start(tray, False, False, panel["items-padding"])
 
-        if his and len(common.taskbars_list) > 0 or len(common.workspaces_list) > 0:
+        if his and len(common.h_taskbars_list) > 0 or len(common.workspaces_list) > 0:
             global hypr_watcher_started
             if not hypr_watcher_started:
                 thread = threading.Thread(target=hypr_watcher)
