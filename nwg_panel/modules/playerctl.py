@@ -34,35 +34,14 @@ class Playerctl(Gtk.EventBox):
         check_key(settings, "show-cover", True)
         check_key(settings, "cover-size", 24)
         check_key(settings, "angle", 0.0)
-
-        self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        if settings["angle"] != 0.0:
-            self.box.set_orientation(Gtk.Orientation.VERTICAL)
-
-        self.box.set_property("name", "task-box")
-        self.add(self.box)
-        self.image = Gtk.Image()
-        update_image(self.image, "view-refresh-symbolic", self.settings["icon-size"], icons_path=self.icons_path)
-        self.label = Gtk.Label.new("")
-        self.icon_path = None
-        self.play_pause_btn = Gtk.Button()
         check_key(settings, "button-css-name", "")
-        if self.settings["button-css-name"]:
-            self.play_pause_btn.set_property("name", self.settings["button-css-name"])
+
         self.status = ""
         self.retries = 2  # to avoid hiding the module on forward / backward btn when playing from the browser
 
         self.output_start_idx = 0
         self.old_metadata = ""
         self.old_cover_url = ""
-
-        self.cover_img = Gtk.Image()
-        update_image(self.cover_img, "music", settings["cover-size"], icons_path)
-
-        if settings["label-css-name"]:
-            self.label.set_property("name", settings["label-css-name"])
-
-        self.label.set_angle(settings["angle"])
 
         self.build_box()
 
@@ -165,6 +144,12 @@ class Playerctl(Gtk.EventBox):
         return True
 
     def build_box(self):
+        self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        if self.settings["angle"] != 0.0:
+            self.box.set_orientation(Gtk.Orientation.VERTICAL)
+        self.box.set_property("name", "task-box")
+        self.add(self.box)
+
         button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         if self.settings["angle"] != 0.0:
             button_box.set_orientation(Gtk.Orientation.VERTICAL)
@@ -178,6 +163,9 @@ class Playerctl(Gtk.EventBox):
         btn.connect("clicked", self.launch, "playerctl previous")
         button_box.pack_start(btn, False, False, 1)
 
+        self.play_pause_btn = Gtk.Button()
+        if self.settings["button-css-name"]:
+            self.play_pause_btn.set_property("name", self.settings["button-css-name"])
         img = Gtk.Image()
         update_image(img, "media-playback-start-symbolic", self.settings["icon-size"], icons_path=self.icons_path)
         self.play_pause_btn.set_image(img)
@@ -192,6 +180,14 @@ class Playerctl(Gtk.EventBox):
             btn.set_property("name", self.settings["button-css-name"])
         btn.connect("clicked", self.launch, "playerctl next")
         button_box.pack_start(btn, False, False, 1)
+
+        self.label = Gtk.Label()
+        if self.settings["label-css-name"]:
+            self.label.set_property("name", self.settings["label-css-name"])
+        self.label.set_angle(self.settings["angle"])
+
+        self.cover_img = Gtk.Image()
+        update_image(self.cover_img, "music", self.settings["cover-size"], self.icons_path)
 
         if self.settings["buttons-position"] == "left":
             self.box.pack_start(button_box, False, False, 2)
