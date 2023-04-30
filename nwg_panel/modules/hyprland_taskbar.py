@@ -75,6 +75,7 @@ class HyprlandTaskbar(Gtk.Box):
         self.activewindow = json.loads(output)
 
     def refresh(self):
+        print("Taskbar refresh")
         self.list_monitors()
         self.list_workspaces()
         self.list_clients()

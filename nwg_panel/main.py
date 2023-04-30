@@ -86,8 +86,6 @@ if his:
     from nwg_panel.modules.hyprland_workspaces import HyprlandWorkspaces
 hypr_watcher_started = False
 last_client_addr = ""
-last_client_details = ""
-buildbox_fired = False
 
 common_settings = {}
 restart_cmd = ""
@@ -156,7 +154,7 @@ def hypr_watcher():
         e_full_string = datagram.decode('utf-8').strip()
         # eprint("Event: {}".format(e_full_string))
 
-        global last_client_addr, last_client_details
+        global last_client_addr
         client_addr, client_details = None, None
 
         # remember client address (string) for further event filtering
@@ -179,29 +177,22 @@ def hypr_watcher():
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.list_monitors)
 
-        global buildbox_fired
-
         if event_name == "changefloatingmode":
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.refresh)
-            last_client_details = client_details
-            buildbox_fired = True  # skip 'activewindowv2' check
 
         if event_name in ["closewindow"]:
             # skip client details if previously used
-            if client_details != last_client_details:
-                for item in common.h_taskbars_list:
-                    GLib.timeout_add(0, item.refresh)
-                last_client_details = client_details
-                buildbox_fired = True  # skip 'activewindowv2' check
+            # if client_details != last_client_details:
+            for item in common.h_taskbars_list:
+                GLib.timeout_add(0, item.refresh)
 
-        if not buildbox_fired and event_name in ["activewindowv2"]:
+        if event_name in ["activewindowv2", "activewindow"]:
             # skip window address if previously used
             if client_addr and client_addr != last_client_addr:  # filter out consecutive events from the same client
                 for item in common.h_taskbars_list:
                     GLib.timeout_add(0, item.refresh)
                 last_client_addr = client_addr
-            buildbox_fired = False  # clear for next iteration
 
         # refresh HyprlandWorkspaces
         if len(common.workspaces_list) > 0 and event_name in ["activewindowv2", "activewindow", "changefloatingmode"] and len(common.workspaces_list) > 0:
