@@ -34,6 +34,7 @@ class HyprlandWorkspaces(Gtk.Box):
         check_key(self.settings, "mark-content", True)
         check_key(self.settings, "show-names", True)
         check_key(self.settings, "mark-floating", True)
+        check_key(self.settings, "mark-xwayland", True)
         check_key(self.settings, "angle", 0.0)
 
         if self.settings["angle"] != 0.0:
@@ -116,6 +117,8 @@ class HyprlandWorkspaces(Gtk.Box):
         if active_window:
             client_class = active_window["class"]
             client_title = active_window["title"][:self.settings["name-length"]]
+            if self.settings["mark-xwayland"] and active_window["xwayland"]:
+                client_title = "X|{}".format(client_title)
             floating = active_window["floating"]
         else:
             client_class = ""
