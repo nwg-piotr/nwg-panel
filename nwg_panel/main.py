@@ -173,7 +173,7 @@ def hypr_watcher():
                 GLib.timeout_add(0, item.list_monitors)
 
         if event_name == "focusedmon":
-            for item in common.workspaces_list:
+            for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh)
             continue
 
@@ -181,7 +181,7 @@ def hypr_watcher():
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.refresh)
 
-            for item in common.workspaces_list:
+            for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh)
 
             last_client_details = client_details
@@ -191,7 +191,7 @@ def hypr_watcher():
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.refresh)
 
-            for item in common.workspaces_list:
+            for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh)
 
             last_client_addr = client_addr
@@ -201,7 +201,7 @@ def hypr_watcher():
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.refresh)
 
-            for item in common.workspaces_list:
+            for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh)
 
 
@@ -222,9 +222,6 @@ def check_tree():
     if tree:
         # Do if tree changed
         if tree.ipc_data != common.ipc_data:
-            for item in common.workspaces_list:
-                item.refresh()
-
             for item in common.controls_list:
                 if item.popup_window.get_visible():
                     item.popup_window.hide_and_clear_tag()
@@ -279,7 +276,6 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 if "sway-workspaces" in panel:
                     workspaces = SwayWorkspaces(panel["sway-workspaces"], common.i3, icons_path=icons_path)
                     container.pack_start(workspaces, False, False, panel["items-padding"])
-                    common.workspaces_list.append(workspaces)
                 else:
                     print("'sway-workspaces' not defined in this panel instance")
             else:
@@ -290,7 +286,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 if "hyprland-workspaces" in panel:
                     workspaces = HyprlandWorkspaces(panel["hyprland-workspaces"], icons_path=icons_path)
                     container.pack_start(workspaces, False, False, panel["items-padding"])
-                    common.workspaces_list.append(workspaces)
+                    common.h_workspaces_list.append(workspaces)
                 else:
                     print("'hyprland-workspaces' not defined in this panel instance")
             else:
@@ -825,7 +821,7 @@ def main():
         thread.start()
 
     if his:
-        if len(common.h_taskbars_list) > 0 or len(common.workspaces_list) > 0:
+        if len(common.h_taskbars_list) > 0 or len(common.h_workspaces_list) > 0:
             print("his: '{}', starting hypr_watcher".format(his))
             thread = threading.Thread(target=hypr_watcher)
             thread.daemon = True
