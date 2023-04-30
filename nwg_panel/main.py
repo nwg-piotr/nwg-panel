@@ -216,29 +216,13 @@ def on_i3ipc_event(i3conn, event):
                              priority=GLib.PRIORITY_HIGH)
         common.outputs_num = num
 
+    GLib.idle_add(hide_controls_popup, priority=GLib.PRIORITY_HIGH)
 
-def check_tree():
-    tree = common.i3.get_tree() if sway else None
-    if tree:
-        # Do if tree changed
-        if tree.ipc_data != common.ipc_data:
-            for item in common.controls_list:
-                if item.popup_window.get_visible():
-                    item.popup_window.hide_and_clear_tag()
 
-        common.ipc_data = tree.ipc_data
-
-    else:
-        pass
-        """ For now we seem to have no reason to trace it outside sway
-        old = len(common.outputs)
-        common.outputs = list_outputs(sway=sway, tree=tree, silent=True)
-        new = len(common.outputs)
-        if old != 0 and old != new:
-            print("Number of outputs changed")
-            restart()"""
-
-    return True
+def hide_controls_popup():
+    for item in common.controls_list:
+        if item.popup_window.get_visible():
+            item.popup_window.hide_and_clear_tag()
 
 
 def refresh_dwl(*args):
@@ -808,10 +792,9 @@ def main():
         common.outputs_num = len(common.outputs)
 
     if sway:
-        Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 200, check_tree)
-
         # Notice: Don't use Event.OUTPUT, it's not supported on old sway releases.
         common.i3.on(Event.WORKSPACE, on_i3ipc_event)
+        common.i3.on(Event.WINDOW, on_i3ipc_event)
 
         # We monitor i3ipc events in a separate thread, and callbacks will also
         # be executed there. Hence, UI operations MUST be scheduled by

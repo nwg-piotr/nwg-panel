@@ -4,8 +4,6 @@ sway = False
 
 i3 = None
 
-ipc_data = None
-
 outputs = {}
 outputs_num = 0
 windows_list = []
