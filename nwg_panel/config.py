@@ -150,6 +150,7 @@ SKELETON_PANEL: dict = {
         "mark-content": True,
         "show-names": True,
         "mark-floating": True,
+        "mark-xwayland": True,
         "angle": 0.0
     },
     "clock": {
@@ -2034,6 +2035,7 @@ class EditorWrapper(object):
             "mark-content": True,
             "show-names": True,
             "mark-floating": True,
+            "mark-xwayland": True,
             "angle": 0.0
         }
         for key in defaults:
@@ -2092,6 +2094,9 @@ class EditorWrapper(object):
         self.ws_mark_floating = builder.get_object("mark-floating")
         self.ws_mark_floating.set_active(settings["mark-floating"])
 
+        self.ws_mark_xwayland = builder.get_object("mark-xwayland")
+        self.ws_mark_xwayland.set_active(settings["mark-xwayland"])
+
         self.ws_angle = builder.get_object("angle")
         self.ws_angle.set_tooltip_text(voc["angle-tooltip"])
         self.ws_angle.set_active_id(str(settings["angle"]))
@@ -2112,6 +2117,7 @@ class EditorWrapper(object):
         settings["mark-content"] = self.ws_mark_content.get_active()
         settings["show-names"] = self.ws_show_names.get_active()
         settings["mark-floating"] = self.ws_mark_floating.get_active()
+        settings["mark-xwayland"] = self.ws_mark_xwayland.get_active()
         try:
             settings["angle"] = float(self.ws_angle.get_active_id())
         except:
