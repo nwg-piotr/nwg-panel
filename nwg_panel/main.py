@@ -222,9 +222,6 @@ def check_tree():
     if tree:
         # Do if tree changed
         if tree.ipc_data != common.ipc_data:
-            for item in common.scratchpads_list:
-                item.refresh(tree)
-
             for item in common.workspaces_list:
                 item.refresh()
 
@@ -307,7 +304,6 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 scratchpad = Scratchpad(common.i3, common.i3.get_tree(), panel[item], panel["output"],
                                         icons_path=icons_path)
                 container.pack_start(scratchpad, False, False, panel["items-padding"])
-                common.scratchpads_list.append(scratchpad)
             else:
                 eprint("'scratchpad' ignored")
 

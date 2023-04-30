@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 import os.path
-import threading
-import gi
 
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+from gi.repository import Gtk, GLib
+from i3ipc import Event
 
 from nwg_panel.tools import check_key, get_icon_name, update_image, temp_dir, save_json
 import nwg_panel.common
@@ -34,6 +32,12 @@ class Scratchpad(Gtk.Box):
         if settings["angle"] != 0.0:
             self.set_orientation(Gtk.Orientation.VERTICAL)
 
+        self.check_scratchpad(i3.get_tree())
+        self.subscribe()
+
+    def subscribe(self):
+        self.i3.on(Event.WINDOW, self.on_i3ipc_event)
+
     def check_scratchpad(self, tree):
         content = []
 
@@ -56,7 +60,7 @@ class Scratchpad(Gtk.Box):
 
         if content != self.content:
             self.content = content
-            self.build_box()
+            GLib.idle_add(self.build_box, priority=GLib.PRIORITY_HIGH)
 
     def build_box(self):
         for item in self.get_children():
@@ -124,9 +128,5 @@ class Scratchpad(Gtk.Box):
             cmd = "[pid={}] scratchpad show".format(pid)
             self.i3.command(cmd)
 
-    def refresh(self, tree):
-        thread = threading.Thread(target=self.check_scratchpad(tree))
-        thread.daemon = True
-        thread.start()
-
-        return True
+    def on_i3ipc_event(self, i3conn, event):
+        self.check_scratchpad(i3conn.get_tree())
