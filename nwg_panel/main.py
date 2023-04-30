@@ -86,6 +86,7 @@ if his:
     from nwg_panel.modules.hyprland_workspaces import HyprlandWorkspaces
 hypr_watcher_started = False
 last_client_addr = ""
+last_client_details = ""
 
 common_settings = {}
 restart_cmd = ""
@@ -149,27 +150,30 @@ def hypr_watcher():
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     client.connect("/tmp/hypr/{}/.socket2.sock".format(his))
 
+    global last_client_addr, last_client_details
+    client_addr, client_details = None, None
+
     while True:
         datagram = client.recv(2048)
         e_full_string = datagram.decode('utf-8').strip()
         # eprint("Event: {}".format(e_full_string))
 
-        global last_client_addr
-        client_addr, client_details = None, None
+        refreshed = False
 
         # remember client address (string) for further event filtering
-        if "activewindowv2" in e_full_string:
+        if "activewindowv2" in e_full_string or "activewindow>>" in e_full_string:
             lines = e_full_string.splitlines()
             for line in lines:
                 if line.startswith("activewindowv2"):
-                    client_addr = e_full_string.split("activewindowv2>>")[1].strip().split()[0]
-
-        # remember client details (string) for further event filtering
-        if "activewindow>>" in e_full_string:
-            lines = e_full_string.splitlines()
-            for line in lines:
-                if line.startswith("activewindow>>"):
-                    client_details = e_full_string.split("activewindow>>")[1].strip()
+                    try:
+                        s = e_full_string.split(">>")[1].strip()
+                        ca = int(s, 16)
+                        client_addr = s
+                        break
+                    except ValueError:
+                        continue
+                elif line.startswith("activewindow>>"):
+                    client_details = line.split(">>")[1]
 
         event_name = e_full_string.split(">>")[0]
 
@@ -177,29 +181,32 @@ def hypr_watcher():
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.list_monitors)
 
-        if event_name == "changefloatingmode":
+        if event_name == "activewindowv2" and client_addr != last_client_addr:
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.refresh)
 
-        if event_name in ["closewindow"]:
-            # skip client details if previously used
-            # if client_details != last_client_details:
+            for item in common.workspaces_list:
+                GLib.timeout_add(0, item.refresh)
+
+            last_client_addr = client_addr
+            refreshed = True
+
+        if not refreshed and event_name == "activewindow" and client_details != last_client_details:
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.refresh)
 
-        if event_name in ["activewindowv2", "activewindow"]:
-            # skip window address if previously used
-            if client_addr and client_addr != last_client_addr:  # filter out consecutive events from the same client
-                for item in common.h_taskbars_list:
-                    GLib.timeout_add(0, item.refresh)
-                last_client_addr = client_addr
+            for item in common.workspaces_list:
+                GLib.timeout_add(0, item.refresh)
 
-        # refresh HyprlandWorkspaces
-        if len(common.workspaces_list) > 0 and event_name in ["activewindowv2", "activewindow", "changefloatingmode"] and len(common.workspaces_list) > 0:
-            if client_addr and client_addr != last_client_addr:
-                last_client_addr = client_addr
-                for item in common.workspaces_list:
-                    GLib.timeout_add(0, item.refresh)
+            last_client_details = client_details
+            refreshed = True
+
+        if not refreshed and event_name in ["changefloatingmode", "closewindow"]:
+            for item in common.h_taskbars_list:
+                GLib.timeout_add(0, item.refresh)
+
+            for item in common.workspaces_list:
+                GLib.timeout_add(0, item.refresh)
 
 
 def check_tree():
