@@ -171,6 +171,11 @@ def hypr_watcher():
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.list_monitors)
 
+        if event_name == "focusedmon":
+            for item in common.workspaces_list:
+                GLib.timeout_add(0, item.refresh)
+            continue
+
         if event_name == "activewindow" and client_details != last_client_details:
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.refresh)
