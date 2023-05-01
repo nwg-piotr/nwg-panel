@@ -55,13 +55,18 @@ class HyprlandWorkspaces(Gtk.Box):
         if self.settings["mark-floating"]:
             self.pack_start(self.floating_icon, False, False, 6)
 
-    def build_number(self, num, add_dot=False):
+    def build_number(self, num, add_dot=False, active_win_ws=0):
         eb = Gtk.EventBox()
         eb.connect("enter_notify_event", self.on_enter_notify_event)
         eb.connect("leave_notify_event", self.on_leave_notify_event)
         eb.connect("button-release-event", self.on_click, num)
         eb.add_events(Gdk.EventMask.SCROLL_MASK)
         eb.connect('scroll-event', self.on_scroll)
+
+        if active_win_ws == num:
+            eb.set_property("name", "task-box-focused")
+        else:
+            eb.set_property("name", "")
 
         box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         if self.settings["angle"] != 0.0:
@@ -104,13 +109,6 @@ class HyprlandWorkspaces(Gtk.Box):
         for c in self.num_box.get_children():
             c.destroy()
 
-        for num in self.ws_nums:
-            if num in occupied_workspaces or self.settings["show-empty"]:
-                dot = num in occupied_workspaces and self.settings["show-empty"] and self.settings["mark-content"]
-                eb, lbl = self.build_number(num, dot)
-                self.num_box.pack_start(eb, False, False, 0)
-                self.num_box.show_all()
-
         output = hyprctl("j/activewindow")
         active_window = json.loads(output)
 
@@ -120,10 +118,24 @@ class HyprlandWorkspaces(Gtk.Box):
             if self.settings["mark-xwayland"] and active_window["xwayland"]:
                 client_title = "X|{}".format(client_title)
             floating = active_window["floating"]
+            active_ws = active_window["workspace"]["id"]
         else:
             client_class = ""
             client_title = ""
             floating = False
+            output = hyprctl("j/monitors")
+            monitors = json.loads(output)
+            for m in monitors:
+                if m["focused"]:
+                    active_ws = m["activeWorkspace"]["id"]
+                    break
+
+        for num in self.ws_nums:
+            if num in occupied_workspaces or self.settings["show-empty"]:
+                dot = num in occupied_workspaces and self.settings["show-empty"] and self.settings["mark-content"]
+                eb, lbl = self.build_number(num, add_dot=dot, active_win_ws=active_ws)
+                self.num_box.pack_start(eb, False, False, 0)
+                self.num_box.show_all()
 
         if self.settings["show-icon"]:
             self.update_icon(client_class, client_title)
