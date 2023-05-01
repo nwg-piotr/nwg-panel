@@ -11,11 +11,9 @@ import argparse
 import signal
 import sys
 import threading
-import time
 
 import gi
 
-import nwg_panel.common
 from nwg_panel.__about__ import __version__
 
 gi.require_version('Gtk', '3.0')
