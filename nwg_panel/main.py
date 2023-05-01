@@ -84,7 +84,6 @@ his = os.getenv('HYPRLAND_INSTANCE_SIGNATURE')
 if his:
     from nwg_panel.modules.hyprland_taskbar import HyprlandTaskbar
     from nwg_panel.modules.hyprland_workspaces import HyprlandWorkspaces
-hypr_watcher_started = False
 last_client_addr = ""
 last_client_details = ""
 
@@ -405,14 +404,6 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             tray = sni_system_tray.Tray(tray_settings, panel["position"], icons_path)
             common.tray_list.append(tray)
             container.pack_start(tray, False, False, panel["items-padding"])
-
-        if his and len(common.h_taskbars_list) > 0 or len(common.workspaces_list) > 0:
-            global hypr_watcher_started
-            if not hypr_watcher_started:
-                thread = threading.Thread(target=hypr_watcher)
-                thread.daemon = True
-                thread.start()
-                hypr_watcher_started = True
 
 
 def main():
@@ -831,6 +822,13 @@ def main():
 
     if sway:
         Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 200, check_tree)
+
+    if his:
+        if len(common.h_taskbars_list) > 0 or len(common.workspaces_list) > 0:
+            print("his: '{}', starting hypr_watcher".format(his))
+            thread = threading.Thread(target=hypr_watcher)
+            thread.daemon = True
+            thread.start()
 
     if tray_available and len(common.tray_list) > 0:
         sni_system_tray.init_tray(common.tray_list)
