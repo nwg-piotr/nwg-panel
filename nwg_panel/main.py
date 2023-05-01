@@ -14,7 +14,6 @@ import threading
 
 import gi
 
-import nwg_panel.common
 from nwg_panel.__about__ import __version__
 
 gi.require_version('Gtk', '3.0')
@@ -157,28 +156,30 @@ def hypr_watcher():
         e_full_string = datagram.decode('utf-8').strip()
         # eprint("Event: {}".format(e_full_string))
 
-        refreshed = False
-
         # remember client address (string) for further event filtering
-        if "activewindowv2" in e_full_string or "activewindow>>" in e_full_string:
+        if e_full_string.startswith("activewindow>>"):
             lines = e_full_string.splitlines()
             for line in lines:
                 if line.startswith("activewindowv2"):
-                    try:
-                        s = e_full_string.split(">>")[1].strip()
-                        ca = int(s, 16)
-                        client_addr = s
-                        break
-                    except ValueError:
-                        continue
+                    client_addr = e_full_string.split(">>")[1].strip()
                 elif line.startswith("activewindow>>"):
                     client_details = line.split(">>")[1]
 
         event_name = e_full_string.split(">>")[0]
 
-        if event_name in ["monitoradded"]:
+        if event_name == "monitoradded":
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.list_monitors)
+
+        if event_name == "activewindow" and client_details != last_client_details:
+            for item in common.h_taskbars_list:
+                GLib.timeout_add(0, item.refresh)
+
+            for item in common.workspaces_list:
+                GLib.timeout_add(0, item.refresh)
+
+            last_client_details = client_details
+            continue
 
         if event_name == "activewindowv2" and client_addr != last_client_addr:
             for item in common.h_taskbars_list:
@@ -188,19 +189,9 @@ def hypr_watcher():
                 GLib.timeout_add(0, item.refresh)
 
             last_client_addr = client_addr
-            refreshed = True
+            continue
 
-        if not refreshed and event_name == "activewindow" and client_details != last_client_details:
-            for item in common.h_taskbars_list:
-                GLib.timeout_add(0, item.refresh)
-
-            for item in common.workspaces_list:
-                GLib.timeout_add(0, item.refresh)
-
-            last_client_details = client_details
-            refreshed = True
-
-        if not refreshed and event_name in ["changefloatingmode", "closewindow"]:
+        if event_name in ["changefloatingmode", "closewindow"]:
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.refresh)
 
