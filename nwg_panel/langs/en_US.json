@@ -55,7 +55,7 @@
   "css-name": "CSS name",
   "custom-items": "Custom items",
   "custom-labels": "Custom labels",
-  "custom-labels-tooltip": "One single label or multiple custom labels\nfor each workspace number specified above.",
+  "custom-labels-tooltip": "One single label or new line-separated multiple custom labels\nfor each workspace number specified above.",
   "custom-location-name": "Custom location name",
   "custom-location-name-tooltip": "If you don't like the location name returned from geocoder, \nyou may define your own label here.",
   "data-path": "Data path",

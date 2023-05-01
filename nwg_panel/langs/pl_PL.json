@@ -55,7 +55,7 @@
   "css-name": "Nazwa CSS",
   "custom-items": "Własne pozycje",
   "custom-labels": "Własne etykiety",
-  "custom-labels-tooltip": "Jedna wspólna etykieta albo oddzielne etykiety\ndla każdego określonego wyżej obszaru roboczego.",
+  "custom-labels-tooltip": "Jedna wspólna etykieta albo oddzielone nowym wierszem\noddzielne etykiety dla każdego określonego wyżej obszaru roboczego.",
   "custom-location-name": "Własna nazwa lokalizacji",
   "custom-location-name-tooltip": "Jeśli nie podoba Ci się nazwa zwracana przez geocoder, \ntu możesz zdefiniować własną etykietę.",
   "data-path": "Ścieżka danych",
