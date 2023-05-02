@@ -58,6 +58,10 @@ class StatusNotifierHostInterface(object):
         self.watcher_proxy.StatusNotifierItemUnregistered.connect(self.item_unregistered_handler)
         self.watcher_proxy.RegisterStatusNotifierHost(self.host_object_path, callback=lambda _: None)
 
+        # Add items registered before host available
+        for item in self.watcher_proxy.RegisteredStatusNotifierItems:
+            self.item_registered_handler(item)
+
     def watcher_unavailable_handler(self, _observer):
         # print("StatusNotifierHostInterface -> watcher_unavailable_handler")
         self._statusNotifierItems.clear()
