@@ -70,7 +70,8 @@ except:
 sway = os.getenv('SWAYSOCK') is not None
 if sway:
     try:
-        from i3ipc import Connection
+        import i3ipc
+        from i3ipc import Connection, Event
     except ModuleNotFoundError:
         eprint("'python-i3ipc' package required on sway, terminating")
         sys.exit(1)
@@ -172,7 +173,7 @@ def hypr_watcher():
                 GLib.timeout_add(0, item.list_monitors)
 
         if event_name == "focusedmon":
-            for item in common.workspaces_list:
+            for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh)
             continue
 
@@ -180,7 +181,7 @@ def hypr_watcher():
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.refresh)
 
-            for item in common.workspaces_list:
+            for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh)
 
             last_client_details = client_details
@@ -190,7 +191,7 @@ def hypr_watcher():
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.refresh)
 
-            for item in common.workspaces_list:
+            for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh)
 
             last_client_addr = client_addr
@@ -200,51 +201,28 @@ def hypr_watcher():
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.refresh)
 
-            for item in common.workspaces_list:
+            for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh)
 
 
-def check_tree():
-    tree = common.i3.get_tree() if sway else None
-    if tree:
-        # Do if tree changed
-        if tree.ipc_data != common.ipc_data:
-            if common_settings["restart-on-display"]:
-                num = num_active_outputs(tree)
+def on_i3ipc_event(i3conn, event):
+    if common_settings["restart-on-display"]:
+        num = num_active_outputs(i3conn.get_outputs())
+        if num > common.outputs_num:
+            print("Number of outputs increased ({}); restart in {} ms.".format(
+                num, common_settings["restart-delay"]))
+            GLib.timeout_add(common_settings["restart-delay"],
+                             restart,
+                             priority=GLib.PRIORITY_HIGH)
+        common.outputs_num = num
 
-                if num > common.outputs_num:
-                    print("Number of outputs increased ({}); restart in {} ms."
-                          .format(num, common_settings["restart-delay"]))
-                    Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, common_settings["restart-delay"], restart)
+    GLib.idle_add(hide_controls_popup, priority=GLib.PRIORITY_HIGH)
 
-                common.outputs_num = num
 
-            for item in common.taskbars_list:
-                item.refresh(tree)
-
-            for item in common.scratchpads_list:
-                item.refresh(tree)
-
-            for item in common.workspaces_list:
-                item.refresh()
-
-            for item in common.controls_list:
-                if item.popup_window.get_visible():
-                    item.popup_window.hide_and_clear_tag()
-
-        common.ipc_data = tree.ipc_data
-
-    else:
-        pass
-        """ For now we seem to have no reason to trace it outside sway
-        old = len(common.outputs)
-        common.outputs = list_outputs(sway=sway, tree=tree, silent=True)
-        new = len(common.outputs)
-        if old != 0 and old != new:
-            print("Number of outputs changed")
-            restart()"""
-
-    return True
+def hide_controls_popup():
+    for item in common.controls_list:
+        if item.popup_window.get_visible():
+            item.popup_window.hide_and_clear_tag()
 
 
 def refresh_dwl(*args):
@@ -270,7 +248,6 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                     else:
                         taskbar = SwayTaskbar(panel["sway-taskbar"], common.i3, panel["position"],
                                               display_name="{}".format(panel["output"]), icons_path=icons_path)
-                    common.taskbars_list.append(taskbar)
 
                     container.pack_start(taskbar, False, False, panel["items-padding"])
                 else:
@@ -283,7 +260,6 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 if "sway-workspaces" in panel:
                     workspaces = SwayWorkspaces(panel["sway-workspaces"], common.i3, icons_path=icons_path)
                     container.pack_start(workspaces, False, False, panel["items-padding"])
-                    common.workspaces_list.append(workspaces)
                 else:
                     print("'sway-workspaces' not defined in this panel instance")
             else:
@@ -294,7 +270,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 if "hyprland-workspaces" in panel:
                     workspaces = HyprlandWorkspaces(panel["hyprland-workspaces"], icons_path=icons_path)
                     container.pack_start(workspaces, False, False, panel["items-padding"])
-                    common.workspaces_list.append(workspaces)
+                    common.h_workspaces_list.append(workspaces)
                 else:
                     print("'hyprland-workspaces' not defined in this panel instance")
             else:
@@ -308,7 +284,6 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 scratchpad = Scratchpad(common.i3, common.i3.get_tree(), panel[item], panel["output"],
                                         icons_path=icons_path)
                 container.pack_start(scratchpad, False, False, panel["items-padding"])
-                common.scratchpads_list.append(scratchpad)
             else:
                 eprint("'scratchpad' ignored")
 
@@ -811,16 +786,25 @@ def main():
             window.show_all()
 
     if sway:
-        common.outputs_num = num_active_outputs(common.i3.get_tree())
+        common.outputs_num = num_active_outputs(common.i3.get_outputs())
     else:
         common.outputs = list_outputs(sway=sway, tree=tree, silent=True)
         common.outputs_num = len(common.outputs)
 
     if sway:
-        Gdk.threads_add_timeout(GLib.PRIORITY_DEFAULT_IDLE, 200, check_tree)
+        # Notice: Don't use Event.OUTPUT, it's not supported on old sway releases.
+        common.i3.on(Event.WORKSPACE, on_i3ipc_event)
+        common.i3.on(Event.WINDOW, on_i3ipc_event)
+
+        # We monitor i3ipc events in a separate thread, and callbacks will also
+        # be executed there. Hence, UI operations MUST be scheduled by
+        # Gdk.threads_add_*() or their GLib counterpart to make them happen in
+        # Gtk's main loop.
+        thread = threading.Thread(target=common.i3.main, daemon=True)
+        thread.start()
 
     if his:
-        if len(common.h_taskbars_list) > 0 or len(common.workspaces_list) > 0:
+        if len(common.h_taskbars_list) > 0 or len(common.h_workspaces_list) > 0:
             print("his: '{}', starting hypr_watcher".format(his))
             thread = threading.Thread(target=hypr_watcher)
             thread.daemon = True

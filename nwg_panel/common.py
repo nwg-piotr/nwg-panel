@@ -4,15 +4,11 @@ sway = False
 
 i3 = None
 
-ipc_data = None
-
 outputs = {}
 outputs_num = 0
 windows_list = []
-taskbars_list = []
 h_taskbars_list = []
-scratchpads_list = []
-workspaces_list = []
+h_workspaces_list = []
 controls_list = []
 executors_list = []
 tray_list = []

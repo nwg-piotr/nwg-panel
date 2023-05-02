@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-import os
 
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gdk, GLib
+from i3ipc import Event
 
 import nwg_panel.common
 from nwg_panel.tools import check_key, get_icon_name, update_image, update_image_fallback_desktop, load_autotiling
@@ -23,6 +23,12 @@ class SwayWorkspaces(Gtk.Box):
         self.icons_path = icons_path
         self.autotiling = load_autotiling()
         self.build_box()
+        self.refresh()
+        self.subscribe()
+
+    def subscribe(self):
+        self.i3.on(Event.WINDOW, self.on_i3ipc_event)
+        self.i3.on(Event.WORKSPACE, self.on_i3ipc_event)
 
     def build_box(self):
         check_key(self.settings, "numbers", [])
@@ -115,6 +121,9 @@ class SwayWorkspaces(Gtk.Box):
         box.pack_start(lbl, False, False, 6)
 
         return eb, lbl
+
+    def on_i3ipc_event(self, i3conn, event):
+        GLib.idle_add(self.refresh, priority=GLib.PRIORITY_HIGH)
 
     def refresh(self):
         if self.i3.get_tree().find_focused():
