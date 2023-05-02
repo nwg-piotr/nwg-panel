@@ -2,10 +2,11 @@
 
 from gi.repository import GLib
 
-import threading
 import psutil
 
 import gi
+
+from nwg_panel.tools import create_background_task
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -24,8 +25,7 @@ class CpuAvg(Gtk.EventBox):
         self.label.set_property("name", "executor-label")
 
         self.build_box()
-
-        Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, 2, self.refresh)
+        self.refresh()
 
     def update_widget(self, val, cnt):
         self.label.set_text(val)
@@ -44,10 +44,8 @@ class CpuAvg(Gtk.EventBox):
             print(e)
 
     def refresh(self):
-        thread = threading.Thread(target=self.get_output)
-        thread.daemon = True
+        thread = create_background_task(self.get_output, 2)
         thread.start()
-        return True
 
     def build_box(self):
         self.box.pack_start(self.label, False, False, 4)

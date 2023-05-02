@@ -3,9 +3,8 @@
 from gi.repository import GLib
 
 import subprocess
-import threading
 
-from nwg_panel.tools import check_key, update_image
+from nwg_panel.tools import check_key, update_image, create_background_task
 
 import gi
 
@@ -65,9 +64,6 @@ class SwayNC(Gtk.EventBox):
         self.build_box()
         self.refresh()
 
-        if settings["interval"] > 0:
-            Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
-
     def update_widget(self, output):
         if output:
             try:
@@ -100,10 +96,8 @@ class SwayNC(Gtk.EventBox):
             print(e)
 
     def refresh(self):
-        thread = threading.Thread(target=self.get_output)
-        thread.daemon = True
+        thread = create_background_task(self.get_output, self.settings["interval"])
         thread.start()
-        return True
 
     def build_box(self):
         if self.settings["icon-placement"] == "left":

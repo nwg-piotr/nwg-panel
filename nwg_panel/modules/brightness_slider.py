@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import threading
-
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -9,7 +7,7 @@ gi.require_version('Gdk', '3.0')
 gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
-from nwg_panel.tools import check_key, get_brightness, set_brightness, update_image
+from nwg_panel.tools import check_key, get_brightness, set_brightness, update_image, create_background_task
 
 
 class BrightnessSlider(Gtk.EventBox):
@@ -73,7 +71,6 @@ class BrightnessSlider(Gtk.EventBox):
         self.build_box()
 
         self.refresh()
-        Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
 
     def build_box(self):
         if self.settings["icon-placement"] == "start":
@@ -86,25 +83,18 @@ class BrightnessSlider(Gtk.EventBox):
             self.box.pack_start(self.bri_image, False, False, 2)
 
     def refresh(self):
-        thread = threading.Thread(target=self.refresh_output)
-        thread.daemon = True
+        thread = create_background_task(self.refresh_output, self.settings["interval"])
         thread.start()
-
-        return True
 
     def refresh_output(self):
         try:
+            self.bri_value = get_brightness(device=self.settings["backlight-device"],
+                                            controller=self.settings["backlight-controller"])
             GLib.idle_add(self.update_brightness)
         except Exception as e:
             print(e)
 
-        return False
-
     def update_brightness(self, get=True):
-        if get:
-            self.bri_value = get_brightness(device=self.settings["backlight-device"],
-                                            controller=self.settings["backlight-controller"])
-        
         icon_name = bri_icon_name(self.bri_value)
 
         if icon_name != self.bri_icon_name:
