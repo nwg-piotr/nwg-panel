@@ -516,23 +516,23 @@ def set_brightness(percent, device="", controller=""):
         percent = 1
     if nwg_panel.common.commands["light"] and controller == "light":
         if device:
-            subprocess.call("light -s {} -S {}".format(device, percent).split())
+            subprocess.Popen("light -s {} -S {}".format(device, percent).split())
         else:
-            subprocess.call("light -S {}".format(percent).split())
+            subprocess.Popen("light -S {}".format(percent).split())
     elif nwg_panel.common.commands["brightnessctl"] and controller == "brightnessctl":
         if device:
-            subprocess.call("brightnessctl -d {} s {}%".format(device, percent).split(),
-                            stdout=subprocess.DEVNULL,
-                            stderr=subprocess.STDOUT)
+            subprocess.Popen("brightnessctl -d {} s {}%".format(device, percent).split(),
+                             stdout=subprocess.DEVNULL,
+                             stderr=subprocess.STDOUT)
         else:
-            subprocess.call("brightnessctl s {}%".format(percent).split(),
-                            stdout=subprocess.DEVNULL,
-                            stderr=subprocess.STDOUT)
+            subprocess.Popen("brightnessctl s {}%".format(percent).split(),
+                             stdout=subprocess.DEVNULL,
+                             stderr=subprocess.STDOUT)
     elif nwg_panel.common.commands["ddcutil"] and controller == "ddcutil":
         if device:
-            subprocess.call("ddcutil setvcp 10 {} --bus={}".format(percent, device).split())
+            subprocess.Popen("ddcutil setvcp 10 {} --bus={}".format(percent, device).split())
         else:
-            subprocess.call("ddcutil setvcp 10 {}".format(percent).split())
+            subprocess.Popen("ddcutil setvcp 10 {}".format(percent).split())
     else:
         eprint("Either 'light' or 'brightnessctl' or 'ddcutil' package required")
 
