@@ -2,7 +2,6 @@ import typing
 import os
 
 from dasbus.connection import SessionMessageBus
-from dasbus.loop import EventLoop
 from dasbus.client.observer import DBusObserver
 from dasbus.client.proxy import disconnect_proxy
 
@@ -12,8 +11,6 @@ from .item import StatusNotifierItem
 
 HOST_SERVICE_NAME_TEMPLATE = "org.kde.StatusNotifierHost-{}-{}"
 HOST_OBJECT_PATH_TEMPLATE = "/StatusNotifierHost/{}"
-
-dasbus_event_loop: typing.Union[EventLoop, None] = None
 
 
 def get_service_name_and_object_path(service: str) -> (str, str):
@@ -111,18 +108,3 @@ class StatusNotifierHostInterface(object):
 
 def init(host_id, trays: typing.List[Tray]):
     _status_notifier_host_interface = StatusNotifierHostInterface(host_id, trays)
-
-    global dasbus_event_loop
-    if dasbus_event_loop is None:
-        # print("host.init(): running dasbus.EventLoop")
-        dasbus_event_loop = EventLoop()
-        dasbus_event_loop.run()
-
-
-def deinit():
-    global dasbus_event_loop
-    if dasbus_event_loop is not None:
-        # print("host.deinit(): quitting dasbus.EventLoop")
-        dasbus_event_loop.quit()
-    if dasbus_event_loop is not None:
-        dasbus_event_loop = None
