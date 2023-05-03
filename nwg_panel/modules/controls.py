@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import threading
 import time
 import subprocess
 
@@ -12,7 +11,7 @@ gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
 from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery, \
-    get_interface, update_image, bt_info, eprint, list_sinks, toggle_mute
+    get_interface, update_image, bt_info, eprint, list_sinks, toggle_mute, create_background_task
 
 from nwg_panel.common import commands
 
@@ -93,12 +92,6 @@ class Controls(Gtk.EventBox):
         if "battery" in settings["components"]:
             self.refresh_bat()
 
-        if settings["interval"] > 0:
-            Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
-
-        if "battery" in settings["components"]:
-            Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, 5, self.refresh_bat)
-
     def build_box(self):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         if self.settings["angle"] != 0.0:
@@ -147,6 +140,9 @@ class Controls(Gtk.EventBox):
 
         if "brightness" in self.settings["components"]:
             try:
+                self.bri_value = get_brightness(
+                    device=self.settings["backlight-device"],
+                    controller=self.settings["backlight-controller"])
                 GLib.idle_add(self.update_brightness)
             except Exception as e:
                 print(e)
@@ -157,8 +153,6 @@ class Controls(Gtk.EventBox):
             except Exception as e:
                 print(e)
 
-        return False
-
     def refresh_bat_output(self):
         if "battery" in self.settings["components"]:
             try:
@@ -168,18 +162,13 @@ class Controls(Gtk.EventBox):
                 print(e)
 
     def refresh(self):
-        thread = threading.Thread(target=self.refresh_output)
-        thread.daemon = True
+        thread = create_background_task(self.refresh_output, self.settings["interval"])
         thread.start()
-
-        return True
 
     # No point in checking battery data more often that every 5 seconds
     def refresh_bat(self):
-        thread = threading.Thread(target=self.refresh_bat_output)
-        thread.daemon = True
+        thread = create_background_task(self.refresh_bat_output, 5)
         thread.start()
-        return True
 
     def update_net(self, ip):
         icon_name = "network-wired-symbolic" if ip else "network-wired-disconnected-symbolic"
@@ -201,10 +190,6 @@ class Controls(Gtk.EventBox):
             self.bt_label.set_text(name)
 
     def update_brightness(self, get=True):
-        if get:
-            self.bri_value = get_brightness(device=self.settings["backlight-device"],
-                                            controller=self.settings["backlight-controller"])
-
         icon_name = bri_icon_name(self.bri_value)
 
         if icon_name != self.bri_icon_name:

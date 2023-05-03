@@ -4,10 +4,9 @@ import os.path
 from gi.repository import GLib
 
 import subprocess
-import threading
 from datetime import datetime
 
-from nwg_panel.tools import check_key, eprint, local_dir, load_json, save_json, update_image, update_gtk_entry
+from nwg_panel.tools import check_key, eprint, local_dir, load_json, save_json, update_image, update_gtk_entry, create_background_task
 
 import gi
 
@@ -84,12 +83,6 @@ class Clock(Gtk.EventBox):
         self.build_box()
         self.refresh()
 
-        if settings["interval"] > 0:
-            Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["interval"], self.refresh)
-
-        if settings["calendar-interval"] > 0:
-            Gdk.threads_add_timeout_seconds(GLib.PRIORITY_LOW, settings["calendar-interval"], self.reload_calendar)
-
     def update_widget(self, output, tooltip=""):
         self.label.set_text(output)
         if self.settings["tooltip-date-format"] and tooltip:
@@ -123,10 +116,11 @@ class Clock(Gtk.EventBox):
             self.reminder_img.set_visible(False)
 
     def refresh(self):
-        thread = threading.Thread(target=self.get_output)
-        thread.daemon = True
+        thread = create_background_task(self.get_output, self.settings["interval"])
         thread.start()
-        return True
+
+        thread = create_background_task(self.reload_calendar, self.settings["calendar-interval"])
+        thread.start()
 
     def build_box(self):
         if self.settings["calendar-on"]:

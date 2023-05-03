@@ -5,7 +5,6 @@ import os
 import stat
 import subprocess
 import sys
-import threading
 from datetime import datetime
 
 import gi
@@ -17,7 +16,7 @@ except ModuleNotFoundError:
     sys.exit(1)
 
 from nwg_panel.tools import check_key, eprint, load_json, save_json, temp_dir, file_age, hms, update_image, \
-    get_config_dir
+    get_config_dir, create_background_task
 
 config_dir = get_config_dir()
 dir_name = os.path.dirname(__file__)
@@ -196,11 +195,6 @@ class OpenWeather(Gtk.EventBox):
 
         self.refresh()
 
-        if settings["interval"] > 0:
-            # We can't use `self.settings["interval"]` here, as the timer resets on restart. Let's check once a minute.
-            # This will do nothing if files exist and self.weather & self.forecast are not None.
-            Gdk.threads_add_timeout_seconds(GLib.PRIORITY_DEFAULT, 60, self.refresh)
-
     def build_box(self):
         if self.settings["icon-placement"] == "start":
             self.box.pack_start(self.alert_image, False, False, 0)
@@ -217,13 +211,17 @@ class OpenWeather(Gtk.EventBox):
         if self.settings["weatherbit-api-key"]:
             self.get_alerts()
         GLib.idle_add(self.update_widget)
-        return True
 
     def refresh(self):
-        thread = threading.Thread(target=self.get_data)
-        thread.daemon = True
+        if self.settings["interval"] > 0:
+            # We can't use `self.settings["interval"]` here, as the timer resets on restart. Let's check once a minute.
+            # This will do nothing if files exist and self.weather & self.forecast are not None.
+            interval = 60
+        else:
+            interval = 0
+
+        thread = create_background_task(self.get_data, interval)
         thread.start()
-        return True
 
     def on_button_press(self, widget, event):
         if event.button == 1:
