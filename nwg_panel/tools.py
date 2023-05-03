@@ -580,28 +580,6 @@ def get_interface(name):
         return None
 
 
-def player_status():
-    status = "install playerctl"
-    if nwg_panel.common.commands["playerctl"]:
-        try:
-            status = cmd2string("playerctl status 2>&1")
-        except:
-            pass
-
-    return status
-
-
-def player_metadata():
-    data = {"text": "", "url": ""}
-    try:
-        lines = cmd2string("playerctl metadata --format '{{artist}}#:#{{title}}#:#{{mpris:artUrl}}'").split("#:#")
-        data = {"text": "{} - {}".format(lines[0], lines[1]), "url": lines[2]}
-    except:
-        pass
-
-    return data
-
-
 def update_image(image, icon_name, icon_size, icons_path="", fallback=True):
     scale = image.get_scale_factor()
     icon_size *= scale

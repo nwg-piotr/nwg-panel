@@ -206,6 +206,8 @@ class StatusNotifierWatcherInterface(object):
             self.PropertiesChanged.emit(WATCHER_SERVICE_NAME, {
                 "IsStatusNotifierHostRegistered": dasbus.typing.get_variant(dasbus.typing.Bool, False)
             }, [])
+        # deinit on host (parent process) unavailable to avoid becoming zombie process
+        deinit()
 
 
 def init():
@@ -226,5 +228,4 @@ def deinit():
     if dasbus_event_loop is not None:
         # print("watcher.deinit(): quitting dasbus.EventLoop")
         dasbus_event_loop.quit()
-    if dasbus_event_loop is not None:
         dasbus_event_loop = None
