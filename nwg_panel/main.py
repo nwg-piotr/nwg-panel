@@ -169,8 +169,9 @@ def hypr_watcher():
         event_name = e_full_string.split(">>")[0]
 
         if event_name == "monitoradded":
+            monitors, workspaces, clients, activewindow = h_taskbar_get_all()
             for item in common.h_taskbars_list:
-                GLib.timeout_add(0, item.list_monitors)
+                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
 
         if event_name == "focusedmon":
             for item in common.h_workspaces_list:
@@ -178,8 +179,9 @@ def hypr_watcher():
             continue
 
         if event_name == "activewindow" and client_details != last_client_details:
+            monitors, workspaces, clients, activewindow = h_taskbar_get_all()
             for item in common.h_taskbars_list:
-                GLib.timeout_add(0, item.refresh)
+                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
 
             for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh)
@@ -188,8 +190,9 @@ def hypr_watcher():
             continue
 
         if event_name == "activewindowv2" and client_addr != last_client_addr:
+            monitors, workspaces, clients, activewindow = h_taskbar_get_all()
             for item in common.h_taskbars_list:
-                GLib.timeout_add(0, item.refresh)
+                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
 
             for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh)
@@ -198,8 +201,9 @@ def hypr_watcher():
             continue
 
         if event_name in ["changefloatingmode", "closewindow"]:
+            monitors, workspaces, clients, activewindow = h_taskbar_get_all()
             for item in common.h_taskbars_list:
-                GLib.timeout_add(0, item.refresh)
+                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
 
             for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh)
@@ -296,11 +300,14 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                     panel["layer"] = "top"  # or context menu will remain invisible
                 if his:
                     check_key(panel["hyprland-taskbar"], "all-outputs", False)
+                    monitors, workspaces, clients, activewindow = h_taskbar_get_all()
                     if panel["hyprland-taskbar"]["all-outputs"] or "output" not in panel:
-                        taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"], icons_path=icons_path)
+                        taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"], monitors, workspaces,
+                                                  clients, activewindow, icons_path=icons_path)
                     else:
-                        taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"],
-                                                  display_name="{}".format(panel["output"]), icons_path=icons_path)
+                        taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"], monitors, workspaces,
+                                                  clients, activewindow, display_name="{}".format(panel["output"]),
+                                                  icons_path=icons_path)
 
                     common.h_taskbars_list.append(taskbar)
                     container.pack_start(taskbar, False, False, panel["items-padding"])
