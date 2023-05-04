@@ -44,14 +44,14 @@ class HyprlandTaskbar(Gtk.Box):
 
         self.refresh(monitors, workspaces, clients, activewindow)
 
-    def list_monitors(self, monitors):
+    def parse_monitors(self, monitors):
         self.monitors = monitors
         self.active_workspaces = []
         for m in self.monitors:
             self.mon_id2name[m["id"]] = m["name"]
             self.active_workspaces.append(m["activeWorkspace"]["id"])
 
-    def list_workspaces(self, ws):
+    def parse_workspaces(self, ws):
         self.ws_nums = []
         self.workspaces = {}
         for item in ws:
@@ -59,21 +59,17 @@ class HyprlandTaskbar(Gtk.Box):
             self.workspaces[item["id"]] = item
         self.ws_nums.sort()
 
-    def list_clients(self, all_clients):
+    def parse_clients(self, all_clients):
         self.clients = []
         for c in all_clients:
             if c["monitor"] >= 0:
                 if (self.mon_id2name[c["monitor"]] == self.display_name) or self.settings["all-outputs"]:
                     self.clients.append(c)
 
-    # def get_activewindow(self):
-    #     output = hyprctl("j/activewindow")
-    #     self.activewindow = json.loads(output)
-
     def refresh(self, monitors, workspaces, clients, activewindow):
-        self.list_monitors(monitors)
-        self.list_workspaces(workspaces)
-        self.list_clients(clients)
+        self.parse_monitors(monitors)
+        self.parse_workspaces(workspaces)
+        self.parse_clients(clients)
         self.activewindow = activewindow
         for item in self.get_children():
             item.destroy()
