@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-import json
 
 from gi.repository import Gtk, Gdk
 
 from nwg_panel.tools import hyprctl, update_image, update_image_fallback_desktop
 
+
 class HyprlandTaskbar(Gtk.Box):
-    def __init__(self, settings, position, display_name="", icons_path=""):
+    def __init__(self, settings, position, monitors, workspaces, clients, activewindow, display_name="", icons_path=""):
         defaults = {
             "workspace-clickable": False,
             "name-max-len": 24,
@@ -31,29 +31,26 @@ class HyprlandTaskbar(Gtk.Box):
 
         self.monitors = None
         self.mon_id2name = {}
-        self.active_workspaces = []
+        self.active_workspaces = None
         self.clients = None
-        self.ws_nums = []
-        self.workspaces = {}
+        self.ws_nums = None
+        self.workspaces = None
+        self.activewindow = None
 
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=settings["workspaces-spacing"])
         if self.settings["angle"] != 0.0:
             self.set_orientation(Gtk.Orientation.VERTICAL)
 
-        self.list_monitors()
-        self.refresh()
+        self.refresh(monitors, workspaces, clients, activewindow)
 
-    def list_monitors(self):
-        output = hyprctl("j/monitors")
-        self.monitors = json.loads(output)
+    def parse_monitors(self, monitors):
+        self.monitors = monitors
         self.active_workspaces = []
         for m in self.monitors:
             self.mon_id2name[m["id"]] = m["name"]
             self.active_workspaces.append(m["activeWorkspace"]["id"])
 
-    def list_workspaces(self):
-        output = hyprctl("j/workspaces")
-        ws = json.loads(output)
+    def parse_workspaces(self, ws):
         self.ws_nums = []
         self.workspaces = {}
         for item in ws:
@@ -61,24 +58,18 @@ class HyprlandTaskbar(Gtk.Box):
             self.workspaces[item["id"]] = item
         self.ws_nums.sort()
 
-    def list_clients(self):
-        output = hyprctl("j/clients")
-        all_clients = json.loads(output)
+    def parse_clients(self, all_clients):
         self.clients = []
         for c in all_clients:
             if c["monitor"] >= 0:
                 if (self.mon_id2name[c["monitor"]] == self.display_name) or self.settings["all-outputs"]:
                     self.clients.append(c)
 
-    def get_activewindow(self):
-        output = hyprctl("j/activewindow")
-        self.activewindow = json.loads(output)
-
-    def refresh(self):
-        self.list_monitors()
-        self.list_workspaces()
-        self.list_clients()
-        self.get_activewindow()
+    def refresh(self, monitors, workspaces, clients, activewindow):
+        self.parse_monitors(monitors)
+        self.parse_workspaces(workspaces)
+        self.parse_clients(clients)
+        self.activewindow = activewindow
         for item in self.get_children():
             item.destroy()
         self.build_box()

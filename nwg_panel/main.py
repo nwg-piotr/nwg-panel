@@ -85,7 +85,7 @@ if his:
     from nwg_panel.modules.hyprland_taskbar import HyprlandTaskbar
     from nwg_panel.modules.hyprland_workspaces import HyprlandWorkspaces
 last_client_addr = ""
-last_client_details = ""
+last_client_title = ""
 
 common_settings = {}
 restart_cmd = ""
@@ -149,60 +149,73 @@ def hypr_watcher():
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     client.connect("/tmp/hypr/{}/.socket2.sock".format(his))
 
-    global last_client_addr, last_client_details
-    client_addr, client_details = None, None
+    global last_client_addr, last_client_title
+    client_addr, client_title = None, None
 
     while True:
         datagram = client.recv(2048)
         e_full_string = datagram.decode('utf-8').strip()
         # eprint("Event: {}".format(e_full_string))
 
-        # remember client address (string) for further event filtering
+        # remember client address & title (string) for further event filtering
         if e_full_string.startswith("activewindow>>"):
             lines = e_full_string.splitlines()
             for line in lines:
                 if line.startswith("activewindowv2"):
                     client_addr = e_full_string.split(">>")[1].strip()
                 elif line.startswith("activewindow>>"):
-                    client_details = line.split(">>")[1]
+                    client_title = line.split(">>")[1].strip()
 
         event_name = e_full_string.split(">>")[0]
 
-        if event_name == "monitoradded":
+        if event_name in ["monitoradded", "openwindow"]:
+            monitors, workspaces, clients, activewindow = h_modules_get_all()
             for item in common.h_taskbars_list:
-                GLib.timeout_add(0, item.list_monitors)
-
-        if event_name == "focusedmon":
-            for item in common.h_workspaces_list:
-                GLib.timeout_add(0, item.refresh)
+                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
+            last_client_title = client_title
+            last_client_addr = client_addr
             continue
 
-        if event_name == "activewindow" and client_details != last_client_details:
+        if event_name == "focusedmon":
+            monitors, workspaces, clients, activewindow = h_modules_get_all()
+            for item in common.h_workspaces_list:
+                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
+            last_client_title = client_title
+            last_client_addr = client_addr
+            continue
+
+        if event_name == "activewindow" and client_title != last_client_title:
+            monitors, workspaces, clients, activewindow = h_modules_get_all()
             for item in common.h_taskbars_list:
-                GLib.timeout_add(0, item.refresh)
+                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
 
             for item in common.h_workspaces_list:
-                GLib.timeout_add(0, item.refresh)
+                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
 
-            last_client_details = client_details
+            last_client_title = client_title
             continue
 
         if event_name == "activewindowv2" and client_addr != last_client_addr:
+            monitors, workspaces, clients, activewindow = h_modules_get_all()
             for item in common.h_taskbars_list:
-                GLib.timeout_add(0, item.refresh)
+                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
 
             for item in common.h_workspaces_list:
-                GLib.timeout_add(0, item.refresh)
+                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
 
             last_client_addr = client_addr
             continue
 
         if event_name in ["changefloatingmode", "closewindow"]:
+            monitors, workspaces, clients, activewindow = h_modules_get_all()
             for item in common.h_taskbars_list:
-                GLib.timeout_add(0, item.refresh)
+                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
 
             for item in common.h_workspaces_list:
-                GLib.timeout_add(0, item.refresh)
+                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
+
+            last_client_addr = ""
+            last_client_title = ""
 
 
 def on_i3ipc_event(i3conn, event):
@@ -237,6 +250,12 @@ def instantiate_content(panel, container, content_list, icons_path=""):
     check_key(panel, "position", "top")
     check_key(panel, "items-padding", 0)
 
+    # list initial data for Hyprland modules
+    if "hyprland-workspaces" in content_list or "hyprland-taskbar" in content_list:
+        monitors, workspaces, clients, activewindow = h_modules_get_all()
+    else:
+        monitors, workspaces, clients, activewindow = {}, {}, {}, {}
+
     for item in content_list:
         if item == "sway-taskbar":
             if "sway-taskbar" in panel:
@@ -265,17 +284,6 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             else:
                 eprint("'sway-workspaces' ignored")
 
-        if item == "hyprland-workspaces":
-            if his:
-                if "hyprland-workspaces" in panel:
-                    workspaces = HyprlandWorkspaces(panel["hyprland-workspaces"], icons_path=icons_path)
-                    container.pack_start(workspaces, False, False, panel["items-padding"])
-                    common.h_workspaces_list.append(workspaces)
-                else:
-                    print("'hyprland-workspaces' not defined in this panel instance")
-            else:
-                eprint("'hyprland-workspaces' ignored")
-
         if item == "scratchpad":
             if sway:
                 # Added in v0.1.3, so may be undefined in user's config.
@@ -297,15 +305,29 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 if his:
                     check_key(panel["hyprland-taskbar"], "all-outputs", False)
                     if panel["hyprland-taskbar"]["all-outputs"] or "output" not in panel:
-                        taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"], icons_path=icons_path)
+                        taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"], monitors, workspaces,
+                                                  clients, activewindow, icons_path=icons_path)
                     else:
-                        taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"],
-                                                  display_name="{}".format(panel["output"]), icons_path=icons_path)
+                        taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"], monitors, workspaces,
+                                                  clients, activewindow, display_name="{}".format(panel["output"]),
+                                                  icons_path=icons_path)
 
                     common.h_taskbars_list.append(taskbar)
                     container.pack_start(taskbar, False, False, panel["items-padding"])
                 else:
                     eprint("'hyprland-taskbar' ignored (HIS unknown).")
+
+        if item == "hyprland-workspaces":
+            if his:
+                if "hyprland-workspaces" in panel:
+                    workspaces = HyprlandWorkspaces(panel["hyprland-workspaces"], monitors, workspaces, clients,
+                                                    activewindow, icons_path=icons_path)
+                    container.pack_start(workspaces, False, False, panel["items-padding"])
+                    common.h_workspaces_list.append(workspaces)
+                else:
+                    print("'hyprland-workspaces' not defined in this panel instance")
+            else:
+                eprint("'hyprland-workspaces' ignored")
 
         if "button-" in item:
             if item in panel:

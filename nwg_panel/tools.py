@@ -745,6 +745,7 @@ def load_shell_data():
 
     return shell_data
 
+
 def hyprctl(cmd, buf_size=20480):
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     s.connect("/tmp/hypr/{}/.socket.sock".format(os.getenv("HYPRLAND_INSTANCE_SIGNATURE")))
@@ -754,3 +755,43 @@ def hyprctl(cmd, buf_size=20480):
     s.close()
 
     return output
+
+
+def h_list_monitors():
+    reply = hyprctl("j/monitors")
+    try:
+        return json.loads(reply)
+    except Exception as e:
+        eprint(e)
+        return {}
+
+
+def h_list_workspaces():
+    reply = hyprctl("j/workspaces")
+    try:
+        return json.loads(reply)
+    except Exception as e:
+        eprint(e)
+        return {}
+
+
+def h_list_clients():
+    reply = hyprctl("j/clients")
+    try:
+        return json.loads(reply)
+    except Exception as e:
+        eprint(e)
+        return {}
+
+
+def h_get_activewindow():
+    reply = hyprctl("j/activewindow")
+    try:
+        return json.loads(reply)
+    except Exception as e:
+        eprint(e)
+        return {}
+
+
+def h_modules_get_all():
+    return h_list_monitors(), h_list_workspaces(), h_list_clients(), h_get_activewindow()

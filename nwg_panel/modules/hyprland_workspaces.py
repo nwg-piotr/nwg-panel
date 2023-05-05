@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import json
 
 from gi.repository import Gtk, Gdk
 
@@ -7,7 +6,7 @@ from nwg_panel.tools import check_key, update_image_fallback_desktop, hyprctl
 
 
 class HyprlandWorkspaces(Gtk.Box):
-    def __init__(self, settings, icons_path):
+    def __init__(self, settings, monitors, workspaces, clients, activewindow, icons_path):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.settings = settings
         self.num_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
@@ -22,7 +21,7 @@ class HyprlandWorkspaces(Gtk.Box):
         self.build_box()
         update_image_fallback_desktop(self.floating_icon, "view-dual-symbolic", self.settings["image-size"],
                                       self.icons_path)
-        self.refresh()
+        self.refresh(monitors, workspaces, clients, activewindow)
 
     def build_box(self):
         check_key(self.settings, "num-ws", 10)
@@ -87,13 +86,7 @@ class HyprlandWorkspaces(Gtk.Box):
 
         return eb, lbl
 
-    def refresh(self):
-        output = hyprctl("j/workspaces")
-        workspaces = json.loads(output)
-
-        output = hyprctl("j/clients")
-        clients = json.loads(output)
-
+    def refresh(self, monitors, workspaces, clients, activewindow):
         occupied_workspaces = []
         self.ws_id2name = {}
 
@@ -109,22 +102,17 @@ class HyprlandWorkspaces(Gtk.Box):
         for c in self.num_box.get_children():
             c.destroy()
 
-        output = hyprctl("j/activewindow")
-        active_window = json.loads(output)
-
-        if active_window:
-            client_class = active_window["class"]
-            client_title = active_window["title"][:self.settings["name-length"]]
-            if self.settings["mark-xwayland"] and active_window["xwayland"]:
+        if activewindow:
+            client_class = activewindow["class"]
+            client_title = activewindow["title"][:self.settings["name-length"]]
+            if self.settings["mark-xwayland"] and activewindow["xwayland"]:
                 client_title = "X|{}".format(client_title)
-            floating = active_window["floating"]
-            active_ws = active_window["workspace"]["id"]
+            floating = activewindow["floating"]
+            active_ws = activewindow["workspace"]["id"]
         else:
             client_class = ""
             client_title = ""
             floating = False
-            output = hyprctl("j/monitors")
-            monitors = json.loads(output)
             for m in monitors:
                 if m["focused"]:
                     active_ws = m["activeWorkspace"]["id"]
