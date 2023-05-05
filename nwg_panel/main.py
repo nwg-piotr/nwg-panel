@@ -85,7 +85,7 @@ if his:
     from nwg_panel.modules.hyprland_taskbar import HyprlandTaskbar
     from nwg_panel.modules.hyprland_workspaces import HyprlandWorkspaces
 last_client_addr = ""
-last_client_details = ""
+last_client_title = ""
 
 common_settings = {}
 restart_cmd = ""
@@ -149,8 +149,8 @@ def hypr_watcher():
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     client.connect("/tmp/hypr/{}/.socket2.sock".format(his))
 
-    global last_client_addr, last_client_details
-    client_addr, client_details = None, None
+    global last_client_addr, last_client_title
+    client_addr, client_title = None, None
 
     while True:
         datagram = client.recv(2048)
@@ -164,22 +164,24 @@ def hypr_watcher():
                 if line.startswith("activewindowv2"):
                     client_addr = e_full_string.split(">>")[1].strip()
                 elif line.startswith("activewindow>>"):
-                    client_details = line.split(">>")[1]
+                    client_title = line.split(">>")[1]
 
         event_name = e_full_string.split(">>")[0]
 
-        if event_name == "monitoradded":
+        if event_name in ["monitoradded", "openwindow"]:
             monitors, workspaces, clients, activewindow = h_modules_get_all()
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
+            continue
 
         if event_name == "focusedmon":
             monitors, workspaces, clients, activewindow = h_modules_get_all()
             for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
+            last_client_title = ""
             continue
 
-        if event_name == "activewindow" and client_details != last_client_details:
+        if event_name == "activewindow" and client_title != last_client_title:
             monitors, workspaces, clients, activewindow = h_modules_get_all()
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
@@ -187,7 +189,7 @@ def hypr_watcher():
             for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
 
-            last_client_details = client_details
+            last_client_title = client_title
             continue
 
         if event_name == "activewindowv2" and client_addr != last_client_addr:
@@ -208,6 +210,8 @@ def hypr_watcher():
 
             for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
+
+            last_client_title = ""
 
 
 def on_i3ipc_event(i3conn, event):
