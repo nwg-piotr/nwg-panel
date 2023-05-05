@@ -157,14 +157,14 @@ def hypr_watcher():
         e_full_string = datagram.decode('utf-8').strip()
         # eprint("Event: {}".format(e_full_string))
 
-        # remember client address (string) for further event filtering
+        # remember client address & title (string) for further event filtering
         if e_full_string.startswith("activewindow>>"):
             lines = e_full_string.splitlines()
             for line in lines:
                 if line.startswith("activewindowv2"):
                     client_addr = e_full_string.split(">>")[1].strip()
                 elif line.startswith("activewindow>>"):
-                    client_title = line.split(">>")[1]
+                    client_title = line.split(">>")[1].strip()
 
         event_name = e_full_string.split(">>")[0]
 
@@ -172,13 +172,16 @@ def hypr_watcher():
             monitors, workspaces, clients, activewindow = h_modules_get_all()
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
+            last_client_title = client_title
+            last_client_addr = client_addr
             continue
 
         if event_name == "focusedmon":
             monitors, workspaces, clients, activewindow = h_modules_get_all()
             for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
-            last_client_title = ""
+            last_client_title = client_title
+            last_client_addr = client_addr
             continue
 
         if event_name == "activewindow" and client_title != last_client_title:
@@ -211,6 +214,7 @@ def hypr_watcher():
             for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
 
+            last_client_addr = ""
             last_client_title = ""
 
 
