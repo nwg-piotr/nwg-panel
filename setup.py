@@ -8,7 +8,7 @@ def read(f_name):
 
 setup(
     name='nwg-panel',
-    version='0.9.1',
+    version='0.9.2',
     description='GTK3-based panel for sway and Hyprland Wayland compositors',
     packages=find_packages(),
     include_package_data=True,
