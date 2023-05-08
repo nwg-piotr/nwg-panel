@@ -172,6 +172,7 @@ class Clock(Gtk.EventBox):
         GtkLayerShell.init_for_window(self.popup)
         GtkLayerShell.set_layer(self.popup, GtkLayerShell.Layer.TOP)
         GtkLayerShell.set_keyboard_interactivity(self.popup, True)
+        GtkLayerShell.set_keyboard_mode(self.popup, GtkLayerShell.KeyboardMode.NONE)
 
         if self.settings["calendar-placement"] in ["top-left", "top", "top-right"]:
             GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.TOP, 1)
