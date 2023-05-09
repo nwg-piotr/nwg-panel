@@ -138,6 +138,7 @@ SKELETON_PANEL: dict = {
         "name-length": 40,
         "mark-autotiling": True,
         "mark-content": True,
+        "hide-empty": False,
         "show-layout": True
     },
     "hyprland-workspaces": {
@@ -1900,6 +1901,7 @@ class EditorWrapper(object):
             "name-length": 40,
             "mark-autotiling": True,
             "mark-content": True,
+            "hide-empty": False,
             "show-layout": True,
             "angle": 0.0
         }
@@ -1968,6 +1970,10 @@ class EditorWrapper(object):
         self.ws_show_layout.set_label(voc["show-layout"])
         self.ws_show_layout.set_active(settings["show-layout"])
 
+        self.ws_hide_empty = builder.get_object("hide-empty")
+        self.ws_hide_empty.set_label(voc["hide-empty-ws"])
+        self.ws_hide_empty.set_active(settings["hide-empty"])
+
         self.ws_angle = builder.get_object("angle")
         self.ws_angle.set_tooltip_text(voc["angle-tooltip"])
         self.ws_angle.set_active_id(str(settings["angle"]))
@@ -2010,6 +2016,10 @@ class EditorWrapper(object):
         val = self.ws_mark_content.get_active()
         if val is not None:
             settings["mark-content"] = val
+
+        val = self.ws_hide_empty.get_active()
+        if val is not None:
+            settings["hide-empty"] = val
 
         val = self.ws_show_layout.get_active()
         if val is not None:
