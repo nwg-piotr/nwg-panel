@@ -1329,7 +1329,6 @@ class EditorWrapper(object):
 
         save_json(self.config, self.file)
 
-
     def edit_hyprland_taskbar(self, *args):
         self.load_panel()
         self.edited = "sway-taskbar"
@@ -1446,9 +1445,7 @@ class EditorWrapper(object):
 
         try:
             settings["angle"] = float(self.sb_angle.get_active_id())
-            print(">>>", settings["angle"])
         except Exception as e:
-            print(">>>", e)
             settings["angle"] = 0.0
 
         save_json(self.config, self.file)
