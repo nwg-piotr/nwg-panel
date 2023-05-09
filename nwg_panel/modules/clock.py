@@ -171,11 +171,11 @@ class Clock(Gtk.EventBox):
         self.popup.connect("key-release-event", self.handle_keyboard)
         GtkLayerShell.init_for_window(self.popup)
         GtkLayerShell.set_layer(self.popup, GtkLayerShell.Layer.TOP)
-        GtkLayerShell.set_keyboard_interactivity(self.popup, True)
+        GtkLayerShell.set_keyboard_mode(self.popup, GtkLayerShell.KeyboardMode.ON_DEMAND)
 
         if self.settings["calendar-placement"] in ["top-left", "top", "top-right"]:
             GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.TOP, 1)
-        elif self.settings["calendar-placement"] in ["bottom-left", "bottom", "bottom-right"]:
+        elif self.settings["calendar-placement"] in ["bottom-left", "bottom", "bottodropm-right"]:
             GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.BOTTOM, 1)
 
         if self.settings["calendar-placement"] in ["top-left", "bottom-left"]:
