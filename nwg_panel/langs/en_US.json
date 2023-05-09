@@ -80,6 +80,7 @@
   "gust": "gust",
   "header-icon-size": "Header icon size",
   "height": "Height",
+  "hide-empty-ws": "Hide empty workspaces",
   "homogeneous": "Homogeneous",
   "homogeneous-tooltip": "Sets equal columns width be default if 'Modules center' not empty.",
   "horizontal-padding": "Horizontal padding",

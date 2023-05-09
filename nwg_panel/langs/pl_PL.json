@@ -80,6 +80,7 @@
   "gust": "w porywach",
   "header-icon-size": "Rozmiar ikony głównej",
   "height": "Wysokość",
+  "hide-empty-ws": "Ukryj puste obszary robocze",
   "homogeneous": "Jednorodny",
   "homogeneous-tooltip": "Ustawia domyślnie równą szerokość kolumn jeśli występują moduły środkowe.",
   "horizontal-padding": "Wypełnienie poziome",
