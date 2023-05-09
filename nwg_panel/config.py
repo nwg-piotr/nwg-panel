@@ -1319,7 +1319,6 @@ class EditorWrapper(object):
         settings["show-app-icon"] = self.ckb_show_app_icon.get_active()
         settings["show-app-name"] = self.ckb_show_app_name.get_active()
         settings["show-layout"] = self.ckb_show_layout.get_active()
-        settings["workspace-buttons"] = self.workspace_buttons.get_active()
         settings["mark-xwayland"] = self.ckb_mark_xwayland.get_active()
         settings["all-outputs"] = self.ckb_all_outputs.get_active()
 
@@ -1447,7 +1446,9 @@ class EditorWrapper(object):
 
         try:
             settings["angle"] = float(self.sb_angle.get_active_id())
-        except:
+            print(">>>", settings["angle"])
+        except Exception as e:
+            print(">>>", e)
             settings["angle"] = 0.0
 
         save_json(self.config, self.file)
