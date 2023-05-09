@@ -45,6 +45,7 @@ class SwayWorkspaces(Gtk.Box):
         check_key(self.settings, "angle", 0.0)
         if self.settings["angle"] != 0.0:
             self.set_orientation(Gtk.Orientation.VERTICAL)
+            self.num_box.set_orientation(Gtk.Orientation.VERTICAL)
 
         # prevent from #142
         ws_num = -1
