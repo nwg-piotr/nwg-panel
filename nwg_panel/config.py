@@ -1417,7 +1417,7 @@ class EditorWrapper(object):
         self.scrolled_window.add(frame)
 
     def update_hyprland_taskbar(self):
-        settings = self.panel["sway-taskbar"]
+        settings = self.panel["hyprland-taskbar"]
 
         val = self.sb_name_max_len.get_value()
         if val is not None:
