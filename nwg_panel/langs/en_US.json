@@ -114,6 +114,7 @@
   "margin-v": "Margin V",
   "mark-autotiling": "Mark autotiling",
   "mark-floating-win": "Mark floating window",
+  "mark-floating-pinned": "Mark floating & pinned",
   "mark-non-empty-ws": "Mark non-empty workspaces",
   "mark-xwayland": "Mark Xwayland",
   "menu-button-icon-size": "Menu button icon size",

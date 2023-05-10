@@ -114,6 +114,7 @@
   "margin-v": "Margines V",
   "mark-autotiling": "Oznacz autotiling",
   "mark-floating-win": "Oznacz pływające okno",
+  "mark-floating-pinned": "Oznacz pływające i przypięte",
   "mark-non-empty-ws": "Oznacz niepuste obszary robocze",
   "mark-xwayland": "Oznacz Xwayland",
   "menu-button-icon-size": "Rozmiar ikony przycisku menu",

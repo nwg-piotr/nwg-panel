@@ -1393,7 +1393,7 @@ class EditorWrapper(object):
         self.ckb_show_app_name.set_active(settings["show-app-name"])
 
         self.ckb_show_layout = builder.get_object("show-layout")
-        self.ckb_show_layout.set_label(voc["show-layout"])
+        self.ckb_show_layout.set_label(voc["mark-floating-pinned"])
         self.ckb_show_layout.set_active(settings["show-layout"])
 
         self.workspace_clickable = builder.get_object("workspace-clickable")
