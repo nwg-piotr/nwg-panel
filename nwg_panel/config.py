@@ -1203,7 +1203,7 @@ class EditorWrapper(object):
             "show-app-icon": True,
             "show-app-name": True,
             "show-layout": True,
-            "workspace-buttons": True,
+            "workspace-buttons": False,
             "all-workspaces": True,
             "mark-autotiling": True,
             "mark-xwayland": True,
@@ -1298,7 +1298,7 @@ class EditorWrapper(object):
         self.scrolled_window.add(frame)
 
     def update_sway_taskbar(self):
-        settings = self.panel["hyprland-taskbar"]
+        settings = self.panel["sway-taskbar"]
 
         val = self.sb_name_max_len.get_value()
         if val is not None:
@@ -1330,10 +1330,9 @@ class EditorWrapper(object):
 
         save_json(self.config, self.file)
 
-
     def edit_hyprland_taskbar(self, *args):
         self.load_panel()
-        self.edited = "sway-taskbar"
+        self.edited = "hyprland-taskbar"
         check_key(self.panel, "hyprland-taskbar", {})
         settings = self.panel["hyprland-taskbar"]
         defaults = {
@@ -1419,7 +1418,7 @@ class EditorWrapper(object):
         self.scrolled_window.add(frame)
 
     def update_hyprland_taskbar(self):
-        settings = self.panel["sway-taskbar"]
+        settings = self.panel["hyprland-taskbar"]
 
         val = self.sb_name_max_len.get_value()
         if val is not None:
@@ -1441,7 +1440,7 @@ class EditorWrapper(object):
         settings["show-app-name"] = self.ckb_show_app_name.get_active()
         settings["show-layout"] = self.ckb_show_layout.get_active()
         settings["workspace-clickable"] = self.workspace_clickable.get_active()
-        settings["mark-autotiling"] = self.ckb_mark_autotiling.get_active()
+        # settings["mark-autotiling"] = self.ckb_mark_autotiling.get_active()
         settings["mark-xwayland"] = self.ckb_mark_xwayland.get_active()
         settings["all-outputs"] = self.ckb_all_outputs.get_active()
 
