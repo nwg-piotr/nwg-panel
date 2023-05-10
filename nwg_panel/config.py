@@ -1331,7 +1331,7 @@ class EditorWrapper(object):
 
     def edit_hyprland_taskbar(self, *args):
         self.load_panel()
-        self.edited = "sway-taskbar"
+        self.edited = "hyprland-taskbar"
         check_key(self.panel, "hyprland-taskbar", {})
         settings = self.panel["hyprland-taskbar"]
         defaults = {
