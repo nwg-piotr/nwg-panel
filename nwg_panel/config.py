@@ -302,7 +302,7 @@ def build_common_settings_window():
 
     frame = Gtk.Frame()
     frame.set_label("  nwg-panel: Common settings  ")
-    frame.set_label_align(0.5)
+    frame.set_label_align(0.5, 0.5)
     vbox.pack_start(frame, True, True, 6)
 
     grid = Gtk.Grid()
@@ -3784,7 +3784,7 @@ class ControlsCustomItems(Gtk.Frame):
         self.grid = Gtk.Grid()
         self.grid.set_column_spacing(6)
         self.grid.set_row_spacing(6)
-        self.set_label_align(0.5)
+        self.set_label_align(0.5, 0.5)
         self.grid.set_property("margin", 6)
         self.add(self.grid)
         check_key(self.settings, "custom-items", [])
@@ -3943,7 +3943,7 @@ class ControlsUserMenu(Gtk.Frame):
         self.grid = Gtk.Grid()
         self.grid.set_column_spacing(10)
         self.grid.set_row_spacing(10)
-        self.set_label_align(0.5)
+        self.set_label_align(0.5, 0.5)
         self.grid.set_property("margin", 6)
         self.add(self.grid)
         check_key(self.settings, "menu", {})
