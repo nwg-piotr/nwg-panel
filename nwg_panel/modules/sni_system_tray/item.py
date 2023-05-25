@@ -57,25 +57,30 @@ class StatusNotifierItem(object):
 
     def item_available_handler(self, _observer):
         self.item_proxy = self.session_bus.get_proxy(self.service_name, self.object_path)
-        self.item_proxy.PropertiesChanged.connect(
-            lambda _if, changed, invalid: self.change_handler(list(changed), invalid)
-        )
-        self.item_proxy.NewTitle.connect(
-            lambda: self.change_handler(["Title"])
-        )
-        self.item_proxy.NewIcon.connect(
-            lambda: self.change_handler(["IconName", "IconPixmap"])
-        )
-        self.item_proxy.NewAttentionIcon.connect(
-            lambda: self.change_handler(["AttentionIconName", "AttentionIconPixmap"])
-        )
+        if hasattr(self.item_proxy, "PropertiesChanged"):
+            self.item_proxy.PropertiesChanged.connect(
+                lambda _if, changed, invalid: self.change_handler(list(changed), invalid)
+            )
+        if hasattr(self.item_proxy, 'NewTitle'):
+            self.item_proxy.NewTitle.connect(
+                lambda: self.change_handler(["Title"])
+            )
+        if hasattr(self.item_proxy, 'NewIcon'):
+            self.item_proxy.NewIcon.connect(
+                lambda: self.change_handler(["IconName", "IconPixmap"])
+            )
+        if hasattr(self.item_proxy, 'NewAttentionIcon'):
+            self.item_proxy.NewAttentionIcon.connect(
+                lambda: self.change_handler(["AttentionIconName", "AttentionIconPixmap"])
+            )
         if hasattr(self.item_proxy, "NewIconThemePath"):
             self.item_proxy.NewIconThemePath.connect(
                 lambda _icon_theme_path: self.change_handler(["IconThemePath"])
             )
-        self.item_proxy.NewStatus.connect(
-            lambda _status: self.change_handler(["Status"])
-        )
+        if hasattr(self.item_proxy, "NewStatus"):
+            self.item_proxy.NewStatus.connect(
+                lambda _status: self.change_handler(["Status"])
+            )
         for name in PROPERTIES:
             try:
                 self.properties[name] = getattr(self.item_proxy, name)
