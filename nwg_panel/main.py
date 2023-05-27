@@ -8,6 +8,7 @@ Copyright (c) 2021-2023 Piotr Miller & Contributors
 License: MIT
 """
 import argparse
+import os
 import signal
 import sys
 import threading
@@ -251,10 +252,11 @@ def instantiate_content(panel, container, content_list, icons_path=""):
     check_key(panel, "items-padding", 0)
 
     # list initial data for Hyprland modules
-    if "hyprland-workspaces" in content_list or "hyprland-taskbar" in content_list:
-        monitors, workspaces, clients, activewindow = h_modules_get_all()
-    else:
-        monitors, workspaces, clients, activewindow = {}, {}, {}, {}
+    if his:
+        if "hyprland-workspaces" in content_list or "hyprland-taskbar" in content_list:
+            monitors, workspaces, clients, activewindow = h_modules_get_all()
+        else:
+            monitors, workspaces, clients, activewindow = {}, {}, {}, {}
 
     for item in content_list:
         if item == "sway-taskbar":
