@@ -8,7 +8,7 @@
     <property name="label-xalign">0.5</property>
     <property name="shadow-type">out</property>
     <child>
-      <!-- n-columns=3 n-rows=9 -->
+      <!-- n-columns=3 n-rows=10 -->
       <object class="GtkGrid" id="grid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -150,34 +150,6 @@
           </packing>
         </child>
         <child>
-          <object class="GtkCheckButton" id="workspace-clickable">
-            <property name="label" translatable="yes">Workspaces clickable</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="halign">start</property>
-            <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">7</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkCheckButton" id="mark-xwayland">
-            <property name="label" translatable="yes">Mark Xwayland</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="halign">start</property>
-            <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">6</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkCheckButton" id="all-outputs">
             <property name="label" translatable="yes">All outputs</property>
             <property name="visible">True</property>
@@ -205,7 +177,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
-            <property name="top-attach">8</property>
+            <property name="top-attach">9</property>
           </packing>
         </child>
         <child>
@@ -217,8 +189,56 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
+            <property name="top-attach">9</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="workspace-clickable">
+            <property name="label" translatable="yes">Workspaces clickable</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
             <property name="top-attach">8</property>
           </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="mark-xwayland">
+            <property name="label" translatable="yes">Mark Xwayland</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">7</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="show-app-name-special">
+            <property name="label" translatable="yes">Show name on special workspace</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">6</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>
