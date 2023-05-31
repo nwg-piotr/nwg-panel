@@ -1202,7 +1202,6 @@ class EditorWrapper(object):
             "task-padding": 0,
             "show-app-icon": True,
             "show-app-name": True,
-            "show-app-name-special": False,
             "show-layout": True,
             "workspace-buttons": False,
             "all-workspaces": True,
@@ -1266,10 +1265,6 @@ class EditorWrapper(object):
         self.ckb_show_app_name.set_label(voc["show-name"])
         self.ckb_show_app_name.set_active(settings["show-app-name"])
 
-        self.ckb_show_app_name_special = builder.get_object("show-app-name-special")
-        self.ckb_show_app_name_special.set_label(voc["show-name-on-special"])
-        self.ckb_show_app_name_special.set_active(settings["show-app-name-special"])
-
         self.ckb_show_layout = builder.get_object("show-layout")
         self.ckb_show_layout.set_label(voc["show-layout"])
         self.ckb_show_layout.set_active(settings["show-layout"])
@@ -1323,7 +1318,6 @@ class EditorWrapper(object):
 
         settings["show-app-icon"] = self.ckb_show_app_icon.get_active()
         settings["show-app-name"] = self.ckb_show_app_name.get_active()
-        settings["show-app-name-special"] = self.ckb_show_app_name_special.get_active()
         settings["show-layout"] = self.ckb_show_layout.get_active()
         settings["workspace-buttons"] = self.workspace_buttons.get_active()
         settings["mark-xwayland"] = self.ckb_mark_xwayland.get_active()
@@ -1348,6 +1342,7 @@ class EditorWrapper(object):
             "client-padding": 0,
             "show-app-icon": True,
             "show-app-name": True,
+            "show-app-name-special": False,
             "show-layout": True,
             "all-outputs": False,
             "mark-xwayland": True,
@@ -1399,6 +1394,10 @@ class EditorWrapper(object):
         self.ckb_show_app_name.set_label(voc["show-name"])
         self.ckb_show_app_name.set_active(settings["show-app-name"])
 
+        self.ckb_show_app_name_special = builder.get_object("show-app-name-special")
+        self.ckb_show_app_name_special.set_label(voc["show-name-on-special"])
+        self.ckb_show_app_name_special.set_active(settings["show-app-name-special"])
+
         self.ckb_show_layout = builder.get_object("show-layout")
         self.ckb_show_layout.set_label(voc["mark-floating-pinned"])
         self.ckb_show_layout.set_active(settings["show-layout"])
@@ -1444,6 +1443,7 @@ class EditorWrapper(object):
 
         settings["show-app-icon"] = self.ckb_show_app_icon.get_active()
         settings["show-app-name"] = self.ckb_show_app_name.get_active()
+        settings["show-app-name-special"] = self.ckb_show_app_name_special.get_active()
         settings["show-layout"] = self.ckb_show_layout.get_active()
         settings["workspace-clickable"] = self.workspace_clickable.get_active()
         # settings["mark-autotiling"] = self.ckb_mark_autotiling.get_active()
