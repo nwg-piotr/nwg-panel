@@ -232,10 +232,8 @@ the horizontal, in degrees, measured counterclockwise</property>
           <packing>
             <property name="left-attach">1</property>
             <property name="top-attach">6</property>
+            <property name="width">2</property>
           </packing>
-        </child>
-        <child>
-          <placeholder/>
         </child>
         <child>
           <placeholder/>
