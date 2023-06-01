@@ -59,17 +59,17 @@ class HyprlandTaskbar(Gtk.Box):
             self.workspaces[item["id"]] = item
         self.ws_nums.sort()
 
-    def parse_clients(self, all_clients):
-        self.clients = []
-        for c in all_clients:
-            if c["monitor"] >= 0:
-                if (self.mon_id2name[c["monitor"]] == self.display_name) or self.settings["all-outputs"]:
-                    self.clients.append(c)
+    # def parse_clients(self, all_clients):
+    #     self.clients = []
+    #     for c in all_clients:
+    #         if c["monitor"] >= 0:
+    #             if (self.mon_id2name[c["monitor"]] == self.display_name) or self.settings["all-outputs"]:
+    #               self.clients.append(c)
 
     def refresh(self, monitors, workspaces, clients, activewindow):
         self.parse_monitors(monitors)
         self.parse_workspaces(workspaces)
-        self.parse_clients(clients)
+        self.clients = clients
         self.activewindow = activewindow
         for item in self.get_children():
             item.destroy()
@@ -84,10 +84,10 @@ class HyprlandTaskbar(Gtk.Box):
             self.pack_start(ws_box, False, False, 0)
             if self.workspaces[ws_num]["monitor"] == self.display_name or self.settings["all-outputs"]:
                 eb = Gtk.EventBox()
-                if self.settings["workspace-clickable"]:
-                    eb.connect('enter-notify-event', on_enter_notify_event)
-                    eb.connect('leave-notify-event', on_leave_notify_event)
-                    eb.connect('button-press-event', self.on_ws_click, ws_num)
+                # if self.settings["workspace-clickable"]:
+                #     eb.connect('enter-notify-event', on_enter_notify_event)
+                #     eb.connect('leave-notify-event', on_leave_notify_event)
+                #     eb.connect('button-press-event', self.on_ws_click, ws_num)
 
                 ws_box.pack_start(eb, False, False, 6)
                 lbl = Gtk.Label()
@@ -111,7 +111,7 @@ class HyprlandTaskbar(Gtk.Box):
         self.show_all()
 
     def on_ws_click(self, widget, event, ws_num):
-        hyprctl("dispatch workspace {}".format(ws_num))
+        hyprctl("dispatch workspace name:{}".format(ws_num))
 
 
 def on_enter_notify_event(widget, event):
