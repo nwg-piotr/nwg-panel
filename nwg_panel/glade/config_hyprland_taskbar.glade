@@ -8,7 +8,7 @@
     <property name="label-xalign">0.5</property>
     <property name="shadow-type">out</property>
     <child>
-      <!-- n-columns=3 n-rows=10 -->
+      <!-- n-columns=3 n-rows=9 -->
       <object class="GtkGrid" id="grid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -164,49 +164,6 @@
           </packing>
         </child>
         <child>
-          <object class="GtkComboBoxText" id="angle">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">the angle that the baseline of the label makes with 
-the horizontal, in degrees, measured counterclockwise</property>
-            <items>
-              <item id="0.0" translatable="yes">0°</item>
-              <item id="90.0" translatable="yes">90°</item>
-              <item id="270.0" translatable="yes">270°</item>
-            </items>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">9</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="lbl-angle">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="halign">end</property>
-            <property name="label" translatable="yes">Angle:</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">9</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkCheckButton" id="workspace-clickable">
-            <property name="label" translatable="yes">Workspaces clickable</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="halign">start</property>
-            <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">8</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkCheckButton" id="mark-xwayland">
             <property name="label" translatable="yes">Mark Xwayland</property>
             <property name="visible">True</property>
@@ -236,10 +193,33 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkComboBoxText" id="angle">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">the angle that the baseline of the label makes with 
+the horizontal, in degrees, measured counterclockwise</property>
+            <items>
+              <item id="0.0" translatable="yes">0°</item>
+              <item id="90.0" translatable="yes">90°</item>
+              <item id="270.0" translatable="yes">270°</item>
+            </items>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">8</property>
+          </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkLabel" id="lbl-angle">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Angle:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">8</property>
+          </packing>
         </child>
         <child>
           <placeholder/>

@@ -8,7 +8,6 @@ from nwg_panel.tools import hyprctl, update_image, update_image_fallback_desktop
 class HyprlandTaskbar(Gtk.Box):
     def __init__(self, settings, position, monitors, workspaces, clients, activewindow, display_name="", icons_path=""):
         defaults = {
-            "workspace-clickable": False,
             "name-max-len": 24,
             "image-size": 16,
             "workspaces-spacing": 0,
