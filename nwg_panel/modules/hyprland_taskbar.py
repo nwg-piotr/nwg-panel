@@ -96,14 +96,12 @@ class HyprlandTaskbar(Gtk.Box):
                 else:
                     lbl.set_text("{}:".format(self.workspaces[ws_num]["name"]))
                 eb.add(lbl)
-                # Client on special workspace
-                on_special = self.workspaces[ws_num]["name"] == "special"
                 cl_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 ws_box.pack_start(cl_box, False, False, 0)
                 for client in self.clients:
                     # if client["title"] prevents from creation of ghost client boxes
                     if client["title"] and client["workspace"]["id"] == ws_num:
-                        client_box = ClientBox(self.settings, client, self.position, self.icons_path, on_special)
+                        client_box = ClientBox(self.settings, client, self.position, self.icons_path)
                         if self.activewindow and client["address"] == self.activewindow["address"]:
                             client_box.box.set_property("name", "task-box-focused")
                         else:
@@ -127,7 +125,7 @@ def on_leave_notify_event(widget, event):
 
 
 class ClientBox(Gtk.EventBox):
-    def __init__(self, settings, client, position, icons_path, on_special=False):
+    def __init__(self, settings, client, position, icons_path):
         self.position = position
         self.settings = settings
         self.address = client["address"]
@@ -140,20 +138,19 @@ class ClientBox(Gtk.EventBox):
 
         self.connect('enter-notify-event', on_enter_notify_event)
         self.connect('leave-notify-event', on_leave_notify_event)
-        if on_special:
+        if client["workspace"]["name"] == "special":
             self.connect('button-press-event', self.on_special)
         else:
             self.connect('button-press-event', self.on_click, client, self.box)
 
         if settings["show-app-icon"]:
             name = client["class"]
-
             image = Gtk.Image()
             update_image_fallback_desktop(image, name, settings["image-size"], icons_path)
             self.box.pack_start(image, False, False, 4)
 
         if settings["show-app-name"]:
-            if not on_special or settings["show-app-name-special"]:
+            if not client["workspace"]["name"] == "special" or settings["show-app-name-special"]:
                 lbl = Gtk.Label()
                 lbl.set_angle(self.settings["angle"])
                 name = client["title"][:settings["name-max-len"]]
