@@ -169,7 +169,7 @@ def hypr_watcher():
 
         event_name = e_full_string.split(">>")[0]
 
-        if event_name in ["monitoradded", "openwindow"]:
+        if event_name in ["monitoradded", "openwindow", "movewindow"]:
             monitors, workspaces, clients, activewindow = h_modules_get_all()
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
@@ -185,7 +185,7 @@ def hypr_watcher():
             last_client_addr = client_addr
             continue
 
-        if event_name == "activewindow" and client_title != last_client_title:
+        if event_name == "activewindow":
             monitors, workspaces, clients, activewindow = h_modules_get_all()
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)

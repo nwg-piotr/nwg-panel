@@ -8,13 +8,13 @@ from nwg_panel.tools import hyprctl, update_image, update_image_fallback_desktop
 class HyprlandTaskbar(Gtk.Box):
     def __init__(self, settings, position, monitors, workspaces, clients, activewindow, display_name="", icons_path=""):
         defaults = {
-            "workspace-clickable": False,
             "name-max-len": 24,
             "image-size": 16,
             "workspaces-spacing": 0,
             "client-padding": 0,
             "show-app-icon": True,
             "show-app-name": True,
+            "show-app-name-special": False,
             "show-layout": True,
             "all-outputs": False,
             "mark-xwayland": True,
@@ -58,17 +58,19 @@ class HyprlandTaskbar(Gtk.Box):
             self.workspaces[item["id"]] = item
         self.ws_nums.sort()
 
-    def parse_clients(self, all_clients):
-        self.clients = []
-        for c in all_clients:
-            if c["monitor"] >= 0:
-                if (self.mon_id2name[c["monitor"]] == self.display_name) or self.settings["all-outputs"]:
-                    self.clients.append(c)
+    # def parse_clients(self, all_clients):
+    #     self.clients = []
+    #     for c in all_clients:
+    #         if c["monitor"] >= 0:
+    #             if (self.mon_id2name[c["monitor"]] == self.display_name) or self.settings["all-outputs"]:
+    #               self.clients.append(c)
 
     def refresh(self, monitors, workspaces, clients, activewindow):
         self.parse_monitors(monitors)
         self.parse_workspaces(workspaces)
-        self.parse_clients(clients)
+        # Turned off due to https://github.com/hyprwm/Hyprland/issues/2413
+        # self.parse_clients(clients)
+        self.clients = clients
         self.activewindow = activewindow
         for item in self.get_children():
             item.destroy()
@@ -83,10 +85,10 @@ class HyprlandTaskbar(Gtk.Box):
             self.pack_start(ws_box, False, False, 0)
             if self.workspaces[ws_num]["monitor"] == self.display_name or self.settings["all-outputs"]:
                 eb = Gtk.EventBox()
-                if self.settings["workspace-clickable"]:
-                    eb.connect('enter-notify-event', on_enter_notify_event)
-                    eb.connect('leave-notify-event', on_leave_notify_event)
-                    eb.connect('button-press-event', self.on_ws_click, ws_num)
+                # if self.settings["workspace-clickable"]:
+                #     eb.connect('enter-notify-event', on_enter_notify_event)
+                #     eb.connect('leave-notify-event', on_leave_notify_event)
+                #     eb.connect('button-press-event', self.on_ws_click, ws_num)
 
                 ws_box.pack_start(eb, False, False, 6)
                 lbl = Gtk.Label()
@@ -110,7 +112,7 @@ class HyprlandTaskbar(Gtk.Box):
         self.show_all()
 
     def on_ws_click(self, widget, event, ws_num):
-        hyprctl("dispatch workspace {}".format(ws_num))
+        hyprctl("dispatch workspace name:{}".format(ws_num))
 
 
 def on_enter_notify_event(widget, event):
@@ -137,23 +139,26 @@ class ClientBox(Gtk.EventBox):
 
         self.connect('enter-notify-event', on_enter_notify_event)
         self.connect('leave-notify-event', on_leave_notify_event)
-        self.connect('button-press-event', self.on_click, client, self.box)
+        if client["workspace"]["name"] == "special":
+            self.connect('button-press-event', self.on_special)
+        else:
+            self.connect('button-press-event', self.on_click, client, self.box)
 
         if settings["show-app-icon"]:
             name = client["class"]
-
             image = Gtk.Image()
             update_image_fallback_desktop(image, name, settings["image-size"], icons_path)
             self.box.pack_start(image, False, False, 4)
 
         if settings["show-app-name"]:
-            lbl = Gtk.Label()
-            lbl.set_angle(self.settings["angle"])
-            name = client["title"][:settings["name-max-len"]]
-            if settings["mark-xwayland"] and client["xwayland"]:
-                name = "X|" + name
-            lbl.set_text(name)
-            self.box.pack_start(lbl, False, False, 6)
+            if not client["workspace"]["name"] == "special" or settings["show-app-name-special"]:
+                lbl = Gtk.Label()
+                lbl.set_angle(self.settings["angle"])
+                name = client["title"][:settings["name-max-len"]]
+                if settings["mark-xwayland"] and client["xwayland"]:
+                    name = "X|" + name
+                lbl.set_text(name)
+                self.box.pack_start(lbl, False, False, 6)
 
         if settings["show-layout"]:
             if client["pinned"]:
@@ -176,6 +181,9 @@ class ClientBox(Gtk.EventBox):
                 menu.popup_at_widget(popup_at_widget, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, None)
             else:
                 menu.popup_at_widget(popup_at_widget, Gdk.Gravity.NORTH, Gdk.Gravity.SOUTH, None)
+
+    def on_special(self, widget, event):
+        hyprctl('dispatch togglespecialworkspace ')
 
     def context_menu(self, client):
         menu = Gtk.Menu()
