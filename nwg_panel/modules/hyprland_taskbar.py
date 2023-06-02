@@ -68,6 +68,8 @@ class HyprlandTaskbar(Gtk.Box):
     def refresh(self, monitors, workspaces, clients, activewindow):
         self.parse_monitors(monitors)
         self.parse_workspaces(workspaces)
+        # Turned off due to https://github.com/hyprwm/Hyprland/issues/2413
+        # self.parse_clients(clients)
         self.clients = clients
         self.activewindow = activewindow
         for item in self.get_children():

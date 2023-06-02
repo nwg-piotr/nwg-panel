@@ -1439,7 +1439,6 @@ class EditorWrapper(object):
         settings["show-app-name"] = self.ckb_show_app_name.get_active()
         settings["show-app-name-special"] = self.ckb_show_app_name_special.get_active()
         settings["show-layout"] = self.ckb_show_layout.get_active()
-        # settings["mark-autotiling"] = self.ckb_mark_autotiling.get_active()
         settings["mark-xwayland"] = self.ckb_mark_xwayland.get_active()
         settings["all-outputs"] = self.ckb_all_outputs.get_active()
 
