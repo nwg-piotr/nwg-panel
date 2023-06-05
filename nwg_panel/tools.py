@@ -451,7 +451,7 @@ def get_volume():
         except Exception as e:
             eprint(e)
     else:
-        eprint("Couldn't get volume, 'pamixer' or 'pactl' not found")
+        eprint("Couldn't get volume, no 'pamixer' or 'pactl' found")
 
     return vol, muted
 
@@ -492,7 +492,7 @@ def list_sinks():
         except Exception as e:
             eprint(e)
     else:
-        eprint("Couldn't list sinks, 'pamixer' or 'pactl' not found")
+        eprint("Couldn't list sinks, no 'pamixer' or 'pactl' found")
 
     return sinks
 
