@@ -238,7 +238,7 @@
   "vertical-window-margin": "Pionowy margines okna",
   "visibility": "Widoczność",
   "volume": "Głośność",
-  "volume-tooltip": "Zależy od pakietu `pamixer`.",
+  "volume-tooltip": "Wymaga zainstalowanego polecenia `pamixer` lub `pactl`.",
   "weather-icons": "Ikonki pogody",
   "weatherbit-api-key": "Klucz API Weatherbit",
   "widget-css-name": "Nazwa CSS widżetu",
