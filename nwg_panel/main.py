@@ -159,7 +159,7 @@ def hypr_watcher():
         # eprint("Event: {}".format(e_full_string))
 
         # remember client address & title (string) for further event filtering
-        if e_full_string.startswith("activewindow>>"):
+        if e_full_string.startswith("activewindow"):
             lines = e_full_string.splitlines()
             for line in lines:
                 if line.startswith("activewindowv2"):
@@ -185,7 +185,7 @@ def hypr_watcher():
             last_client_addr = client_addr
             continue
 
-        if event_name == "activewindow":
+        if event_name == "activewindow" and client_title != last_client_title:
             monitors, workspaces, clients, activewindow = h_modules_get_all()
             for item in common.h_taskbars_list:
                 GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
