@@ -513,8 +513,10 @@ def toggle_mute(*args):
 def set_volume(percent):
     if nwg_panel.common.commands["pamixer"]:
         subprocess.call("pamixer --set-volume {}".format(percent).split())
+    elif nwg_panel.common.commands["pactl"]:
+        subprocess.call("pactl set-sink-volume 0 {}".format(percent).split())
     else:
-        eprint("Couldn't set volume, 'pamixer' not found")
+        eprint("Couldn't set volume, no 'pamixer' or 'pactl' found")
 
 
 def get_brightness(device="", controller=""):
