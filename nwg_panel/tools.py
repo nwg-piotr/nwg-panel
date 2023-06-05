@@ -454,8 +454,29 @@ def list_sinks():
                     sinks.append({"name": name, "desc": desc})
         except Exception as e:
             eprint(e)
+    if nwg_panel.common.commands["pactl"]:
+        try:
+            output = cmd2string("pactl list sinks")
+            if output:
+                lines = output.splitlines()
+                sink = {}
+                for line in lines:
+                    indent = line.count("\t")
+                    line = line.lstrip("\t")
+                    if indent == 0 and sink:
+                        sinks.append(sink)
+                        sink = {}
+                    elif indent == 1:
+                        if line.lower().startswith("name"):
+                            sink.update({"name": line.split(": ")[1]})
+                        elif line.lower().startswith("description"):
+                            sink.update({"desc": line.split(": ")[1]})
+                if sink:
+                    sinks.append(sink)
+        except Exception as e:
+            eprint(e)
     else:
-        eprint("Couldn't list sinks, 'pamixer' not found")
+        eprint("Couldn't list sinks, 'pamixer' or 'pactl' not found")
 
     return sinks
 
