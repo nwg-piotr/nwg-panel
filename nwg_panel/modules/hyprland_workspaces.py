@@ -19,8 +19,6 @@ class HyprlandWorkspaces(Gtk.Box):
         self.ws_nums = []
 
         self.build_box()
-        update_image_fallback_desktop(self.floating_icon, "view-dual-symbolic", self.settings["image-size"],
-                                      self.icons_path)
         self.refresh(monitors, workspaces, clients, activewindow)
 
     def build_box(self):
@@ -108,11 +106,13 @@ class HyprlandWorkspaces(Gtk.Box):
             if self.settings["mark-xwayland"] and activewindow["xwayland"]:
                 client_title = "X|{}".format(client_title)
             floating = activewindow["floating"]
+            pinned = activewindow["pinned"]
             active_ws = activewindow["workspace"]["id"]
         else:
             client_class = ""
             client_title = ""
             floating = False
+            pinned = False
             for m in monitors:
                 if m["focused"]:
                     active_ws = m["activeWorkspace"]["id"]
@@ -130,12 +130,16 @@ class HyprlandWorkspaces(Gtk.Box):
         if self.settings["show-name"]:
             self.name_label.set_text(client_title)
         if self.settings["mark-floating"]:
-            if floating:
+            if pinned:
+                update_image_fallback_desktop(self.floating_icon, "pin", self.settings["image-size"],
+                                              self.icons_path)
+                self.floating_icon.show()
+            elif floating:
                 update_image_fallback_desktop(self.floating_icon, "focus-windows", self.settings["image-size"],
                                               self.icons_path)
+                self.floating_icon.show()
             else:
-                update_image_fallback_desktop(self.floating_icon, "blank", self.settings["image-size"],
-                                              self.icons_path)
+                self.floating_icon.hide()
 
     def update_icon(self, client_class, client_title):
         loaded_icon = False
