@@ -8,6 +8,7 @@ import stat
 import time
 import socket
 import threading
+import re
 
 import gi
 
@@ -434,8 +435,23 @@ def get_volume():
         except subprocess.CalledProcessError:
             # the command above returns the 'disabled` status w/ CalledProcessError, exit status 1
             pass
+    elif nwg_panel.common.commands["pactl"]:
+        try:
+            output = cmd2string("pactl get-sink-volume 0")
+            volumes = re.findall(r"/\s+(?P<volume>\d+)%\s+/", output)
+            if volumes:
+                volumes = [ int(x) for x in volumes ]
+                vol = volumes[0]
+        except Exception as e:
+            eprint(e)
+
+        try:
+            output = cmd2string("pactl get-sink-mute 0").strip().lower()
+            muted = output.endswith("yes")
+        except Exception as e:
+            eprint(e)
     else:
-        eprint("Couldn't get volume, 'pamixer' not found")
+        eprint("Couldn't get volume, 'pamixer' or 'pactl' not found")
 
     return vol, muted
 
