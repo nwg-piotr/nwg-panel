@@ -364,8 +364,10 @@ def check_key(dictionary, key, default_value):
 
 
 def cmd2string(cmd):
+    process_env = dict(os.environ)
+    process_env.update({"LANG": "C.UTF-8"})
     try:
-        return subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
+        return subprocess.check_output(cmd, shell=True, env=process_env).decode("utf-8").strip()
     except subprocess.CalledProcessError:
         return ""
 
