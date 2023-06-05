@@ -504,8 +504,10 @@ def toggle_mute(*args):
             subprocess.call("pamixer -u".split())
         else:
             subprocess.call("pamixer -m".split())
+    elif nwg_panel.common.commands["pactl"]:
+        subprocess.call("pactl set-sink-mute 0 toggle".split())
     else:
-        eprint("Couldn't toggle mute, 'pamixer' not found")
+        eprint("Couldn't toggle mute, no 'pamixer' or 'pactl' found")
 
 
 def set_volume(percent):
