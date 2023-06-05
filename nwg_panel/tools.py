@@ -382,7 +382,9 @@ def is_command(cmd):
             return True
 
     except subprocess.CalledProcessError:
-        return False
+        pass
+
+    return False
 
 
 def check_commands():
