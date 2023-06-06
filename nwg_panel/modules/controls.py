@@ -147,7 +147,7 @@ class Controls(Gtk.EventBox):
             except Exception as e:
                 print(e)
 
-        if "volume" in self.settings["components"] and commands["pamixer"]:
+        if "volume" in self.settings["components"] and (commands["pamixer"] or commands["pactl"]):
             try:
                 GLib.idle_add(self.update_volume)
             except Exception as e:
@@ -313,7 +313,7 @@ class PopupWindow(Gtk.Window):
 
         check_key(settings, "output-switcher", False)
         self.sinks = []
-        if commands["pamixer"] and settings["output-switcher"] and commands["pamixer"]:
+        if (commands["pamixer"] or commands["pactl"]) and settings["output-switcher"]:
             self.sinks = list_sinks()
 
         eb = Gtk.EventBox()
@@ -406,7 +406,7 @@ class PopupWindow(Gtk.Window):
             inner_hbox.pack_start(self.bri_scale, True, True, 5)
             add_sep = True
 
-        if "volume" in settings["components"] and commands["pamixer"]:
+        if "volume" in settings["components"] and (commands["pamixer"] or commands["pactl"]):
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             v_box.pack_start(inner_hbox, False, False, 6)
 
@@ -429,7 +429,7 @@ class PopupWindow(Gtk.Window):
             self.vol_scale_handler = self.vol_scale.connect("value-changed", self.set_vol)
 
             inner_hbox.pack_start(self.vol_scale, True, True, 5)
-            if commands["pamixer"] and settings["output-switcher"]:
+            if (commands["pamixer"] or commands["pactl"]) and settings["output-switcher"]:
                 pactl_eb = Gtk.EventBox()
                 image = Gtk.Image()
                 pactl_eb.add(image)
@@ -662,7 +662,7 @@ class PopupWindow(Gtk.Window):
             self.menu_box.show_all()
 
     def refresh_sinks(self, *args):
-        if commands["pamixer"]:
+        if commands["pamixer"] or commands["pactl"]:
             self.sinks = list_sinks()
 
     def toggle_mute(self, e, slider):
@@ -722,7 +722,7 @@ class PopupWindow(Gtk.Window):
 
                 self.bat_label.set_text("{}% {}".format(self.parent.bat_value, self.parent.bat_time))
 
-            if "volume" in self.settings["components"] and commands["pamixer"]:
+            if "volume" in self.settings["components"] and (commands["pamixer"] or commands["pactl"]):
                 self.vol_scale.set_value(self.parent.vol_value)
                 if self.parent.vol_icon_name != self.vol_icon_name:
                     update_image(self.vol_image, self.parent.vol_icon_name, self.icon_size, self.icons_path)
@@ -738,7 +738,7 @@ class PopupWindow(Gtk.Window):
                     self.bri_icon_name = self.parent.bri_icon_name
 
         else:
-            if "volume" in self.settings["components"] and commands["pamixer"]:
+            if "volume" in self.settings["components"] and (commands["pamixer"] or commands["pactl"]):
                 with self.vol_scale.handler_block(self.vol_scale_handler):
                     self.vol_scale.set_value(self.parent.vol_value)
 
@@ -809,7 +809,7 @@ class SinkBox(Gtk.Box):
     def refresh(self):
         for item in self.get_children():
             item.destroy()
-        if commands["pamixer"]:
+        if commands["pamixer"] or commands["pactl"]:
             self.sinks = list_sinks()
             for sink in self.sinks:
                 eb = Gtk.EventBox()

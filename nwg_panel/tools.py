@@ -8,6 +8,7 @@ import stat
 import time
 import socket
 import threading
+import re
 
 import gi
 
@@ -364,8 +365,10 @@ def check_key(dictionary, key, default_value):
 
 
 def cmd2string(cmd):
+    process_env = dict(os.environ)
+    process_env.update({"LANG": "C.UTF-8"})
     try:
-        return subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
+        return subprocess.check_output(cmd, shell=True, env=process_env).decode("utf-8").strip()
     except subprocess.CalledProcessError:
         return ""
 
@@ -379,7 +382,9 @@ def is_command(cmd):
             return True
 
     except subprocess.CalledProcessError:
-        return False
+        pass
+
+    return False
 
 
 def check_commands():
@@ -432,8 +437,23 @@ def get_volume():
         except subprocess.CalledProcessError:
             # the command above returns the 'disabled` status w/ CalledProcessError, exit status 1
             pass
+    elif nwg_panel.common.commands["pactl"]:
+        try:
+            output = cmd2string("pactl get-sink-volume 0")
+            volumes = re.findall(r"/\s+(?P<volume>\d+)%\s+/", output)
+            if volumes:
+                volumes = [ int(x) for x in volumes ]
+                vol = volumes[0]
+        except Exception as e:
+            eprint(e)
+
+        try:
+            output = cmd2string("pactl get-sink-mute 0").strip().lower()
+            muted = output.endswith("yes")
+        except Exception as e:
+            eprint(e)
     else:
-        eprint("Couldn't get volume, 'pamixer' not found")
+        eprint("Couldn't get volume, no 'pamixer' or 'pactl' found")
 
     return vol, muted
 
@@ -452,8 +472,29 @@ def list_sinks():
                     sinks.append({"name": name, "desc": desc})
         except Exception as e:
             eprint(e)
+    if nwg_panel.common.commands["pactl"]:
+        try:
+            output = cmd2string("pactl list sinks")
+            if output:
+                lines = output.splitlines()
+                sink = {}
+                for line in lines:
+                    indent = line.count("\t")
+                    line = line.lstrip("\t")
+                    if indent == 0 and sink:
+                        sinks.append(sink)
+                        sink = {}
+                    elif indent == 1:
+                        if line.lower().startswith("name"):
+                            sink.update({"name": line.split(": ")[1]})
+                        elif line.lower().startswith("description"):
+                            sink.update({"desc": line.split(": ")[1]})
+                if sink:
+                    sinks.append(sink)
+        except Exception as e:
+            eprint(e)
     else:
-        eprint("Couldn't list sinks, 'pamixer' not found")
+        eprint("Couldn't list sinks, no 'pamixer' or 'pactl' found")
 
     return sinks
 
@@ -465,15 +506,19 @@ def toggle_mute(*args):
             subprocess.call("pamixer -u".split())
         else:
             subprocess.call("pamixer -m".split())
+    elif nwg_panel.common.commands["pactl"]:
+        subprocess.call("pactl set-sink-mute 0 toggle".split())
     else:
-        eprint("Couldn't toggle mute, 'pamixer' not found")
+        eprint("Couldn't toggle mute, no 'pamixer' or 'pactl' found")
 
 
 def set_volume(percent):
     if nwg_panel.common.commands["pamixer"]:
         subprocess.call("pamixer --set-volume {}".format(percent).split())
+    elif nwg_panel.common.commands["pactl"]:
+        subprocess.call("pactl set-sink-volume 0 {}%".format(percent).split())
     else:
-        eprint("Couldn't set volume, 'pamixer' not found")
+        eprint("Couldn't set volume, no 'pamixer' or 'pactl' found")
 
 
 def get_brightness(device="", controller=""):

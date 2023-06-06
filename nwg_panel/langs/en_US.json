@@ -238,7 +238,7 @@
   "vertical-window-margin": "Vertical window margin",
   "visibility": "Visibility",
   "volume": "Volume",
-  "volume-tooltip": "Depends on the `pamixer` package.",
+  "volume-tooltip": "Requires `pamixer` or `pactl` commands installed.",
   "weather-icons": "Weather icons",
   "weatherbit-api-key": "Weatherbit API key",
   "widget-css-name": "Widget CSS name",
