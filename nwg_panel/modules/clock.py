@@ -175,7 +175,7 @@ class Clock(Gtk.EventBox):
 
         if self.settings["calendar-placement"] in ["top-left", "top", "top-right"]:
             GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.TOP, 1)
-        elif self.settings["calendar-placement"] in ["bottom-left", "bottom", "bottodropm-right"]:
+        elif self.settings["calendar-placement"] in ["bottom-left", "bottom", "bottom-right"]:
             GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.BOTTOM, 1)
 
         if self.settings["calendar-placement"] in ["top-left", "bottom-left"]:
