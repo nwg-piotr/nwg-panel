@@ -677,7 +677,7 @@ def main():
             check_key(panel, "modules-left", [])
             check_key(panel, "modules-center", [])
             check_key(panel, "modules-right", [])
-            check_key(panel, "homogeneous", True)
+            check_key(panel, "homogeneous", False)
 
             inner_box = Gtk.Box(orientation=o, spacing=0)
 
