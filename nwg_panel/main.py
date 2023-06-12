@@ -798,12 +798,10 @@ def main():
 
             if panel["position"] == "top":
                 GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.TOP, 1)
-                GtkLayerShell.set_layer(window, GtkLayerShell.Layer.TOP)
             elif panel["position"] == "bottom":
                 GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.BOTTOM, 1)
             elif panel["position"] == "left":
                 GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.LEFT, 1)
-                GtkLayerShell.set_layer(window, GtkLayerShell.Layer.BOTTOM)
             elif panel["position"] == "right":
                 GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.RIGHT, 1)
 
