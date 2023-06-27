@@ -619,7 +619,7 @@ def main():
             window = Gtk.Window()
             global panel_windows_hide_show_sigs
             if panel["use-sigrt"]:
-                panel_windows_hide_show_sigs[window] = panel["hide_show_sig_num"]
+                panel_windows_hide_show_sigs[window] = panel["sigrt"]
             else:
                 panel_windows_hide_show_sigs[window] = 0
 
