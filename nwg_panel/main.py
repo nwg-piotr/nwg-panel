@@ -613,11 +613,15 @@ def main():
             check_key(panel, "css-name", "")
             check_key(panel, "padding-horizontal", 0)
             check_key(panel, "padding-vertical", 0)
-            check_key(panel, "hide_show_sig_num", 0)  # SIGRTMIN > hide_show_sig_num <= SIGRTMAX, (0 = disabled)
+            check_key(panel, "sigrt", 0)  # SIGRTMIN > hide_show_sig_num <= SIGRTMAX, (0 = disabled)
+            check_key(panel, "use-sigrt", False)
 
             window = Gtk.Window()
             global panel_windows_hide_show_sigs
-            panel_windows_hide_show_sigs[window] = panel["hide_show_sig_num"]
+            if panel["use-sigrt"]:
+                panel_windows_hide_show_sigs[window] = panel["hide_show_sig_num"]
+            else:
+                panel_windows_hide_show_sigs[window] = 0
 
             if panel["css-name"]:
                 window.set_property("name", panel["css-name"])
