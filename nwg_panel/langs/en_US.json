@@ -81,6 +81,8 @@
   "header-icon-size": "Header icon size",
   "height": "Height",
   "hide-empty-ws": "Hide empty workspaces",
+  "hide-show-signal": "Hide/show signal",
+  "hide-show-signal-tooltip": "Hide/show panel on an RT signal. Use `pkill -f -<signal_number> nwg-panel` in a key binding.",
   "homogeneous": "Homogeneous",
   "homogeneous-tooltip": "Sets equal columns width be default if 'Modules center' not empty.",
   "horizontal-padding": "Horizontal padding",

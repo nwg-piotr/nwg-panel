@@ -81,6 +81,8 @@
   "header-icon-size": "Rozmiar ikony głównej",
   "height": "Wysokość",
   "hide-empty-ws": "Ukryj puste obszary robocze",
+  "hide-show-signal": "Ukryj/pokaż na sygnał",
+  "hide-show-signal-tooltip": "Ukryj/pokaż panel na sygnał RT. Użyj `pkill -f -<signal_number> nwg-panel` w skrócie klawiaturowym.",
   "homogeneous": "Jednorodny",
   "homogeneous-tooltip": "Ustawia domyślnie równą szerokość kolumn jeśli występują moduły środkowe.",
   "horizontal-padding": "Wypełnienie poziome",
