@@ -864,7 +864,9 @@ class EditorWrapper(object):
             "icons": "",
             "css-name": "",
             "homogeneous": True,
-            "exclusive-zone": True
+            "exclusive-zone": True,
+            "sigrt": signal.SIGRTMAX,
+            "use-sigrt": False
         }
         for key in defaults:
             check_key(self.panel, key, defaults[key])
@@ -894,6 +896,7 @@ class EditorWrapper(object):
         builder.get_object("lbl-spacing").set_text("{}:".format(voc["spacing"]))
         builder.get_object("lbl-icon-set").set_text("{}:".format(voc["icon-set"]))
         builder.get_object("lbl-css-name").set_text("{}:".format(voc["css-name"]))
+        builder.get_object("lbl-hide-show-signal").set_text("{}: ".format(voc["hide-show-signal"]))
 
         cb = builder.get_object("homogeneous")
         cb.set_label(voc["homogeneous"])
@@ -1017,6 +1020,18 @@ class EditorWrapper(object):
         self.eb_css_name = builder.get_object("css-name")
         self.eb_css_name.set_text(self.panel["css-name"])
 
+        self.panel_sigrt = builder.get_object("sigrt")
+        self.panel_sigrt.set_tooltip_text(voc["hide-show-signal-tooltip"])
+        self.panel_sigrt.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=signal.SIGRTMIN, upper=signal.SIGRTMAX + 1, step_increment=1,
+                             page_increment=1, page_size=1)
+        self.panel_sigrt.configure(adj, 1, 0)
+        self.panel_sigrt.set_value(self.panel["sigrt"])
+
+        self.panel_use_sigrt = builder.get_object("use-sigrt")
+        self.panel_use_sigrt.set_label(voc["use-signal"])
+        self.panel_use_sigrt.set_active(self.panel["use-sigrt"])
+
         self.cb_homogeneous = builder.get_object("homogeneous")
         self.cb_homogeneous.set_active(self.panel["homogeneous"])
 
@@ -1107,6 +1122,9 @@ class EditorWrapper(object):
 
         val = self.eb_css_name.get_text()
         self.panel["css-name"] = val
+
+        self.panel["sigrt"] = int(self.panel_sigrt.get_value())
+        self.panel["use-sigrt"] = self.panel_use_sigrt.get_active()
 
         self.panel["homogeneous"] = self.cb_homogeneous.get_active()
 
