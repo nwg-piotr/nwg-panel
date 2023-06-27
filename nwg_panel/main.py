@@ -93,6 +93,8 @@ restart_cmd = ""
 sig_dwl = 0
 voc = {}
 
+panel_windows_hide_show_sigs = {}
+
 
 def load_vocabulary():
     global voc
@@ -137,6 +139,13 @@ def rt_sig_handler(sig, frame):
         if executor.use_sigrt and executor.sigrt == sig:
             eprint("Refreshing {} on signal {}".format(executor.name, sig))
             executor.refresh()
+
+    for win in panel_windows_hide_show_sigs:
+        if sig == panel_windows_hide_show_sigs[win]:
+            if win.is_visible():
+                win.hide()
+            else:
+                win.show()
 
 
 def restart():
@@ -604,7 +613,12 @@ def main():
             check_key(panel, "css-name", "")
             check_key(panel, "padding-horizontal", 0)
             check_key(panel, "padding-vertical", 0)
+            check_key(panel, "hide_show_sig_num", 0)  # SIGRTMIN > hide_show_sig_num <= SIGRTMAX, (0 = disabled)
+
             window = Gtk.Window()
+            global panel_windows_hide_show_sigs
+            panel_windows_hide_show_sigs[window] = panel["hide_show_sig_num"]
+
             if panel["css-name"]:
                 window.set_property("name", panel["css-name"])
 
