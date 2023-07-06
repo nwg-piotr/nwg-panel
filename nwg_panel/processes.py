@@ -60,7 +60,7 @@ if not swaysock and not his:
     sys.exit(1)
 
 W_OWNER = 10
-W_NAME = 24
+W_NAME = 20
 
 # Fallback icon names dict: win_name -> icon_name
 aliases = {
@@ -354,7 +354,7 @@ def main():
     btn_mem.connect("clicked", set_sort_order, SortOrder.MEMORY_PERCENT)
     hbox.pack_start(btn_mem, False, False, 0)
 
-    btn_name = Gtk.Button.new_with_label("          Name          ")
+    btn_name = Gtk.Button.new_with_label("         Name         ")
     btn_name.connect("clicked", set_sort_order, SortOrder.NAME)
     hbox.pack_start(btn_name, False, False, 0)
 
