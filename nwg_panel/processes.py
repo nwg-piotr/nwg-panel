@@ -56,13 +56,8 @@ if not swaysock and not his:
     eprint("Neither sway nor hyprland socket detected, terminating.")
     sys.exit(1)
 
-W_PID = 10
-W_PPID = 10
 W_OWNER = 10
-W_CPU = 7
-W_MEM = 7
 W_NAME = 24
-W_WINDOW = 24
 
 # Fallback icon names dict: win_name -> icon_name
 aliases = {
@@ -120,7 +115,8 @@ def list_processes(once=False):
         processes_list.append(item)
 
     if sort_order == SortOrder.PID:
-        sorted_list = sorted(processes_list, key=lambda d: d['pid'])
+        sorted_list = processes_list  # they are already sorted by PID, no need to sort
+        # sorted_list = sorted(processes_list, key=lambda d: d['pid'])
     elif sort_order == SortOrder.PPID:
         sorted_list = sorted(processes_list, key=lambda d: d['ppid'])
     elif sort_order == SortOrder.NAME:
@@ -224,11 +220,16 @@ def list_processes(once=False):
                 lbl = Gtk.Label.new("{}%".format(str(percent)))
             else:
                 lbl = Gtk.Label()
-                lbl.set_markup("<b>{}</b>".format(str(percent)))
+                lbl.set_markup("<b>{}%</b>".format(str(percent)))
             lbl.set_xalign(0)
             grid.attach(lbl, 4, idx, 1, 1)
 
-            lbl = Gtk.Label.new("{}%".format(str(round(processes[pid]["memory_percent"], 2))))
+            percent = processes[pid]["memory_percent"]
+            if percent < 1:
+                lbl = Gtk.Label.new("{}%".format(str(round(percent, 2))))
+            else:
+                lbl = Gtk.Label()
+                lbl.set_markup("<b>{}%</b>".format(str(round(percent, 2))))
             lbl.set_xalign(0)
             grid.attach(lbl, 5, idx, 1, 1)
 
@@ -377,12 +378,12 @@ def main():
     style_context = Gtk.StyleContext()
     style_context.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
     css = b""" #btn-kill { padding: 0; border: 0; margin: 0 }
-        #btn-mod { padding: 0 6px 0 6px; margin: 0 } """
+        #btn-mod { padding: 0 12px 0 12px; margin: 0 } """
     provider.load_from_data(css)
 
     win.show_all()
 
-    win.set_size_request(0, win.get_allocated_width() * 0.5)
+    win.set_size_request(0, 700)
 
     list_processes()
 
