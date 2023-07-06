@@ -40,6 +40,9 @@ class SortOrder(Enum):
 
 sort_order = SortOrder.PID
 
+# We need to get_allocated_width of each one inside a function later
+btn_pid, btn_ppid, btn_owner, btn_cpu, btn_mem, btn_name = None, None, None, None, None, None,
+
 
 def hyprctl(cmd):
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -144,47 +147,12 @@ def list_processes(once=False):
     grid = Gtk.Grid.new()
     grid.set_row_spacing(0)
     grid.set_column_spacing(6)
-    grid.set_row_homogeneous(True)
+    # grid.set_row_homogeneous(True)
 
     if viewport:
         viewport.add(grid)
     else:
         scrolled_window.add(grid)
-
-    btn = Gtk.Button.new_with_label(" PID ")
-    btn.set_property("name", "btn-mod")
-    btn.connect("clicked", set_sort_order, SortOrder.PID)
-    grid.attach(btn, 1, 0, 1, 1)
-
-    btn = Gtk.Button.new_with_label(" PPID ")
-    btn.set_property("name", "btn-mod")
-    btn.connect("clicked", set_sort_order, SortOrder.PPID)
-    grid.attach(btn, 2, 0, 1, 1)
-
-    btn = Gtk.Button.new_with_label(" Owner ")
-    btn.set_property("name", "btn-mod")
-    btn.connect("clicked", set_sort_order, SortOrder.USERNAME)
-    grid.attach(btn, 3, 0, 1, 1)
-
-    btn = Gtk.Button.new_with_label(" CPU% ")
-    btn.set_property("name", "btn-mod")
-    btn.connect("clicked", set_sort_order, SortOrder.CPU_PERCENT)
-    grid.attach(btn, 4, 0, 1, 1)
-
-    btn = Gtk.Button.new_with_label(" Mem% ")
-    btn.set_property("name", "btn-mod")
-    btn.connect("clicked", set_sort_order, SortOrder.MEMORY_PERCENT)
-    grid.attach(btn, 5, 0, 1, 1)
-
-    btn = Gtk.Button.new_with_label("Name")
-    btn.set_property("name", "btn-mod")
-    btn.connect("clicked", set_sort_order, SortOrder.NAME)
-    grid.attach(btn, 6, 0, 2, 1)
-
-    global window_lbl
-    window_lbl = Gtk.Label.new("Window")
-    window_lbl.set_xalign(0)
-    grid.attach(window_lbl, 8, 0, 1, 1)
 
     idx = 1
     for item in sorted_list:
@@ -284,6 +252,31 @@ def list_processes(once=False):
 
             idx += 1
 
+    # placeholders to align column width with the button box on top
+    img = Gtk.Image()
+    grid.attach(img, 0, idx + 1, 2, 1)
+    img.set_size_request(btn_pid.get_allocated_width(), 0)
+
+    img = Gtk.Image()
+    grid.attach(img, 2, idx + 1, 1, 1)
+    img.set_size_request(btn_ppid.get_allocated_width(), 0)
+
+    img = Gtk.Image()
+    grid.attach(img, 3, idx + 1, 1, 1)
+    img.set_size_request(btn_owner.get_allocated_width(), 0)
+
+    img = Gtk.Image()
+    grid.attach(img, 4, idx + 1, 1, 1)
+    img.set_size_request(btn_cpu.get_allocated_width(), 0)
+
+    img = Gtk.Image()
+    grid.attach(img, 5, idx + 1, 1, 1)
+    img.set_size_request(btn_mem.get_allocated_width(), 0)
+
+    img = Gtk.Image()
+    grid.attach(img, 6, idx + 1, 2, 1)
+    img.set_size_request(btn_name.get_allocated_width(), 0)
+
     grid.show_all()
 
     if not once:
@@ -332,6 +325,50 @@ def main():
     box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 6)
     box.set_property("margin", 6)
     box.set_property("vexpand", True)
+    wrapper = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+    box.pack_start(wrapper, True, True, 0)
+    hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
+    wrapper.pack_start(hbox, True, True, 0)
+
+    global btn_pid, btn_ppid, btn_owner, btn_cpu, btn_mem, btn_name
+
+    btn_pid = Gtk.Button.new_with_label(" PID  ")
+    btn_pid.set_property("name", "btn-mod")
+    btn_pid.connect("clicked", set_sort_order, SortOrder.PID)
+    hbox.pack_start(btn_pid, False, False, 0)
+    btn_pid.show()
+
+    btn_ppid = Gtk.Button.new_with_label(" PPID ")
+    btn_ppid.set_property("name", "btn-mod")
+    btn_ppid.connect("clicked", set_sort_order, SortOrder.PPID)
+    hbox.pack_start(btn_ppid, False, False, 0)
+    btn_ppid.show()
+
+    btn_owner = Gtk.Button.new_with_label(" Owner ")
+    btn_owner.set_property("name", "btn-mod")
+    btn_owner.connect("clicked", set_sort_order, SortOrder.USERNAME)
+    hbox.pack_start(btn_owner, False, False, 0)
+
+    btn_cpu = Gtk.Button.new_with_label(" CPU% ")
+    btn_cpu.set_property("name", "btn-mod")
+    btn_cpu.connect("clicked", set_sort_order, SortOrder.CPU_PERCENT)
+    hbox.pack_start(btn_cpu, False, False, 0)
+
+    btn_mem = Gtk.Button.new_with_label(" Mem% ")
+    btn_mem.set_property("name", "btn-mod")
+    btn_mem.connect("clicked", set_sort_order, SortOrder.MEMORY_PERCENT)
+    hbox.pack_start(btn_mem, False, False, 0)
+
+    btn_name = Gtk.Button.new_with_label("          Name          ")
+    btn_name.set_property("name", "btn-mod")
+    btn_name.connect("clicked", set_sort_order, SortOrder.NAME)
+    hbox.pack_start(btn_name, False, False, 0)
+
+    global window_lbl
+    window_lbl = Gtk.Label.new("Window")
+    window_lbl.set_xalign(0)
+    hbox.pack_start(window_lbl, False, False, 0)
+
     win.add(box)
 
     global scrolled_window
@@ -378,7 +415,8 @@ def main():
     style_context = Gtk.StyleContext()
     style_context.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
     css = b""" #btn-kill { padding: 0; border: 0; margin: 0 }
-        #btn-mod { padding: 0 12px 0 12px; margin: 0 } """
+        #btn-mod { padding: 0 12px 0 12px; margin: 0 }
+        label { font-family: DejaVu Sans Mono } """
     provider.load_from_data(css)
 
     win.show_all()
