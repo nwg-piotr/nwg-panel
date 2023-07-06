@@ -332,35 +332,29 @@ def main():
 
     global btn_pid, btn_ppid, btn_owner, btn_cpu, btn_mem, btn_name
 
-    btn_pid = Gtk.Button.new_with_label(" PID  ")
-    btn_pid.set_property("name", "btn-mod")
+    btn_pid = Gtk.Button.new_with_label("  PID  ")
     btn_pid.connect("clicked", set_sort_order, SortOrder.PID)
     hbox.pack_start(btn_pid, False, False, 0)
     btn_pid.show()
 
     btn_ppid = Gtk.Button.new_with_label(" PPID ")
-    btn_ppid.set_property("name", "btn-mod")
     btn_ppid.connect("clicked", set_sort_order, SortOrder.PPID)
     hbox.pack_start(btn_ppid, False, False, 0)
     btn_ppid.show()
 
     btn_owner = Gtk.Button.new_with_label(" Owner ")
-    btn_owner.set_property("name", "btn-mod")
     btn_owner.connect("clicked", set_sort_order, SortOrder.USERNAME)
     hbox.pack_start(btn_owner, False, False, 0)
 
     btn_cpu = Gtk.Button.new_with_label(" CPU% ")
-    btn_cpu.set_property("name", "btn-mod")
     btn_cpu.connect("clicked", set_sort_order, SortOrder.CPU_PERCENT)
     hbox.pack_start(btn_cpu, False, False, 0)
 
     btn_mem = Gtk.Button.new_with_label(" Mem% ")
-    btn_mem.set_property("name", "btn-mod")
     btn_mem.connect("clicked", set_sort_order, SortOrder.MEMORY_PERCENT)
     hbox.pack_start(btn_mem, False, False, 0)
 
     btn_name = Gtk.Button.new_with_label("          Name          ")
-    btn_name.set_property("name", "btn-mod")
     btn_name.connect("clicked", set_sort_order, SortOrder.NAME)
     hbox.pack_start(btn_name, False, False, 0)
 
@@ -415,7 +409,6 @@ def main():
     style_context = Gtk.StyleContext()
     style_context.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
     css = b""" #btn-kill { padding: 0; border: 0; margin: 0 }
-        #btn-mod { padding: 0 12px 0 12px; margin: 0 }
         label { font-family: DejaVu Sans Mono } """
     provider.load_from_data(css)
 
