@@ -13,6 +13,7 @@ import json
 import os
 import socket
 import sys
+from enum import Enum
 
 import psutil
 from i3ipc import Connection
@@ -25,6 +26,19 @@ from nwg_panel.tools import get_config_dir, load_json, save_json, check_key, epr
 
 swaysock = os.getenv('SWAYSOCK')
 his = os.getenv("HYPRLAND_INSTANCE_SIGNATURE")
+
+
+class SortOrder(Enum):
+    NONE = 0
+    PID = 1
+    PPID = 2
+    NAME = 3
+    USERNAME = 4
+    CPU_PERCENT = 5
+    MEMORY_PERCENT = 6
+
+
+sort_order = SortOrder.PID
 
 
 def hyprctl(cmd):
@@ -93,6 +107,33 @@ def list_processes(once=False):
         if proc.info['username'] == os.getenv('USER') or not settings["processes-own-only"]:
             processes[proc.info['pid']] = proc.info
 
+    processes_list = []
+    for pid in processes:
+        item = {
+            "pid": pid,
+            "ppid": processes[pid]["ppid"],
+            "name": processes[pid]["name"],
+            "username": processes[pid]["username"],
+            "cpu_percent": processes[pid]["cpu_percent"],
+            "memory_percent": processes[pid]["memory_percent"]
+        }
+        processes_list.append(item)
+
+    if sort_order == SortOrder.PID:
+        sorted_list = sorted(processes_list, key=lambda d: d['pid'])
+    elif sort_order == SortOrder.PPID:
+        sorted_list = sorted(processes_list, key=lambda d: d['ppid'])
+    elif sort_order == SortOrder.NAME:
+        sorted_list = sorted(processes_list, key=lambda d: d['name'].upper())
+    elif sort_order == SortOrder.USERNAME:
+        sorted_list = sorted(processes_list, key=lambda d: d['username'].upper())
+    elif sort_order == SortOrder.CPU_PERCENT:
+        sorted_list = sorted(processes_list, key=lambda d: d['cpu_percent'], reverse=True)
+    elif sort_order == SortOrder.MEMORY_PERCENT:
+        sorted_list = sorted(processes_list, key=lambda d: d['memory_percent'], reverse=True)
+    else:
+        sorted_list = processes_list
+
     # At first, we need to add grid to the scrolled window (as in former add_with_viewport).
     # In next iterations, we add the grid directly to already existing viewport, to avoid the scrolled window floating.
     if scrolled_window and scrolled_window.get_children():
@@ -114,9 +155,10 @@ def list_processes(once=False):
         scrolled_window.add(grid)
 
     idx = 1
-    for pid in processes:
+    for item in sorted_list:
         cons = None
         mapped = {}
+        pid = item['pid']
         if swaysock:
             cons = tree.find_by_pid(pid)
         elif his:
@@ -220,6 +262,11 @@ def list_processes(once=False):
         return True
 
 
+def set_sort_order(btn, order):
+    global sort_order
+    sort_order = order
+
+
 def on_background_cb(check_button):
     settings["processes-background-only"] = check_button.get_active()
     save_json(settings, os.path.join(get_config_dir(), "common-settings.json"))
@@ -269,46 +316,46 @@ def main():
     img.set_property("name", "img-empty")
     desc_box.pack_start(img, False, False, 0)
 
-    lbl = Gtk.Label.new("PID")
-    lbl.set_width_chars(W_PID)
-    lbl.set_xalign(0)
-    desc_box.pack_start(lbl, False, False, 0)
+    btn = Gtk.Button.new_with_label(" PID ")
+    btn.set_halign(Gtk.Align.START)
+    btn.connect("clicked", set_sort_order, SortOrder.PID)
+    desc_box.pack_start(btn, False, False, 0)
 
-    lbl = Gtk.Label.new("PPID")
-    lbl.set_width_chars(W_PPID)
-    lbl.set_xalign(0)
-    desc_box.pack_start(lbl, False, False, 0)
+    btn = Gtk.Button.new_with_label("PPID")
+    btn.set_halign(Gtk.Align.START)
+    btn.connect("clicked", set_sort_order, SortOrder.PPID)
+    desc_box.pack_start(btn, False, False, 0)
 
-    lbl = Gtk.Label.new("Owner")
-    lbl.set_width_chars(W_OWNER)
-    lbl.set_xalign(0)
-    desc_box.pack_start(lbl, False, False, 0)
+    btn = Gtk.Button.new_with_label(" Owner ")
+    btn.set_halign(Gtk.Align.START)
+    btn.connect("clicked", set_sort_order, SortOrder.USERNAME)
+    desc_box.pack_start(btn, False, False, 0)
 
-    lbl = Gtk.Label.new("CPU%")
-    lbl.set_width_chars(W_CPU)
-    lbl.set_xalign(0)
-    desc_box.pack_start(lbl, True, True, 0)
+    btn = Gtk.Button.new_with_label("CPU%")
+    btn.set_halign(Gtk.Align.START)
+    btn.connect("clicked", set_sort_order, SortOrder.CPU_PERCENT)
+    desc_box.pack_start(btn, True, True, 0)
 
-    lbl = Gtk.Label.new("Mem%")
-    lbl.set_width_chars(W_MEM)
-    lbl.set_xalign(0)
-    desc_box.pack_start(lbl, True, True, 0)
+    btn = Gtk.Button.new_with_label(" Mem%")
+    btn.set_halign(Gtk.Align.START)
+    btn.connect("clicked", set_sort_order, SortOrder.MEMORY_PERCENT)
+    desc_box.pack_start(btn, True, True, 0)
 
     img = Gtk.Image()
     img.set_property("name", "icon")
     desc_box.pack_start(img, True, True, 0)
 
-    lbl = Gtk.Label.new("Name")
-    lbl.set_width_chars(W_NAME)
-    lbl.set_xalign(0)
-    desc_box.pack_start(lbl, True, True, 0)
+    btn = Gtk.Button.new_with_label("Name")
+    btn.set_halign(Gtk.Align.START)
+    btn.connect("clicked", set_sort_order, SortOrder.NAME)
+    desc_box.pack_start(btn, True, True, 0)
 
-    if swaysock:
-        global window_lbl
-        window_lbl = Gtk.Label.new("Window")
-        window_lbl.set_width_chars(W_WINDOW)
-        window_lbl.set_xalign(0)
-        desc_box.pack_start(window_lbl, True, True, 0)
+    # if swaysock:
+    global window_lbl
+    window_lbl = Gtk.Label.new("Window")
+    window_lbl.set_width_chars(W_WINDOW)
+    window_lbl.set_xalign(0)
+    desc_box.pack_start(window_lbl, True, True, 0)
 
     global scrolled_window
     scrolled_window = Gtk.ScrolledWindow.new(None, None)
