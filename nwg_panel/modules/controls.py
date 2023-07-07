@@ -145,7 +145,7 @@ class Controls(Gtk.EventBox):
                     controller=self.settings["backlight-controller"])
                 GLib.idle_add(self.update_brightness)
             except Exception as e:
-                print(e)
+                eprint(e)
 
         if "volume" in self.settings["components"] and (commands["pamixer"] or commands["pactl"]):
             try:

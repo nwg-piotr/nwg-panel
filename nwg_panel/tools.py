@@ -524,34 +524,25 @@ def set_volume(percent):
 def get_brightness(device="", controller=""):
     brightness = 0
     if nwg_panel.common.commands["light"] and controller == "light":
-        try:
-            cmd = "light -G -s {}".format(device) if device else "light -G"
-            output = cmd2string(cmd)
-            brightness = int(round(float(output), 0))
-        except:
-            pass
+        cmd = "light -G -s {}".format(device) if device else "light -G"
+        output = cmd2string(cmd)
+        brightness = int(round(float(output), 0))
     elif nwg_panel.common.commands["brightnessctl"] and controller == "brightnessctl":
-        try:
-            cmd = "brightnessctl m -d {}".format(device) if device else "brightnessctl m"
-            output = cmd2string(cmd)
-            max_bri = int(output)
+        cmd = "brightnessctl m -d {}".format(device) if device else "brightnessctl m"
+        output = cmd2string(cmd)
+        max_bri = int(output)
 
-            cmd = "brightnessctl g -d {}".format(device) if device else "brightnessctl g"
-            output = cmd2string(cmd)
-            b = int(output) * 100 / max_bri
-            brightness = int(round(float(b), 0))
-        except:
-            pass
+        cmd = "brightnessctl g -d {}".format(device) if device else "brightnessctl g"
+        output = cmd2string(cmd)
+        b = int(output) * 100 / max_bri
+        brightness = int(round(float(b), 0))
     elif nwg_panel.common.commands["ddcutil"] and controller == "ddcutil":
-        try:
-            cmd = "ddcutil getvcp 10 --bus={}".format(device) if device else "ddcutil getvcp 10"
-            output = cmd2string(cmd)
-            b = int(output.split("current value =")[1].split(",")[0])
-            brightness = int(round(float(b), 0))
-        except:
-            pass
+        cmd = "ddcutil getvcp 10 --bus={}".format(device) if device else "ddcutil getvcp 10"
+        output = cmd2string(cmd)
+        b = int(output.split("current value =")[1].split(",")[0])
+        brightness = int(round(float(b), 0))
     else:
-        eprint("Couldn't get brightness, is 'light' or 'brightnessctl' or 'ddcutil' installed?")
+        raise ValueError("Couldn't get brightness, is 'light' or 'brightnessctl' or 'ddcutil' installed?")
 
     return brightness
 
