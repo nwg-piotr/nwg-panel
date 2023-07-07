@@ -92,6 +92,7 @@ def terminate(btn, pid):
 
 
 def list_processes(once=False):
+    tree = None
     if swaysock:
         tree = Connection().get_tree()
     elif his:
@@ -119,7 +120,6 @@ def list_processes(once=False):
 
     if sort_order == SortOrder.PID:
         sorted_list = processes_list  # they are already sorted by PID, no need to sort
-        # sorted_list = sorted(processes_list, key=lambda d: d['pid'])
     elif sort_order == SortOrder.PPID:
         sorted_list = sorted(processes_list, key=lambda d: d['ppid'])
     elif sort_order == SortOrder.NAME:
@@ -150,7 +150,7 @@ def list_processes(once=False):
 
     if viewport:
         viewport.add(grid)
-    else:
+    elif scrolled_window:
         scrolled_window.add(grid)
 
     idx = 1
@@ -399,8 +399,7 @@ def main():
     box.pack_start(hbox, False, False, 0)
 
     img = Gtk.Image.new_from_icon_name("nwg-processes", Gtk.IconSize.LARGE_TOOLBAR)
-    img.set_property("name", "btn-kill")
-    hbox.pack_start(img, False, False, 0)
+    hbox.pack_start(img, False, False, 6)
 
     lbl = Gtk.Label()
     lbl.set_markup("<b>nwg-processes</b>")
