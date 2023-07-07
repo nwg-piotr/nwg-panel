@@ -304,6 +304,8 @@ def set_sort_order(btn, order):
     if order == SortOrder.NAME:
         btn_name.set_label("          Name         ⨞")
 
+    list_processes()
+
 
 def on_background_cb(check_button):
     settings["processes-background-only"] = check_button.get_active()
