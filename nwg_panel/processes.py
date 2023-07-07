@@ -213,7 +213,7 @@ def list_processes(once=False):
                 win_name = mapped["pid"]
 
             if win_name:
-                lbl = Gtk.Label.new(win_name)
+                lbl = Gtk.Label.new(" {}".format(win_name))
                 lbl.set_xalign(0)
                 grid.attach(lbl, 8, idx, 1, 1)
 
@@ -378,7 +378,7 @@ def main():
     hbox.pack_start(btn_name, False, False, 0)
 
     global window_lbl
-    window_lbl = Gtk.Label.new("Window")
+    window_lbl = Gtk.Label.new(" Window")
     window_lbl.set_xalign(0)
     hbox.pack_start(window_lbl, False, False, 0)
 
