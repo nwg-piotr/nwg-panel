@@ -145,7 +145,6 @@ def list_processes(once=False):
         grid.destroy()
 
     grid = Gtk.Grid.new()
-    grid.set_row_spacing(0)
     grid.set_column_spacing(3)
 
     if viewport:
@@ -244,8 +243,7 @@ def list_processes(once=False):
             if processes[pid]["username"] == user:
                 btn = Gtk.Button.new_from_icon_name("gtk-close", Gtk.IconSize.MENU)
                 btn.set_property("name", "btn-kill")
-                btn.set_property("hexpand", False)
-                btn.set_property("halign", Gtk.Align.START)
+                btn.set_property("halign", Gtk.Align.CENTER)
                 btn.connect("clicked", terminate, pid)
                 grid.attach(btn, 0, idx, 1, 1)
 
