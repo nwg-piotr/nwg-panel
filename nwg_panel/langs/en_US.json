@@ -24,8 +24,6 @@
   "battery-low-check-tooltip": "Set 0 to disable.",
   "battery-low-notification": "Battery low notification at [%]",
   "battery-tooltip": "Depends on `python-psutil`.",
-  "bluetooth": "Bluetooth",
-  "bluetooth-tooltip": "Depends on `bluez-utils`.",
   "bottom-margin": "Bottom margin",
   "brightness": "Brightness",
   "brightness-slider": "Brightness slider",

@@ -68,7 +68,7 @@ SKELETON_PANEL: dict = {
     "modules-right": [],
     "controls-settings": {
         "components": ["net", "brightness", "volume", "battery"],
-        "commands": {"net": "", "bluetooth": "", "battery": ""},
+        "commands": {"net": "", "battery": ""},
         "show-values": False,
         "interval": 1,
         "icon-size": 16,
@@ -3556,15 +3556,6 @@ class EditorWrapper(object):
         self.ctrl_comp_net.set_tooltip_text(voc["network-interface-tooltip"])
         self.ctrl_comp_net.set_active("net" in settings["components"])
 
-        self.ctrl_comp_bluetooth = builder.get_object("ctrl-comp-bluetooth")
-        self.ctrl_comp_bluetooth.set_label(voc["bluetooth"])
-        self.ctrl_comp_bluetooth.set_tooltip_text(voc["bluetooth-tooltip"])
-        if is_command("btmgmt"):
-            self.ctrl_comp_bluetooth.set_active("bluetooth" in settings["components"])
-        else:
-            self.ctrl_comp_bluetooth.set_active(False)
-            self.ctrl_comp_bluetooth.set_sensitive(False)
-
         self.ctrl_comp_battery = builder.get_object("ctrl-comp-battery")
         self.ctrl_comp_battery.set_label(voc["battery"])
         self.ctrl_comp_battery.set_tooltip_text(voc["battery-tooltip"])
@@ -3609,11 +3600,6 @@ class EditorWrapper(object):
         self.ctrl_net_name = builder.get_object("ctrl-net-name")
         self.ctrl_net_name.set_placeholder_text(voc["name"])
         self.ctrl_net_name.set_text(settings["net-interface"])
-
-        self.ctrl_cdm_bluetooth = builder.get_object("ctrl-cmd-bluetooth")
-        self.ctrl_cdm_bluetooth.set_placeholder_text(voc["on-click-command"])
-        check_key(settings["commands"], "bluetooth", "")
-        self.ctrl_cdm_bluetooth.set_text(settings["commands"]["bluetooth"])
 
         self.ctrl_cdm_battery = builder.get_object("ctrl-cmd-battery")
         self.ctrl_cdm_battery.set_placeholder_text(voc["on-click-command"])
@@ -3720,13 +3706,6 @@ class EditorWrapper(object):
             if "net" in settings["components"]:
                 settings["components"].remove("net")
 
-        if self.ctrl_comp_bluetooth.get_active():
-            if "bluetooth" not in settings["components"]:
-                settings["components"].append("bluetooth")
-        else:
-            if "bluetooth" in settings["components"]:
-                settings["components"].remove("bluetooth")
-
         if self.ctrl_comp_battery.get_active():
             if "battery" not in settings["components"]:
                 settings["components"].append("battery")
@@ -3743,7 +3722,6 @@ class EditorWrapper(object):
 
         settings["commands"]["net"] = self.ctrl_cdm_net.get_text()
         settings["net-interface"] = self.ctrl_net_name.get_text()
-        settings["commands"]["bluetooth"] = self.ctrl_cdm_bluetooth.get_text()
         settings["commands"]["battery"] = self.ctrl_cdm_battery.get_text()
         settings["processes-label"] = self.ctrl_comp_processes_label.get_text()
         settings["root-css-name"] = self.ctrl_root_css_name.get_text()

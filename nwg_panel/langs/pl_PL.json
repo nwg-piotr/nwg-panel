@@ -24,8 +24,6 @@
   "battery-low-check-tooltip": "Ustaw 0 by wyłączyć.",
   "battery-low-notification": "Alarmuj o słabej baterii przy [%]",
   "battery-tooltip": "Zależy od paczki `python-psutil`.",
-  "bluetooth": "Bluetooth",
-  "bluetooth-tooltip": "Zależy od paczki `bluez-utils`.",
   "bottom-margin": "Margines dolny",
   "brightness": "Jasność",
   "brightness-slider": "Suwak jasności",

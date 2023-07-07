@@ -697,23 +697,6 @@ def create_pixbuf(icon_name, icon_size, icons_path="", fallback=True):
     return pixbuf
 
 
-def bt_info():
-    name, powered = "", False
-    try:
-        info = subprocess.check_output("btmgmt info", shell=True).decode("utf-8").strip().splitlines()
-        for line in info:
-            if "current settings" in line:
-                if "powered" in line:
-                    powered = True
-                continue
-            if "name" in line and "short" not in line:
-                name = line.split("name")[1].strip()
-    except:
-        pass
-
-    return name, powered
-
-
 def list_configs(config_dir):
     configs = {}
     # allow to store json files other than panel config files in the config directory
