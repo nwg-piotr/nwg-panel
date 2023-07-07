@@ -13,6 +13,7 @@ import json
 import os
 import socket
 import sys
+from enum import Enum
 
 import psutil
 from i3ipc import Connection
@@ -25,6 +26,22 @@ from nwg_panel.tools import get_config_dir, load_json, save_json, check_key, epr
 
 swaysock = os.getenv('SWAYSOCK')
 his = os.getenv("HYPRLAND_INSTANCE_SIGNATURE")
+
+
+class SortOrder(Enum):
+    NONE = 0
+    PID = 1
+    PPID = 2
+    NAME = 3
+    USERNAME = 4
+    CPU_PERCENT = 5
+    MEMORY_PERCENT = 6
+
+
+sort_order = SortOrder.PID
+
+# We need to get_allocated_width of each one inside a function later
+btn_pid, btn_ppid, btn_owner, btn_cpu, btn_mem, btn_name = None, None, None, None, None, None,
 
 
 def hyprctl(cmd):
@@ -42,13 +59,8 @@ if not swaysock and not his:
     eprint("Neither sway nor hyprland socket detected, terminating.")
     sys.exit(1)
 
-W_PID = 10
-W_PPID = 10
 W_OWNER = 10
-W_CPU = 7
-W_MEM = 7
 W_NAME = 24
-W_WINDOW = 24
 
 # Fallback icon names dict: win_name -> icon_name
 aliases = {
@@ -80,6 +92,7 @@ def terminate(btn, pid):
 
 
 def list_processes(once=False):
+    tree = None
     if swaysock:
         tree = Connection().get_tree()
     elif his:
@@ -93,6 +106,33 @@ def list_processes(once=False):
         if proc.info['username'] == os.getenv('USER') or not settings["processes-own-only"]:
             processes[proc.info['pid']] = proc.info
 
+    processes_list = []
+    for pid in processes:
+        item = {
+            "pid": pid,
+            "ppid": processes[pid]["ppid"],
+            "name": processes[pid]["name"],
+            "username": processes[pid]["username"],
+            "cpu_percent": processes[pid]["cpu_percent"],
+            "memory_percent": processes[pid]["memory_percent"]
+        }
+        processes_list.append(item)
+
+    if sort_order == SortOrder.PID:
+        sorted_list = processes_list  # they are already sorted by PID, no need to sort
+    elif sort_order == SortOrder.PPID:
+        sorted_list = sorted(processes_list, key=lambda d: d['ppid'])
+    elif sort_order == SortOrder.NAME:
+        sorted_list = sorted(processes_list, key=lambda d: d['name'].upper())
+    elif sort_order == SortOrder.USERNAME:
+        sorted_list = sorted(processes_list, key=lambda d: d['username'].upper())
+    elif sort_order == SortOrder.CPU_PERCENT:
+        sorted_list = sorted(processes_list, key=lambda d: d['cpu_percent'], reverse=True)
+    elif sort_order == SortOrder.MEMORY_PERCENT:
+        sorted_list = sorted(processes_list, key=lambda d: d['memory_percent'], reverse=True)
+    else:
+        sorted_list = processes_list
+
     # At first, we need to add grid to the scrolled window (as in former add_with_viewport).
     # In next iterations, we add the grid directly to already existing viewport, to avoid the scrolled window floating.
     if scrolled_window and scrolled_window.get_children():
@@ -105,18 +145,18 @@ def list_processes(once=False):
         grid.destroy()
 
     grid = Gtk.Grid.new()
-    grid.set_row_spacing(3)
-    grid.set_row_homogeneous(True)
+    grid.set_column_spacing(3)
 
     if viewport:
         viewport.add(grid)
-    else:
+    elif scrolled_window:
         scrolled_window.add(grid)
 
     idx = 1
-    for pid in processes:
+    for item in sorted_list:
         cons = None
         mapped = {}
+        pid = item['pid']
         if swaysock:
             cons = tree.find_by_pid(pid)
         elif his:
@@ -127,12 +167,10 @@ def list_processes(once=False):
 
         if not cons or not settings["processes-background-only"]:
             lbl = Gtk.Label.new(str(pid))
-            lbl.set_width_chars(W_PID)
             lbl.set_xalign(0)
             grid.attach(lbl, 1, idx, 1, 1)
 
             lbl = Gtk.Label.new(str(processes[pid]["ppid"]))
-            lbl.set_width_chars(W_PPID)
             lbl.set_xalign(0)
             grid.attach(lbl, 2, idx, 1, 1)
 
@@ -140,7 +178,6 @@ def list_processes(once=False):
             if len(owner) > W_OWNER - 1:
                 owner = "{}…".format(owner[:W_OWNER - 2])
             lbl = Gtk.Label.new(owner)
-            lbl.set_width_chars(W_OWNER)
             lbl.set_xalign(0)
             grid.attach(lbl, 3, idx, 1, 1)
 
@@ -149,13 +186,16 @@ def list_processes(once=False):
                 lbl = Gtk.Label.new("{}%".format(str(percent)))
             else:
                 lbl = Gtk.Label()
-                lbl.set_markup("<b>{}</b>".format(str(percent)))
-            lbl.set_width_chars(W_CPU)
+                lbl.set_markup("<b>{}%</b>".format(str(percent)))
             lbl.set_xalign(0)
             grid.attach(lbl, 4, idx, 1, 1)
 
-            lbl = Gtk.Label.new("{}%".format(str(round(processes[pid]["memory_percent"], 2))))
-            lbl.set_width_chars(W_MEM)
+            percent = processes[pid]["memory_percent"]
+            if percent < 1:
+                lbl = Gtk.Label.new("{}%".format(str(round(percent, 2))))
+            else:
+                lbl = Gtk.Label()
+                lbl.set_markup("<b>{}%</b>".format(str(round(percent, 2))))
             lbl.set_xalign(0)
             grid.attach(lbl, 5, idx, 1, 1)
 
@@ -173,32 +213,28 @@ def list_processes(once=False):
                 win_name = mapped["pid"]
 
             if win_name:
-                lbl = Gtk.Label.new(win_name)
-                lbl.set_width_chars(W_WINDOW)
+                lbl = Gtk.Label.new(" {}".format(win_name))
                 lbl.set_xalign(0)
                 grid.attach(lbl, 8, idx, 1, 1)
 
             name = processes[pid]["name"]
             if theme.lookup_icon(name, 16, Gtk.IconLookupFlags.FORCE_SYMBOLIC):
                 img = Gtk.Image.new_from_icon_name(name, Gtk.IconSize.MENU)
-                img.set_property("name", "icon")
                 img.set_property("halign", Gtk.Align.END)
                 grid.attach(img, 6, idx, 1, 1)
             # fallback icon name
             elif win_name and theme.lookup_icon(win_name, 16, Gtk.IconLookupFlags.FORCE_SYMBOLIC):
                 img = Gtk.Image.new_from_icon_name(win_name, Gtk.IconSize.MENU)
-                img.set_property("name", "icon")
                 img.set_property("halign", Gtk.Align.END)
                 grid.attach(img, 6, idx, 1, 1)
             elif win_name and win_name in aliases and theme.lookup_icon(aliases[win_name], 16,
                                                                         Gtk.IconLookupFlags.FORCE_SYMBOLIC):
                 img = Gtk.Image.new_from_icon_name(aliases[win_name], Gtk.IconSize.MENU)
-                img.set_property("name", "icon")
                 img.set_property("halign", Gtk.Align.END)
                 grid.attach(img, 6, idx, 1, 1)
 
-            if len(name) > W_NAME - 1:
-                name = "{}…".format(name[:W_NAME - 2])
+            if len(name) > W_NAME:
+                name = "{}…".format(name[:W_NAME - 1])
             lbl = Gtk.Label.new(name)
             lbl.set_width_chars(W_NAME)
             lbl.set_xalign(0)
@@ -207,17 +243,68 @@ def list_processes(once=False):
             if processes[pid]["username"] == user:
                 btn = Gtk.Button.new_from_icon_name("gtk-close", Gtk.IconSize.MENU)
                 btn.set_property("name", "btn-kill")
-                btn.set_property("hexpand", False)
-                btn.set_property("halign", Gtk.Align.START)
+                btn.set_property("halign", Gtk.Align.CENTER)
                 btn.connect("clicked", terminate, pid)
                 grid.attach(btn, 0, idx, 1, 1)
 
             idx += 1
 
+    # placeholders to align column width with the button box on top
+    img = Gtk.Image()
+    grid.attach(img, 0, idx + 1, 2, 1)
+    img.set_size_request(btn_pid.get_allocated_width(), 0)
+
+    img = Gtk.Image()
+    grid.attach(img, 2, idx + 1, 1, 1)
+    img.set_size_request(btn_ppid.get_allocated_width(), 0)
+
+    img = Gtk.Image()
+    grid.attach(img, 3, idx + 1, 1, 1)
+    img.set_size_request(btn_owner.get_allocated_width(), 0)
+
+    img = Gtk.Image()
+    grid.attach(img, 4, idx + 1, 1, 1)
+    img.set_size_request(btn_cpu.get_allocated_width(), 0)
+
+    img = Gtk.Image()
+    grid.attach(img, 5, idx + 1, 1, 1)
+    img.set_size_request(btn_mem.get_allocated_width(), 0)
+
+    img = Gtk.Image()
+    grid.attach(img, 6, idx + 1, 2, 1)
+    img.set_size_request(btn_name.get_allocated_width(), 0)
+
     grid.show_all()
 
     if not once:
         return True
+
+
+def set_sort_order(btn, order):
+    global sort_order
+    sort_order = order
+
+    btn_pid.set_label("  PID   ")
+    btn_ppid.set_label(" PPID  ")
+    btn_owner.set_label(" Owner  ")
+    btn_cpu.set_label(" CPU%  ")
+    btn_mem.set_label(" Mem%  ")
+    btn_name.set_label("          Name          ")
+
+    if order == SortOrder.PID:
+        btn_pid.set_label("  PID  ⨞")
+    if order == SortOrder.PPID:
+        btn_ppid.set_label(" PPID ⨞")
+    if order == SortOrder.USERNAME:
+        btn_owner.set_label(" Owner ⨞")
+    if order == SortOrder.CPU_PERCENT:
+        btn_cpu.set_label(" CPU% ⨞")
+    if order == SortOrder.MEMORY_PERCENT:
+        btn_mem.set_label(" Mem% ⨞")
+    if order == SortOrder.NAME:
+        btn_name.set_label("          Name         ⨞")
+
+    list_processes()
 
 
 def on_background_cb(check_button):
@@ -257,58 +344,45 @@ def main():
     box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 6)
     box.set_property("margin", 6)
     box.set_property("vexpand", True)
-    win.add(box)
-
-    wrapper = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-    wrapper.set_property("name", "header")
+    wrapper = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
     box.pack_start(wrapper, False, False, 0)
-    desc_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-    wrapper.pack_start(desc_box, False, True, 0)
+    hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 3)
+    wrapper.pack_start(hbox, True, True, 0)
 
-    img = Gtk.Image()
-    img.set_property("name", "img-empty")
-    desc_box.pack_start(img, False, False, 0)
+    global btn_pid, btn_ppid, btn_owner, btn_cpu, btn_mem, btn_name
 
-    lbl = Gtk.Label.new("PID")
-    lbl.set_width_chars(W_PID)
-    lbl.set_xalign(0)
-    desc_box.pack_start(lbl, False, False, 0)
+    btn_pid = Gtk.Button.new_with_label("  PID  ⨞")
+    btn_pid.connect("clicked", set_sort_order, SortOrder.PID)
+    hbox.pack_start(btn_pid, False, False, 0)
+    btn_pid.show()
 
-    lbl = Gtk.Label.new("PPID")
-    lbl.set_width_chars(W_PPID)
-    lbl.set_xalign(0)
-    desc_box.pack_start(lbl, False, False, 0)
+    btn_ppid = Gtk.Button.new_with_label(" PPID  ")
+    btn_ppid.connect("clicked", set_sort_order, SortOrder.PPID)
+    hbox.pack_start(btn_ppid, False, False, 0)
+    btn_ppid.show()
 
-    lbl = Gtk.Label.new("Owner")
-    lbl.set_width_chars(W_OWNER)
-    lbl.set_xalign(0)
-    desc_box.pack_start(lbl, False, False, 0)
+    btn_owner = Gtk.Button.new_with_label(" Owner  ")
+    btn_owner.connect("clicked", set_sort_order, SortOrder.USERNAME)
+    hbox.pack_start(btn_owner, False, False, 0)
 
-    lbl = Gtk.Label.new("CPU%")
-    lbl.set_width_chars(W_CPU)
-    lbl.set_xalign(0)
-    desc_box.pack_start(lbl, True, True, 0)
+    btn_cpu = Gtk.Button.new_with_label(" CPU%  ")
+    btn_cpu.connect("clicked", set_sort_order, SortOrder.CPU_PERCENT)
+    hbox.pack_start(btn_cpu, False, False, 0)
 
-    lbl = Gtk.Label.new("Mem%")
-    lbl.set_width_chars(W_MEM)
-    lbl.set_xalign(0)
-    desc_box.pack_start(lbl, True, True, 0)
+    btn_mem = Gtk.Button.new_with_label(" Mem%  ")
+    btn_mem.connect("clicked", set_sort_order, SortOrder.MEMORY_PERCENT)
+    hbox.pack_start(btn_mem, False, False, 0)
 
-    img = Gtk.Image()
-    img.set_property("name", "icon")
-    desc_box.pack_start(img, True, True, 0)
+    btn_name = Gtk.Button.new_with_label("          Name          ")
+    btn_name.connect("clicked", set_sort_order, SortOrder.NAME)
+    hbox.pack_start(btn_name, False, False, 0)
 
-    lbl = Gtk.Label.new("Name")
-    lbl.set_width_chars(W_NAME)
-    lbl.set_xalign(0)
-    desc_box.pack_start(lbl, True, True, 0)
+    global window_lbl
+    window_lbl = Gtk.Label.new(" Window")
+    window_lbl.set_xalign(0)
+    hbox.pack_start(window_lbl, False, False, 0)
 
-    if swaysock:
-        global window_lbl
-        window_lbl = Gtk.Label.new("Window")
-        window_lbl.set_width_chars(W_WINDOW)
-        window_lbl.set_xalign(0)
-        desc_box.pack_start(window_lbl, True, True, 0)
+    win.add(box)
 
     global scrolled_window
     scrolled_window = Gtk.ScrolledWindow.new(None, None)
@@ -320,12 +394,12 @@ def main():
     dist.set_property("vexpand", True)
     box.pack_start(dist, True, True, 0)
 
-    hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
+    hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
     hbox.set_property("margin", 6)
     box.pack_start(hbox, False, False, 0)
 
     img = Gtk.Image.new_from_icon_name("nwg-processes", Gtk.IconSize.LARGE_TOOLBAR)
-    hbox.pack_start(img, False, False, 0)
+    hbox.pack_start(img, False, False, 6)
 
     lbl = Gtk.Label()
     lbl.set_markup("<b>nwg-processes</b>")
@@ -352,16 +426,13 @@ def main():
     provider = Gtk.CssProvider()
     style_context = Gtk.StyleContext()
     style_context.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-    css = b""" #header { background-color: rgba(0, 0, 0, 0.3) }
-        #icon { margin-right: 6px }
-        #img-empty { margin-right: 15px; border: 1px }
-        #btn-kill { padding: 0; border: 0; margin-right: 6px }
-        label { font-family: DejaVu Sans Mono, monospace } """
+    css = b""" #btn-kill { padding: 0; border: 0; margin: 0 }
+        label { font-family: DejaVu Sans Mono } """
     provider.load_from_data(css)
 
     win.show_all()
 
-    win.set_size_request(0, win.get_allocated_width() * 0.5)
+    win.set_size_request(0, 500)
 
     list_processes()
 
