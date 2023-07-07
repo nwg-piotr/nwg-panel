@@ -60,7 +60,7 @@ if not swaysock and not his:
     sys.exit(1)
 
 W_OWNER = 10
-W_NAME = 20
+W_NAME = 24
 
 # Fallback icon names dict: win_name -> icon_name
 aliases = {
@@ -146,8 +146,7 @@ def list_processes(once=False):
 
     grid = Gtk.Grid.new()
     grid.set_row_spacing(0)
-    grid.set_column_spacing(6)
-    # grid.set_row_homogeneous(True)
+    grid.set_column_spacing(3)
 
     if viewport:
         viewport.add(grid)
@@ -235,8 +234,8 @@ def list_processes(once=False):
                 img.set_property("halign", Gtk.Align.END)
                 grid.attach(img, 6, idx, 1, 1)
 
-            if len(name) > W_NAME - 1:
-                name = "{}…".format(name[:W_NAME - 2])
+            if len(name) > W_NAME:
+                name = "{}…".format(name[:W_NAME - 1])
             lbl = Gtk.Label.new(name)
             lbl.set_width_chars(W_NAME)
             lbl.set_xalign(0)
@@ -287,6 +286,26 @@ def set_sort_order(btn, order):
     global sort_order
     sort_order = order
 
+    btn_pid.set_label("  PID   ")
+    btn_ppid.set_label(" PPID  ")
+    btn_owner.set_label(" Owner  ")
+    btn_cpu.set_label(" CPU%  ")
+    btn_mem.set_label(" Mem%  ")
+    btn_name.set_label("          Name          ")
+
+    if order == SortOrder.PID:
+        btn_pid.set_label("  PID  ⨞")
+    if order == SortOrder.PPID:
+        btn_ppid.set_label(" PPID ⨞")
+    if order == SortOrder.USERNAME:
+        btn_owner.set_label(" Owner ⨞")
+    if order == SortOrder.CPU_PERCENT:
+        btn_cpu.set_label(" CPU% ⨞")
+    if order == SortOrder.MEMORY_PERCENT:
+        btn_mem.set_label(" Mem% ⨞")
+    if order == SortOrder.NAME:
+        btn_name.set_label("          Name         ⨞")
+
 
 def on_background_cb(check_button):
     settings["processes-background-only"] = check_button.get_active()
@@ -326,35 +345,35 @@ def main():
     box.set_property("margin", 6)
     box.set_property("vexpand", True)
     wrapper = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
-    box.pack_start(wrapper, True, True, 0)
-    hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
+    box.pack_start(wrapper, False, False, 0)
+    hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 3)
     wrapper.pack_start(hbox, True, True, 0)
 
     global btn_pid, btn_ppid, btn_owner, btn_cpu, btn_mem, btn_name
 
-    btn_pid = Gtk.Button.new_with_label("  PID  ")
+    btn_pid = Gtk.Button.new_with_label("  PID  ⨞")
     btn_pid.connect("clicked", set_sort_order, SortOrder.PID)
     hbox.pack_start(btn_pid, False, False, 0)
     btn_pid.show()
 
-    btn_ppid = Gtk.Button.new_with_label(" PPID ")
+    btn_ppid = Gtk.Button.new_with_label(" PPID  ")
     btn_ppid.connect("clicked", set_sort_order, SortOrder.PPID)
     hbox.pack_start(btn_ppid, False, False, 0)
     btn_ppid.show()
 
-    btn_owner = Gtk.Button.new_with_label(" Owner ")
+    btn_owner = Gtk.Button.new_with_label(" Owner  ")
     btn_owner.connect("clicked", set_sort_order, SortOrder.USERNAME)
     hbox.pack_start(btn_owner, False, False, 0)
 
-    btn_cpu = Gtk.Button.new_with_label(" CPU% ")
+    btn_cpu = Gtk.Button.new_with_label(" CPU%  ")
     btn_cpu.connect("clicked", set_sort_order, SortOrder.CPU_PERCENT)
     hbox.pack_start(btn_cpu, False, False, 0)
 
-    btn_mem = Gtk.Button.new_with_label(" Mem% ")
+    btn_mem = Gtk.Button.new_with_label(" Mem%  ")
     btn_mem.connect("clicked", set_sort_order, SortOrder.MEMORY_PERCENT)
     hbox.pack_start(btn_mem, False, False, 0)
 
-    btn_name = Gtk.Button.new_with_label("         Name         ")
+    btn_name = Gtk.Button.new_with_label("          Name          ")
     btn_name.connect("clicked", set_sort_order, SortOrder.NAME)
     hbox.pack_start(btn_name, False, False, 0)
 
@@ -375,7 +394,7 @@ def main():
     dist.set_property("vexpand", True)
     box.pack_start(dist, True, True, 0)
 
-    hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
+    hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
     hbox.set_property("margin", 6)
     box.pack_start(hbox, False, False, 0)
 
@@ -414,7 +433,7 @@ def main():
 
     win.show_all()
 
-    win.set_size_request(0, 700)
+    win.set_size_request(0, 500)
 
     list_processes()
 
