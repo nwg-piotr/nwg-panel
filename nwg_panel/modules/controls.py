@@ -620,7 +620,10 @@ class PopupWindow(Gtk.Window):
 
                 e_box.connect('button-press-event', self.switch_menu_box)
 
-        Gdk.threads_add_timeout(GLib.PRIORITY_LOW, 500, self.refresh)
+        self.refresh(True)
+
+    def schedule_refresh(self):
+        Gdk.threads_add_timeout(GLib.PRIORITY_LOW, 500, self.refresh, (True, ))
 
     def set_up_bcg_window(self):
         self.bcg_window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
@@ -696,7 +699,7 @@ class PopupWindow(Gtk.Window):
 
         return eb
 
-    def refresh(self, *args):
+    def refresh(self, schedule=False):
         if self.get_visible():
             self.refresh_sinks()
             if "net" in self.settings["components"] and commands["netifaces"] and self.settings["net-interface"]:
@@ -746,7 +749,8 @@ class PopupWindow(Gtk.Window):
                 with self.bri_scale.handler_block(self.bri_scale_handler):
                     self.bri_scale.set_value(self.parent.bri_value)
 
-        return True
+        if schedule:
+            self.schedule_refresh()
 
     def on_enter_notify_event(self, widget, event):
         widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
