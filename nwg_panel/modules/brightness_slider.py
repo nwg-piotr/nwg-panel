@@ -7,7 +7,7 @@ gi.require_version('Gdk', '3.0')
 gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
-from nwg_panel.tools import check_key, get_brightness, set_brightness, update_image, create_background_task
+from nwg_panel.tools import check_key, get_brightness, set_brightness, update_image, create_background_task, eprint
 
 
 class BrightnessSlider(Gtk.EventBox):
@@ -92,7 +92,7 @@ class BrightnessSlider(Gtk.EventBox):
                                             controller=self.settings["backlight-controller"])
             GLib.idle_add(self.update_brightness)
         except Exception as e:
-            print(e)
+            eprint(e)
 
     def update_brightness(self, get=True):
         icon_name = bri_icon_name(self.bri_value)

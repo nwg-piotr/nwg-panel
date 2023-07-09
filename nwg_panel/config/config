@@ -31,8 +31,6 @@
         "battery"
       ],
       "commands": {
-        "net": "",
-        "bluetooth": "",
         "battery": ""
       },
       "show-values": false,
@@ -42,7 +40,6 @@
       "leave-closes": true,
       "click-closes": false,
       "css-name": "controls-window",
-      "net-interface": "",
       "custom-items": [
         {
           "name": "Panel settings",
@@ -167,14 +164,11 @@
     ],
     "controls-settings": {
       "components": [
-        "net",
         "brightness",
         "volume",
         "battery"
       ],
       "commands": {
-        "net": "",
-        "bluetooth": "",
         "battery": ""
       },
       "show-values": false,
@@ -184,7 +178,6 @@
       "leave-closes": true,
       "click-closes": false,
       "css-name": "controls-window",
-      "net-interface": "",
       "custom-items": [
         {
           "name": "Panel settings",

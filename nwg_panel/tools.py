@@ -25,11 +25,6 @@ from datetime import datetime
 import nwg_panel.common
 
 try:
-    import netifaces
-except ModuleNotFoundError:
-    pass
-
-try:
     import psutil
 except:
     pass
@@ -392,12 +387,6 @@ def check_commands():
         nwg_panel.common.commands[key] = is_command(key)
 
     try:
-        import netifaces
-        nwg_panel.common.commands["netifaces"] = True
-    except ModuleNotFoundError:
-        pass
-
-    try:
         import requests
         nwg_panel.common.commands["python-requests"] = True
     except ModuleNotFoundError:
@@ -524,34 +513,25 @@ def set_volume(percent):
 def get_brightness(device="", controller=""):
     brightness = 0
     if nwg_panel.common.commands["light"] and controller == "light":
-        try:
-            cmd = "light -G -s {}".format(device) if device else "light -G"
-            output = cmd2string(cmd)
-            brightness = int(round(float(output), 0))
-        except:
-            pass
+        cmd = "light -G -s {}".format(device) if device else "light -G"
+        output = cmd2string(cmd)
+        brightness = int(round(float(output), 0))
     elif nwg_panel.common.commands["brightnessctl"] and controller == "brightnessctl":
-        try:
-            cmd = "brightnessctl m -d {}".format(device) if device else "brightnessctl m"
-            output = cmd2string(cmd)
-            max_bri = int(output)
+        cmd = "brightnessctl m -d {}".format(device) if device else "brightnessctl m"
+        output = cmd2string(cmd)
+        max_bri = int(output)
 
-            cmd = "brightnessctl g -d {}".format(device) if device else "brightnessctl g"
-            output = cmd2string(cmd)
-            b = int(output) * 100 / max_bri
-            brightness = int(round(float(b), 0))
-        except:
-            pass
+        cmd = "brightnessctl g -d {}".format(device) if device else "brightnessctl g"
+        output = cmd2string(cmd)
+        b = int(output) * 100 / max_bri
+        brightness = int(round(float(b), 0))
     elif nwg_panel.common.commands["ddcutil"] and controller == "ddcutil":
-        try:
-            cmd = "ddcutil getvcp 10 --bus={}".format(device) if device else "ddcutil getvcp 10"
-            output = cmd2string(cmd)
-            b = int(output.split("current value =")[1].split(",")[0])
-            brightness = int(round(float(b), 0))
-        except:
-            pass
+        cmd = "ddcutil getvcp 10 --bus={}".format(device) if device else "ddcutil getvcp 10"
+        output = cmd2string(cmd)
+        b = int(output.split("current value =")[1].split(",")[0])
+        brightness = int(round(float(b), 0))
     else:
-        eprint("Couldn't get brightness, is 'light' or 'brightnessctl' or 'ddcutil' installed?")
+        raise ValueError("Couldn't get brightness, is 'light' or 'brightnessctl' or 'ddcutil' installed?")
 
     return brightness
 
@@ -632,16 +612,6 @@ def seconds2string(seconds):
     return "{}:{}".format(hrs, minutes)
 
 
-def get_interface(name):
-    try:
-        addrs = netifaces.ifaddresses(name)
-        list = addrs[netifaces.AF_INET]
-
-        return list[0]["addr"]
-    except:
-        return None
-
-
 def update_image(image, icon_name, icon_size, icons_path="", fallback=True):
     scale = image.get_scale_factor()
     icon_size *= scale
@@ -704,23 +674,6 @@ def create_pixbuf(icon_name, icon_size, icons_path="", fallback=True):
         else:
             raise e
     return pixbuf
-
-
-def bt_info():
-    name, powered = "", False
-    try:
-        info = subprocess.check_output("btmgmt info", shell=True).decode("utf-8").strip().splitlines()
-        for line in info:
-            if "current settings" in line:
-                if "powered" in line:
-                    powered = True
-                continue
-            if "name" in line and "short" not in line:
-                name = line.split("name")[1].strip()
-    except:
-        pass
-
-    return name, powered
 
 
 def list_configs(config_dir):
