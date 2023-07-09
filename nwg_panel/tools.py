@@ -25,11 +25,6 @@ from datetime import datetime
 import nwg_panel.common
 
 try:
-    import netifaces
-except ModuleNotFoundError:
-    pass
-
-try:
     import psutil
 except:
     pass
@@ -392,12 +387,6 @@ def check_commands():
         nwg_panel.common.commands[key] = is_command(key)
 
     try:
-        import netifaces
-        nwg_panel.common.commands["netifaces"] = True
-    except ModuleNotFoundError:
-        pass
-
-    try:
         import requests
         nwg_panel.common.commands["python-requests"] = True
     except ModuleNotFoundError:
@@ -621,16 +610,6 @@ def seconds2string(seconds):
         minutes = "0{}".format(minutes)
 
     return "{}:{}".format(hrs, minutes)
-
-
-def get_interface(name):
-    try:
-        addrs = netifaces.ifaddresses(name)
-        list = addrs[netifaces.AF_INET]
-
-        return list[0]["addr"]
-    except:
-        return None
 
 
 def update_image(image, icon_name, icon_size, icons_path="", fallback=True):

@@ -129,8 +129,6 @@
   "move-up": "przesuń w górę",
   "name": "Nazwa",
   "name-max-length": "Maks. długość nazwy",
-  "network-interface": "Interface sieciowy",
-  "network-interface-tooltip": "Status interfejsu sieciowego;\nużyj `ifconfig` by sprawdzić nazwę,\nn.p. `enp6s0` lub `wlo1`.\nZależy od pakietu `python-netifaces`.",
   "new": "Nowy",
   "new-file": "Nowy plik",
   "new-panel-config-file-name": "Nazwa nowego pliku konfiguracyjnego panelu",

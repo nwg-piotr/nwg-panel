@@ -26,7 +26,6 @@ commands = {
     "pamixer": False,
     "pactl": False,
     "playerctl": False,
-    "netifaces": False,
     "wlr-randr": False,
     "hyprctl": False,
     "upower": False,

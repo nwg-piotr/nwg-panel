@@ -8,7 +8,7 @@
     <property name="label-xalign">0.5</property>
     <property name="shadow-type">out</property>
     <child>
-      <!-- n-columns=5 n-rows=17 -->
+      <!-- n-columns=5 n-rows=16 -->
       <object class="GtkGrid" id="grid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -87,43 +87,6 @@
           </packing>
         </child>
         <child>
-          <object class="GtkCheckButton" id="ctrl-comp-net">
-            <property name="label" translatable="yes">Interface</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="halign">start</property>
-            <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkEntry" id="ctrl-cmd-net">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="placeholder-text" translatable="yes">on click command</property>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkEntry" id="ctrl-net-name">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="width-chars">6</property>
-            <property name="placeholder-text" translatable="yes">name</property>
-          </object>
-          <packing>
-            <property name="left-attach">3</property>
-            <property name="top-attach">2</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkCheckButton" id="ctrl-comp-battery">
             <property name="label" translatable="yes">Battery</property>
             <property name="visible">True</property>
@@ -134,7 +97,7 @@
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">3</property>
+            <property name="top-attach">2</property>
           </packing>
         </child>
         <child>
@@ -145,7 +108,7 @@
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">3</property>
+            <property name="top-attach">2</property>
           </packing>
         </child>
         <child>
@@ -157,7 +120,7 @@
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">4</property>
+            <property name="top-attach">3</property>
           </packing>
         </child>
         <child>
@@ -167,7 +130,7 @@
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">4</property>
+            <property name="top-attach">3</property>
           </packing>
         </child>
         <child>
@@ -182,7 +145,7 @@ values in the panel widget</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">15</property>
+            <property name="top-attach">14</property>
           </packing>
         </child>
         <child>
@@ -194,7 +157,7 @@ values in the panel widget</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">14</property>
+            <property name="top-attach">13</property>
           </packing>
         </child>
         <child>
@@ -211,7 +174,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">14</property>
+            <property name="top-attach">13</property>
           </packing>
         </child>
         <child>
@@ -223,7 +186,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">13</property>
+            <property name="top-attach">12</property>
           </packing>
         </child>
         <child>
@@ -233,7 +196,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">13</property>
+            <property name="top-attach">12</property>
           </packing>
         </child>
         <child>
@@ -245,7 +208,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">12</property>
+            <property name="top-attach">11</property>
           </packing>
         </child>
         <child>
@@ -255,7 +218,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">12</property>
+            <property name="top-attach">11</property>
           </packing>
         </child>
         <child>
@@ -267,7 +230,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">11</property>
+            <property name="top-attach">10</property>
           </packing>
         </child>
         <child>
@@ -277,7 +240,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">11</property>
+            <property name="top-attach">10</property>
           </packing>
         </child>
         <child>
@@ -289,7 +252,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">10</property>
+            <property name="top-attach">9</property>
           </packing>
         </child>
         <child>
@@ -299,7 +262,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">10</property>
+            <property name="top-attach">9</property>
           </packing>
         </child>
         <child>
@@ -311,7 +274,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">9</property>
+            <property name="top-attach">8</property>
           </packing>
         </child>
         <child>
@@ -321,7 +284,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">9</property>
+            <property name="top-attach">8</property>
           </packing>
         </child>
         <child>
@@ -333,7 +296,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">8</property>
+            <property name="top-attach">7</property>
           </packing>
         </child>
         <child>
@@ -344,7 +307,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">8</property>
+            <property name="top-attach">7</property>
           </packing>
         </child>
         <child>
@@ -356,7 +319,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">7</property>
+            <property name="top-attach">6</property>
           </packing>
         </child>
         <child>
@@ -367,7 +330,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">7</property>
+            <property name="top-attach">6</property>
           </packing>
         </child>
         <child>
@@ -381,7 +344,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">6</property>
+            <property name="top-attach">5</property>
           </packing>
         </child>
         <child>
@@ -393,7 +356,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">5</property>
+            <property name="top-attach">4</property>
           </packing>
         </child>
         <child>
@@ -403,7 +366,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">5</property>
+            <property name="top-attach">4</property>
           </packing>
         </child>
         <child>
@@ -414,7 +377,7 @@ the horizontal, in degrees, measured counterclockwise</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">6</property>
+            <property name="top-attach">5</property>
           </packing>
         </child>
         <child>
@@ -429,7 +392,7 @@ window when left</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">16</property>
+            <property name="top-attach">15</property>
           </packing>
         </child>
         <child>
@@ -444,7 +407,7 @@ window on mouse click outside it</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">16</property>
+            <property name="top-attach">15</property>
           </packing>
         </child>
         <child>
@@ -459,14 +422,8 @@ on panel Controls widget pointed</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">15</property>
+            <property name="top-attach">14</property>
           </packing>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
         </child>
         <child>
           <placeholder/>

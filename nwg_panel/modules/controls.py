@@ -11,7 +11,7 @@ gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
 from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery, \
-    get_interface, update_image, eprint, list_sinks, toggle_mute, create_background_task
+    update_image, eprint, list_sinks, toggle_mute, create_background_task
 
 from nwg_panel.common import commands
 
@@ -35,7 +35,6 @@ class Controls(Gtk.EventBox):
         check_key(settings, "click-closes", False)
         check_key(settings, "root-css-name", "controls-overview")
         check_key(settings, "components", ["brightness", "battery", "volume", "processes"])
-        check_key(settings, "net-interface", "")
         check_key(settings, "angle", 0.0)
         check_key(settings, "battery-low-level", 20)
         check_key(settings, "battery-low-interval", 3)
@@ -44,11 +43,6 @@ class Controls(Gtk.EventBox):
         self.set_property("name", settings["root-css-name"])
 
         self.icon_size = settings["icon-size"]
-
-        self.net_icon_name = "view-refresh-symbolic"
-        self.net_image = Gtk.Image.new_from_icon_name(self.net_icon_name, Gtk.IconSize.MENU)
-        self.net_label = Gtk.Label() if settings["show-values"] else None
-        self.net_ip_addr = None
 
         self.bri_icon_name = "view-refresh-symbolic"
         self.bri_image = Gtk.Image.new_from_icon_name(self.bri_icon_name, Gtk.IconSize.MENU)
@@ -103,14 +97,6 @@ class Controls(Gtk.EventBox):
             if self.vol_label:
                 box.pack_start(self.vol_label, False, False, 0)
 
-        if "net" in self.settings["components"] and self.settings["net-interface"]:
-            if commands["netifaces"]:
-                box.pack_start(self.net_image, False, False, 4)
-                if self.net_label:
-                    box.pack_start(self.net_label, False, False, 0)
-            else:
-                print("'netifaces' python module not found")
-
         if "battery" in self.settings["components"]:
             box.pack_start(self.bat_image, False, False, 4)
             if self.bat_label:
@@ -119,10 +105,6 @@ class Controls(Gtk.EventBox):
         box.pack_start(self.pan_image, False, False, 4)
 
     def refresh_output(self):
-        if "net" in self.settings["components"] and self.settings["net-interface"]:
-            self.net_ip_addr = get_interface(self.settings["net-interface"])
-            GLib.idle_add(self.update_net, self.net_ip_addr)
-
         if "brightness" in self.settings["components"]:
             try:
                 self.bri_value = get_brightness(
@@ -154,15 +136,6 @@ class Controls(Gtk.EventBox):
     def refresh_bat(self):
         thread = create_background_task(self.refresh_bat_output, 5)
         thread.start()
-
-    def update_net(self, ip):
-        icon_name = "network-wired-symbolic" if ip else "network-wired-disconnected-symbolic"
-        if icon_name != self.net_icon_name:
-            update_image(self.net_image, icon_name, self.icon_size, self.icons_path)
-            self.net_icon_name = icon_name
-
-        if self.net_label:
-            self.net_label.set_text("{}".format(self.settings["net-interface"]))
 
     def update_brightness(self, get=True):
         icon_name = bri_icon_name(self.bri_value)
@@ -272,8 +245,6 @@ class PopupWindow(Gtk.Window):
         self.settings = settings
         self.position = position
 
-        self.net_icon_name = ""
-
         self.menu_box = None
         self.sink_box = None
 
@@ -352,7 +323,7 @@ class PopupWindow(Gtk.Window):
                 GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.RIGHT, True)
                 GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.BOTTOM, True)
 
-        check_key(settings, "commands", {"battery": "", "net": ""})
+        check_key(settings, "commands", {"battery": ""})
 
         add_sep = False
         if "brightness" in settings["components"]:
@@ -422,40 +393,6 @@ class PopupWindow(Gtk.Window):
         if add_sep:
             sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
             v_box.pack_start(sep, True, True, 10)
-
-        if "net" in settings["components"] and commands["netifaces"] and settings["net-interface"]:
-            event_box = Gtk.EventBox()
-            if "net" in settings["commands"] and settings["commands"]["net"]:
-                event_box.connect("enter_notify_event", self.on_enter_notify_event)
-                event_box.connect("leave_notify_event", self.on_leave_notify_event)
-
-                event_box.connect('button-press-event', self.launch, settings["commands"]["net"])
-
-            inner_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-            inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-            inner_vbox.pack_start(inner_hbox, True, True, 6)
-            v_box.pack_start(event_box, True, True, 0)
-
-            self.net_icon_name = "view-refresh-symbolic"
-            self.net_image = Gtk.Image.new_from_icon_name(self.net_icon_name, Gtk.IconSize.MENU)
-
-            icon_name = "network-wired-symbolic" if self.parent.net_ip_addr else "network-wired-disconnected-symbolic"
-
-            if icon_name != self.net_icon_name:
-                update_image(self.net_image, icon_name, self.icon_size, self.icons_path)
-                self.net_icon_name = icon_name
-
-            inner_hbox.pack_start(self.net_image, False, False, 6)
-
-            self.net_label = Gtk.Label("{}: {}".format(settings["net-interface"], self.parent.net_ip_addr))
-            inner_hbox.pack_start(self.net_label, False, True, 6)
-
-            if "net" in settings["commands"] and settings["commands"]["net"]:
-                img = Gtk.Image()
-                update_image(img, "pan-end-symbolic", self.icon_size, self.icons_path)
-                inner_hbox.pack_end(img, False, True, 4)
-
-            event_box.add(inner_vbox)
 
         if "battery" in settings["components"]:
             event_box = Gtk.EventBox()
@@ -646,13 +583,6 @@ class PopupWindow(Gtk.Window):
     def refresh(self, *args):
         if self.get_visible():
             self.refresh_sinks()
-            if "net" in self.settings["components"] and commands["netifaces"] and self.settings["net-interface"]:
-                if self.parent.net_icon_name != self.net_icon_name:
-                    update_image(self.net_image, self.parent.net_icon_name, self.icon_size, self.icons_path)
-                    self.net_icon_name = self.parent.net_icon_name
-
-                ip_addr = "disconnected" if not self.parent.net_ip_addr else self.parent.net_ip_addr
-                self.net_label.set_text("{}: {}".format(self.settings["net-interface"], ip_addr))
 
             if "battery" in self.settings["components"]:
                 if self.parent.bat_icon_name != self.bat_icon_name:

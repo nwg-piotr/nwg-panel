@@ -67,8 +67,8 @@ SKELETON_PANEL: dict = {
     "modules-center": [],
     "modules-right": [],
     "controls-settings": {
-        "components": ["net", "brightness", "volume", "battery"],
-        "commands": {"net": "", "battery": ""},
+        "components": ["brightness", "volume", "battery"],
+        "commands": {"battery": ""},
         "show-values": False,
         "interval": 1,
         "icon-size": 16,
@@ -77,7 +77,6 @@ SKELETON_PANEL: dict = {
         "click-closes": False,
         "root-css-name": "controls-overview",
         "css-name": "controls-window",
-        "net-interface": "",
         "battery-low-level": 20,
         "battery-low-interval": 3,
         "custom-items": [{"name": "Panel settings", "icon": "nwg-panel", "cmd": "nwg-panel-config"}],
@@ -3463,7 +3462,6 @@ class EditorWrapper(object):
         settings = self.panel["controls-settings"]
         defaults = {
             "components": [
-                "net",
                 "brightness",
                 "volume",
                 "battery",
@@ -3485,7 +3483,6 @@ class EditorWrapper(object):
             "click-closes": False,
             "root-css-name": "controls-overview",
             "css-name": "controls-window",
-            "net-interface": "",
             "battery-low-level": 20,
             "battery-low-interval": 3,
             "processes-label": voc["processes"],
@@ -3551,11 +3548,6 @@ class EditorWrapper(object):
         self.ctrl_comp_switcher.set_sensitive(is_command("pamixer"))
         self.ctrl_comp_switcher.set_active(settings["output-switcher"])
 
-        self.ctrl_comp_net = builder.get_object("ctrl-comp-net")
-        self.ctrl_comp_net.set_label(voc["network-interface"])
-        self.ctrl_comp_net.set_tooltip_text(voc["network-interface-tooltip"])
-        self.ctrl_comp_net.set_active("net" in settings["components"])
-
         self.ctrl_comp_battery = builder.get_object("ctrl-comp-battery")
         self.ctrl_comp_battery.set_label(voc["battery"])
         self.ctrl_comp_battery.set_tooltip_text(voc["battery-tooltip"])
@@ -3591,15 +3583,6 @@ class EditorWrapper(object):
 
         lbl = builder.get_object("lbl-css-name")
         lbl.set_text("{}:".format(voc["css-name"]))
-
-        self.ctrl_cdm_net = builder.get_object("ctrl-cmd-net")
-        self.ctrl_cdm_net.set_placeholder_text(voc["on-click-command"])
-        check_key(settings["commands"], "net", "")
-        self.ctrl_cdm_net.set_text(settings["commands"]["net"])
-
-        self.ctrl_net_name = builder.get_object("ctrl-net-name")
-        self.ctrl_net_name.set_placeholder_text(voc["name"])
-        self.ctrl_net_name.set_text(settings["net-interface"])
 
         self.ctrl_cdm_battery = builder.get_object("ctrl-cmd-battery")
         self.ctrl_cdm_battery.set_placeholder_text(voc["on-click-command"])
@@ -3699,13 +3682,6 @@ class EditorWrapper(object):
 
         settings["output-switcher"] = self.ctrl_comp_switcher.get_active()
 
-        if self.ctrl_comp_net.get_active():
-            if "net" not in settings["components"]:
-                settings["components"].append("net")
-        else:
-            if "net" in settings["components"]:
-                settings["components"].remove("net")
-
         if self.ctrl_comp_battery.get_active():
             if "battery" not in settings["components"]:
                 settings["components"].append("battery")
@@ -3720,8 +3696,6 @@ class EditorWrapper(object):
             if "processes" in settings["components"]:
                 settings["components"].remove("processes")
 
-        settings["commands"]["net"] = self.ctrl_cdm_net.get_text()
-        settings["net-interface"] = self.ctrl_net_name.get_text()
         settings["commands"]["battery"] = self.ctrl_cdm_battery.get_text()
         settings["processes-label"] = self.ctrl_comp_processes_label.get_text()
         settings["root-css-name"] = self.ctrl_root_css_name.get_text()
