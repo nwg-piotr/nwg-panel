@@ -292,17 +292,17 @@ def set_sort_order(btn, order):
     btn_name.set_label("          Name          ")
 
     if order == SortOrder.PID:
-        btn_pid.set_label("  PID  ⨞")
+        btn_pid.set_label("  PID  <")
     if order == SortOrder.PPID:
-        btn_ppid.set_label(" PPID ⨞")
+        btn_ppid.set_label(" PPID <")
     if order == SortOrder.USERNAME:
-        btn_owner.set_label(" Owner ⨞")
+        btn_owner.set_label(" Owner <")
     if order == SortOrder.CPU_PERCENT:
-        btn_cpu.set_label(" CPU% ⨞")
+        btn_cpu.set_label(" CPU% <")
     if order == SortOrder.MEMORY_PERCENT:
-        btn_mem.set_label(" Mem% ⨞")
+        btn_mem.set_label(" Mem% <")
     if order == SortOrder.NAME:
-        btn_name.set_label("          Name         ⨞")
+        btn_name.set_label("          Name         <")
 
     list_processes()
 
@@ -351,7 +351,7 @@ def main():
 
     global btn_pid, btn_ppid, btn_owner, btn_cpu, btn_mem, btn_name
 
-    btn_pid = Gtk.Button.new_with_label("  PID  ⨞")
+    btn_pid = Gtk.Button.new_with_label("  PID  <")
     btn_pid.connect("clicked", set_sort_order, SortOrder.PID)
     hbox.pack_start(btn_pid, False, False, 0)
     btn_pid.show()
