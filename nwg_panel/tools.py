@@ -281,10 +281,10 @@ def list_outputs(sway=False, tree=None, silent=False):
         monitors = json.loads(output)
         for item in monitors:
             outputs_dict[item["name"]] = {"x": item["x"],
-                                       "y": item["y"],
-                                       "width": item["width"],
-                                       "height": item["height"],
-                                       "monitor": None}
+                                          "y": item["y"],
+                                          "width": int(item["width"] / item["scale"]),
+                                          "height": int(item["height"] / item["scale"]),
+                                          "monitor": None}
             # swap for rotated displays
             if item["transform"] in [1, 3, 5, 7]:
                 outputs_dict[item["name"]]["width"] = item["height"]
@@ -431,7 +431,7 @@ def get_volume():
             output = cmd2string("pactl get-sink-volume 0")
             volumes = re.findall(r"/\s+(?P<volume>\d+)%\s+/", output)
             if volumes:
-                volumes = [ int(x) for x in volumes ]
+                volumes = [int(x) for x in volumes]
                 vol = volumes[0]
         except Exception as e:
             eprint(e)
@@ -754,7 +754,7 @@ def hyprctl(cmd, buf_size=2048):
     while True:
         buffer = s.recv(buf_size)
         if buffer:
-            output=b"".join([output, buffer])
+            output = b"".join([output, buffer])
         else:
             break
     s.close()
@@ -795,6 +795,7 @@ def h_get_activewindow():
     except Exception as e:
         eprint(e)
         return {}
+
 
 def h_modules_get_all():
     return h_list_monitors(), h_list_workspaces(), h_list_clients(), h_get_activewindow()
