@@ -292,7 +292,7 @@ def list_outputs(sway=False, tree=None, silent=False):
 
     elif os.getenv('WAYLAND_DISPLAY') is not None:
         if not silent:
-            print("Running on Wayland, but not sway")
+            print("Running on Wayland, but neither sway nor Hyprland")
         if nwg_panel.common.commands["wlr-randr"]:
             lines = subprocess.check_output("wlr-randr", shell=True).decode("utf-8").strip().splitlines()
             if lines:
