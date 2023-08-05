@@ -86,6 +86,7 @@ his = os.getenv('HYPRLAND_INSTANCE_SIGNATURE')
 if his:
     from nwg_panel.modules.hyprland_taskbar import HyprlandTaskbar
     from nwg_panel.modules.hyprland_workspaces import HyprlandWorkspaces
+    from nwg_panel.modules.hyprland_keyboard import HyprlandKeyboard
 last_client_addr = ""
 last_client_title = ""
 
@@ -227,6 +228,13 @@ def hypr_watcher():
 
             last_client_addr = ""
             last_client_title = ""
+            continue
+
+        if event_name == "activelayout":
+            devices = h_get_devices()
+            for item in common.h_keyboard_list:
+                GLib.timeout_add(0, item.refresh, devices)
+
 
 
 def on_i3ipc_event(i3conn, event):
@@ -263,10 +271,11 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
     # list initial data for Hyprland modules
     if his:
-        if "hyprland-workspaces" in content_list or "hyprland-taskbar" in content_list:
+        if "hyprland-workspaces" in content_list or "hyprland-taskbar" in content_list or "hyprland-keyboard" in content_list:
             monitors, workspaces, clients, activewindow = h_modules_get_all()
+            devices = h_get_devices()
         else:
-            monitors, workspaces, clients, activewindow = {}, {}, {}, {}
+            monitors, workspaces, clients, activewindow, devices = {}, {}, {}, {}, {}
 
     for item in content_list:
         if item == "sway-taskbar":
@@ -349,6 +358,17 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                     print("'hyprland-workspaces' not defined in this panel instance")
             else:
                 eprint("'hyprland-workspaces' ignored")
+
+        if item == "hyprland-keyboard":
+            if his:
+                if "hyprland-keyboard" in panel:
+                    keyboard = HyprlandKeyboard(panel["hyprland-keyboard"], devices)
+                    container.pack_start(keyboard, False, False, panel["items-padding"])
+                    common.h_keyboard_list.append(keyboard)
+                else:
+                    print("'hyprland-keyboard' not defined in this panel instance")
+            else:
+                eprint("'hyprland-keyboard' ignored")
 
         if "button-" in item:
             if item in panel:

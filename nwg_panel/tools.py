@@ -797,5 +797,14 @@ def h_get_activewindow():
         return {}
 
 
+def h_get_devices():
+    reply = hyprctl("j/devices")
+    try:
+        return json.loads(reply)
+    except Exception as e:
+        eprint(e)
+        return {}
+
+
 def h_modules_get_all():
     return h_list_monitors(), h_list_workspaces(), h_list_clients(), h_get_activewindow()
