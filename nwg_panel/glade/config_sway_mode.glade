@@ -105,7 +105,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkCheckButton" id="show default">
+          <object class="GtkCheckButton" id="show-default">
             <property name="label" translatable="yes">Show 'default'</property>
             <property name="name">all-outputs</property>
             <property name="visible">True</property>

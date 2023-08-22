@@ -289,7 +289,29 @@
                             <property name="halign">start</property>
                             <property name="margin-left">6</property>
                             <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Scratchpad</property>
+                            <property name="label" translatable="yes">Sway Scratchpad</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkListBoxRow">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <child>
+                      <object class="GtkEventBox" id="eb-sway-mode">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <child>
+                          <object class="GtkLabel" id="sway-mode">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="margin-left">6</property>
+                            <property name="margin-start">6</property>
+                            <property name="label" translatable="yes">Sway Mode</property>
                           </object>
                         </child>
                       </object>

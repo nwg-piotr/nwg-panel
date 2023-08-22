@@ -11,8 +11,7 @@ class SwayMode(Gtk.Box):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.settings = settings
         self.i3 = i3
-        self.mode = "default"
-        self.label = Gtk.Label.new(self.mode)
+        self.label = Gtk.Label.new("default")
 
         icon = Gtk.Image()
 

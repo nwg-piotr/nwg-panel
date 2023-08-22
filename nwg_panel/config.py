@@ -701,7 +701,8 @@ class EditorWrapper(object):
         builder.get_object("playerctl").set_text(voc["playerctl"])
         builder.get_object("sway-taskbar").set_text(voc["sway-taskbar"])
         builder.get_object("sway-workspaces").set_text(voc["sway-workspaces"])
-        builder.get_object("scratchpad").set_text(voc["scratchpad"])
+        builder.get_object("scratchpad").set_text(voc["sway-scratchpad"])
+        builder.get_object("sway-mode").set_text(voc["sway-mode"])
         builder.get_object("openweather").set_text(voc["openweather"])
         builder.get_object("dwl-tags").set_text(voc["dwl-tags"])
         builder.get_object("hyprland-taskbar").set_text(voc["hyprland-taskbar"])
@@ -728,6 +729,7 @@ class EditorWrapper(object):
             "sway-taskbar",
             "sway-workspaces",
             "scratchpad",
+            "sway-mode",
             "openweather",
             "brightness-slider",
             "dwl-tags",
@@ -764,6 +766,7 @@ class EditorWrapper(object):
         builder.get_object("eb-sway-taskbar").connect("button-press-event", self.edit_sway_taskbar)
         builder.get_object("eb-sway-workspaces").connect("button-press-event", self.edit_sway_workspaces)
         builder.get_object("eb-scratchpad").connect("button-press-event", self.edit_scratchpad)
+        builder.get_object("eb-sway-mode").connect("button-press-event", self.edit_sway_mode)
         builder.get_object("eb-openweather").connect("button-press-event", self.edit_openweather)
         builder.get_object("eb-brightness-slider").connect("button-press-event", self.edit_brightness_slider)
         builder.get_object("eb-dwl-tags").connect("button-press-event", self.edit_dwl_tags)
@@ -1147,15 +1150,17 @@ class EditorWrapper(object):
         elif self.edited == "playerctl":
             self.update_playerctl()
         elif self.edited == "sway-workspaces":
-            self.update_sway_workspaces()
+            self.update_swary_workspaces()
         elif self.edited == "scratchpad":
             self.update_scratchpad()
+        elif self.edited == "sway-mode":
+            self.update_sway_mode()
         elif self.edited == "executor":
             self.update_executor()
         elif self.edited == "swaync":
             self.update_swaync()
         elif self.edited == "tray":
-            self.update_tray()
+            self.update_tray()rrrr
         elif self.edited == "button":
             self.update_button()
         elif self.edited == "modules":
@@ -2367,6 +2372,7 @@ class EditorWrapper(object):
         self.scratchpad_angle.set_active_id(str(settings["angle"]))
 
         self.scratchpad_single_output = builder.get_object("single-output")
+        self.scratchpad_single_output.set_label(voc["single-output"])
         self.scratchpad_single_output.set_tooltip_text(voc["single-output-tooltip"])
         self.scratchpad_single_output.set_active(settings["single-output"])
 
@@ -2385,6 +2391,71 @@ class EditorWrapper(object):
             settings["angle"] = 0.0
 
         settings["single-output"] = self.scratchpad_single_output.get_active()
+
+        save_json(self.config, self.file)
+
+    def edit_sway_mode(self, *args):
+        self.load_panel()
+        self.edited = "sway-mode"
+        check_key(self.panel, "sway-mode", {})
+        settings = self.panel["sway-mode"]
+        defaults = {
+            "show-default": False,
+            "show-icon": True,
+            "css-name": "",
+            "icon-size": 16,
+            "angle": 0.0
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_sway_mode.glade"))
+        frame = builder.get_object("frame")
+        frame.set_label("  {}: SwayMode  ".format(voc["module"]))
+
+        builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
+        builder.get_object("lbl-css-name").set_text("{}:".format(voc["css-name"]))
+        builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
+
+        self.mode_css_name = builder.get_object("css-name")
+        self.mode_css_name.set_tooltip_text(voc["css-name-tooltip"])
+        self.mode_css_name.set_text(settings["css-name"])
+
+        self.mode_icon_size = builder.get_object("icon-size")
+        self.mode_icon_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
+        self.mode_icon_size.configure(adj, 1, 0)
+        self.mode_icon_size.set_value(settings["icon-size"])
+
+        self.mode_angle = builder.get_object("angle")
+        self.mode_angle.set_tooltip_text(voc["angle-tooltip"])
+        self.mode_angle.set_active_id(str(settings["angle"]))
+
+        self.mode_show_icon = builder.get_object("show-icon")
+        self.mode_show_icon.set_label(voc["show-icon"])
+        self.mode_show_icon.set_active(settings["show-icon"])
+
+        self.mode_show_default = builder.get_object("show-default")
+        self.mode_show_default.set_label(voc["show-default"])
+        self.mode_show_default.set_tooltip_text(voc["show-default-tooltip"])
+        self.mode_show_default.set_active(settings["show-default"])
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(frame)
+
+    def update_sway_mode(self, *args):
+        settings = self.panel["sway-mode"]
+        settings["css-name"] = self.mode_css_name.get_text()
+        settings["icon-size"] = int(self.mode_icon_size.get_value())
+
+        try:
+            settings["angle"] = float(self.mode_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
+
+        settings["show-icon"] = self.mode_show_icon.get_active()
+        settings["show-default"] = self.mode_show_default.get_active()
 
         save_json(self.config, self.file)
 
