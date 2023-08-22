@@ -34,6 +34,7 @@ class SwayMode(Gtk.Box):
 
         if settings["angle"] != 0.0:
             self.set_orientation(Gtk.Orientation.VERTICAL)
+            self.label.set_angle(settings["angle"])
 
         if settings["show-icon"]:
             self.pack_start(icon, False, False, 2)
