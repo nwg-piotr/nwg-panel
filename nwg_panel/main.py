@@ -47,6 +47,7 @@ from nwg_panel.modules.cpu_avg import CpuAvg
 from nwg_panel.modules.scratchpad import Scratchpad
 from nwg_panel.modules.dwl_tags import DwlTags
 from nwg_panel.modules.swaync import SwayNC
+from nwg_panel.modules.sway_mode import SwayMode
 
 try:
     from nwg_panel.modules.openweather import OpenWeather
@@ -305,6 +306,15 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 container.pack_start(scratchpad, False, False, panel["items-padding"])
             else:
                 eprint("'scratchpad' ignored")
+
+        if item == "sway-mode":
+            if sway:
+                if item not in panel:
+                    panel["sway-mode"] = {}
+                sway_mode = SwayMode(common.i3, panel[item], icons_path=icons_path)
+                container.pack_start(sway_mode, False, False, panel["items-padding"])
+            else:
+                eprint("'sway-mode' ignored")
 
         if item == "hyprland-taskbar":
             if "hyprland-taskbar" in panel:
