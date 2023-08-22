@@ -1160,7 +1160,7 @@ class EditorWrapper(object):
         elif self.edited == "swaync":
             self.update_swaync()
         elif self.edited == "tray":
-            self.update_tray()rrrr
+            self.update_tray()
         elif self.edited == "button":
             self.update_button()
         elif self.edited == "modules":
