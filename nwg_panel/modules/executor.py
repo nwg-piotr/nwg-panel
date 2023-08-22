@@ -24,7 +24,7 @@ class Executor(Gtk.EventBox):
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(self.box)
         self.image = Gtk.Image()
-        self.label = Gtk.Label("")
+        self.label = Gtk.Label.new("")
         self.icon_path = None
 
         check_key(settings, "script", "")

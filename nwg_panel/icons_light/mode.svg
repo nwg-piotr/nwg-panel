@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Crossroads icon by Arthur Shlain from Usefulicons.com -->
+
+<svg
+   xml:space="preserve"
+   version="1.1"
+   x="0px"
+   y="0px"
+   viewBox="0 0 6 6"
+   width="24"
+   height="24"
+   id="svg2"
+   sodipodi:docname="mode.svg"
+   inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+     id="defs2" /><sodipodi:namedview
+     id="namedview2"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="27.656401"
+     inkscape:cx="11.154741"
+     inkscape:cy="13.432695"
+     inkscape:window-width="2558"
+     inkscape:window-height="1378"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" /><path
+     id="path4"
+     style="color:#000000;fill:#eeeeee;stroke-width:0.0589543;-inkscape-stroke:none;fill-opacity:1"
+     d="m 5.5,0.5 -2.0273438,0.6943359 0.094238,0.097168 0.3208008,0.3295899 C 3.5866416,1.9462759 3.3569176,2.3172379 3.1845703,2.7036133 3.3693096,3.1109282 3.4910818,3.5348807 3.5708008,3.9404297 3.7348018,3.2037074 4.0281059,2.5933119 4.4174805,2.1655273 l 0.4067383,0.4179688 z m -5,0 L 1.1757984,2.5836734 1.5835491,2.164604 C 2.2115265,2.8549843 2.583163,4.0313729 2.583163,5.4152518 V 5.5 H 3.3296084 V 5.415252 c 0,-0.9321676 -0.158529,-2.6470601 -1.2189365,-3.7922861 L 2.5273954,1.1945577 2.4008678,1.15125 Z" /></svg>
