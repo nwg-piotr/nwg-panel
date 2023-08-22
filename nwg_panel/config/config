@@ -23,7 +23,9 @@
     "modules-center": [
       "clock"
     ],
-    "modules-right": [],
+    "modules-right": [
+      "sway-mode"
+    ],
     "controls-settings": {
       "components": [
         "brightness",
@@ -137,7 +139,18 @@
       "label-position": "right",
       "css-name": "button-custom",
       "icon-size": 16
-    }
+    },
+    "menu-start": "off",
+    "exclusive-zone": true,
+    "sigrt": 64,
+    "use-sigrt": false,
+    "scratchpad": {},
+    "sway-mode": {},
+    "openweather": {},
+    "brightness-slider": {},
+    "dwl-tags": {},
+    "hyprland-taskbar": {},
+    "hyprland-workspaces": {}
   },
   {
     "name": "panel-bottom",
