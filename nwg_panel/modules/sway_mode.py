@@ -13,7 +13,6 @@ class SwayMode(Gtk.Box):
         self.i3 = i3
         self.mode = "default"
         self.label = Gtk.Label.new(self.mode)
-        self.label.set_property("name", "executor")
 
         icon = Gtk.Image()
 
