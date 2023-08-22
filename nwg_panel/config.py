@@ -1150,7 +1150,7 @@ class EditorWrapper(object):
         elif self.edited == "playerctl":
             self.update_playerctl()
         elif self.edited == "sway-workspaces":
-            self.update_swary_workspaces()
+            self.update_sway_workspaces()
         elif self.edited == "scratchpad":
             self.update_scratchpad()
         elif self.edited == "sway-mode":
