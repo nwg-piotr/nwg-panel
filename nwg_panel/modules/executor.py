@@ -104,7 +104,7 @@ class Executor(Gtk.EventBox):
                 new_path = None
 
         if label:
-            self.label.set_text(label)
+            self.label.set_markup(label)
 
         # update widget visibility
         if new_path:
