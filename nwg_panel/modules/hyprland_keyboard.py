@@ -5,14 +5,31 @@ from gi.repository import Gtk, Gdk
 from nwg_panel.tools import check_key, update_image_fallback_desktop, hyprctl
 
 
-class HyprlandKeyboard(Gtk.Button):
+class HyprlandKeyboard(Gtk.EventBox):
     def __init__(self, settings, devices):
-        Gtk.Button.__init__(self)
+        Gtk.EventBox.__init__(self)
+
+        self.label = Gtk.Label.new("default")
+        self.add(self.label)
+
         self.settings = settings
+        defaults = {
+            "device": "",
+            "css-name": ""
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
 
         self.refresh(devices)
-        self.connect("clicked", self.on_click)
-        self.show()
+        self.connect("button-release-event", self.on_click)
+        self.add_events(Gdk.EventMask.SCROLL_MASK)
+        self.connect("scroll-event", self.on_scroll)
+
+        if self.settings["css-name"]:
+            self.set_property("name",self.settings["css-name"])
+        else:
+            self.set_property("name","executor-label")
+        self.show_all()
 
     def get_active_keymap(self, devices):
         if self.settings["device"]:
@@ -26,8 +43,13 @@ class HyprlandKeyboard(Gtk.Button):
 
     def refresh(self, devices):
         layout = self.get_active_keymap(devices)
-        self.set_label(layout)
-        
+        self.label.set_text(layout)
 
-    def on_click(self, button):
+    def on_click(self, event_box, button):
         hyprctl("switchxkblayout {} next".format(self.settings["device"]))
+
+    def on_scroll(self, button, event):
+        if event.direction == Gdk.ScrollDirection.UP:
+            hyprctl("switchxkblayout {} prev".format(self.settings["device"]))
+        elif event.direction == Gdk.ScrollDirection.DOWN:
+            hyprctl("switchxkblayout {} next".format(self.settings["device"]))
