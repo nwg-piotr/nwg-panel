@@ -15,7 +15,8 @@ class HyprlandKeyboard(Gtk.EventBox):
         self.settings = settings
         defaults = {
             "device": "",
-            "css-name": ""
+            "css-name": "",
+            "angle": 0.0
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -24,6 +25,10 @@ class HyprlandKeyboard(Gtk.EventBox):
         self.connect("button-release-event", self.on_click)
         self.add_events(Gdk.EventMask.SCROLL_MASK)
         self.connect("scroll-event", self.on_scroll)
+
+        if settings["angle"] != 0.0:
+            self.set_orientation(Gtk.Orientation.VERTICAL)
+            self.label.set_angle(settings["angle"])
 
         if self.settings["css-name"]:
             self.set_property("name",self.settings["css-name"])

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.40.0 -->
+<interface>
+  <requires lib="gtk+" version="3.24"/>
+  <object class="GtkFrame" id="frame">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="label-xalign">0.5</property>
+    <property name="shadow-type">out</property>
+    <child>
+      <!-- n-columns=2 n-rows=4 -->
+      <object class="GtkGrid" id="grid">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="margin-start">6</property>
+        <property name="margin-end">6</property>
+        <property name="margin-top">6</property>
+        <property name="margin-bottom">6</property>
+        <property name="row-spacing">10</property>
+        <property name="column-spacing">10</property>
+        <child>
+          <object class="GtkEntry" id="css-name">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="placeholder-text" translatable="yes">executor-label</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="lbl-css-name">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">CSS name:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">2</property>
+          </packing>
+        </child>
+
+        <child>
+          <object class="GtkEntry" id="device">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="placeholder-text" translatable="no">at-translated-set-2</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="lbl-device">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Device:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+
+        <child>
+          <object class="GtkEntry" id="format">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="placeholder-text" translatable="yes">{name}</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="lbl-format">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Format:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+
+
+        <child>
+          <object class="GtkComboBoxText" id="angle">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <items>
+              <item id="0.0" translatable="yes">0°</item>
+              <item id="90.0" translatable="yes">90°</item>
+              <item id="270.0" translatable="yes">270°</item>
+            </items>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="lbl-angle">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Angle:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <child type="label">
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">Module: HyprlandKeyboard</property>
+      </object>
+    </child>
+  </object>
+</interface>
