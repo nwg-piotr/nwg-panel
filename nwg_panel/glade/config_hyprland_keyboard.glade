@@ -8,7 +8,7 @@
     <property name="label-xalign">0.5</property>
     <property name="shadow-type">out</property>
     <child>
-      <!-- n-columns=2 n-rows=4 -->
+      <!-- n-columns=2 n-rows=5 -->
       <object class="GtkGrid" id="grid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -18,6 +18,19 @@
         <property name="margin-bottom">6</property>
         <property name="row-spacing">10</property>
         <property name="column-spacing">10</property>
+
+        <child>
+          <object class="GtkTable">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+
+
         <child>
           <object class="GtkEntry" id="css-name">
             <property name="visible">True</property>
@@ -46,7 +59,7 @@
           <object class="GtkEntry" id="device">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="placeholder-text" translatable="no">at-translated-set-2</property>
+            <property name="placeholder-text" translatable="no"></property>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -70,7 +83,7 @@
           <object class="GtkEntry" id="format">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="placeholder-text" translatable="yes">{name}</property>
+            <property name="placeholder-text" translatable="yes">{short}</property>
           </object>
           <packing>
             <property name="left-attach">1</property>

@@ -153,7 +153,7 @@ SKELETON_PANEL: dict = {
         "angle": 0.0
     },
     "hyprland-keyboard": {
-        "format": "{name}",
+        "format": "{short}",
         "device": "",
         "css-name": "executor-label",
         "angle": 0.0
@@ -1485,10 +1485,10 @@ class EditorWrapper(object):
     def edit_hyprland_keyboard(self, *args):
         self.load_panel()
         self.edited = "hyprland-keyboard"
-        check_key(self.panel, "hyprland_keyboard", {})
-        settings = self.panel["hyprland_keyboard"]
+        check_key(self.panel, "hyprland-keyboard", {})
+        settings = self.panel["hyprland-keyboard"]
         defaults = {
-            "format": "",
+            "format": "{short}",
             "css-name": "",
             "device": "",
             "angle": 0.0
@@ -1505,14 +1505,19 @@ class EditorWrapper(object):
         builder.get_object("lbl-css-name").set_text("{}:".format(voc["css-name"]))
         builder.get_object("lbl-device").set_text("{}:".format(voc["device"]))
 
-        self.hkb_format = builder.get_object("format")
-        self.hkb_format.set_text(settings["format"])
+        self.eb_format = builder.get_object("format")
+        self.eb_format.set_text(settings["format"])
+        self.eb_format.set_tooltip_text(voc["kb-format-tooltip"])
 
-        self.hkb_css_name = builder.get_object("css-name")
-        self.hkb_css_name.set_text(settings["css-name"])
+        self.eb_css_name = builder.get_object("css-name")
+        self.eb_css_name.set_text(settings["css-name"])
 
-        self.hkb_device = builder.get_object("device")
-        self.hkb_device.set_text(settings["device"])
+        self.eb_device = builder.get_object("device")
+        self.eb_device.set_text(settings["device"])
+        self.eb_device.set_tooltip_text(voc["hkb-device-tooltip"])
+
+        self.cb_angle = builder.get_object("angle")
+        self.cb_angle.set_active_id(str(settings["angle"]))
 
         for item in self.scrolled_window.get_children():
             item.destroy()
@@ -1520,15 +1525,15 @@ class EditorWrapper(object):
 
     def update_hyprland_keyboard(self):
         settings = self.panel["hyprland-keyboard"]
-        settings["css-name"] = self.hkb_css_name.get_text()
+        settings["css-name"] = self.eb_css_name.get_text()
 
         try:
-            settings["angle"] = float(self.hkb_angle.get_active_id())
+            settings["angle"] = float(self.cb_angle.get_active_id())
         except:
             settings["angle"] = 0.0
 
-        settings["device"] = self.hkb_device.get_text()
-        settings["format"] = self.hkb_format.get_text()
+        settings["device"] = self.eb_device.get_text()
+        settings["format"] = self.eb_format.get_text()
 
         save_json(self.config, self.file)
 

@@ -2,7 +2,7 @@
 
 from gi.repository import Gtk, Gdk
 
-from nwg_panel.tools import check_key, update_image_fallback_desktop, hyprctl
+from nwg_panel.tools import check_key, update_image_fallback_desktop, hyprctl, lookup_layout, eprint
 
 
 class HyprlandKeyboard(Gtk.EventBox):
@@ -14,6 +14,7 @@ class HyprlandKeyboard(Gtk.EventBox):
 
         self.settings = settings
         defaults = {
+            "format": "{short}",
             "device": "",
             "css-name": "",
             "angle": 0.0
@@ -27,7 +28,7 @@ class HyprlandKeyboard(Gtk.EventBox):
         self.connect("scroll-event", self.on_scroll)
 
         if settings["angle"] != 0.0:
-            self.set_orientation(Gtk.Orientation.VERTICAL)
+            #self.set_orientation(Gtk.Orientation.VERTICAL)
             self.label.set_angle(settings["angle"])
 
         if self.settings["css-name"]:
@@ -41,20 +42,37 @@ class HyprlandKeyboard(Gtk.EventBox):
             for kb in devices["keyboards"]:
                 if kb["name"] == self.settings["device"]:
                     return kb["active_keymap"]
+        kb = self.get_main_kb()
+        return kb["active_keymap"]
 
-        for kb in devices["keyboards"]:
+    def get_main_kb(self):
+        for kb in self.devices["keyboards"]:
             if kb["main"]:
-                return kb["active_keymap"]
+                return kb
+
+    def change_layout(self, direction):
+        status = hyprctl("switchxkblayout {kb} {direction}".format(kb = self.settings["device"], direction = direction))
+        if status != "ok":
+            hyprctl("switchxkblayout {kb} {direction}".format(kb = self.get_main_kb()["name"], direction = direction))
 
     def refresh(self, devices):
-        layout = self.get_active_keymap(devices)
-        self.label.set_text(layout)
+        self.devices = devices
+        layout_description = self.get_active_keymap(devices)
+        layout_dict = lookup_layout(layout_description)
+        try:
+            text = self.settings["format"].format(**layout_dict)
+        except:
+            text = ""
+            eprint("Invalid Hyprland-keyboard format.")
+            
+            
+        self.label.set_text(text)
 
     def on_click(self, event_box, button):
-        hyprctl("switchxkblayout {} next".format(self.settings["device"]))
+        self.change_layout("next")
 
     def on_scroll(self, button, event):
         if event.direction == Gdk.ScrollDirection.UP:
-            hyprctl("switchxkblayout {} prev".format(self.settings["device"]))
+            self.change_layout("prev")
         elif event.direction == Gdk.ScrollDirection.DOWN:
-            hyprctl("switchxkblayout {} next".format(self.settings["device"]))
+            self.change_layout("next")
