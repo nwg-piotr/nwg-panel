@@ -9,6 +9,7 @@ import time
 import socket
 import threading
 import re
+import glob
 
 import gi
 
@@ -565,23 +566,26 @@ def set_brightness(percent, device="", controller=""):
 def get_battery():
     percent, time, charging = 0, "", False
     success = False
-    try:
-        b = psutil.sensors_battery()
-        if b:
-            percent = int(round(b.percent, 0))
-            charging = b.power_plugged
-            seconds = b.secsleft
-            if seconds != psutil.POWER_TIME_UNLIMITED and seconds != psutil.POWER_TIME_UNKNOWN:
-                time = seconds2string(seconds)
-            else:
-                time = ""
-            success = True
-    except:
-        pass
+
+    battery_count = len(glob.glob("/sys/class/power_supply/BAT*"))
+    if battery_count <= 1:
+        try:
+            b = psutil.sensors_battery()
+            if b:
+                percent = int(round(b.percent, 0))
+                charging = b.power_plugged
+                seconds = b.secsleft
+                if seconds != psutil.POWER_TIME_UNLIMITED and seconds != psutil.POWER_TIME_UNKNOWN:
+                    time = seconds2string(seconds)
+                else:
+                    time = ""
+                success = True
+        except:
+            pass
 
     if not success and nwg_panel.common.commands["upower"]:
         lines = subprocess.check_output(
-            "upower -i $(upower -e | grep devices/battery) | grep --color=never -E 'state|to[[:space:]]full|to[[:space:]]empty|percentage'",
+            "LANG=en_US upower -i $(upower -e | grep devices/DisplayDevice) | grep --color=never -E 'state|to[[:space:]]full|to[[:space:]]empty|percentage'",
             shell=True).decode("utf-8").strip().splitlines()
         for line in lines:
             if "state:" in line:
@@ -590,7 +594,7 @@ def get_battery():
                 time = line.split(":")[1].strip()
             elif "percentage:" in line:
                 try:
-                    percent = int(line.split(":")[1].strip()[:-1])
+                    percent = round(float(line.split(":")[1].strip()[:-1]))
                 except:
                     pass
 
