@@ -299,7 +299,7 @@ class OpenWeather(Gtk.EventBox):
                     except:
                         print("Failed setting image from {}".format(new_path))
 
-            if self.alerts_json and "alerts" in self.alerts_json:
+            if self.alerts_json and "alerts" in self.alerts_json and self.alerts_json["alerts"]:
                 alert_path = os.path.join(self.weather_icons, "exclamation.svg")
                 try:
                     update_image(self.alert_image, alert_path, self.settings["icon-size"], fallback=False)
