@@ -868,7 +868,8 @@ class EditorWrapper(object):
             "homogeneous": True,
             "exclusive-zone": True,
             "sigrt": signal.SIGRTMAX,
-            "use-sigrt": False
+            "use-sigrt": False,
+            "start-hidden": False
         }
         for key in defaults:
             check_key(self.panel, key, defaults[key])
@@ -1034,6 +1035,10 @@ class EditorWrapper(object):
         self.panel_use_sigrt.set_label(voc["use-signal"])
         self.panel_use_sigrt.set_active(self.panel["use-sigrt"])
 
+        self.panel_start_hidden = builder.get_object("start-hidden")
+        self.panel_start_hidden.set_label(voc["start-hidden"])
+        self.panel_start_hidden.set_active(self.panel["start-hidden"])
+
         self.cb_homogeneous = builder.get_object("homogeneous")
         self.cb_homogeneous.set_active(self.panel["homogeneous"])
 
@@ -1127,6 +1132,7 @@ class EditorWrapper(object):
 
         self.panel["sigrt"] = int(self.panel_sigrt.get_value())
         self.panel["use-sigrt"] = self.panel_use_sigrt.get_active()
+        self.panel["start-hidden"] = self.panel_start_hidden.get_active()
 
         self.panel["homogeneous"] = self.cb_homogeneous.get_active()
 
