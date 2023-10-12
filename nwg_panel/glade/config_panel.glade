@@ -463,6 +463,19 @@
           </packing>
         </child>
         <child>
+          <object class="GtkCheckButton" id="start-hidden">
+            <property name="label" translatable="yes">start hidden</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">3</property>
+            <property name="top-attach">15</property>
+          </packing>
+        </child>
+        <child>
           <placeholder/>
         </child>
         <child>

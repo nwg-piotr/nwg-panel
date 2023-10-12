@@ -146,7 +146,7 @@ def rt_sig_handler(sig, frame):
             if win.is_visible():
                 win.hide()
             else:
-                win.show()
+                win.show_all()
 
 
 def restart():
@@ -625,6 +625,7 @@ def main():
             check_key(panel, "padding-vertical", 0)
             check_key(panel, "sigrt", 0)  # SIGRTMIN > hide_show_sig_num <= SIGRTMAX, (0 = disabled)
             check_key(panel, "use-sigrt", False)
+            check_key(panel, "start-hidden", False)
 
             window = Gtk.Window()
             global panel_windows_hide_show_sigs
@@ -833,7 +834,10 @@ def main():
             elif panel["position"] == "right":
                 GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.RIGHT, 1)
 
-            window.show_all()
+            if panel["use-sigrt"] and panel["start-hidden"]:
+                window.hide()
+            else:
+                window.show_all()
 
     if sway:
         common.outputs_num = num_active_outputs(common.i3.get_outputs())
