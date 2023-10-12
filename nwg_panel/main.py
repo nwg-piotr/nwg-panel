@@ -721,6 +721,7 @@ def main():
             hbox.set_property("margin-bottom", panel["padding-vertical"])
 
             left_box = Gtk.Box(orientation=o, spacing=panel["spacing"])
+            left_box.set_property("name", "left-box")
             inner_box.pack_start(left_box, False, True, 0)
             if panel["controls"] and panel["controls"] == "left":
                 monitor = None
@@ -747,11 +748,13 @@ def main():
             instantiate_content(panel, left_box, panel["modules-left"], icons_path=icons_path)
 
             center_box = Gtk.Box(orientation=o, spacing=panel["spacing"])
+            center_box.set_property("name", "center-box")
             inner_box.pack_start(center_box, True, False, 0)
             check_key(panel, "modules-center", [])
             instantiate_content(panel, center_box, panel["modules-center"], icons_path=icons_path)
 
             right_box = Gtk.Box(orientation=o, spacing=panel["spacing"])
+            right_box.set_property("name", "right-box")
             # Damn on the guy who invented `pack_start(child, expand, fill, padding)`!
             helper_box = Gtk.Box(orientation=o, spacing=0)
             helper_box.pack_end(right_box, False, False, 0)
