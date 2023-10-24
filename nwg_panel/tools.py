@@ -72,32 +72,36 @@ def get_app_dirs():
     return desktop_dirs
 
 
-def map_odd_desktop_files():
-    name2icon_dict = {}
-    for d in nwg_panel.common.app_dirs:
-        if os.path.exists(d):
-            for path in os.listdir(d):
-                if os.path.isfile(os.path.join(d, path)):
-                    if path.endswith(".desktop") and path.count(".") > 1:
-                        try:
-                            content = load_text_file(os.path.join(d, path))
-                        except Exception as e:
-                            eprint(e)
-                        if content:
-                            for line in content.splitlines():
-                                if line.startswith("[") and not line == "[Desktop Entry]":
-                                    break
-                                if line.upper().startswith("ICON="):
-                                    icon = line.split("=")[1]
-                                    name2icon_dict[path] = icon
-                                    break
-
-    return name2icon_dict
+# def map_odd_desktop_files():
+#     name2icon_dict = {}
+#     for d in nwg_panel.common.app_dirs:
+#         if os.path.exists(d):
+#             for path in os.listdir(d):
+#                 if os.path.isfile(os.path.join(d, path)):
+#                     if path.endswith(".desktop") and path.count(".") > 1:
+#                         try:
+#                             content = load_text_file(os.path.join(d, path))
+#                         except Exception as e:
+#                             eprint(e)
+#                         if content:
+#                             for line in content.splitlines():
+#                                 if line.startswith("[") and not line == "[Desktop Entry]":
+#                                     break
+#                                 if line.upper().startswith("ICON="):
+#                                     icon = line.split("=")[1]
+#                                     name2icon_dict[path] = icon
+#                                     break
+#
+#     return name2icon_dict
 
 
 def get_icon_name(app_name):
     if not app_name:
         return ""
+    # the name might've been already found in .desktop files and stored
+    if app_name in nwg_panel.common.app_name2icon_name:
+        return nwg_panel.common.app_name2icon_name[app_name]
+
     # GIMP returns "app_id": null and for some reason "class": "Gimp-2.10" instead of just "gimp".
     # Until the GTK3 version is released, let's make an exception for GIMP.
     if "GIMP" in app_name.upper():
@@ -114,13 +118,31 @@ def get_icon_name(app_name):
         if content:
             for line in content.splitlines():
                 if line.upper().startswith("ICON"):
-                    return line.split("=")[1]
+                    icon_name = line.split("=")[1]
+                    # store for further use
+                    nwg_panel.common.app_name2icon_name[app_name] = icon_name
+                    return icon_name
+
+        # Otherwise, we need to search all .desktop files
+        if os.path.isdir(d):
+            for a_file in os.listdir(d):
+                if app_name.lower() in a_file.lower():
+                    path = os.path.join(d, a_file)
+                    content = load_text_file(path)
+                    if content:
+                        for line in content.splitlines():
+                            if line.upper().startswith("ICON"):
+                                icon_name = line.split("=")[1]
+                                # store for further use
+                                nwg_panel.common.app_name2icon_name[app_name] = icon_name
+                                return icon_name
 
     # Search the dictionary made of .desktop files that use "reverse DNS"-style names, prepared on startup.
     # see: https://github.com/nwg-piotr/nwg-panel/issues/64
-    for key in nwg_panel.common.name2icon_dict.keys():
-        if app_name in key.split("."):
-            return nwg_panel.common.name2icon_dict[key]
+    # !!! This was case-sensitive, boo :/
+    # for key in nwg_panel.common.name2icon_dict.keys():
+    #     if app_name in key.split("."):
+    #         return nwg_panel.common.name2icon_dict[key]
 
     # if all above fails
     return app_name
@@ -633,8 +655,8 @@ def update_image_fallback_desktop(image, icon_name, icon_size, icons_path, fallb
         icon_from_desktop = get_icon_name(icon_name)
         if icon_from_desktop:
             # trim extension, if given and the definition is not a path
-            if "/" not in icon_from_desktop:
-                icon_from_desktop = os.path.splitext(icon_from_desktop)[0]
+            # if "/" not in icon_from_desktop:
+            #     icon_from_desktop = os.path.splitext(icon_from_desktop)[0]
 
             update_image(image, icon_from_desktop, icon_size, icons_path, fallback=fallback)
 

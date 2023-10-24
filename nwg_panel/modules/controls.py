@@ -177,7 +177,7 @@ class Controls(Gtk.EventBox):
         if self.settings["battery-low-interval"] > 0:
             t = int(time.time())
             global bat_critical_last_check
-            if not charging and t - bat_critical_last_check >= self.settings["battery-low-interval"] * 60 and value <= \
+            if not charging and t - bat_critical_last_check >= self.settings["battery-low-interval"] * 60 and value < \
                     self.settings["battery-low-level"]:
                 subprocess.Popen('notify-send "Battery low! ({}%)" -i {}'.format(value, icon_name), shell=True)
                 bat_critical_last_check = t

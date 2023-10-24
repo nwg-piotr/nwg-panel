@@ -18,6 +18,7 @@ dwl_instances = []
 app_dirs = []
 name2icon_dict = {}
 scratchpad_cons = {}
+app_name2icon_name = {}
 
 commands = {
     "light": False,
