@@ -116,6 +116,17 @@ def get_icon_name(app_name):
                 if line.upper().startswith("ICON"):
                     return line.split("=")[1]
 
+        # Otherwise, we need to search all .desktop files
+        if os.path.isdir(d):
+            for a_file in os.listdir(d):
+                if app_name.lower() in a_file.lower():
+                    path = os.path.join(d, a_file)
+                    content = load_text_file(path)
+                    if content:
+                        for line in content.splitlines():
+                            if line.upper().startswith("ICON"):
+                                return line.split("=")[1]
+
     # Search the dictionary made of .desktop files that use "reverse DNS"-style names, prepared on startup.
     # see: https://github.com/nwg-piotr/nwg-panel/issues/64
     for key in nwg_panel.common.name2icon_dict.keys():
@@ -633,8 +644,8 @@ def update_image_fallback_desktop(image, icon_name, icon_size, icons_path, fallb
         icon_from_desktop = get_icon_name(icon_name)
         if icon_from_desktop:
             # trim extension, if given and the definition is not a path
-            if "/" not in icon_from_desktop:
-                icon_from_desktop = os.path.splitext(icon_from_desktop)[0]
+            # if "/" not in icon_from_desktop:
+            #     icon_from_desktop = os.path.splitext(icon_from_desktop)[0]
 
             update_image(image, icon_from_desktop, icon_size, icons_path, fallback=fallback)
 
