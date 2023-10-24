@@ -119,6 +119,7 @@ def get_icon_name(app_name):
             for line in content.splitlines():
                 if line.upper().startswith("ICON"):
                     icon_name = line.split("=")[1]
+                    # store for further use
                     nwg_panel.common.app_name2icon_name[app_name] = icon_name
                     return icon_name
 
@@ -132,11 +133,13 @@ def get_icon_name(app_name):
                         for line in content.splitlines():
                             if line.upper().startswith("ICON"):
                                 icon_name = line.split("=")[1]
+                                # store for further use
                                 nwg_panel.common.app_name2icon_name[app_name] = icon_name
                                 return icon_name
 
     # Search the dictionary made of .desktop files that use "reverse DNS"-style names, prepared on startup.
     # see: https://github.com/nwg-piotr/nwg-panel/issues/64
+    # !!! This was case-sensitive, boo :/
     # for key in nwg_panel.common.name2icon_dict.keys():
     #     if app_name in key.split("."):
     #         return nwg_panel.common.name2icon_dict[key]
