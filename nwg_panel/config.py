@@ -3633,7 +3633,7 @@ class EditorWrapper(object):
         self.ctrl_comp_battery_low_level = builder.get_object("ctrl-battery-low-level")
         self.ctrl_comp_battery_low_level.set_tooltip_text(voc["set-0-to-disable"])
         self.ctrl_comp_battery_low_level.set_numeric(True)
-        adj = Gtk.Adjustment(value=0, lower=1, upper=100, step_increment=1, page_increment=10, page_size=1)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=100, step_increment=1, page_increment=10, page_size=1)
         self.ctrl_comp_battery_low_level.configure(adj, 1, 0)
         self.ctrl_comp_battery_low_level.set_value(settings["battery-low-level"])
 
