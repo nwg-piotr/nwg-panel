@@ -759,6 +759,8 @@ def bat_icon_name(value, is_charging):
             icon_name = "battery-good-charging-symbolic"
         elif value > 19:
             icon_name = "battery-low-charging-symbolic"
+        else:
+            icon_name = "battery-empty-charging-symbolic"
     else:
         if value > 90:
             icon_name = "battery-full-symbolic"
