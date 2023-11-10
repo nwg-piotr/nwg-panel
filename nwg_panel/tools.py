@@ -451,7 +451,7 @@ def get_volume():
             pass
     elif nwg_panel.common.commands["pactl"]:
         try:
-            output = cmd2string("pactl get-sink-volume 0")
+            output = cmd2string("pactl get-sink-volume @DEFAULT_SINK@")
             volumes = re.findall(r"/\s+(?P<volume>\d+)%\s+/", output)
             if volumes:
                 volumes = [int(x) for x in volumes]
@@ -460,7 +460,7 @@ def get_volume():
             eprint(e)
 
         try:
-            output = cmd2string("pactl get-sink-mute 0").strip().lower()
+            output = cmd2string("pactl get-sink-mute @DEFAULT_SINK@").strip().lower()
             muted = output.endswith("yes")
         except Exception as e:
             eprint(e)
@@ -519,7 +519,7 @@ def toggle_mute(*args):
         else:
             subprocess.call("pamixer -m".split())
     elif nwg_panel.common.commands["pactl"]:
-        subprocess.call("pactl set-sink-mute 0 toggle".split())
+        subprocess.call("pactl set-sink-mute @DEFAULT_SINK@ toggle".split())
     else:
         eprint("Couldn't toggle mute, no 'pamixer' or 'pactl' found")
 
@@ -528,7 +528,7 @@ def set_volume(percent):
     if nwg_panel.common.commands["pamixer"]:
         subprocess.call("pamixer --set-volume {}".format(percent).split())
     elif nwg_panel.common.commands["pactl"]:
-        subprocess.call("pactl set-sink-volume 0 {}%".format(percent).split())
+        subprocess.call("pactl set-sink-volume @DEFAULT_SINK@ {}%".format(percent).split())
     else:
         eprint("Couldn't set volume, no 'pamixer' or 'pactl' found")
 
