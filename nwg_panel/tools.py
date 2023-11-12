@@ -13,6 +13,8 @@ import glob
 
 import gi
 
+import xml.etree.ElementTree as ET
+
 import nwg_panel.common
 
 gi.require_version('GdkPixbuf', '2.0')
@@ -22,8 +24,6 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk, Gdk, GdkPixbuf
 from shutil import copyfile
 from datetime import datetime
-
-import nwg_panel.common
 
 try:
     import psutil
@@ -44,6 +44,37 @@ def temp_dir():
         return os.getenv("TMP")
 
     return "/tmp"
+
+
+def xkb_dirs():
+    xkb_dirs = []
+    home = os.getenv("HOME")
+    xdg_config_home = os.getenv("XDG_CONFIG_HOME")
+    xdg_config_extra = os.getenv("XDG_CONFIG_EXTRA_PATH")
+    xdg_config_root = os.getenv("XDG_CONFIG_ROOT")
+    xdg_data_home = os.getenv("XDG_DATA_HOME")
+    sysconfdir = "/etc"
+    datadir = "/usr/share"
+
+    if xdg_config_home:
+        xkb_dirs.append(os.path.join(xdg_config_home, "xkb"))
+    elif home:
+        xkb_dirs.append(os.path.join(home, ".config/xkb"))
+
+    if home:
+        xkb_dirs.append(os.path.join(home, "xkb"))
+
+    if xdg_config_extra:
+        xkb_dirs.append(os.path.join(xdg_config_extra, "xkb"))
+    else:
+        xkb_dirs.append(os.path.join(sysconfdir, "xkb"))
+
+    if xdg_config_root:
+        xkb_dirs.append(os.path.join(xdg_config_root, "X11/xkb"))
+    else:
+        xkb_dirs.append(os.path.join(datadir, "X11/xkb"))
+
+    return xkb_dirs
 
 
 def get_app_dirs():
@@ -823,5 +854,69 @@ def h_get_activewindow():
         return {}
 
 
+def h_get_devices():
+    reply = hyprctl("j/devices")
+    try:
+        return json.loads(reply)
+    except Exception as e:
+        eprint(e)
+        return {}
+
+
 def h_modules_get_all():
     return h_list_monitors(), h_list_workspaces(), h_list_clients(), h_get_activewindow()
+
+
+def lookup_layout(description):
+    for xkb_dir in xkb_dirs():
+        rules = os.path.join(xkb_dir,"rules")
+        if os.path.exists(rules):
+            for file in os.listdir(rules):
+                if file.endswith(".xml"):
+                    layout_dict = parse_xml(os.path.join(rules,file), description)
+                    if layout_dict:
+                        return layout_dict
+
+def parse_xml(path, description):
+    tree = ET.parse(path)
+    layout_lookup_string = ".//layoutList/layout/configItem/[description='{}']".format(description)
+    variant_lookup_string = ".//layoutList/layout/variantList/variant/configItem/[description='{}']".format(description)
+    variant_layout_lookup_string = ".//layoutList/layout/variantList/variant/configItem/[description='{}']....../configItem".format(description)
+
+    layout_config_item = tree.find(layout_lookup_string)
+    if layout_config_item != None:
+        layout_name = layout_config_item.find("name").text
+        layout_short_desc = layout_config_item.find("shortDescription").text
+        return {
+            "short" : layout_name,
+            "shortDescription" : layout_short_desc,
+            "long" : description,
+            "variant" : "",
+            "layoutDescription" : description
+            }
+
+
+    variant_config_item = tree.find(variant_lookup_string)
+    if variant_config_item != None:
+        layout_config_item = tree.find(variant_layout_lookup_string)
+        layout_name = layout_config_item.find("name").text
+        layout_short_desc = layout_config_item.find("shortDescription").text
+        layout_desc = layout_config_item.find("description").text
+        variant_name = variant_config_item.find("name").text
+        return {
+            "short" : layout_name,
+            "shortDescription" : layout_short_desc,
+            "long" : description,
+            "variant" : variant_name,
+            "layoutDescription" :  layout_desc
+            }
+    
+    eprint("Keyboard layout not found")
+    return {
+        "short" : "",
+        "shortDescription" : "",
+        "long" : "",
+        "variant" : "",
+        "layoutDescription" : ""
+        }
+

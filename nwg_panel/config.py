@@ -152,6 +152,12 @@ SKELETON_PANEL: dict = {
         "mark-xwayland": True,
         "angle": 0.0
     },
+    "hyprland-keyboard": {
+        "format": "{short}",
+        "device": "",
+        "css-name": "executor-label",
+        "angle": 0.0
+    },
     "clock": {
         "format": "%a, %d. %b  %H:%M:%S",
         "tooltip-text": "",
@@ -707,6 +713,7 @@ class EditorWrapper(object):
         builder.get_object("dwl-tags").set_text(voc["dwl-tags"])
         builder.get_object("hyprland-taskbar").set_text(voc["hyprland-taskbar"])
         builder.get_object("hyprland-workspaces").set_text(voc["hyprland-workspaces"])
+        builder.get_object("hyprland-keyboard").set_text(voc["hyprland-keyboard"])
         builder.get_object("brightness-slider").set_text(voc["brightness-slider"])
         builder.get_object("executors").set_text(voc["executors"])
         builder.get_object("buttons").set_text(voc["buttons"])
@@ -735,6 +742,7 @@ class EditorWrapper(object):
             "dwl-tags",
             "hyprland-taskbar",
             "hyprland-workspaces",
+            "hyprland-keyboard",
             "tray"
         ]
 
@@ -772,6 +780,7 @@ class EditorWrapper(object):
         builder.get_object("eb-dwl-tags").connect("button-press-event", self.edit_dwl_tags)
         builder.get_object("eb-hyprland-taskbar").connect("button-press-event", self.edit_hyprland_taskbar)
         builder.get_object("eb-hyprland-workspaces").connect("button-press-event", self.edit_hyprland_workspaces)
+        builder.get_object("eb-hyprland-keyboard").connect("button-press-event", self.edit_hyprland_keyboard)
         builder.get_object("eb-executors").connect("button-press-event", self.select_executor)
         builder.get_object("eb-buttons").connect("button-press-event", self.select_button)
 
@@ -1181,6 +1190,8 @@ class EditorWrapper(object):
             self.update_hyprland_taskbar()
         elif self.edited == "hyprland-workspaces":
             self.update_hyprland_workspaces()
+        elif self.edited == "hyprland-keyboard":
+            self.update_hyprland_keyboard()
         elif self.edited == "openweather":
             self.update_openweather()
         elif self.edited == "brightness-slider":
@@ -1474,6 +1485,61 @@ class EditorWrapper(object):
             settings["angle"] = float(self.sb_angle.get_active_id())
         except Exception as e:
             settings["angle"] = 0.0
+
+        save_json(self.config, self.file)
+
+    def edit_hyprland_keyboard(self, *args):
+        self.load_panel()
+        self.edited = "hyprland-keyboard"
+        check_key(self.panel, "hyprland-keyboard", {})
+        settings = self.panel["hyprland-keyboard"]
+        defaults = {
+            "format": "{short}",
+            "css-name": "",
+            "device": "",
+            "angle": 0.0
+            }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_hyprland_keyboard.glade"))
+        frame = builder.get_object("frame")
+        frame.set_label("  {}: HyprlandKeyboard ".format(voc["module"]))
+
+        builder.get_object("lbl-format").set_text("{}:".format(voc["format"]))
+        builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
+        builder.get_object("lbl-css-name").set_text("{}:".format(voc["css-name"]))
+        builder.get_object("lbl-device").set_text("{}:".format(voc["device"]))
+
+        self.eb_format = builder.get_object("format")
+        self.eb_format.set_text(settings["format"])
+        self.eb_format.set_tooltip_text(voc["kb-format-tooltip"])
+
+        self.eb_css_name = builder.get_object("css-name")
+        self.eb_css_name.set_text(settings["css-name"])
+
+        self.eb_device = builder.get_object("device")
+        self.eb_device.set_text(settings["device"])
+        self.eb_device.set_tooltip_text(voc["hkb-device-tooltip"])
+
+        self.cb_angle = builder.get_object("angle")
+        self.cb_angle.set_active_id(str(settings["angle"]))
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(frame)
+
+    def update_hyprland_keyboard(self):
+        settings = self.panel["hyprland-keyboard"]
+        settings["css-name"] = self.eb_css_name.get_text()
+
+        try:
+            settings["angle"] = float(self.cb_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
+
+        settings["device"] = self.eb_device.get_text()
+        settings["format"] = self.eb_format.get_text()
 
         save_json(self.config, self.file)
 
