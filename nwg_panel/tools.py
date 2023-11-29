@@ -435,21 +435,7 @@ def create_background_task(target, interval, args=(), kwargs=None):
 def get_volume():
     vol = 0
     muted = False
-    if nwg_panel.common.commands["pamixer"]:
-        try:
-            output = cmd2string("pamixer --get-volume")
-            if output:
-                vol = int(cmd2string("pamixer --get-volume"))
-        except Exception as e:
-            eprint(e)
-
-        try:
-            muted = subprocess.check_output("pamixer --get-mute", shell=True).decode(
-                "utf-8").strip() == "true"
-        except subprocess.CalledProcessError:
-            # the command above returns the 'disabled` status w/ CalledProcessError, exit status 1
-            pass
-    elif nwg_panel.common.commands["pactl"]:
+    if nwg_panel.common.commands["pactl"]:
         try:
             output = cmd2string("pactl get-sink-volume @DEFAULT_SINK@")
             volumes = re.findall(r"/\s+(?P<volume>\d+)%\s+/", output)
@@ -464,6 +450,21 @@ def get_volume():
             muted = output.endswith("yes")
         except Exception as e:
             eprint(e)
+    elif nwg_panel.common.commands["pamixer"]:
+        try:
+            output = cmd2string("pamixer --get-volume")
+            if output:
+                vol = int(cmd2string("pamixer --get-volume"))
+        except Exception as e:
+            eprint(e)
+
+        try:
+            muted = subprocess.check_output("pamixer --get-mute", shell=True).decode(
+                "utf-8").strip() == "true"
+        except subprocess.CalledProcessError:
+            # the command above returns the 'disabled` status w/ CalledProcessError, exit status 1
+            pass
+
     else:
         eprint("Couldn't get volume, no 'pamixer' or 'pactl' found")
 

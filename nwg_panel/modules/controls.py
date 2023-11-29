@@ -551,17 +551,21 @@ class PopupWindow(Gtk.Window):
             c.destroy()
         for inp in sink_inputs:
             props = sink_inputs[inp]["Properties"]
-            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-            self.per_app_vol_box.pack_start(hbox, False, False, 0)
-            name = props["application.icon_name"] if "application.icon_name" in props else "emblem-music-symbolic"
-            img = Gtk.Image.new_from_icon_name(name, Gtk.IconSize.MENU)
-            hbox.pack_start(img, False, False, 0)
+            icon_name = props["application.icon_name"] if "application.icon_name" in props else "emblem-music-symbolic"
+            vol = 0
+            for p in sink_inputs[inp]["Volume"].split():
+                if p.endswith("%"):
+                    try:
+                        vol = int(p[:-1])
+                    except:
+                        pass
+            print("->", vol)
+
             name = f'{props["application.name"]} - {props["media.name"]}'
             if len(name) > 30:
                 name = "{}…".format(name[:30])
-            lbl = Gtk.Label.new(name)
-            hbox.pack_start(lbl, False, False, 0)
-            hbox.show()
+            scale = PerAppSlider(inp, vol, icon_name, props["application.name"], props["media.name"])
+            self.per_app_vol_box.pack_start(scale, False, False, 0)
             self.show_all()
         self.refresh()
 
@@ -694,6 +698,34 @@ class PopupWindow(Gtk.Window):
         subprocess.Popen('{}'.format(cmd), shell=True)
         self.hide()
         self.bcg_window.hide()
+
+
+class PerAppSlider(Gtk.Box):
+    def __init__(self, input_num, volume, icon_name, app_name, media_name):
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL)
+        self.set_property("margin-left", 6)
+        self.set_property("margin-right", 6)
+        self.input_num = input_num
+
+        img = Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.MENU)
+        self.pack_start(img, False, False, 0)
+
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.pack_start(vbox, True, True, 0)
+        name = f"{app_name} - {media_name}"
+        if len(name) > 40:
+            name = "{}…".format(name[:40])
+        lbl = Gtk.Label()
+        lbl.set_markup('<span size="small">{}</span>'.format(name))
+        vbox.pack_start(lbl, False, False, 0)
+        self.scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
+        self.scale.set_value(volume)
+        self.scale.set_draw_value(False)
+        vbox.pack_start(self.scale, True, True, 0)
+
+    def set_volume(self):
+        pass
+        # pactl set-sink-input-volume 36118 10
 
 
 class SinkBox(Gtk.Box):
