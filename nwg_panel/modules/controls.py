@@ -11,7 +11,7 @@ gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
 from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery, \
-    update_image, eprint, list_sinks, toggle_mute, create_background_task
+    update_image, eprint, list_sinks, toggle_mute, create_background_task, list_sink_inputs
 
 from nwg_panel.common import commands
 
@@ -390,6 +390,12 @@ class PopupWindow(Gtk.Window):
 
             add_sep = True
 
+        if "per-app-volume" in settings["components"] and commands["pactl"]:
+            self.per_app_vol_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+            v_box.pack_start(self.per_app_vol_box, False, False, 10)
+        else:
+            self.per_app_vol_box = None
+
         if add_sep:
             sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
             v_box.pack_start(sep, True, True, 10)
@@ -507,7 +513,7 @@ class PopupWindow(Gtk.Window):
         self.refresh(True)
 
     def schedule_refresh(self):
-        Gdk.threads_add_timeout(GLib.PRIORITY_LOW, 500, self.refresh, (True, ))
+        Gdk.threads_add_timeout(GLib.PRIORITY_LOW, 500, self.refresh, (True,))
 
     def set_up_bcg_window(self):
         self.bcg_window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
@@ -540,6 +546,23 @@ class PopupWindow(Gtk.Window):
 
     def on_window_show(self, *args):
         self.src_tag = 0
+        sink_inputs = list_sink_inputs()
+        for c in self.per_app_vol_box.get_children():
+            c.destroy()
+        for inp in sink_inputs:
+            props = sink_inputs[inp]["Properties"]
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+            self.per_app_vol_box.pack_start(hbox, False, False, 0)
+            name = props["application.icon_name"] if "application.icon_name" in props else "emblem-music-symbolic"
+            img = Gtk.Image.new_from_icon_name(name, Gtk.IconSize.MENU)
+            hbox.pack_start(img, False, False, 0)
+            name = f'{props["application.name"]} - {props["media.name"]}'
+            if len(name) > 30:
+                name = "{}…".format(name[:30])
+            lbl = Gtk.Label.new(name)
+            hbox.pack_start(lbl, False, False, 0)
+            hbox.show()
+            self.show_all()
         self.refresh()
 
     def switch_menu_box(self, widget, event):
