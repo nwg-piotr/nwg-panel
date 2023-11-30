@@ -636,9 +636,9 @@ class PopupWindow(Gtk.Window):
 
             if "per-app-volume" in self.settings["components"] and commands["pactl"]:
                 # list input numbers we already have a slider for
-                already_supported = []
+                already_have_slider = []
                 for s in self.per_app_sliders:
-                    already_supported.append(str(s.input_num))
+                    already_have_slider.append(str(s.input_num))
 
                 sink_inputs = list_sink_inputs()
                 inp_nums = []
@@ -646,7 +646,7 @@ class PopupWindow(Gtk.Window):
                     inp_nums.append(inp)
 
                 for inp in sink_inputs:
-                    if inp not in already_supported:
+                    if inp not in already_have_slider:
                         # We have no slider for input {inp}. Let's add it.
                         props = sink_inputs[inp]["Properties"]
                         icon_name = props[
