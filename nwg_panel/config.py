@@ -3548,6 +3548,7 @@ class EditorWrapper(object):
             },
             "show-values": False,
             "output-switcher": False,
+            "per-app-volume" : False,
             "backlight-controller": "light",
             "backlight-device": "",
             "interval": 1,
@@ -3622,8 +3623,13 @@ class EditorWrapper(object):
 
         self.ctrl_comp_switcher = builder.get_object("output-switcher")
         self.ctrl_comp_switcher.set_label(voc["output-switcher"])
-        self.ctrl_comp_switcher.set_sensitive(is_command("pamixer"))
+        self.ctrl_comp_switcher.set_sensitive(is_command("pactl") or is_command("pamixer"))
         self.ctrl_comp_switcher.set_active(settings["output-switcher"])
+
+        self.ctrl_per_app_vol = builder.get_object("per-app-volume")
+        self.ctrl_per_app_vol.set_label(voc["per-app-volume"])
+        self.ctrl_per_app_vol.set_active(settings["per-app-volume"])
+        self.ctrl_per_app_vol.set_active("per-app-volume" in settings["components"])
 
         self.ctrl_comp_battery = builder.get_object("ctrl-comp-battery")
         self.ctrl_comp_battery.set_label(voc["battery"])
@@ -3757,6 +3763,13 @@ class EditorWrapper(object):
         else:
             if "volume" in settings["components"]:
                 settings["components"].remove("volume")
+
+        if self.ctrl_per_app_vol.get_active():
+            if "per-app-volume" not in settings["components"]:
+                settings["components"].append("per-app-volume")
+        else:
+            if "per-app-volume" in settings["components"]:
+                settings["components"].remove("per-app-volume")
 
         settings["output-switcher"] = self.ctrl_comp_switcher.get_active()
 
