@@ -253,6 +253,8 @@ class PopupWindow(Gtk.Window):
         self.vol_scale = None
         self.vol_scale_handler = None
 
+        self.per_app_sliders = []
+
         self.src_tag = 0
 
         self.connect("show", self.on_window_show)
@@ -546,28 +548,31 @@ class PopupWindow(Gtk.Window):
 
     def on_window_show(self, *args):
         self.src_tag = 0
-        sink_inputs = list_sink_inputs()
-        for c in self.per_app_vol_box.get_children():
-            c.destroy()
-        for inp in sink_inputs:
-            props = sink_inputs[inp]["Properties"]
-            icon_name = props["application.icon_name"] if "application.icon_name" in props else "emblem-music-symbolic"
-            vol = 0
-            for p in sink_inputs[inp]["Volume"].split():
-                if p.endswith("%"):
-                    try:
-                        vol = int(p[:-1])
-                    except:
-                        pass
-            print("->", vol)
-
-            name = f'{props["application.name"]} - {props["media.name"]}'
-            if len(name) > 30:
-                name = "{}…".format(name[:30])
-            scale = PerAppSlider(inp, vol, icon_name, props["application.name"], props["media.name"])
-            self.per_app_vol_box.pack_start(scale, False, False, 0)
-            self.show_all()
+        if "per-app-volume" in self.settings["components"] and commands["pactl"]:
+            self.create_per_app_sliders()
         self.refresh()
+
+    def create_per_app_sliders(self):
+        self.per_app_sliders = []
+        sink_inputs = list_sink_inputs()
+        if self.per_app_vol_box:
+            for c in self.per_app_vol_box.get_children():
+                c.destroy()
+            for inp in sink_inputs:
+                props = sink_inputs[inp]["Properties"]
+                icon_name = props[
+                    "application.icon_name"] if "application.icon_name" in props else "emblem-music-symbolic"
+                vol = 0
+                for p in sink_inputs[inp]["Volume"].split():
+                    if p.endswith("%"):
+                        try:
+                            vol = int(p[:-1])
+                        except:
+                            pass
+                scale = PerAppSlider(inp, vol, icon_name, props["application.name"], props["media.name"])
+                self.per_app_sliders.append(scale)
+                self.per_app_vol_box.pack_start(scale, False, False, 0)
+        self.show_all()
 
     def switch_menu_box(self, widget, event):
         if self.menu_box.get_visible():
@@ -627,7 +632,35 @@ class PopupWindow(Gtk.Window):
                     update_image(self.vol_image, self.parent.vol_icon_name, self.icon_size, self.icons_path)
                     self.vol_icon_name = self.parent.vol_icon_name
                 self.vol_scale.set_draw_value(
-                    False if self.parent.vol_value > 100 else True)  # Dont display val out of scale
+                    False if self.parent.vol_value > 100 else True)  # Don't display val out of scale
+
+            if "per-app-volume" in self.settings["components"] and commands["pactl"]:
+                sink_inputs = list_sink_inputs()
+                inp_nums = []
+                for inp in sink_inputs:
+                    inp_nums.append(inp)
+
+                for inp in sink_inputs:
+                    vol = 0
+                    for p in sink_inputs[inp]["Volume"].split():
+                        if p.endswith("%"):
+                            try:
+                                vol = int(p[:-1])
+                            except:
+                                pass
+
+                    to_remove = []  # In case of the app is closed while popup still open
+                    for sc in self.per_app_sliders:
+                        if sc.input_num not in inp_nums:
+                            to_remove.append(sc)  # Mark to remove
+
+                        # set slider value
+                        if sc.input_num == inp:
+                            sc.scale.set_value(vol)
+
+                    for sc in to_remove:
+                        sc.destroy()
+                        self.per_app_sliders.remove(sc)
 
             if "brightness" in self.settings["components"]:
                 if not self.value_changed:
@@ -712,20 +745,22 @@ class PerAppSlider(Gtk.Box):
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.pack_start(vbox, True, True, 0)
-        name = f"{app_name} - {media_name}"
+        name = f"{app_name}: {media_name}"
         if len(name) > 40:
             name = "{}…".format(name[:40])
         lbl = Gtk.Label()
         lbl.set_markup('<span size="small">{}</span>'.format(name))
         vbox.pack_start(lbl, False, False, 0)
-        self.scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
+        self.scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=153, step=1)
+        self.scale.connect("value-changed", self.set_volume)
         self.scale.set_value(volume)
         self.scale.set_draw_value(False)
         vbox.pack_start(self.scale, True, True, 0)
 
-    def set_volume(self):
-        pass
-        # pactl set-sink-input-volume 36118 10
+    def set_volume(self, scale):
+        percent = scale.get_value()
+        target = int(65536 * percent / 100)
+        subprocess.Popen('exec pactl set-sink-input-volume {} {}'.format(self.input_num, target), shell=True)
 
 
 class SinkBox(Gtk.Box):

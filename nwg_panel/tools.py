@@ -486,7 +486,8 @@ def list_sink_inputs():
     sinks = dict()
 
     for oline in result.split("\n"):
-        if oline == "": continue  # Skip empty lines
+        if oline == "":
+            continue  # Skip empty lines
         # Indentation indicates the JSON structure
         indent = oline.count('\t')
         line = oline[indent:]
@@ -514,6 +515,7 @@ def list_sink_inputs():
             print("Unexpected line : ", oline)
             exit()
 
+    # eprint(json.dumps(sinks, indent=2))
     return sinks
 
 
