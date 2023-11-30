@@ -635,12 +635,34 @@ class PopupWindow(Gtk.Window):
                     False if self.parent.vol_value > 100 else True)  # Don't display val out of scale
 
             if "per-app-volume" in self.settings["components"] and commands["pactl"]:
+                # list input numbers we already have a slider for
+                already_supported = []
+                for s in self.per_app_sliders:
+                    already_supported.append(str(s.input_num))
+
                 sink_inputs = list_sink_inputs()
                 inp_nums = []
                 for inp in sink_inputs:
                     inp_nums.append(inp)
 
                 for inp in sink_inputs:
+                    if inp not in already_supported:
+                        # We have no slider for input {inp}. Let's add it.
+                        props = sink_inputs[inp]["Properties"]
+                        icon_name = props[
+                            "application.icon_name"] if "application.icon_name" in props else "emblem-music-symbolic"
+                        vol = 0
+                        for p in sink_inputs[inp]["Volume"].split():
+                            if p.endswith("%"):
+                                try:
+                                    vol = int(p[:-1])
+                                except:
+                                    pass
+                        scale = PerAppSlider(inp, vol, icon_name, props["application.name"], props["media.name"])
+                        self.per_app_sliders.append(scale)
+                        self.per_app_vol_box.pack_start(scale, False, False, 0)
+                        scale.show_all()
+
                     vol = 0
                     for p in sink_inputs[inp]["Volume"].split():
                         if p.endswith("%"):
@@ -649,7 +671,8 @@ class PopupWindow(Gtk.Window):
                             except:
                                 pass
 
-                    to_remove = []  # In case of the app is closed while popup still open
+                    # In case of the app is closed while popup still open
+                    to_remove = []
                     for sc in self.per_app_sliders:
                         if sc.input_num not in inp_nums:
                             to_remove.append(sc)  # Mark to remove
