@@ -13,12 +13,15 @@ class SwayWorkspaces(Gtk.Box):
         self.settings = settings
         self.i3 = i3
         self.num_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        self.num_box.set_property("name", "sway-workspaces")
         self.ws_num2box = {}
         self.ws_num2lbl = {}
         self.name_label = Gtk.Label()
+        self.name_label.set_property("name", "sway-workspaces-name")
         self.win_id = ""
         self.win_pid = None
         self.icon = Gtk.Image()
+        self.icon.set_property("name", "sway-workspaces-icon")
         self.layout_icon = Gtk.Image()
         self.icons_path = icons_path
         self.autotiling = load_autotiling()
@@ -98,6 +101,7 @@ class SwayWorkspaces(Gtk.Box):
         eb.connect('scroll-event', self.on_scroll)
 
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        box.set_property("name", "sway-workspaces-item")
         if self.settings["angle"] != 0.0:
             box.set_orientation(Gtk.Orientation.VERTICAL)
         eb.add(box)
