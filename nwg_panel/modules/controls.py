@@ -647,7 +647,6 @@ class PopupWindow(Gtk.Window):
 
                 for inp in sink_inputs:
                     if inp not in already_have_slider:
-                        print(f"Adding slider for input {inp}")
                         # We have no slider for input {inp}. Let's add it.
                         props = sink_inputs[inp]["Properties"]
                         icon_name = props[
