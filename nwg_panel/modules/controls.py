@@ -647,6 +647,7 @@ class PopupWindow(Gtk.Window):
 
                 for inp in sink_inputs:
                     if inp not in already_have_slider:
+                        print(f"Adding slider for input {inp}")
                         # We have no slider for input {inp}. Let's add it.
                         props = sink_inputs[inp]["Properties"]
                         icon_name = props[
@@ -671,19 +672,14 @@ class PopupWindow(Gtk.Window):
                             except:
                                 pass
 
-                    # In case of the app is closed while popup still open
-                    to_remove = []
                     for sc in self.per_app_sliders:
-                        if sc.input_num not in inp_nums:
-                            to_remove.append(sc)  # Mark to remove
-
-                        # set slider value
                         if sc.input_num == inp:
                             sc.scale.set_value(vol)
 
-                    for sc in to_remove:
+                # In case the app is closed while popup still open
+                for sc in self.per_app_sliders:
+                    if sc.input_num not in inp_nums:
                         sc.destroy()
-                        self.per_app_sliders.remove(sc)
 
             if "brightness" in self.settings["components"]:
                 if not self.value_changed:
