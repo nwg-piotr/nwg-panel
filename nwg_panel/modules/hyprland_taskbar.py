@@ -147,6 +147,7 @@ class ClientBox(Gtk.EventBox):
         if settings["show-app-icon"]:
             name = client["class"]
             image = Gtk.Image()
+            image.set_property("name", "task-box-icon")
             update_image_fallback_desktop(image, name, settings["image-size"], icons_path)
             self.box.pack_start(image, False, False, 4)
 

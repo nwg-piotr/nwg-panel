@@ -300,6 +300,7 @@
                   <object class="GtkListBoxRow">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <property name="selectable">False</property>
                     <child>
                       <object class="GtkEventBox" id="eb-sway-mode">
                         <property name="visible">True</property>
