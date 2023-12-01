@@ -10,9 +10,12 @@ class HyprlandWorkspaces(Gtk.Box):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.settings = settings
         self.num_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        self.num_box.set_property("name", "hyprland-workspaces")
         self.ws_id2name = None
         self.name_label = Gtk.Label()
+        self.name_label.set_property("name", "hyprland-workspaces-name")
         self.icon = Gtk.Image()
+        self.icon.set_property("name", "hyprland-workspaces-icon")
         self.floating_icon = Gtk.Image()
         self.icons_path = icons_path
 
@@ -66,6 +69,7 @@ class HyprlandWorkspaces(Gtk.Box):
             eb.set_property("name", "")
 
         box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        box.set_property("name", "hyprland-workspaces-item")
         if self.settings["angle"] != 0.0:
             box.set_orientation(Gtk.Orientation.VERTICAL)
         eb.add(box)
