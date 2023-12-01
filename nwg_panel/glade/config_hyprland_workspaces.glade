@@ -213,11 +213,11 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">start</property>
-            <property name="label" translatable="yes">&lt;b&gt;CSS IDs&lt;/b&gt;: 
+            <property name="label" translatable="yes">&lt;span size="small"&gt;&lt;b&gt;CSS IDs&lt;/b&gt;: 
 #hyprland-workspaces
 #hyprland-workspaces-item
 #hyprland-workspaces-icon 
-#hyprland-workspaces-name</property>
+#hyprland-workspaces-name&lt;/span&gt;</property>
             <property name="use-markup">True</property>
             <property name="wrap">True</property>
           </object>
