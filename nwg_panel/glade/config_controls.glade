@@ -426,7 +426,17 @@ on panel Controls widget pointed</property>
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkCheckButton" id="per-app-volume">
+            <property name="label" translatable="yes">Per-app volume</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">3</property>
+            <property name="top-attach">1</property>
+          </packing>
         </child>
         <child>
           <placeholder/>

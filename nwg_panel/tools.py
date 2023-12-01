@@ -435,21 +435,7 @@ def create_background_task(target, interval, args=(), kwargs=None):
 def get_volume():
     vol = 0
     muted = False
-    if nwg_panel.common.commands["pamixer"]:
-        try:
-            output = cmd2string("pamixer --get-volume")
-            if output:
-                vol = int(cmd2string("pamixer --get-volume"))
-        except Exception as e:
-            eprint(e)
-
-        try:
-            muted = subprocess.check_output("pamixer --get-mute", shell=True).decode(
-                "utf-8").strip() == "true"
-        except subprocess.CalledProcessError:
-            # the command above returns the 'disabled` status w/ CalledProcessError, exit status 1
-            pass
-    elif nwg_panel.common.commands["pactl"]:
+    if nwg_panel.common.commands["pactl"]:
         try:
             output = cmd2string("pactl get-sink-volume @DEFAULT_SINK@")
             volumes = re.findall(r"/\s+(?P<volume>\d+)%\s+/", output)
@@ -464,10 +450,73 @@ def get_volume():
             muted = output.endswith("yes")
         except Exception as e:
             eprint(e)
+    elif nwg_panel.common.commands["pamixer"]:
+        try:
+            output = cmd2string("pamixer --get-volume")
+            if output:
+                vol = int(cmd2string("pamixer --get-volume"))
+        except Exception as e:
+            eprint(e)
+
+        try:
+            muted = subprocess.check_output("pamixer --get-mute", shell=True).decode(
+                "utf-8").strip() == "true"
+        except subprocess.CalledProcessError:
+            # the command above returns the 'disabled` status w/ CalledProcessError, exit status 1
+            pass
+
     else:
         eprint("Couldn't get volume, no 'pamixer' or 'pactl' found")
 
     return vol, muted
+
+
+def list_sink_inputs():
+    """
+    Thanks to @fm16191 for https://github.com/fm16191/pactl-json-parser
+    """
+    p = subprocess.run("pactl list sink-inputs".split(), capture_output=True)
+    result = p.stdout.decode()
+
+    # Syntax fix
+    result = result.replace(u"\xa0", " ")  # Broken encoding for spaces
+    result = result.replace(u"\\\"", "\"")  # Replacing all espaced doublequote to inline singlequote (JSON compliant)
+    result = result.replace(u"\"", "\'")
+
+    sinks = dict()
+
+    for oline in result.split("\n"):
+        if oline == "":
+            continue  # Skip empty lines
+        # Indentation indicates the JSON structure
+        indent = oline.count('\t')
+        line = oline[indent:]
+        if indent == 0:  # Get sink name
+            sink_name = line.split("#")[-1]
+            sinks[sink_name] = {}
+        elif indent == 1:  # Get sink object
+            if line.startswith("        "):  # Output is over two lines
+                sinks[sink_name][name] = sinks[sink_name][name] + " " + line.strip()
+            else:
+                ii = line.index(":")
+                name = line[:ii].strip()
+                value = line[ii + 1:].strip()
+                sinks[sink_name][name] = value
+        elif indent == 2:  # Get sink object properties
+            if sinks[sink_name][name] == "":
+                sinks[sink_name][name] = {}
+            ii = line.index("=")
+            sub_name = line[:ii].strip()
+            sub_value = line[ii + 1:].strip()
+            if sub_value[0] == "'" and sub_value[-1] == "'":
+                sub_value = sub_value[1:-1]
+            sinks[sink_name][name][sub_name] = sub_value
+        else:  # Unexpected indentation
+            print("Unexpected line : ", oline)
+            exit()
+
+    # eprint(json.dumps(sinks, indent=2))
+    return sinks
 
 
 def list_sinks():

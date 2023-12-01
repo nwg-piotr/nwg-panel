@@ -11,7 +11,7 @@ gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
 from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery, \
-    update_image, eprint, list_sinks, toggle_mute, create_background_task
+    update_image, eprint, list_sinks, toggle_mute, create_background_task, list_sink_inputs
 
 from nwg_panel.common import commands
 
@@ -253,6 +253,8 @@ class PopupWindow(Gtk.Window):
         self.vol_scale = None
         self.vol_scale_handler = None
 
+        self.per_app_sliders = []
+
         self.src_tag = 0
 
         self.connect("show", self.on_window_show)
@@ -390,6 +392,12 @@ class PopupWindow(Gtk.Window):
 
             add_sep = True
 
+        if "per-app-volume" in settings["components"] and commands["pactl"]:
+            self.per_app_vol_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+            v_box.pack_start(self.per_app_vol_box, False, False, 10)
+        else:
+            self.per_app_vol_box = None
+
         if add_sep:
             sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
             v_box.pack_start(sep, True, True, 10)
@@ -507,7 +515,7 @@ class PopupWindow(Gtk.Window):
         self.refresh(True)
 
     def schedule_refresh(self):
-        Gdk.threads_add_timeout(GLib.PRIORITY_LOW, 500, self.refresh, (True, ))
+        Gdk.threads_add_timeout(GLib.PRIORITY_LOW, 500, self.refresh, (True,))
 
     def set_up_bcg_window(self):
         self.bcg_window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
@@ -540,7 +548,31 @@ class PopupWindow(Gtk.Window):
 
     def on_window_show(self, *args):
         self.src_tag = 0
+        if "per-app-volume" in self.settings["components"] and commands["pactl"]:
+            self.create_per_app_sliders()
         self.refresh()
+
+    def create_per_app_sliders(self):
+        self.per_app_sliders = []
+        sink_inputs = list_sink_inputs()
+        if self.per_app_vol_box:
+            for c in self.per_app_vol_box.get_children():
+                c.destroy()
+            for inp in sink_inputs:
+                props = sink_inputs[inp]["Properties"]
+                icon_name = props[
+                    "application.icon_name"] if "application.icon_name" in props else "emblem-music-symbolic"
+                vol = 0
+                for p in sink_inputs[inp]["Volume"].split():
+                    if p.endswith("%"):
+                        try:
+                            vol = int(p[:-1])
+                        except:
+                            pass
+                scale = PerAppSlider(inp, vol, icon_name, props["application.name"], props["media.name"])
+                self.per_app_sliders.append(scale)
+                self.per_app_vol_box.pack_start(scale, False, False, 0)
+        self.show_all()
 
     def switch_menu_box(self, widget, event):
         if self.menu_box.get_visible():
@@ -600,7 +632,53 @@ class PopupWindow(Gtk.Window):
                     update_image(self.vol_image, self.parent.vol_icon_name, self.icon_size, self.icons_path)
                     self.vol_icon_name = self.parent.vol_icon_name
                 self.vol_scale.set_draw_value(
-                    False if self.parent.vol_value > 100 else True)  # Dont display val out of scale
+                    False if self.parent.vol_value > 100 else True)  # Don't display val out of scale
+
+            if "per-app-volume" in self.settings["components"] and commands["pactl"]:
+                # list input numbers we already have a slider for
+                already_have_slider = []
+                for s in self.per_app_sliders:
+                    already_have_slider.append(str(s.input_num))
+
+                sink_inputs = list_sink_inputs()
+                inp_nums = []
+                for inp in sink_inputs:
+                    inp_nums.append(inp)
+
+                for inp in sink_inputs:
+                    if inp not in already_have_slider:
+                        # We have no slider for input {inp}. Let's add it.
+                        props = sink_inputs[inp]["Properties"]
+                        icon_name = props[
+                            "application.icon_name"] if "application.icon_name" in props else "emblem-music-symbolic"
+                        vol = 0
+                        for p in sink_inputs[inp]["Volume"].split():
+                            if p.endswith("%"):
+                                try:
+                                    vol = int(p[:-1])
+                                except:
+                                    pass
+                        scale = PerAppSlider(inp, vol, icon_name, props["application.name"], props["media.name"])
+                        self.per_app_sliders.append(scale)
+                        self.per_app_vol_box.pack_start(scale, False, False, 0)
+                        scale.show_all()
+
+                    vol = 0
+                    for p in sink_inputs[inp]["Volume"].split():
+                        if p.endswith("%"):
+                            try:
+                                vol = int(p[:-1])
+                            except:
+                                pass
+
+                    for sc in self.per_app_sliders:
+                        if sc.input_num == inp:
+                            sc.scale.set_value(vol)
+
+                # In case the app is closed while popup still open
+                for sc in self.per_app_sliders:
+                    if sc.input_num not in inp_nums:
+                        sc.destroy()
 
             if "brightness" in self.settings["components"]:
                 if not self.value_changed:
@@ -673,6 +751,36 @@ class PopupWindow(Gtk.Window):
         self.bcg_window.hide()
 
 
+class PerAppSlider(Gtk.Box):
+    def __init__(self, input_num, volume, icon_name, app_name, media_name):
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL)
+        self.set_property("margin-left", 6)
+        self.set_property("margin-right", 6)
+        self.input_num = input_num
+
+        img = Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.MENU)
+        self.pack_start(img, False, False, 0)
+
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.pack_start(vbox, True, True, 0)
+        name = f"{app_name}: {media_name}"
+        if len(name) > 40:
+            name = "{}…".format(name[:40])
+        lbl = Gtk.Label()
+        lbl.set_markup('<span size="small">{}</span>'.format(name))
+        vbox.pack_start(lbl, False, False, 0)
+        self.scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=153, step=1)
+        self.scale.connect("value-changed", self.set_volume)
+        self.scale.set_value(volume)
+        self.scale.set_draw_value(False)
+        vbox.pack_start(self.scale, True, True, 0)
+
+    def set_volume(self, scale):
+        percent = scale.get_value()
+        target = int(65536 * percent / 100)
+        subprocess.Popen('exec pactl set-sink-input-volume {} {}'.format(self.input_num, target), shell=True)
+
+
 class SinkBox(Gtk.Box):
     def __init__(self):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
@@ -717,7 +825,7 @@ class SinkBox(Gtk.Box):
 
     def switch_sink(self, w, e, sink):
         if commands["pactl"]:
-            print("Sink: '{}'".format(sink))
+            eprint("Sink: '{}'".format(sink))
             subprocess.Popen('exec pactl set-default-sink "{}"'.format(sink), shell=True)
         else:
             eprint("Couldn't switch sinks, 'pactl' (libpulse) not found")

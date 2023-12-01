@@ -95,7 +95,8 @@ class Playerctl(Gtk.EventBox):
             player.connect('playback-status', self.on_playback_status))
 
         # Manually set the initial state
-        self.on_metadata(player, player.props.metadata)
+        # self.on_metadata(player, player.props.metadata)
+        self.on_metadata(player, [])
 
     def deinit_player(self):
         if self.player:
@@ -129,7 +130,7 @@ class Playerctl(Gtk.EventBox):
     def on_metadata(self, player, metadata):
         try:
             cover_url = metadata["mpris:artUrl"]
-        except KeyError:
+        except:  # used to be on KeyError, but actual error is 'mpris:artUrl' for some reason (playerctl bug?)
             cover_url = ""
 
         if cover_url != self.old_cover_url:
