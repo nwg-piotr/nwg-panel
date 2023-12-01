@@ -825,7 +825,7 @@ class SinkBox(Gtk.Box):
 
     def switch_sink(self, w, e, sink):
         if commands["pactl"]:
-            print("Sink: '{}'".format(sink))
+            eprint("Sink: '{}'".format(sink))
             subprocess.Popen('exec pactl set-default-sink "{}"'.format(sink), shell=True)
         else:
             eprint("Couldn't switch sinks, 'pactl' (libpulse) not found")
