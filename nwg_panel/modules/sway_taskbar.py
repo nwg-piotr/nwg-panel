@@ -138,7 +138,9 @@ class WindowBox(Gtk.EventBox):
 
         self.old_name = ""
 
-        if con.focused:
+        if con.urgent:
+            self.box.set_property("name", "task-box-urgent")
+        elif con.focused:
             self.box.set_property("name", "task-box-focused")
         else:
             self.box.set_property("name", "task-box")
