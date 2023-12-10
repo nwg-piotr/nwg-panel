@@ -821,19 +821,22 @@ def load_shell_data():
 
 def hyprctl(cmd, buf_size=2048):
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    s.connect("/tmp/hypr/{}/.socket.sock".format(os.getenv("HYPRLAND_INSTANCE_SIGNATURE")))
+    try:
+        s.connect("/tmp/hypr/{}/.socket.sock".format(os.getenv("HYPRLAND_INSTANCE_SIGNATURE")))
+        s.send(cmd.encode("utf-8"))
 
-    s.send(cmd.encode("utf-8"))
-
-    output = b""
-    while True:
-        buffer = s.recv(buf_size)
-        if buffer:
-            output = b"".join([output, buffer])
-        else:
-            break
-    s.close()
-    return output.decode('utf-8')
+        output = b""
+        while True:
+            buffer = s.recv(buf_size)
+            if buffer:
+                output = b"".join([output, buffer])
+            else:
+                break
+        s.close()
+        return output.decode('utf-8')
+    except Exception as e:
+        eprint(f"hyprctl: {e}")
+        return ""
 
 
 def h_list_monitors():
