@@ -230,7 +230,7 @@ class PopupWindow(Gtk.Window):
         if monitor:
             GtkLayerShell.set_monitor(self, monitor)
 
-        check_key(settings, "backlight-controller", "light")
+        check_key(settings, "backlight-controller", "brightnessctl")
         check_key(settings, "backlight-device", "")
 
         check_key(settings, "css-name", "controls-window")

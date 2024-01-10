@@ -25,7 +25,7 @@ class BrightnessSlider(Gtk.EventBox):
             "angle": 0.0,
             "icon-placement": "start",
             "backlight-device": "",
-            "backlight-controller": "light",
+            "backlight-controller": "brightnessctl",
             "slider-orientation": "horizontal",
             "slider-inverted": False,
             "popup-icon-placement": "start",
