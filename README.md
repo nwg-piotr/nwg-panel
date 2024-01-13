@@ -14,7 +14,7 @@ There are 12 modules available at the moment, and I don't plan on many more. Bas
 Controls module, and whatever else you may need, 
 [there's an executor for that](https://github.com/nwg-piotr/nwg-panel/wiki/Some-useful-executors).
 
-![v015.png](https://raw.githubusercontent.com/nwg-piotr/nwg-shell-resources/master/images/nwg-shell/nwg-panel1.png)
+![2024-01-14-002616_hypr_screenshot](https://github.com/nwg-piotr/nwg-panel/assets/20579136/09866188-6819-4dfb-99df-40af53be859b)
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/nwg-panel.svg)](https://repology.org/project/nwg-panel/versions)
 
