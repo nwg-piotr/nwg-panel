@@ -15,7 +15,8 @@ Currently, we have a dozen of modules, and we don't plan on many more. Many mino
 may be easily done with [executors](https://github.com/nwg-piotr/nwg-panel/wiki/modules:-Executor).
 
 - **Controls module**: basis system controls like brightness slider, volume slider (w/ per-app sliders), battery 
-level w/ low level notification, system processes viewer, user-defined custom items, user-defined drop-down menu (power menu by default)
+level w/ low level notification, system processes viewer, user-defined custom items, user-defined drop-down menu 
+(which is the power menu by default)
 
 
 
