@@ -17,7 +17,23 @@ may be easily done with [executors](https://github.com/nwg-piotr/nwg-panel/wiki/
 - **Controls module**: basis system controls like brightness slider, volume slider (w/ per-app sliders), battery 
 level w/ low level notification, system processes viewer, user-defined custom items, user-defined drop-down menu 
 (which is the power menu by default)
-
+- **Brightness slider**: a separate brightness slider for use per monitor; features backlight via ddcutil.
+- **Clock**: system clock w/ a calendar popup built in
+- **Custom button**: a user-defined graphical/textual button you could bind an action to. By default, we use one as the 
+application launcher button
+- **DWL tags**: deprecated and no longer supported; will be deleted in the future
+- **Executor**: a useful module that executes user-provided code and displays the output in the panel as an icon and 
+text; see Wiki for more info
+- **Sway taskbar & Hyprland taskbar**: highly customizable modules to display a label with an icon for every running 
+window, together with some more info (workspace number, split orientation on sway, X-widows marker); right click opens 
+a menu that allows to move windows between workspaces, toggle floating and fullscreen, and also close windows.
+- **Sway & Hyprland workspaces**: display labels to navigate between workspaces with a marker for non-empty ones; next
+to the labels there's a field with currently focused window details
+- **Menu Start**: module provides integration of the XGD-style [nwg-menu](https://github.com/nwg-piotr/nwg-menu)
+- **Openweather**: displays weather forcast from OpenWeatherMap and weather alerts from weatherbit.io for given locations.
+- **Playerctl**: displays an icon and a label of the currently played tune, together with back / play-pause / forward 
+buttons
+- **Scratchpad**: displays info on current scratchpad content and allows to open scratchpad windows 
 
 
 
