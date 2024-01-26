@@ -1,4 +1,5 @@
-# nwg-panel
+<img src="https://github.com/nwg-piotr/nwg-panel/assets/20579136/36327f89-05b8-420d-998a-8f5f7d385545" width="90" style="margin-right:10px" align=left alt="nwg-shell logo">
+<H1>nwg-panel</H1><br>
 
 This application is a part of the [nwg-shell](https://nwg-piotr.github.io/nwg-shell) project.
 
