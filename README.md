@@ -11,8 +11,8 @@ manually edit configuration files.
 
 <img src="https://github.com/nwg-piotr/nwg-panel/assets/20579136/1aeb8990-f355-4ba9-80e3-9aa2a46730ca" width=640>
 
-Currently, we have a dozen of modules, and we don't plan on many more. Many minor tasks users request a module for may 
-be easily done achieved with [executors](https://github.com/nwg-piotr/nwg-panel/wiki/modules:-Executor).
+Currently, we have a dozen of modules, and we don't plan on many more. Many minor tasks that users request a module for,
+may be easily done with [executors](https://github.com/nwg-piotr/nwg-panel/wiki/modules:-Executor).
 
 - **Controls module**: basis system controls like brightness slider, volume slider (w/ per-app sliders), battery 
 level w/ low level notification, system processes viewer, user-defined custom items, user-defined drop-down menu (power menu by default)
