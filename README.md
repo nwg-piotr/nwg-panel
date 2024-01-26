@@ -9,7 +9,7 @@ manually edit configuration files.
 
 <img src="https://github.com/nwg-piotr/nwg-panel/assets/20579136/09866188-6819-4dfb-99df-40af53be859b" width=640><br>
 
-<img src="https://github.com/nwg-piotr/nwg-panel/assets/20579136/1aeb8990-f355-4ba9-80e3-9aa2a46730ca" width=640>
+<img src="https://github.com/nwg-piotr/nwg-panel/assets/20579136/1aeb8990-f355-4ba9-80e3-9aa2a46730ca" width=640><br>
 
 Currently, we have a dozen of modules, and we don't plan on many more. Many minor tasks that users request a module for,
 may be easily done with [executors](https://github.com/nwg-piotr/nwg-panel/wiki/modules:-Executor).
