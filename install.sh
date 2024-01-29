@@ -27,3 +27,6 @@ cp nwg-shell.svg $prefix/share/pixmaps/
 cp nwg-processes.svg $prefix/share/pixmaps/
 cp nwg-panel-config.desktop $prefix/share/applications/
 cp nwg-processes.desktop $prefix/share/applications/
+
+install -Dm 644 -t "/usr/share/licenses/nwg-panel" LICENSE
+install -Dm 644 -t "/usr/share/doc/nwg-panel" README.md
