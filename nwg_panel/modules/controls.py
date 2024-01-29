@@ -435,7 +435,7 @@ class PopupWindow(Gtk.Window):
             event_box = Gtk.EventBox()
             event_box.connect("enter_notify_event", self.on_enter_notify_event)
             event_box.connect("leave_notify_event", self.on_leave_notify_event)
-            event_box.connect('button-press-event', self.launch, "nwg-readme-browser")
+            event_box.connect('button-press-event', self.launch, "nwg-readme-browser -i")
 
             inner_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
