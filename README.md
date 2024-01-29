@@ -42,5 +42,4 @@ buttons
 If nwg-panel has not yet been packaged for your Linux distribution, you may install it by cloning this repository
 and running the `install.sh` script.
 
-See [Wiki](https://github.com/nwg-piotr/nwg-panel/wiki) for more information. You'll also find some useful
-executor examples there.
+See [Wiki](https://github.com/nwg-piotr/nwg-panel/wiki) for more information. You'll also find some useful executor examples there.
