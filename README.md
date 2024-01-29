@@ -3,7 +3,7 @@
 
 This application is a part of the [nwg-shell](https://nwg-piotr.github.io/nwg-shell) project.
 
-***Nwg-panel** is a GTK3-based panel for [sway](https://github.com/swaywm/sway) and [Hyprland](https://github.com/hyprwm/Hyprland) 
+**Nwg-panel** is a GTK3-based panel for [sway](https://github.com/swaywm/sway) and [Hyprland](https://github.com/hyprwm/Hyprland) 
 Wayland compositors. The panel is equipped with a graphical configuration program that frees the user from the need to 
 manually edit configuration files.
 
@@ -35,10 +35,12 @@ to the labels there's a field with currently focused window details
 buttons
 - **Scratchpad**: displays info on current scratchpad content and allows to open scratchpad windows 
 
-
-
+## Installation
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/nwg-panel.svg)](https://repology.org/project/nwg-panel/versions)
+
+If nwg-panel has not yet been packaged for your Linux distribution, you may install it by cloning this repository
+and running the `install.sh` script.
 
 See [Wiki](https://github.com/nwg-piotr/nwg-panel/wiki) for more information. You'll also find some useful
 executor examples there.
