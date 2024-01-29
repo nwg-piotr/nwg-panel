@@ -3542,7 +3542,8 @@ class EditorWrapper(object):
                 "brightness",
                 "volume",
                 "battery",
-                "processes"
+                "processes",
+                "readme"
             ],
             "commands": {
             },
@@ -3564,6 +3565,7 @@ class EditorWrapper(object):
             "battery-low-level": 20,
             "battery-low-interval": 3,
             "processes-label": voc["processes"],
+            "readme-label": "README",
             "angle": 0.0,
             "custom-items": [
                 {
@@ -3661,6 +3663,22 @@ class EditorWrapper(object):
         else:
             self.ctrl_comp_processes_label.set_text(settings["processes-label"])
         self.ctrl_comp_processes_label.set_tooltip_text(voc["processes-label-tooltip"])
+
+        self.ctrl_readme = builder.get_object("ctrl-readme")
+        self.ctrl_readme.set_tooltip_text(voc["readme-tooltip"])
+        self.ctrl_readme.set_active("readme" in settings["components"])
+
+        self.ctrl_readme_label = builder.get_object("ctrl-readme-label")
+        if not settings["readme-label"]:
+            self.ctrl_readme_label.set_placeholder_text("README")
+        else:
+            self.ctrl_readme_label.set_text(settings["readme-label"])
+        self.ctrl_readme_label.set_tooltip_text(voc["readme-label-tooltip"])
+
+        if not is_command("nwg-readme-browser"):
+            self.ctrl_readme.set_active(False)
+            self.ctrl_readme.set_sensitive(False)
+            self.ctrl_readme_label.set_sensitive(False)
 
         lbl = builder.get_object("lbl-root-css-name")
         lbl.set_text("{}:".format(voc["root-css-name"]))
@@ -3787,8 +3805,16 @@ class EditorWrapper(object):
             if "processes" in settings["components"]:
                 settings["components"].remove("processes")
 
+        if self.ctrl_readme.get_active():
+            if "readme" not in settings["components"]:
+                settings["components"].append("readme")
+        else:
+            if "readme" in settings["components"]:
+                settings["components"].remove("readme")
+
         settings["commands"]["battery"] = self.ctrl_cdm_battery.get_text()
         settings["processes-label"] = self.ctrl_comp_processes_label.get_text()
+        settings["readme-label"] = self.ctrl_readme_label.get_text()
         settings["root-css-name"] = self.ctrl_root_css_name.get_text()
         settings["css-name"] = self.ctrl_css_name.get_text()
         settings["battery-low-level"] = int(self.ctrl_comp_battery_low_level.get_value())
@@ -3869,13 +3895,13 @@ class ControlsCustomItems(Gtk.Frame):
             vbox.pack_start(hbox, False, False, 6)
 
             entry = Gtk.Entry()
-            entry.set_width_chars(10)
+            entry.set_width_chars(18)
             entry.set_text(item["name"])
             entry.connect("changed", self.update_value_from_entry, i, "name")
             hbox.pack_start(entry, False, False, 0)
 
             entry = Gtk.Entry()
-            entry.set_width_chars(10)
+            entry.set_width_chars(16)
             entry.set_text(item["icon"])
             update_icon(entry, self.icons)
             entry.connect("changed", self.update_icon, self.icons, i, "icon")
@@ -3888,7 +3914,7 @@ class ControlsCustomItems(Gtk.Frame):
                 hbox.pack_start(btn, False, False, 0)
 
             entry = Gtk.Entry()
-            entry.set_width_chars(12)
+            entry.set_width_chars(20)
             entry.set_text(item["cmd"])
             entry.connect("changed", self.update_value_from_entry, i, "cmd")
             hbox.pack_start(entry, True, False, 0)
@@ -4032,7 +4058,7 @@ class ControlsUserMenu(Gtk.Frame):
         hbox.pack_start(label, False, False, 6)
 
         entry = Gtk.Entry()
-        entry.set_width_chars(10)
+        entry.set_width_chars(20)
         entry.set_text(self.name)
         entry.connect("changed", self.update_prop_from_entry, "name")
         hbox.pack_start(entry, False, False, 0)
@@ -4069,13 +4095,13 @@ class ControlsUserMenu(Gtk.Frame):
             vbox.pack_start(hbox, False, False, 6)
 
             entry = Gtk.Entry()
-            entry.set_width_chars(15)
+            entry.set_width_chars(20)
             entry.set_text(item["name"])
             entry.connect("changed", self.update_value_from_entry, i, "name")
             hbox.pack_start(entry, False, False, 0)
 
             entry = Gtk.Entry()
-            entry.set_width_chars(25)
+            entry.set_width_chars(20)
             entry.set_text(item["cmd"])
             entry.connect("changed", self.update_value_from_entry, i, "cmd")
             hbox.pack_start(entry, False, False, 0)

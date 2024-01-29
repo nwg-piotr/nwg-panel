@@ -11,7 +11,7 @@ gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
 from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery, \
-    update_image, eprint, list_sinks, toggle_mute, create_background_task, list_sink_inputs
+    update_image, eprint, list_sinks, toggle_mute, create_background_task, list_sink_inputs, is_command
 
 from nwg_panel.common import commands
 
@@ -34,10 +34,11 @@ class Controls(Gtk.EventBox):
         check_key(settings, "leave-closes", True)
         check_key(settings, "click-closes", False)
         check_key(settings, "root-css-name", "controls-overview")
-        check_key(settings, "components", ["brightness", "battery", "volume", "processes"])
+        check_key(settings, "components", ["brightness", "battery", "volume", "readme", "processes"])
         check_key(settings, "angle", 0.0)
         check_key(settings, "battery-low-level", 20)
         check_key(settings, "battery-low-interval", 3)
+        check_key(settings, "readme-label", "README")
         check_key(settings, "processes-label", "Processes")
 
         self.set_property("name", settings["root-css-name"])
@@ -427,6 +428,31 @@ class PopupWindow(Gtk.Window):
                 img = Gtk.Image()
                 update_image(img, "pan-end-symbolic", self.icon_size, self.icons_path)
                 inner_hbox.pack_end(img, False, True, 4)
+
+            event_box.add(inner_vbox)
+
+        if "readme" in settings["components"] and is_command("nwg-readme-browser"):
+            event_box = Gtk.EventBox()
+            event_box.connect("enter_notify_event", self.on_enter_notify_event)
+            event_box.connect("leave_notify_event", self.on_leave_notify_event)
+            event_box.connect('button-press-event', self.launch, "nwg-readme-browser")
+
+            inner_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+            inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            inner_vbox.pack_start(inner_hbox, True, True, 6)
+            v_box.pack_start(event_box, True, True, 0)
+
+            self.proc_image = Gtk.Image()
+            update_image(self.proc_image, "nwg-readme-browser", self.icon_size, self.icons_path)
+
+            inner_hbox.pack_start(self.proc_image, False, False, 6)
+
+            self.proc_label = Gtk.Label.new(settings["readme-label"])
+            inner_hbox.pack_start(self.proc_label, False, True, 6)
+
+            img = Gtk.Image()
+            update_image(img, "pan-end-symbolic", self.icon_size, self.icons_path)
+            inner_hbox.pack_end(img, False, True, 4)
 
             event_box.add(inner_vbox)
 
