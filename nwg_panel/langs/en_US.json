@@ -166,6 +166,8 @@
   "processes": "Processes",
   "processes-label-tooltip": "Processes label in the Controls menu",
   "processes-tooltip": "Determines if to display the system processes menu entry.",
+  "readme-tooltip": "Determines if to display the common README browser menu entry.",
+  "readme-label-tooltip": "README label in the Controls menu",
   "refresh-interval": "Refresh interval [s]",
   "refresh-interval-tooltip": "Refresh interval in seconds.\nSet 0 for no auto-refresh.",
   "refresh-on-signal": "Refresh on signal",
