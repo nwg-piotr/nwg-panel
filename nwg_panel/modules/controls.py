@@ -781,7 +781,7 @@ class PopupWindow(Gtk.Window):
             elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
                 cmd = f"hyprctl dispatch exec '{cmd}'"
 
-        print("Executing: {cmd}")
+        print(f"Executing: {cmd}")
         subprocess.Popen('{}'.format(cmd), shell=True)
         self.hide()
         self.bcg_window.hide()
