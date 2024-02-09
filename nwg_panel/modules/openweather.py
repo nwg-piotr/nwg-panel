@@ -15,8 +15,8 @@ except ModuleNotFoundError:
     print("You need to install python-requests package", file=sys.stderr)
     sys.exit(1)
 
-from nwg_panel.tools import check_key, eprint, load_json, save_json, temp_dir, file_age, hms, update_image, \
-    get_config_dir, create_background_task
+from nwg_panel.tools import (check_key, eprint, load_json, save_json, temp_dir, file_age, hms, update_image,
+                             get_config_dir, create_background_task, cmd_through_compositor)
 
 config_dir = get_config_dir()
 dir_name = os.path.dirname(__file__)
@@ -240,8 +240,10 @@ class OpenWeather(Gtk.EventBox):
             print("No command assigned")
 
     def launch(self, cmd):
-        print("Executing '{}'".format(cmd))
-        subprocess.Popen('exec {}'.format(cmd), shell=True)
+        cmd = cmd_through_compositor(cmd)
+
+        print(f"Executing: {cmd}")
+        subprocess.Popen('{}'.format(cmd), shell=True)
 
     def get_weather(self):
         if not os.path.isfile(self.weather_file) or int(file_age(self.weather_file) > self.settings["interval"] - 1):
