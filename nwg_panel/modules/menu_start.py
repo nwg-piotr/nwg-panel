@@ -4,7 +4,7 @@ from gi.repository import Gtk
 
 import subprocess
 
-from nwg_panel.tools import check_key, update_image
+from nwg_panel.tools import check_key, update_image, cmd_through_compositor
 
 
 class MenuStart(Gtk.Button):
@@ -68,5 +68,7 @@ class MenuStart(Gtk.Button):
         if self.settings["width"] > 0:
             cmd += " -width {}".format(self.settings["width"])
 
-        print("Executing '{}'".format(cmd))
-        subprocess.Popen('exec {}'.format(cmd), shell=True)
+        cmd = cmd_through_compositor(cmd)
+
+        print(f"Executing: {cmd}")
+        subprocess.Popen('{}'.format(cmd), shell=True)
