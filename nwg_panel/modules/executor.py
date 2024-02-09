@@ -7,7 +7,7 @@ import signal
 import gi
 from gi.repository import GLib
 
-from nwg_panel.tools import check_key, update_image, create_background_task
+from nwg_panel.tools import check_key, update_image, create_background_task, get_config_dir, load_json
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -167,5 +167,13 @@ class Executor(Gtk.EventBox):
             print("No command assigned")
 
     def launch(self, cmd):
-        print("Executing '{}'".format(cmd))
-        subprocess.Popen('exec {}'.format(cmd), shell=True)
+        cs_file = os.path.join(get_config_dir(), "common-settings.json")
+        common_settings = load_json(cs_file)
+        if common_settings["run-through-compositor"] or "run-through-compositor" not in common_settings:
+            if os.getenv("SWAYSOCK"):
+                cmd = f"swaymsg exec '{cmd}'"
+            elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
+                cmd = f"hyprctl dispatch exec '{cmd}'"
+
+        print(f"Executing: {cmd}")
+        subprocess.Popen('{}'.format(cmd), shell=True)
