@@ -131,5 +131,7 @@ class SwayNC(Gtk.EventBox):
             print("No command assigned")
 
     def launch(self, cmd):
-        print("Executing '{}'".format(cmd))
-        subprocess.Popen('exec {}'.format(cmd), shell=True)
+        cmd = cmd_through_compositor(cmd)
+
+        print(f"Executing: {cmd}")
+        subprocess.Popen('{}'.format(cmd), shell=True)
