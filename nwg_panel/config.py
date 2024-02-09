@@ -27,7 +27,11 @@ cs_file = os.path.join(config_dir, "common-settings.json")
 if not os.path.isfile(cs_file):
     common_settings = {
         "restart-on-display": True,
-        "restart-delay": 500
+        "restart-delay": 500,
+        "processes-background-only": False,
+        "processes-own-only": True,
+        "processes-interval-ms": 2000,
+        "run-through-compositor": True
     }
     save_json(common_settings, cs_file)
 else:
