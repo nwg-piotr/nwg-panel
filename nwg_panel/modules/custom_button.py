@@ -5,7 +5,7 @@ from gi.repository import Gtk
 import os
 import subprocess
 
-from nwg_panel.tools import check_key, update_image, get_config_dir, load_json
+from nwg_panel.tools import check_key, update_image, cmd_through_compositor
 
 
 class CustomButton(Gtk.Button):
@@ -55,14 +55,7 @@ class CustomButton(Gtk.Button):
 
     def on_click(self, button, cmd):
         if cmd:
-            cs_file = os.path.join(get_config_dir(), "common-settings.json")
-            common_settings = load_json(cs_file)
-            if common_settings["run-through-compositor"] or "run-through-compositor" not in common_settings:
-                if os.getenv("SWAYSOCK"):
-                    cmd = f"swaymsg exec '{cmd}'"
-                elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
-                    cmd = f"hyprctl dispatch exec '{cmd}'"
-
+            cmd = cmd_through_compositor(cmd)
             print(f"Executing: {cmd}")
             subprocess.Popen('{}'.format(cmd), shell=True)
         else:
