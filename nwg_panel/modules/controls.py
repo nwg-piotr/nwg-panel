@@ -777,11 +777,11 @@ class PopupWindow(Gtk.Window):
         common_settings = load_json(cs_file)
         if common_settings["run-through-compositor"] or "run-through-compositor" not in common_settings:
             if os.getenv("SWAYSOCK"):
-                cmd = f"swaymsg exec {cmd}"
+                cmd = f"swaymsg exec '{cmd}'"
             elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
-                cmd = f"hyprctl dispatch exec {cmd}"
+                cmd = f"hyprctl dispatch exec '{cmd}'"
 
-        print("Executing '{}'".format(cmd))
+        print("Executing: {cmd}")
         subprocess.Popen('{}'.format(cmd), shell=True)
         self.hide()
         self.bcg_window.hide()
