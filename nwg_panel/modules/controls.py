@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import time
+import os
 import subprocess
 
 import gi
@@ -10,8 +11,9 @@ gi.require_version('Gdk', '3.0')
 gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
-from nwg_panel.tools import check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery, \
-    update_image, eprint, list_sinks, toggle_mute, create_background_task, list_sink_inputs, is_command
+from nwg_panel.tools import (check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery,
+                             update_image, eprint, list_sinks, toggle_mute, create_background_task, list_sink_inputs,
+                             is_command, cmd_through_compositor)
 
 from nwg_panel.common import commands
 
@@ -771,7 +773,8 @@ class PopupWindow(Gtk.Window):
         return e
 
     def launch(self, w, e, cmd):
-        print("Executing '{}'".format(cmd))
+        cmd = cmd_through_compositor(cmd)
+        print(f"Executing: {cmd}")
         subprocess.Popen('{}'.format(cmd), shell=True)
         self.hide()
         self.bcg_window.hide()

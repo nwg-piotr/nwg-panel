@@ -7,7 +7,7 @@ import signal
 import gi
 from gi.repository import GLib
 
-from nwg_panel.tools import check_key, update_image, create_background_task
+from nwg_panel.tools import check_key, update_image, create_background_task, cmd_through_compositor
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -167,5 +167,7 @@ class Executor(Gtk.EventBox):
             print("No command assigned")
 
     def launch(self, cmd):
-        print("Executing '{}'".format(cmd))
-        subprocess.Popen('exec {}'.format(cmd), shell=True)
+        cmd = cmd_through_compositor(cmd)
+
+        print(f"Executing: {cmd}")
+        subprocess.Popen('{}'.format(cmd), shell=True)

@@ -877,3 +877,14 @@ def h_get_activewindow():
 
 def h_modules_get_all():
     return h_list_monitors(), h_list_workspaces(), h_list_clients(), h_get_activewindow()
+
+
+def cmd_through_compositor(cmd):
+    cs_file = os.path.join(get_config_dir(), "common-settings.json")
+    common_settings = load_json(cs_file)
+    if "run-through-compositor" not in common_settings or common_settings["run-through-compositor"] :
+        if os.getenv("SWAYSOCK"):
+            cmd = f"swaymsg exec '{cmd}'"
+        elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
+            cmd = f"hyprctl dispatch exec '{cmd}'"
+    return cmd

@@ -27,7 +27,11 @@ cs_file = os.path.join(config_dir, "common-settings.json")
 if not os.path.isfile(cs_file):
     common_settings = {
         "restart-on-display": True,
-        "restart-delay": 500
+        "restart-delay": 500,
+        "processes-background-only": False,
+        "processes-own-only": True,
+        "processes-interval-ms": 2000,
+        "run-through-compositor": True
     }
     save_json(common_settings, cs_file)
 else:
@@ -290,6 +294,7 @@ def build_common_settings_window():
     check_key(common_settings, "restart-on-display", True)
     check_key(common_settings, "restart-delay", 500)
     check_key(common_settings, "processes-interval-ms", 2000)
+    check_key(common_settings, "run-through-compositor", True)
 
     win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
     win.set_modal(True)
@@ -299,7 +304,7 @@ def build_common_settings_window():
     win.add(vbox)
 
     frame = Gtk.Frame()
-    frame.set_label("  nwg-panel: Common settings  ")
+    frame.set_label(f"  nwg-panel: {voc['common-settings']}  ")
     frame.set_label_align(0.5, 0.5)
     vbox.pack_start(frame, True, True, 6)
 
@@ -309,32 +314,36 @@ def build_common_settings_window():
     grid.set_row_spacing(6)
     grid.set_property("margin", 12)
 
-    cb = Gtk.CheckButton.new_with_label("Restart on display connected")
+    cb = Gtk.CheckButton.new_with_label(voc["restart-on-display"])
     cb.set_active(common_settings["restart-on-display"])
     cb.connect("toggled", on_restart_check_button)
     grid.attach(cb, 0, 0, 3, 1)
 
-    lbl = Gtk.Label.new("Restart delay [ms]:")
+    lbl = Gtk.Label.new(f'{voc["restart-delay"]} [ms]:')
     lbl.set_property("halign", Gtk.Align.END)
     grid.attach(lbl, 0, 1, 1, 1)
 
     sb = Gtk.SpinButton.new_with_range(0, 30000, 100)
     sb.set_value(common_settings["restart-delay"])
     sb.connect("value-changed", set_int_from_spin_button, "restart-delay")
-    sb.set_tooltip_text("If, after turning a display off and back on, panels don't appear on it, it may mean\n"
-                        "the display responds too slowly (e.g. if turned via HDMI). Try increasing this value.")
+    sb.set_tooltip_text(voc["restart-delay-tooltip"])
     grid.attach(sb, 1, 1, 1, 1)
 
-    lbl = Gtk.Label.new("Processes polling rate [ms]:")
+    lbl = Gtk.Label.new(f'{voc["processes-polling-rate"]} [ms]:')
     lbl.set_property("halign", Gtk.Align.END)
     grid.attach(lbl, 0, 2, 1, 1)
 
     sb = Gtk.SpinButton.new_with_range(0, 30000, 100)
     sb.set_value(common_settings["processes-interval-ms"])
     sb.connect("value-changed", set_int_from_spin_button, "processes-interval-ms")
-    sb.set_tooltip_text("Interval for checking data on system processes by the nwg-processes tool.\n"
-                        "Default: 2000 ms. Set higher values for slower machines. Set 0 to stop refreshing.")
+    sb.set_tooltip_text(voc["processes-polling-rate-tooltip"])
     grid.attach(sb, 1, 2, 1, 1)
+
+    cb = Gtk.CheckButton.new_with_label(voc["run-through-compositor"])
+    cb.set_tooltip_text(voc["run-through-compositor-tooltip"])
+    cb.set_active(common_settings["run-through-compositor"])
+    cb.connect("toggled", on_compositor_check_button)
+    grid.attach(cb, 0, 3, 3, 1)
 
     hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
     vbox.pack_start(hbox, False, False, 6)
@@ -362,6 +371,11 @@ def set_int_from_spin_button(sb, config_key):
 def on_restart_check_button(cb):
     global common_settings
     common_settings["restart-on-display"] = cb.get_active()
+
+
+def on_compositor_check_button(cb):
+    global common_settings
+    common_settings["run-through-compositor"] = cb.get_active()
 
 
 def close_common_settings(btn, window):

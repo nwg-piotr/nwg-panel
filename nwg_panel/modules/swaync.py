@@ -4,7 +4,7 @@ from gi.repository import GLib
 
 import subprocess
 
-from nwg_panel.tools import check_key, update_image, create_background_task
+from nwg_panel.tools import check_key, update_image, create_background_task, cmd_through_compositor
 
 import gi
 
@@ -131,5 +131,7 @@ class SwayNC(Gtk.EventBox):
             print("No command assigned")
 
     def launch(self, cmd):
-        print("Executing '{}'".format(cmd))
-        subprocess.Popen('exec {}'.format(cmd), shell=True)
+        cmd = cmd_through_compositor(cmd)
+
+        print(f"Executing: {cmd}")
+        subprocess.Popen('{}'.format(cmd), shell=True)
