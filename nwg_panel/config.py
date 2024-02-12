@@ -2297,8 +2297,6 @@ class EditorWrapper(object):
     def update_menu_start(self):
         settings = self.panel["menu-start-settings"]
 
-        settings["width"] = int(self.ms_window_width.get_value())
-        settings["height"] = int(self.ms_window_height.get_value())
         settings["icon-size-large"] = int(self.ms_icon_size_large.get_value())
         settings["icon-size-small"] = int(self.ms_icon_size_small.get_value())
         settings["icon-size-button"] = int(self.ms_icon_size_button.get_value())
