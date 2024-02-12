@@ -2188,7 +2188,6 @@ class EditorWrapper(object):
             "cmd-shutdown": "systemctl -i poweroff",
             "autohide": True,
             "file-manager": "thunar",
-            "height": 0,
             "icon-size-large": 32,
             "icon-size-small": 16,
             "icon-size-button": 16,
@@ -2197,8 +2196,7 @@ class EditorWrapper(object):
             "margin-right": 0,
             "margin-top": 0,
             "padding": 2,
-            "terminal": "foot",
-            "width": 0
+            "terminal": "foot"
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -2207,8 +2205,6 @@ class EditorWrapper(object):
         frame = builder.get_object("frame")
         frame.set_label("{}: MenuStart  ".format(voc["plugin"]))
 
-        builder.get_object("lbl-window-width").set_text("{}:".format(voc["window-width"]))
-        builder.get_object("lbl-window-height").set_text("{}:".format(voc["window-height"]))
         builder.get_object("lbl-large-icon-size").set_text("{}:".format(voc["large-icon-size"]))
         builder.get_object("lbl-small-icon-size").set_text("{}:".format(voc["small-icon-size"]))
         builder.get_object("lbl-item-padding").set_text("{}:".format(voc["item-padding"]))
@@ -2223,20 +2219,6 @@ class EditorWrapper(object):
         builder.get_object("lbl-file-manager").set_text("{}:".format(voc["file-manager"]))
         builder.get_object("lbl-terminal-emulator").set_text("{}:".format(voc["terminal-emulator"]))
         builder.get_object("lbl-menu-button-icon-size").set_text("{}:".format(voc["menu-button-icon-size"]))
-
-        self.ms_window_width = builder.get_object("width")
-        self.ms_window_width.set_tooltip_text(voc["leave-0-for-auto"])
-        self.ms_window_width.set_numeric(True)
-        adj = Gtk.Adjustment(value=0, lower=0, upper=1921, step_increment=1, page_increment=10, page_size=1)
-        self.ms_window_width.configure(adj, 1, 0)
-        self.ms_window_width.set_value(settings["width"])
-
-        self.ms_window_height = builder.get_object("height")
-        self.ms_window_height.set_tooltip_text(voc["leave-0-for-auto"])
-        self.ms_window_height.set_numeric(True)
-        adj = Gtk.Adjustment(value=0, lower=0, upper=2161, step_increment=1, page_increment=10, page_size=1)
-        self.ms_window_height.configure(adj, 1, 0)
-        self.ms_window_height.set_value(settings["height"])
 
         self.ms_icon_size_large = builder.get_object("icon-size-large")
         self.ms_icon_size_large.set_numeric(True)
