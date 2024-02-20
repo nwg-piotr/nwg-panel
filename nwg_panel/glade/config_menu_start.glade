@@ -311,6 +311,19 @@
           </packing>
         </child>
         <child>
+          <object class="GtkLabel" id="lbl-menu-button-icon-size">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Menu button icon size:</property>
+            <property name="justify">right</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">16</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkCheckButton" id="autohide">
             <property name="label" translatable="yes">Close window when left</property>
             <property name="visible">True</property>
@@ -318,20 +331,6 @@
             <property name="receives-default">False</property>
             <property name="halign">start</property>
             <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">16</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="lbl-menu-button-icon-size">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="halign">end</property>
-            <property name="label" translatable="yes">Menu button
-icon size:</property>
-            <property name="justify">right</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -346,11 +345,21 @@ icon size:</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
-            <property name="top-attach">17</property>
+            <property name="top-attach">16</property>
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkCheckButton" id="compositor">
+            <property name="label" translatable="yes">Run through compositor</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">17</property>
+          </packing>
         </child>
         <child>
           <placeholder/>

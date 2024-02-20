@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 
 from gi.repository import Gtk
 
@@ -17,6 +18,7 @@ class MenuStart(Gtk.Button):
         self.set_property("name", "button-start")
 
         check_key(self.settings, "icon-size-button", 16)
+        check_key(self.settings, "run-through-compositor", True)
 
         image = Gtk.Image()
         update_image(image, "nwg-shell", self.settings["icon-size-button"], icons_path)
@@ -43,8 +45,6 @@ class MenuStart(Gtk.Button):
             cmd += " -fm {}".format(self.settings["file-manager"])
         if self.panel["menu-start"] == "right":
             cmd += " -ha {}".format(self.panel["menu-start"])
-        if self.settings["height"] > 0:
-            cmd += " -height {}".format(self.settings["height"])
         if self.settings["icon-size-large"] != 32:
             cmd += " -isl {}".format(self.settings["icon-size-large"])
         if self.settings["icon-size-small"] != 16:
@@ -65,8 +65,12 @@ class MenuStart(Gtk.Button):
             cmd += " -term {}".format(self.settings["terminal"])
         if self.panel["position"] != "bottom":
             cmd += " -va {}".format(self.panel["position"])
-        if self.settings["width"] > 0:
-            cmd += " -width {}".format(self.settings["width"])
+
+        if self.settings["run-through-compositor"]:
+            if os.getenv("SWAYSOCK"):
+                cmd += " -wm sway"
+            elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
+                cmd += " -wm hyprland"
 
         cmd = cmd_through_compositor(cmd)
 

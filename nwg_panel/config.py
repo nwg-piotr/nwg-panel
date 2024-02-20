@@ -2196,7 +2196,8 @@ class EditorWrapper(object):
             "margin-right": 0,
             "margin-top": 0,
             "padding": 2,
-            "terminal": "foot"
+            "terminal": "foot",
+            "run-through-compositor": True
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -2290,6 +2291,11 @@ class EditorWrapper(object):
         self.ms_autohide.set_label(voc["close-window-when-left"])
         self.ms_autohide.set_active(settings["autohide"])
 
+        self.ms_compositor = builder.get_object("compositor")
+        self.ms_compositor.set_label(voc["run-through-compositor"])
+        self.ms_compositor.set_tooltip_text(voc["run-through-compositor-tooltip"])
+        self.ms_compositor.set_active(settings["run-through-compositor"])
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -2333,6 +2339,10 @@ class EditorWrapper(object):
         val = self.ms_autohide.get_active()
         if val is not None:
             settings["autohide"] = val
+
+        val = self.ms_compositor.get_active()
+        if val is not None:
+            settings["run-through-compositor"] = val
 
         save_json(self.config, self.file)
 
