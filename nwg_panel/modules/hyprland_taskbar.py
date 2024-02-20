@@ -144,6 +144,7 @@ class ClientBox(Gtk.EventBox):
         else:
             self.connect('button-press-event', self.on_click, client, self.box)
 
+        image = None
         if settings["show-app-icon"]:
             name = client["class"]
             image = Gtk.Image()
@@ -151,15 +152,20 @@ class ClientBox(Gtk.EventBox):
             update_image_fallback_desktop(image, name, settings["image-size"], icons_path)
             self.box.pack_start(image, False, False, 4)
 
+        name = client["title"][:settings["name-max-len"]]
+        if settings["mark-xwayland"] and client["xwayland"]:
+            name = "X|" + name
+
         if settings["show-app-name"]:
             if not client["workspace"]["name"] == "special" or settings["show-app-name-special"]:
                 lbl = Gtk.Label()
                 lbl.set_angle(self.settings["angle"])
-                name = client["title"][:settings["name-max-len"]]
-                if settings["mark-xwayland"] and client["xwayland"]:
-                    name = "X|" + name
+
                 lbl.set_text(name)
                 self.box.pack_start(lbl, False, False, 6)
+        else:
+            if name and image:
+                image.set_tooltip_text(name)
 
         if settings["show-layout"]:
             if client["pinned"]:
