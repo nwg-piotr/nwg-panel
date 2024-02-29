@@ -28,20 +28,25 @@ class Controls(Gtk.EventBox):
         self.icons_path = icons_path
         Gtk.EventBox.__init__(self)
 
-        check_key(settings, "show-values", True)
-        check_key(settings, "icon-size", 16)
-        check_key(settings, "interval", 1)
-        check_key(settings, "icon-size", 16)
-        check_key(settings, "hover-opens", False)
-        check_key(settings, "leave-closes", True)
-        check_key(settings, "click-closes", False)
-        check_key(settings, "root-css-name", "controls-overview")
-        check_key(settings, "components", ["brightness", "battery", "volume", "readme", "processes"])
-        check_key(settings, "angle", 0.0)
-        check_key(settings, "battery-low-level", 20)
-        check_key(settings, "battery-low-interval", 3)
-        check_key(settings, "readme-label", "README")
-        check_key(settings, "processes-label", "Processes")
+        defaults = {
+            "show-brightness": False,
+            "show-volume": False,
+            "show-battery": True,
+            "icon-size": 16,
+            "interval": 1,
+            "hover-opens": True,
+            "leave-closes": False,
+            "click-closes": True,
+            "root-css-name": "controls-overview",
+            "components": ["brightness", "battery", "volume", "readme", "processes"],
+            "angle": 0,
+            "battery-low-level": 20,
+            "battery-low-interval": 3,
+            "readme-label": "README",
+            "processes-label": "Processes"
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
 
         self.set_property("name", settings["root-css-name"])
 
@@ -49,18 +54,18 @@ class Controls(Gtk.EventBox):
 
         self.bri_icon_name = "view-refresh-symbolic"
         self.bri_image = Gtk.Image.new_from_icon_name(self.bri_icon_name, Gtk.IconSize.MENU)
-        self.bri_label = Gtk.Label() if settings["show-values"] else None
+        self.bri_label = Gtk.Label() if settings["show-brightness"] else None
         self.bri_value = 0
 
         self.vol_icon_name = "view-refresh-symbolic"
         self.vol_image = Gtk.Image.new_from_icon_name(self.vol_icon_name, Gtk.IconSize.MENU)
-        self.vol_label = Gtk.Label() if settings["show-values"] else None
+        self.vol_label = Gtk.Label() if settings["show-volume"] else None
         self.vol_value = 0
         self.vol_muted = False
 
         self.bat_icon_name = "view-refresh-symbolic"
         self.bat_image = Gtk.Image.new_from_icon_name(self.bat_icon_name, Gtk.IconSize.MENU)
-        self.bat_label = Gtk.Label() if settings["show-values"] else None
+        self.bat_label = Gtk.Label() if settings["show-battery"] else None
         self.bat_value = 0
         self.bat_time = ""
         self.bat_charging = False
