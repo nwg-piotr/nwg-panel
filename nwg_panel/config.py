@@ -73,7 +73,9 @@ SKELETON_PANEL: dict = {
     "controls-settings": {
         "components": ["brightness", "volume", "battery"],
         "commands": {"battery": ""},
-        "show-values": False,
+        "show-brightness": False,
+        "show-volume": False,
+        "show-battery": True,
         "interval": 1,
         "icon-size": 16,
         "hover-opens": False,
@@ -2769,7 +2771,9 @@ class EditorWrapper(object):
         settings = self.panel["brightness-slider"]
 
         defaults = {
-            "show-values": True,
+            "show-brightness": False,
+            "show-volume": False,
+            "show-battery": True,
             "icon-size": 16,
             "interval": 10,
             "hover-opens": False,
@@ -3551,9 +3555,11 @@ class EditorWrapper(object):
             ],
             "commands": {
             },
-            "show-values": False,
+            "show-brightness": False,
+            "show-volume": False,
+            "show-battery": True,
             "output-switcher": False,
-            "per-app-volume" : False,
+            "per-app-volume": False,
             "backlight-controller": "brightnessctl",
             "backlight-device": "",
             "interval": 1,
@@ -3704,7 +3710,12 @@ class EditorWrapper(object):
         builder.get_object("lbl-interval").set_text("{}:".format(voc["refresh-interval"]))
         builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
         builder.get_object("angle").set_tooltip_text(voc["angle-tooltip"])
-        builder.get_object("show-values").set_label(voc["values-in-widget"])
+        builder.get_object("brightness-value").set_label(voc["brightness-value"])
+        builder.get_object("brightness-value").set_tooltip_text(voc["values-in-widget-tooltip"])
+        builder.get_object("volume-value").set_label(voc["volume-value"])
+        builder.get_object("volume-value").set_tooltip_text(voc["values-in-widget-tooltip"])
+        builder.get_object("battery-value").set_label(voc["battery-value"])
+        builder.get_object("battery-value").set_tooltip_text(voc["values-in-widget-tooltip"])
         builder.get_object("hover-opens").set_label(voc["widget-hover-opens"])
         builder.get_object("leave-closes").set_label(voc["window-leave-closes"])
         builder.get_object("click-closes").set_label(voc["click-outside-closes"])
@@ -3746,8 +3757,14 @@ class EditorWrapper(object):
         self.ctrl_interval.configure(adj, 1, 0)
         self.ctrl_interval.set_value(settings["interval"])
 
-        self.ctrl_show_values = builder.get_object("show-values")
-        self.ctrl_show_values.set_active(settings["show-values"])
+        self.ctrl_brightness_value = builder.get_object("brightness-value")
+        self.ctrl_brightness_value.set_active(settings["show-brightness"])
+
+        self.ctrl_volume_value = builder.get_object("volume-value")
+        self.ctrl_volume_value.set_active(settings["show-volume"])
+
+        self.ctrl_battery_value = builder.get_object("battery-value")
+        self.ctrl_battery_value.set_active(settings["show-battery"])
 
         self.ctrl_hover_opens = builder.get_object("hover-opens")
         self.ctrl_hover_opens.set_active(settings["hover-opens"])
@@ -3828,7 +3845,9 @@ class EditorWrapper(object):
         settings["window-margin-vertical"] = int(self.ctrl_window_margin_vertical.get_value())
         settings["icon-size"] = int(self.ctrl_icon_size.get_value())
         settings["interval"] = int(self.ctrl_interval.get_value())
-        settings["show-values"] = self.ctrl_show_values.get_active()
+        settings["show-brightness"] = self.ctrl_brightness_value.get_active()
+        settings["show-volume"] = self.ctrl_volume_value.get_active()
+        settings["show-battery"] = self.ctrl_battery_value.get_active()
         settings["hover-opens"] = self.ctrl_hover_opens.get_active()
         settings["leave-closes"] = self.ctrl_leave_closes.get_active()
         settings["click-closes"] = self.ctrl_click_closes.get_active()

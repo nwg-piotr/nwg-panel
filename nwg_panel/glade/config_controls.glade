@@ -194,66 +194,6 @@
           </packing>
         </child>
         <child>
-          <object class="GtkCheckButton" id="leave-closes">
-            <property name="label" translatable="yes">Window leave closes</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="tooltip-text" translatable="yes">Determines if to close the Controls
-window when left</property>
-            <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">16</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkCheckButton" id="click-closes">
-            <property name="label" translatable="yes">Click outside closes</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="tooltip-text" translatable="yes">Determines if to close the Controls
-window on mouse click outside it</property>
-            <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">16</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkCheckButton" id="show-values">
-            <property name="label" translatable="yes">Values in widget</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="tooltip-text" translatable="yes">Determines if show the Controls
-values in the panel widget</property>
-            <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">15</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkCheckButton" id="hover-opens">
-            <property name="label" translatable="yes">Widget hover opens</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="tooltip-text" translatable="yes">Determines if to open the Controls window
-on panel Controls widget pointed</property>
-            <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">15</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkLabel" id="lbl-angle">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -462,10 +402,94 @@ the horizontal, in degrees, measured counterclockwise</property>
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkCheckButton" id="hover-opens">
+            <property name="label" translatable="yes">Widget hover opens</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="tooltip-text" translatable="yes">Determines if to open the Controls window
+on panel Controls widget pointed</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">15</property>
+          </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkCheckButton" id="leave-closes">
+            <property name="label" translatable="yes">Window leave closes</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="tooltip-text" translatable="yes">Determines if to close the Controls
+window when left</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">15</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="click-closes">
+            <property name="label" translatable="yes">Click outside closes</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="tooltip-text" translatable="yes">Determines if to close the Controls
+window on mouse click outside it</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">3</property>
+            <property name="top-attach">15</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="brightness-value">
+            <property name="label" translatable="yes">Brightness value</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="tooltip-text" translatable="yes">Determines if show the Controls
+values in the panel widget</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">16</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="volume-value">
+            <property name="label" translatable="yes">Volume value</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="tooltip-text" translatable="yes">Determines if show the Controls
+values in the panel widget</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">16</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="battery-value">
+            <property name="label" translatable="yes">Battery value</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="tooltip-text" translatable="yes">Determines if show the Controls
+values in the panel widget</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">3</property>
+            <property name="top-attach">16</property>
+          </packing>
         </child>
         <child>
           <placeholder/>
