@@ -27,6 +27,16 @@ def list_keyboards():
     return keyboards
 
 
+def on_enter_notify_event(widget, event):
+    widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
+    widget.set_state_flags(Gtk.StateFlags.SELECTED, clear=False)
+
+
+def on_leave_notify_event(widget, event):
+    widget.unset_state_flags(Gtk.StateFlags.DROP_ACTIVE)
+    widget.unset_state_flags(Gtk.StateFlags.SELECTED)
+
+
 class KeyboardLayout(Gtk.EventBox):
     def __init__(self, settings, icons_path):
         self.settings = settings
@@ -82,9 +92,8 @@ class KeyboardLayout(Gtk.EventBox):
                 self.set_tooltip_text(settings["tooltip-text"])
 
             self.connect('button-press-event', self.on_button_press)
-
-            self.connect('enter-notify-event', self.on_enter_notify_event)
-            self.connect('leave-notify-event', self.on_leave_notify_event)
+            self.connect('enter-notify-event', on_enter_notify_event)
+            self.connect('leave-notify-event', on_leave_notify_event)
 
             self.build_box()
             self.refresh()
@@ -115,16 +124,8 @@ class KeyboardLayout(Gtk.EventBox):
         if self.settings["icon-placement"] != "left":
             self.box.pack_start(self.image, False, False, 6)
 
-    def on_enter_notify_event(self, widget, event):
-        widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
-        widget.set_state_flags(Gtk.StateFlags.SELECTED, clear=False)
-
-    def on_leave_notify_event(self, widget, event):
-        widget.unset_state_flags(Gtk.StateFlags.DROP_ACTIVE)
-        widget.unset_state_flags(Gtk.StateFlags.SELECTED)
-
     def on_left_click(self):
-        # apply to selected device
+        # apply to selected device, if any
         if self.settings["device-name"] != "all":
             hyprctl(f"switchxkblayout {self.settings['device-name']} next")
         # apply to all devices
