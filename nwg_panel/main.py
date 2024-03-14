@@ -48,6 +48,7 @@ from nwg_panel.modules.scratchpad import Scratchpad
 from nwg_panel.modules.dwl_tags import DwlTags
 from nwg_panel.modules.swaync import SwayNC
 from nwg_panel.modules.sway_mode import SwayMode
+from nwg_panel.modules.keyboard_layout import KeyboardLayout
 
 try:
     from nwg_panel.modules.openweather import OpenWeather
@@ -349,6 +350,15 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                     print("'hyprland-workspaces' not defined in this panel instance")
             else:
                 eprint("'hyprland-workspaces' ignored")
+
+        if item == "keyboard-layout":
+            if his:
+                if "keyboard-layout" not in panel:
+                    panel["keyboard-layout"] = {}
+                kb_layout = KeyboardLayout(panel["keyboard-layout"], icons_path)
+                container.pack_start(kb_layout, False, False, panel["items-padding"])
+            else:
+                eprint("KeyboardLayout module does not yet support sway")
 
         if "button-" in item:
             if item in panel:

@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
-
-import os
-import subprocess
+import json
+import time
 
 import gi
-from gi.repository import GLib
 
 from nwg_panel.tools import check_key, update_image, eprint, hyprctl
 
@@ -14,9 +12,23 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk, Gdk
 
 
+def get_kb_layout():
+    o = hyprctl("j/getoption input:kb_layout")
+    option = json.loads(o)
+    if option and "str" in option:
+        return option["str"].split(",")
+    return []
+
+
+def list_keyboards():
+    o = hyprctl("j/devices")
+    devices = json.loads(o)
+    keyboards = devices["keyboards"] if "keyboards" in devices else []
+    return keyboards
+
+
 class KeyboardLayout(Gtk.EventBox):
-    def __init__(self, settings, icons_path, executor_name):
-        self.name = executor_name
+    def __init__(self, settings, icons_path):
         self.settings = settings
         self.icons_path = icons_path
         Gtk.EventBox.__init__(self)
@@ -26,8 +38,16 @@ class KeyboardLayout(Gtk.EventBox):
         self.label = Gtk.Label.new("")
         self.icon_path = None
 
-        self.kb_layout = self.get_kb_layout()
+        print("KeyboardLayout module")
+        self.kb_layout = get_kb_layout()
+        print(f"kb_layout = {self.kb_layout}")
+        self.keyboards = list_keyboards()
+        self.keyboard_names = []
+        for k in self.keyboards:
+            self.keyboard_names.append(k["name"])
+        print(f"keyboard_names = {self.keyboard_names}")
 
+        check_key(settings, "device-name", "all")
         check_key(settings, "root-css-name", "root-executor")
         check_key(settings, "css-name", "")
         check_key(settings, "icon-placement", "left")
@@ -59,66 +79,25 @@ class KeyboardLayout(Gtk.EventBox):
 
         self.build_box()
         self.refresh()
+        self.show_all()
 
-    def get_kb_layout(self):
-        option = hyprctl("j/getoption input:kb_layout")
-        if option and "str" in option:
-            return option["str"]
-        return ""
-
-    def update_widget(self, output):
-        # parse output
-        label = new_path = None
-        if output:
-            output = [o.strip() for o in output]
-            if len(output) == 1:
-                if os.path.splitext(output[0])[1] in ('.svg', '.png'):
-                    new_path = output[0]
-                else:
-                    label = output[0]
-            elif len(output) == 2:
-                new_path, label = output
-
-        # update widget contents
-        if new_path and new_path != self.icon_path:
-            try:
-                update_image(self.image,
-                             new_path,
-                             self.settings["icon-size"],
-                             self.icons_path,
-                             fallback=False)
-                self.icon_path = new_path
-            except:
-                print("Failed setting image from {}".format(new_path))
-                new_path = None
-
-        if label:
-            self.label.set_markup(label)
-
-        # update widget visibility
-        if new_path:
-            if not self.image.get_visible():
-                self.image.show()
+    def get_current_layout(self):
+        if self.settings["device-name"] != "all":
+            for k in self.keyboards:
+                if k["name"] == self.settings["device-name"]:
+                    return k["active_keymap"]
+            return "unknown"
         else:
-            if self.image.get_visible():
-                self.image.hide()
-
-        if label:
-            if not self.label.get_visible():
-                self.label.show()
-        else:
-            if self.label.get_visible():
-                self.label.hide()
-
-        return False
+            for k in self.keyboards:
+                if "keyboard" in k["name"]:
+                    return k["active_keymap"]
+            return self.keyboards[0]["layout"]
 
     def refresh(self):
-        if "script" in self.settings and self.settings["script"]:
-            try:
-                output = subprocess.check_output(self.settings["script"].split()).decode("utf-8").splitlines()
-                GLib.idle_add(self.update_widget, output)
-            except Exception as e:
-                eprint(e)
+        self.keyboards = list_keyboards()
+        label = self.get_current_layout()
+        if label:
+            self.label.set_text(label)
 
     def build_box(self):
         if self.settings["icon-placement"] == "left":
@@ -135,10 +114,25 @@ class KeyboardLayout(Gtk.EventBox):
         widget.unset_state_flags(Gtk.StateFlags.DROP_ACTIVE)
         widget.unset_state_flags(Gtk.StateFlags.SELECTED)
 
+    def on_left_click(self):
+        if self.settings["device-name"] != "all":
+            hyprctl(f"switchxkblayout {self.settings['device-name']} next")
+        else:
+            for name in self.keyboard_names:
+                hyprctl(f"switchxkblayout {name} next")
+        self.refresh()
+
+    def on_right_click(self):
+        menu = Gtk.Menu()
+        for i in range(len(self.kb_layout)):
+            item = Gtk.MenuItem.new_with_label(self.kb_layout[i])
+            menu.append(item)
+        menu.set_reserve_toggle_size(False)
+        menu.show_all()
+        menu.popup_at_widget(self.label, Gdk.Gravity.STATIC, Gdk.Gravity.STATIC, None)
+
     def on_button_press(self, widget, event):
-        if event.button == 1 and self.settings["on-left-click"]:
-            self.launch(self.settings["on-left-click"])
-        elif event.button == 2 and self.settings["on-middle-click"]:
-            self.launch(self.settings["on-middle-click"])
-        elif event.button == 3 and self.settings["on-right-click"]:
-            self.launch(self.settings["on-right-click"])
+        if event.button == 1:
+            self.on_left_click()
+        elif event.button == 3:
+            self.on_right_click()
