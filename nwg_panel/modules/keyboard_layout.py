@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import json
-import time
+import os
 
 import gi
 
@@ -39,47 +39,56 @@ class KeyboardLayout(Gtk.EventBox):
         self.icon_path = None
 
         print("KeyboardLayout module")
-        self.kb_layout = get_kb_layout()
-        print(f"kb_layout = {self.kb_layout}")
-        self.keyboards = list_keyboards()
-        self.keyboard_names = []
-        for k in self.keyboards:
-            self.keyboard_names.append(k["name"])
-        print(f"keyboard_names = {self.keyboard_names}")
-
-        check_key(settings, "device-name", "all")
-        check_key(settings, "root-css-name", "root-executor")
-        check_key(settings, "css-name", "")
-        check_key(settings, "icon-placement", "left")
-        check_key(settings, "icon-size", 16)
-        check_key(settings, "tooltip-text", "")
-        check_key(settings, "angle", 0.0)
-
-        self.label.set_angle(settings["angle"])
-
-        if settings["angle"] != 0.0:
-            self.box.set_orientation(Gtk.Orientation.VERTICAL)
-
-        update_image(self.image, "input-keyboard", self.settings["icon-size"], self.icons_path)
-
-        self.set_property("name", settings["root-css-name"])
-
-        if settings["css-name"]:
-            self.label.set_property("name", settings["css-name"])
+        if os.getenv("SWAYSOCK"):
+            self.compositor = "sway"
+        elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
+            self.compositor = "hyprland"
         else:
-            self.label.set_property("name", "executor-label")
+            self.compositor = ""
+            eprint("Neither sway nor Hyprland detected, this won't work")
 
-        if settings["tooltip-text"]:
-            self.set_tooltip_text(settings["tooltip-text"])
+        if self.compositor:
+            self.kb_layouts = get_kb_layout()
+            print(f"kb_layout = {self.kb_layouts}")
 
-        self.connect('button-press-event', self.on_button_press)
+            self.keyboards = list_keyboards()
+            self.keyboard_names = []
+            for k in self.keyboards:
+                self.keyboard_names.append(k["name"])
+            print(f"keyboard_names = {self.keyboard_names}")
 
-        self.connect('enter-notify-event', self.on_enter_notify_event)
-        self.connect('leave-notify-event', self.on_leave_notify_event)
+            check_key(settings, "device-name", "all")
+            check_key(settings, "root-css-name", "root-executor")
+            check_key(settings, "css-name", "")
+            check_key(settings, "icon-placement", "left")
+            check_key(settings, "icon-size", 16)
+            check_key(settings, "tooltip-text", "LMB: Next layout, RMB: Menu")
+            check_key(settings, "angle", 0.0)
 
-        self.build_box()
-        self.refresh()
-        self.show_all()
+            self.label.set_angle(settings["angle"])
+
+            if settings["angle"] != 0.0:
+                self.box.set_orientation(Gtk.Orientation.VERTICAL)
+
+            update_image(self.image, "input-keyboard", self.settings["icon-size"], self.icons_path)
+
+            self.set_property("name", settings["root-css-name"])
+            if settings["css-name"]:
+                self.label.set_property("name", settings["css-name"])
+            else:
+                self.label.set_property("name", "executor-label")
+
+            if settings["tooltip-text"]:
+                self.set_tooltip_text(settings["tooltip-text"])
+
+            self.connect('button-press-event', self.on_button_press)
+
+            self.connect('enter-notify-event', self.on_enter_notify_event)
+            self.connect('leave-notify-event', self.on_leave_notify_event)
+
+            self.build_box()
+            self.refresh()
+            self.show_all()
 
     def get_current_layout(self):
         if self.settings["device-name"] != "all":
@@ -101,10 +110,10 @@ class KeyboardLayout(Gtk.EventBox):
 
     def build_box(self):
         if self.settings["icon-placement"] == "left":
-            self.box.pack_start(self.image, False, False, 2)
-        self.box.pack_start(self.label, False, False, 2)
+            self.box.pack_start(self.image, False, False, 6)
+        self.box.pack_start(self.label, False, False, 6)
         if self.settings["icon-placement"] != "left":
-            self.box.pack_start(self.image, False, False, 2)
+            self.box.pack_start(self.image, False, False, 6)
 
     def on_enter_notify_event(self, widget, event):
         widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
@@ -115,17 +124,20 @@ class KeyboardLayout(Gtk.EventBox):
         widget.unset_state_flags(Gtk.StateFlags.SELECTED)
 
     def on_left_click(self):
+        # apply to selected device
         if self.settings["device-name"] != "all":
             hyprctl(f"switchxkblayout {self.settings['device-name']} next")
+        # apply to all devices
         else:
             for name in self.keyboard_names:
                 hyprctl(f"switchxkblayout {name} next")
+
         self.refresh()
 
     def on_right_click(self):
         menu = Gtk.Menu()
-        for i in range(len(self.kb_layout)):
-            item = Gtk.MenuItem.new_with_label(self.kb_layout[i])
+        for i in range(len(self.kb_layouts)):
+            item = Gtk.MenuItem.new_with_label(self.kb_layouts[i])
             menu.append(item)
         menu.set_reserve_toggle_size(False)
         menu.show_all()
