@@ -12,21 +12,6 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk, Gdk
 
 
-def get_kb_layout():
-    o = hyprctl("j/getoption input:kb_layout")
-    option = json.loads(o)
-    if option and "str" in option:
-        return option["str"].split(",")
-    return []
-
-
-def list_keyboards():
-    o = hyprctl("j/devices")
-    devices = json.loads(o)
-    keyboards = devices["keyboards"] if "keyboards" in devices else []
-    return keyboards
-
-
 def on_enter_notify_event(widget, event):
     widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
     widget.set_state_flags(Gtk.StateFlags.SELECTED, clear=False)
@@ -50,21 +35,26 @@ class KeyboardLayout(Gtk.EventBox):
 
         print("KeyboardLayout module")
         if os.getenv("SWAYSOCK"):
+            from i3ipc import Connection
+            self.i3 = Connection()
             self.compositor = "sway"
         elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
-            self.compositor = "hyprland"
+            self.compositor = "Hyprland"
         else:
             self.compositor = ""
             eprint("Neither sway nor Hyprland detected, this won't work")
 
         if self.compositor:
-            self.kb_layouts = get_kb_layout()
+            self.kb_layouts = self.get_kb_layout()
             print(f"kb_layout = {self.kb_layouts}")
 
-            self.keyboards = list_keyboards()
+            self.keyboards = self.list_keyboards()
             self.keyboard_names = []
             for k in self.keyboards:
-                self.keyboard_names.append(k["name"])
+                if self.compositor == "Hyprland":
+                    self.keyboard_names.append(k["name"])
+                else:
+                    self.keyboard_names.append(k.identifier)
             print(f"keyboard_names = {self.keyboard_names}")
 
             check_key(settings, "device-name", "all")
@@ -72,7 +62,10 @@ class KeyboardLayout(Gtk.EventBox):
             check_key(settings, "css-name", "")
             check_key(settings, "icon-placement", "left")
             check_key(settings, "icon-size", 16)
-            check_key(settings, "tooltip-text", "LMB: Next layout, RMB: Menu")
+            if self.compositor == "Hyprland":
+                check_key(settings, "tooltip-text", "LMB: Next layout, RMB: Menu")
+            else:
+                check_key(settings, "tooltip-text", "")
             check_key(settings, "angle", 0.0)
 
             self.label.set_angle(settings["angle"])
@@ -99,20 +92,52 @@ class KeyboardLayout(Gtk.EventBox):
             self.refresh()
             self.show_all()
 
+    def get_kb_layout(self):
+        if self.compositor == "Hyprland":
+            o = hyprctl("j/getoption input:kb_layout")
+            option = json.loads(o)
+            if option and "str" in option:
+                return option["str"].split(",")
+            return []
+
+    def list_keyboards(self):
+        if self.compositor == "Hyprland":
+            o = hyprctl("j/devices")
+            devices = json.loads(o)
+            keyboards = devices["keyboards"] if "keyboards" in devices else []
+        else:
+            inputs = self.i3.get_inputs()
+            keyboards = []
+            for i in inputs:
+                if i.type == "keyboard":
+                    keyboards.append(i)
+
+        return keyboards
+
     def get_current_layout(self):
         if self.settings["device-name"] != "all":
             for k in self.keyboards:
-                if k["name"] == self.settings["device-name"]:
-                    return k["active_keymap"]
+                if self.compositor == "Hyprland":
+                    if k["name"] == self.settings["device-name"]:
+                        return k["active_keymap"]
+                else:
+                    if k.name == self.settings["device-name"]:
+                        return k.xkb_active_layout_name
             return "unknown"
         else:
-            for k in self.keyboards:
-                if "keyboard" in k["name"]:
-                    return k["active_keymap"]
-            return self.keyboards[0]["layout"]
+            if self.compositor == "Hyprland":
+                for k in self.keyboards:
+                    if "keyboard" in k["name"]:
+                        return k["active_keymap"]
+                return self.keyboards[0]["layout"]
+            else:
+                for k in self.keyboards:
+                    if "keyboard" in k.name:
+                        return k.xkb_active_layout_name
+                    return self.keyboards[0].xkb_active_layout_name
 
     def refresh(self):
-        self.keyboards = list_keyboards()
+        self.keyboards = self.list_keyboards()
         label = self.get_current_layout()
         if label:
             self.label.set_text(label)
@@ -127,11 +152,18 @@ class KeyboardLayout(Gtk.EventBox):
     def on_left_click(self):
         # apply to selected device, if any
         if self.settings["device-name"] != "all":
-            hyprctl(f"switchxkblayout {self.settings['device-name']} next")
+            if self.compositor == "Hyprland":
+                hyprctl(f"switchxkblayout {self.settings['device-name']} next")
+            else:
+                self.i3.command(f'input "{self.settings["device-name"]}" xkb_switch_layout next')
         # apply to all devices
         else:
             for name in self.keyboard_names:
-                hyprctl(f"switchxkblayout {name} next")
+                if self.compositor == "Hyprland":
+                    hyprctl(f"switchxkblayout {name} next")
+                else:
+                    cmd = f'input "{name}" xkb_switch_layout next'
+                    self.i3.command(f'input "{name}" xkb_switch_layout next')
 
         self.refresh()
 
@@ -147,5 +179,5 @@ class KeyboardLayout(Gtk.EventBox):
     def on_button_press(self, widget, event):
         if event.button == 1:
             self.on_left_click()
-        elif event.button == 3:
+        elif event.button == 3 and self.compositor == "Hyprland":
             self.on_right_click()

@@ -352,7 +352,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 eprint("'hyprland-workspaces' ignored")
 
         if item == "keyboard-layout":
-            if his:
+            if his or sway:
                 if "keyboard-layout" not in panel:
                     panel["keyboard-layout"] = {}
                 kb_layout = KeyboardLayout(panel["keyboard-layout"], icons_path)
