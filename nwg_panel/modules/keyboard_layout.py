@@ -68,6 +68,7 @@ class KeyboardLayout(Gtk.EventBox):
             check_key(settings, "css-name", "")
             check_key(settings, "icon-placement", "left")
             check_key(settings, "icon-size", 16)
+            check_key(settings, "show-icon", True)
             if self.compositor == "Hyprland":
                 check_key(settings, "tooltip-text", "LMB: Next layout, RMB: Menu")
             else:
@@ -157,21 +158,21 @@ class KeyboardLayout(Gtk.EventBox):
             self.label.set_text(label)
 
     def build_box(self):
-        if self.settings["icon-placement"] == "left":
-            self.box.pack_start(self.image, False, False, 6)
-        self.box.pack_start(self.label, False, False, 6)
-        if self.settings["icon-placement"] != "left":
-            self.box.pack_start(self.image, False, False, 6)
+        if self.settings["show-icon"] and self.settings["icon-placement"] == "left":
+            self.box.pack_start(self.image, False, False, 3)
+        self.box.pack_start(self.label, False, False, 3)
+        if self.settings["show-icon"] and self.settings["icon-placement"] != "left":
+            self.box.pack_start(self.image, False, False, 3)
 
     def on_left_click(self):
-        # apply to selected device, if any
         if self.device_name:
+            # apply to selected device, if any
             if self.compositor == "Hyprland":
                 hyprctl(f"switchxkblayout {self.settings['device-name']} next")
             else:
                 self.i3.command(f'input "{self.device_name}" xkb_switch_layout next')
-        # apply to all devices
         else:
+            # apply to all devices
             for name in self.keyboard_names:
                 if self.compositor == "Hyprland":
                     hyprctl(f"switchxkblayout {name} next")
@@ -182,11 +183,13 @@ class KeyboardLayout(Gtk.EventBox):
 
     def on_menu_item(self, item, idx):
         if self.device_name:
+            # apply to selected device, if any
             if self.compositor == "Hyprland":
                 hyprctl(f'switchxkblayout {self.device_name} {idx}')
             else:
                 self.i3.command(f'input "{self.device_name}" xkb_switch_layout {idx}')
         else:
+            # apply to all devices
             for name in self.keyboard_names:
                 if self.compositor == "Hyprland":
                     hyprctl(f'switchxkblayout {name} {idx}')
