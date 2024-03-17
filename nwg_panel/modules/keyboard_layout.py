@@ -33,7 +33,6 @@ class KeyboardLayout(Gtk.EventBox):
         self.label = Gtk.Label.new("")
         self.icon_path = None
 
-        print("KeyboardLayout module")
         if os.getenv("SWAYSOCK"):
             from i3ipc import Connection
             self.i3 = Connection()
