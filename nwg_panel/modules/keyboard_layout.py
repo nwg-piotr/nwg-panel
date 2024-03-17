@@ -44,20 +44,19 @@ class KeyboardLayout(Gtk.EventBox):
             self.compositor = ""
             eprint("Neither sway nor Hyprland detected, this won't work")
 
-        self.device_name = None
-
         if self.compositor:
             self.keyboards = self.list_keyboards()
             self.keyboard_names = []
             for k in self.keyboards:
                 if self.compositor == "Hyprland":
                     self.keyboard_names.append(k["name"])
-                else:
+                # On sway some devices may be listed twice, let's add them just once
+                elif k.identifier not in self.keyboard_names:
                     self.keyboard_names.append(k.identifier)
-            print(f"keyboard_names = {self.keyboard_names}")
+            # print(f"keyboard_names = {self.keyboard_names}")
 
             self.kb_layouts = self.get_kb_layouts()
-            print(f"kb_layouts = {self.kb_layouts}")
+            # print(f"kb_layouts = {self.kb_layouts}")
 
             check_key(settings, "keyboard-device-sway", "")
             check_key(settings, "keyboard-device-hyprland", "")
@@ -69,10 +68,7 @@ class KeyboardLayout(Gtk.EventBox):
             check_key(settings, "icon-placement", "left")
             check_key(settings, "icon-size", 16)
             check_key(settings, "show-icon", True)
-            if self.compositor == "Hyprland":
-                check_key(settings, "tooltip-text", "LMB: Next layout, RMB: Menu")
-            else:
-                check_key(settings, "tooltip-text", "")
+            check_key(settings, "tooltip-text", "LMB: Next layout, RMB: Menu")
             check_key(settings, "angle", 0.0)
 
             self.label.set_angle(settings["angle"])
@@ -168,8 +164,9 @@ class KeyboardLayout(Gtk.EventBox):
         if self.device_name:
             # apply to selected device, if any
             if self.compositor == "Hyprland":
-                hyprctl(f"switchxkblayout {self.settings['device-name']} next")
+                hyprctl(f"switchxkblayout {self.device_name} next")
             else:
+                print(f'input "{self.device_name}" xkb_switch_layout next')
                 self.i3.command(f'input "{self.device_name}" xkb_switch_layout next')
         else:
             # apply to all devices
@@ -177,6 +174,7 @@ class KeyboardLayout(Gtk.EventBox):
                 if self.compositor == "Hyprland":
                     hyprctl(f"switchxkblayout {name} next")
                 else:
+                    print(f'input "{name}" xkb_switch_layout next')
                     self.i3.command(f'input "{name}" xkb_switch_layout next')
 
         self.refresh()
