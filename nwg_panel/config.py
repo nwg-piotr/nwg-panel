@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import json
 import os
 import signal
 import subprocess
@@ -12,13 +13,14 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, local_dir, load_json, save_json, load_string, list_outputs, check_key, \
-    list_configs, update_gtk_entry, is_command, check_commands, cmd2string, eprint, temp_dir, load_shell_data
+    list_configs, update_gtk_entry, is_command, check_commands, cmd2string, eprint, temp_dir, load_shell_data, hyprctl
 
 from nwg_panel.__about__ import __version__
 
 dir_name = os.path.dirname(__file__)
 
 sway = os.getenv('SWAYSOCK') is not None
+hyprland = os.getenv("HYPRLAND_INSTANCE_SIGNATURE")
 
 config_dir = get_config_dir()
 data_home = os.getenv('XDG_DATA_HOME') if os.getenv('XDG_DATA_HOME') else os.path.join(os.getenv("HOME"),
@@ -724,6 +726,7 @@ class EditorWrapper(object):
         builder.get_object("hyprland-taskbar").set_text(voc["hyprland-taskbar"])
         builder.get_object("hyprland-workspaces").set_text(voc["hyprland-workspaces"])
         builder.get_object("brightness-slider").set_text(voc["brightness-slider"])
+        builder.get_object("keyboard-layout").set_text(voc["keyboard-layout"])
         builder.get_object("executors").set_text(voc["executors"])
         builder.get_object("buttons").set_text(voc["buttons"])
         builder.get_object("menu-start").set_text(voc["menu-start"])
@@ -751,6 +754,7 @@ class EditorWrapper(object):
             "dwl-tags",
             "hyprland-taskbar",
             "hyprland-workspaces",
+            "keyboard-layout",
             "tray"
         ]
 
@@ -788,6 +792,9 @@ class EditorWrapper(object):
         builder.get_object("eb-dwl-tags").connect("button-press-event", self.edit_dwl_tags)
         builder.get_object("eb-hyprland-taskbar").connect("button-press-event", self.edit_hyprland_taskbar)
         builder.get_object("eb-hyprland-workspaces").connect("button-press-event", self.edit_hyprland_workspaces)
+
+        builder.get_object("eb-keyboard-layout").connect("button-press-event", self.edit_keyboard_layout)
+
         builder.get_object("eb-executors").connect("button-press-event", self.select_executor)
         builder.get_object("eb-buttons").connect("button-press-event", self.select_button)
 
@@ -1197,6 +1204,8 @@ class EditorWrapper(object):
             self.update_hyprland_taskbar()
         elif self.edited == "hyprland-workspaces":
             self.update_hyprland_workspaces()
+        elif self.edited == "keyboard-layout":
+            self.update_keyboard_layout()
         elif self.edited == "openweather":
             self.update_openweather()
         elif self.edited == "brightness-slider":
@@ -2171,6 +2180,105 @@ class EditorWrapper(object):
         settings["show-names"] = self.ws_show_names.get_active()
         settings["mark-floating"] = self.ws_mark_floating.get_active()
         settings["mark-xwayland"] = self.ws_mark_xwayland.get_active()
+        try:
+            settings["angle"] = float(self.ws_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
+
+        save_json(self.config, self.file)
+
+    def edit_keyboard_layout(self, *args):
+        self.load_panel()
+        self.edited = "keyboard-layout"
+        check_key(self.panel, "keyboard-layout", {})
+        settings = self.panel["keyboard-layout"]
+        defaults = {
+            "keyboard-device-sway": "",
+            "keyboard-device-hyprland": "",
+            "root-css-name": "root-executor",
+            "css-name": "executor",
+            "show-icon": True,
+            "icon-size": 16,
+            "icon-placement": "left",
+            "tooltip-text": "LMB: Next layout, RMB: Menu",
+            "angle": 0.0
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_keyboard_layout.glade"))
+        builder.get_object("lbl-device").set_text("{}:".format(voc["device"]))
+        builder.get_object("lbl-tooltip-text").set_text("{}:".format(voc["tooltip-text"]))
+        builder.get_object("lbl-root-css-name").set_text("{}:".format(voc["root-css-name"]))
+        builder.get_object("lbl-css-name").set_text("{}:".format(voc["css-name"]))
+        builder.get_object("lbl-icon-placement").set_text("{}:".format(voc["icon-placement"]))
+        builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
+        builder.get_object("show-icon").set_label("{}".format(voc["show-icon"]))
+        builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
+
+        frame = builder.get_object("frame")
+        frame.set_label("  {}: KeyboardLayout  ".format(voc["module"]))
+
+        self.kl_combo_device = builder.get_object("device")
+        if sway:
+            from i3ipc import Connection
+            i3 = Connection()
+            inputs = i3.get_inputs()
+            self.kl_combo_device.append("", voc["all"])
+            for i in inputs:
+                if i.type == "keyboard":
+                    self.kl_combo_device.append(i, i)
+            self.kl_combo_device.set_active_id(settings["keyboard-device-sway"])
+        else:
+            o = hyprctl("j/devices")
+            devices = json.loads(o)
+            keyboards = devices["keyboards"] if "keyboards" in devices else []
+            self.kl_combo_device.append("", voc["all"])
+            for k in keyboards:
+                self.kl_combo_device.append(k["name"], k["name"])
+            self.kl_combo_device.set_active_id(settings["keyboard-device-hyprland"])
+
+        self.kl_tooltip_text = builder.get_object("tooltip-text")
+        self.kl_tooltip_text.set_text(settings["tooltip-text"])
+
+        self.kl_root_css_name = builder.get_object("root-css-name")
+        self.kl_root_css_name.set_text(settings["root-css-name"])
+
+        self.kl_css_name = builder.get_object("css-name")
+        self.kl_css_name.set_text(settings["css-name"])
+
+        self.kl_icon_placement = builder.get_object("icon-placement")
+        self.kl_icon_placement.set_active_id(settings["icon-placement"])
+
+        self.kl_icon_size = builder.get_object("icon-size")
+        self.kl_icon_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
+        self.kl_icon_size.configure(adj, 1, 0)
+        self.kl_icon_size.set_value(settings["icon-size"])
+
+        self.ws_angle = builder.get_object("angle")
+        self.ws_angle.set_tooltip_text(voc["angle-tooltip"])
+        self.ws_angle.set_active_id(str(settings["angle"]))
+
+        self.cb_show_icon = builder.get_object("show-icon")
+        self.cb_show_icon.set_active(settings["show-icon"])
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(frame)
+
+    def update_keyboard_layout(self):
+        settings = self.panel["keyboard-layout"]
+        if sway:
+            settings["keyboard-device-sway"] = self.kl_combo_device.get_active_id()
+        elif hyprland:
+            settings["keyboard-device-hyprland"] = self.kl_combo_device.get_active_id()
+        settings["tooltip-text"] = self.kl_tooltip_text.get_text()
+        settings["root-css-name"] = self.kl_root_css_name.get_text()
+        settings["css-name"] = self.kl_css_name.get_text()
+        settings["icon-placement"] = self.kl_icon_placement.get_active_id()
+        settings["icon-size"] = self.kl_icon_size.get_value()
+        settings["show-icon"] = self.cb_show_icon.get_active()
         try:
             settings["angle"] = float(self.ws_angle.get_active_id())
         except:
