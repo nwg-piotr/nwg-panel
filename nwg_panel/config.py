@@ -2227,7 +2227,7 @@ class EditorWrapper(object):
             self.kl_combo_device.append("", voc["all"])
             for i in inputs:
                 if i.type == "keyboard":
-                    self.kl_combo_device.append(i, i)
+                    self.kl_combo_device.append(i.identifier, i.identifier)
             self.kl_combo_device.set_active_id(settings["keyboard-device-sway"])
         else:
             o = hyprctl("j/devices")
