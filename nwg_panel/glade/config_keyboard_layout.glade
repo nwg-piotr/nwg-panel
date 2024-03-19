@@ -23,8 +23,8 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">start</property>
-            <property name="label" translatable="yes">&lt;span size="small"&gt;&lt;b&gt;Note:&lt;/b&gt; on sway switching lang for one keyboard device selects the same value for the others. 
-Either it's a bug or I don't understand 'man sway-input' ¯\_(•_•)_/¯&lt;/span&gt;</property>
+            <property name="label" translatable="yes">&lt;span size="small"&gt;&lt;b&gt;Note:&lt;/b&gt; on sway switching layouts on one keyboard device affects the others
+on some random basis (tested on sway 1.9). Better use "All" devices ¯\_(•_•)_/¯&lt;/span&gt;</property>
             <property name="use-markup">True</property>
           </object>
           <packing>
