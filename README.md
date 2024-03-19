@@ -36,6 +36,8 @@ buttons
 - **Scratchpad**: displays info on current scratchpad content and allows to open scratchpad windows 
 - **SwayMode**: a simple indicator of a sway mode other than "default"
 - **Tray**: SNI system tray module
+- **KeyboardLayout**: keyboard layout switcher, between values defined as `xkb_layout` (sway) or `kb_layout` (Hyprland).
+Use commas to separate values, e.g. `pl,us,de`.
 
 ## Installation
 
