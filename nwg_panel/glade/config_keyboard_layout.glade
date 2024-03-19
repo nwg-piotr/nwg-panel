@@ -19,12 +19,12 @@
         <property name="row-spacing">6</property>
         <property name="column-spacing">12</property>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="note">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">start</property>
-            <property name="label" translatable="yes">&lt;span size="small"&gt;&lt;b&gt;Note:&lt;/b&gt; on sway switching layouts on one keyboard device affects the others
-on some random basis (tested on sway 1.9). Better use "All" devices ¯\_(•_•)_/¯&lt;/span&gt;</property>
+            <property name="label" translatable="yes">&lt;span size="small"&gt;&lt;b&gt;Note:&lt;/b&gt; on sway switching layouts for a certain keyboard device does not work.
+We will be switching for just 'type:keyboard' ¯\_(•_•)_/¯&lt;/span&gt;</property>
             <property name="use-markup">True</property>
           </object>
           <packing>

@@ -2225,11 +2225,13 @@ class EditorWrapper(object):
             i3 = Connection()
             inputs = i3.get_inputs()
             self.kl_combo_device.append("", voc["all"])
-            for i in inputs:
-                if i.type == "keyboard":
-                    self.kl_combo_device.append(i.identifier, i.identifier)
-            self.kl_combo_device.set_active_id(settings["keyboard-device-sway"])
-        else:
+            # for i in inputs:
+            #     if i.type == "keyboard":
+            #         self.kl_combo_device.append(i.identifier, i.identifier)
+            # self.kl_combo_device.set_active_id(settings["keyboard-device-sway"])
+            self.kl_combo_device.set_active_id("")
+            self.kl_combo_device.set_sensitive(False)
+        elif hyprland:
             o = hyprctl("j/devices")
             devices = json.loads(o)
             keyboards = devices["keyboards"] if "keyboards" in devices else []
@@ -2237,6 +2239,8 @@ class EditorWrapper(object):
             for k in keyboards:
                 self.kl_combo_device.append(k["name"], k["name"])
             self.kl_combo_device.set_active_id(settings["keyboard-device-hyprland"])
+
+            builder.get_object("note").hide()
 
         self.kl_tooltip_text = builder.get_object("tooltip-text")
         self.kl_tooltip_text.set_text(settings["tooltip-text"])

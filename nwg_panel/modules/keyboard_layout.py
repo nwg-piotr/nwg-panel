@@ -115,7 +115,7 @@ class KeyboardLayout(Gtk.EventBox):
             if option and "str" in option:
                 return option["str"].split(",")
             return []
-        else:
+        elif self.compositor == "sway":
             layout_names = []
             if self.keyboards:
                 for k in self.keyboards:
@@ -125,26 +125,23 @@ class KeyboardLayout(Gtk.EventBox):
             return layout_names
 
     def get_current_layout(self):
-        if self.device_name:
-            for k in self.keyboards:
-                if self.compositor == "Hyprland":
+        if self.compositor == "Hyprland":
+            if self.device_name:
+                for k in self.keyboards:
                     if k["name"] == self.device_name:
                         return k["active_keymap"]
-                else:
-                    if k.identifier == self.device_name:
-                        return k.xkb_active_layout_name
-            return "unknown"
-        else:
-            if self.compositor == "Hyprland":
+                return "unknown"
+            else:
                 for k in self.keyboards:
                     if "keyboard" in k["name"]:
                         return k["active_keymap"]
                 return self.keyboards[0]["layout"]
-            else:
-                for k in self.keyboards:
-                    if "keyboard" in k.identifier:
-                        return k.xkb_active_layout_name
-                    return self.keyboards[0].xkb_active_layout_name
+        elif self.compositor == "sway":
+            for k in self.keyboards:
+                if "keyboard" in k.identifier:
+                    return k.xkb_active_layout_name
+                return self.keyboards[0].xkb_active_layout_name
+            return "unknown"
 
     def refresh(self):
         self.keyboards = self.list_keyboards()
@@ -160,38 +157,32 @@ class KeyboardLayout(Gtk.EventBox):
             self.box.pack_start(self.image, False, False, 3)
 
     def on_left_click(self):
-        if self.device_name:
-            # apply to selected device, if any
-            if self.compositor == "Hyprland":
+        if self.compositor == "Hyprland":
+            if self.device_name:
+                # apply to selected device
                 hyprctl(f"switchxkblayout {self.device_name} next")
             else:
-                print(f'input "{self.device_name}" xkb_switch_layout next')
-                self.i3.command(f'input "{self.device_name}" xkb_switch_layout next')
-        else:
-            # apply to all devices
-            for name in self.keyboard_names:
-                if self.compositor == "Hyprland":
+                # apply to all devices
+                for name in self.keyboard_names:
                     hyprctl(f"switchxkblayout {name} next")
-                else:
-                    print(f'input "{name}" xkb_switch_layout next')
-                    self.i3.command(f'input "{name}" xkb_switch_layout next')
+        elif self.compositor == "sway":
+            # apply to all devices of type:keyboard
+            self.i3.command(f'input type:keyboard xkb_switch_layout next')
 
         self.refresh()
 
     def on_menu_item(self, item, idx):
-        if self.device_name:
-            # apply to selected device, if any
-            if self.compositor == "Hyprland":
+        if self.compositor == "Hyprland":
+            if self.device_name:
+                # apply to selected device
                 hyprctl(f'switchxkblayout {self.device_name} {idx}')
             else:
-                self.i3.command(f'input "{self.device_name}" xkb_switch_layout {idx}')
-        else:
-            # apply to all devices
-            for name in self.keyboard_names:
-                if self.compositor == "Hyprland":
+                # apply to all devices
+                for name in self.keyboard_names:
                     hyprctl(f'switchxkblayout {name} {idx}')
-                else:
-                    self.i3.command(f'input "{name}" xkb_switch_layout {idx}')
+        elif self.compositor == "sway":
+            # apply to all devices of type:keyboard
+            self.i3.command(f'input type:keyboard xkb_switch_layout {idx}')
 
         self.refresh()
 
