@@ -2193,7 +2193,6 @@ class EditorWrapper(object):
         check_key(self.panel, "keyboard-layout", {})
         settings = self.panel["keyboard-layout"]
         defaults = {
-            "keyboard-device-sway": "",
             "keyboard-device-hyprland": "",
             "root-css-name": "root-executor",
             "css-name": "executor",
@@ -2221,9 +2220,9 @@ class EditorWrapper(object):
 
         self.kl_combo_device = builder.get_object("device")
         if sway:
-            from i3ipc import Connection
-            i3 = Connection()
-            inputs = i3.get_inputs()
+            # from i3ipc import Connection
+            # i3 = Connection()
+            # inputs = i3.get_inputs()
             self.kl_combo_device.append("", voc["all"])
             # for i in inputs:
             #     if i.type == "keyboard":
@@ -2273,9 +2272,7 @@ class EditorWrapper(object):
 
     def update_keyboard_layout(self):
         settings = self.panel["keyboard-layout"]
-        if sway:
-            settings["keyboard-device-sway"] = self.kl_combo_device.get_active_id()
-        elif hyprland:
+        if hyprland:
             settings["keyboard-device-hyprland"] = self.kl_combo_device.get_active_id()
         settings["tooltip-text"] = self.kl_tooltip_text.get_text()
         settings["root-css-name"] = self.kl_root_css_name.get_text()

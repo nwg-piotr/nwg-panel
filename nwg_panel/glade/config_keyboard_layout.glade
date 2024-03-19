@@ -24,7 +24,7 @@
             <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="label" translatable="yes">&lt;span size="small"&gt;&lt;b&gt;Note:&lt;/b&gt; on sway switching layouts for a certain keyboard device does not work.
-We will be switching for just 'type:keyboard' ¯\_(•_•)_/¯&lt;/span&gt;</property>
+We will be switching for devices of 'type:keyboard' ¯\_(•_•)_/¯&lt;/span&gt;</property>
             <property name="use-markup">True</property>
           </object>
           <packing>
