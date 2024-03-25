@@ -140,9 +140,9 @@ class ClientBox(Gtk.EventBox):
         self.connect('enter-notify-event', on_enter_notify_event)
         self.connect('leave-notify-event', on_leave_notify_event)
         if client["workspace"]["name"] == "special":
-            self.connect('button-press-event', self.on_special)
+            self.connect('button-release-event', self.on_special)
         else:
-            self.connect('button-press-event', self.on_click, client, self.box)
+            self.connect('button-release-event', self.on_click, client, self.box)
 
         image = None
         if settings["show-app-icon"]:

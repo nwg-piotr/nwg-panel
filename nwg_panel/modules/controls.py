@@ -79,7 +79,7 @@ class Controls(Gtk.EventBox):
         self.popup_window = PopupWindow(self, position, alignment, settings, width, monitor=monitor,
                                         icons_path=self.icons_path)
 
-        self.connect('button-press-event', self.on_button_press, settings)
+        self.connect('button-release-event', self.on_button_release, settings)
         self.connect('enter-notify-event', self.on_enter_notify_event, settings)
         self.connect('leave-notify-event', self.on_leave_notify_event)
 
@@ -190,7 +190,7 @@ class Controls(Gtk.EventBox):
                 subprocess.Popen('notify-send "Battery low! ({}%)" -i {}'.format(value, icon_name), shell=True)
                 bat_critical_last_check = t
 
-    def on_button_press(self, w, event, settings):
+    def on_button_release(self, w, event, settings):
         if not self.popup_window.get_visible():
             self.popup_window.show_all()
             if settings["click-closes"]:

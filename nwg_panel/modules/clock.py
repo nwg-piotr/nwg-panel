@@ -71,7 +71,7 @@ class Clock(Gtk.EventBox):
         if "format" not in settings:
             self.settings["format"] = "%a, %d. %b  %H:%M:%S"
 
-        self.connect('button-press-event', self.on_button_press)
+        self.connect('button-release-event', self.on_button_release)
         if self.settings["calendar-on"] or self.settings["on-middle-click"] or self.settings["on-right-click"] or \
                 self.settings["on-scroll-up"] or self.settings["on-scroll-down"]:
             self.connect('enter-notify-event', self.on_enter_notify_event)
@@ -136,7 +136,7 @@ class Clock(Gtk.EventBox):
         widget.unset_state_flags(Gtk.StateFlags.DROP_ACTIVE)
         widget.unset_state_flags(Gtk.StateFlags.SELECTED)
 
-    def on_button_press(self, widget, event):
+    def on_button_release(self, widget, event):
         if event.button == 1:
             if self.settings["calendar-on"]:
                 self.display_calendar_window()

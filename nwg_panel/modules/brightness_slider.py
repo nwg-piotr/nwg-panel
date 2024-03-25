@@ -61,7 +61,7 @@ class BrightnessSlider(Gtk.EventBox):
             self.bri_label.set_angle(settings["angle"])
 
         # events
-        self.connect('button-press-event', self.on_button_press)
+        self.connect('button-release-event', self.on_button_release)
         self.connect('enter-notify-event', self.on_enter_notify_event)
         self.connect('leave-notify-event', self.on_leave_notify_event)
         if self.settings["step-size"] > 0:
@@ -107,7 +107,7 @@ class BrightnessSlider(Gtk.EventBox):
         if get:
             self.popup_window.refresh()
     
-    def on_button_press(self, w, event):
+    def on_button_release(self, w, event):
         if not self.popup_window.get_visible():
             self.popup_window.show_all()
         else:

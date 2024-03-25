@@ -138,7 +138,7 @@ class OpenWeather(Gtk.EventBox):
         self.forecast = None
         self.alerts_json = None
 
-        self.connect('button-press-event', self.on_button_press)
+        self.connect('button-release-event', self.on_button_release)
         self.add_events(Gdk.EventMask.SCROLL_MASK)
         self.connect('scroll-event', self.on_scroll)
 
@@ -223,7 +223,7 @@ class OpenWeather(Gtk.EventBox):
         thread = create_background_task(self.get_data, interval)
         thread.start()
 
-    def on_button_press(self, widget, event):
+    def on_button_release(self, widget, event):
         if event.button == 1:
             self.display_popup()
         elif event.button == 2 and self.settings["on-middle-click"]:
