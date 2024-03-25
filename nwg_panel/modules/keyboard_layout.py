@@ -86,7 +86,7 @@ class KeyboardLayout(Gtk.EventBox):
             if settings["tooltip-text"]:
                 self.set_tooltip_text(settings["tooltip-text"])
 
-            self.connect('button-press-event', self.on_button_press)
+            self.connect('button-release-event', self.on_button_release)
             self.connect('enter-notify-event', on_enter_notify_event)
             self.connect('leave-notify-event', on_leave_notify_event)
 
@@ -196,7 +196,7 @@ class KeyboardLayout(Gtk.EventBox):
         menu.show_all()
         menu.popup_at_widget(self.label, Gdk.Gravity.STATIC, Gdk.Gravity.STATIC, None)
 
-    def on_button_press(self, widget, event):
+    def on_button_release(self, widget, event):
         if event.button == 1:
             self.on_left_click()
         elif event.button == 3:

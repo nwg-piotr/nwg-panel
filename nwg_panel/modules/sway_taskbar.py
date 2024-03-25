@@ -147,7 +147,7 @@ class WindowBox(Gtk.EventBox):
 
         self.connect('enter-notify-event', self.on_enter_notify_event)
         self.connect('leave-notify-event', self.on_leave_notify_event)
-        self.connect('button-press-event', self.on_click, self.box)
+        self.connect('button-release-event', self.on_click, self.box)
         self.add_events(Gdk.EventMask.SCROLL_MASK)
         self.connect('scroll-event', self.on_scroll)
 

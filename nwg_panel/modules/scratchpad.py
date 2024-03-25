@@ -89,12 +89,12 @@ class Scratchpad(Gtk.Box):
         image = Gtk.Image()
         update_image(image, item["icon"], self.settings["icon-size"], self.icons_path)
         eb.add(image)
-        eb.connect("button-press-event", self.on_button_press, item["pid"], item["con_id"])
+        eb.connect("button-release-event", self.on_button_release, item["pid"], item["con_id"])
         if item["name"]:
             eb.set_tooltip_text(item["name"])
         self.pack_start(eb, False, False, 3)
 
-    def on_button_press(self, eb, e, pid, con_id):
+    def on_button_release(self, eb, e, pid, con_id):
         if str(con_id) in nwg_panel.common.scratchpad_cons:
             # If moved to scratchpad with the SwayTaskbar context menu, we have stored
             # the workspace number and floating state. Let's restore them.
