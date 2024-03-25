@@ -376,7 +376,7 @@ class PopupWindow(Gtk.Window):
             eb = Gtk.EventBox()
             eb.connect("enter_notify_event", self.on_enter_notify_event)
             eb.connect("leave_notify_event", self.on_leave_notify_event)
-            eb.connect("button-press-event", self.toggle_mute)
+            eb.connect("button-release-event", self.toggle_mute)
             eb.add(self.vol_image)
             inner_hbox.pack_start(eb, False, False, 6)
 
@@ -395,7 +395,7 @@ class PopupWindow(Gtk.Window):
                 inner_hbox.pack_end(pactl_eb, False, False, 5)
 
                 self.sink_box = SinkBox()
-                pactl_eb.connect('button-press-event', self.sink_box.switch_visibility)
+                pactl_eb.connect('button-release-event', self.sink_box.switch_visibility)
                 v_box.pack_start(self.sink_box, False, False, 0)
 
             add_sep = True
@@ -416,7 +416,7 @@ class PopupWindow(Gtk.Window):
                 event_box.connect("enter_notify_event", self.on_enter_notify_event)
                 event_box.connect("leave_notify_event", self.on_leave_notify_event)
 
-                event_box.connect('button-press-event', self.launch, settings["commands"]["battery"])
+                event_box.connect('button-release-event', self.launch, settings["commands"]["battery"])
 
             inner_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
@@ -442,7 +442,7 @@ class PopupWindow(Gtk.Window):
             event_box = Gtk.EventBox()
             event_box.connect("enter_notify_event", self.on_enter_notify_event)
             event_box.connect("leave_notify_event", self.on_leave_notify_event)
-            event_box.connect('button-press-event', self.launch, "nwg-readme-browser -i")
+            event_box.connect('button-release-event', self.launch, "nwg-readme-browser -i")
 
             inner_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
@@ -467,7 +467,7 @@ class PopupWindow(Gtk.Window):
             event_box = Gtk.EventBox()
             event_box.connect("enter_notify_event", self.on_enter_notify_event)
             event_box.connect("leave_notify_event", self.on_leave_notify_event)
-            event_box.connect('button-press-event', self.launch, "nwg-processes")
+            event_box.connect('button-release-event', self.launch, "nwg-processes")
 
             inner_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
             inner_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
@@ -540,10 +540,10 @@ class PopupWindow(Gtk.Window):
                     eb.add(vb)
                     eb.connect("enter_notify_event", self.on_enter_notify_event)
                     eb.connect("leave_notify_event", self.on_leave_notify_event)
-                    eb.connect("button-press-event", self.launch, item["cmd"])
+                    eb.connect("button-release-event", self.launch, item["cmd"])
                     self.menu_box.pack_start(eb, False, False, 0)
 
-                e_box.connect('button-press-event', self.switch_menu_box)
+                e_box.connect('button-release-event', self.switch_menu_box)
 
         self.refresh(True)
 
@@ -640,7 +640,7 @@ class PopupWindow(Gtk.Window):
         if cmd:
             eb.connect("enter_notify_event", self.on_enter_notify_event)
             eb.connect("leave_notify_event", self.on_leave_notify_event)
-            eb.connect('button-press-event', self.launch, cmd)
+            eb.connect('button-release-event', self.launch, cmd)
 
             img = Gtk.Image()
             update_image(img, "pan-end-symbolic", self.icon_size, self.icons_path)
@@ -830,7 +830,7 @@ class SinkBox(Gtk.Box):
                 eb = Gtk.EventBox()
                 eb.connect("enter_notify_event", self.on_enter_notify_event)
                 eb.connect("leave_notify_event", self.on_leave_notify_event)
-                eb.connect('button-press-event', self.switch_sink, sink["name"])
+                eb.connect('button-release-event', self.switch_sink, sink["name"])
                 vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
                 hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
                 vbox.pack_start(hbox, True, True, 4)
