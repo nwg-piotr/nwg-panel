@@ -13,6 +13,6 @@ def get_output(cmd):
 o = get_output("rfkill list")
 for line in o:
     if "Soft blocked: yes" in line or "Hard blocked: yes" in line:
-        print("airplane-mode-symbolic.svg")
+        print("airplane-mode-symbolic")
         print("")
         break
