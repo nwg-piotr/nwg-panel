@@ -158,8 +158,12 @@ def restart():
 def hypr_watcher():
     import socket
 
+    # /tmp/hypr moved to $XDG_RUNTIME_DIR/hypr in #5788
+    hypr_dir = f"{os.getenv("XDG_RUNTIME_DIR")}/hypr" if os.path.isdir(
+        f"{os.getenv("XDG_RUNTIME_DIR")}/hypr") else "/tmp/hypr"
+
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    client.connect("/tmp/hypr/{}/.socket2.sock".format(his))
+    client.connect(f"{hypr_dir}/{his}/.socket2.sock")
 
     global last_client_addr, last_client_title
     client_addr, client_title = None, None

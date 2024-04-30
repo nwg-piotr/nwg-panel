@@ -45,8 +45,12 @@ btn_pid, btn_ppid, btn_owner, btn_cpu, btn_mem, btn_name = None, None, None, Non
 
 
 def hyprctl(cmd):
+    # /tmp/hypr moved to $XDG_RUNTIME_DIR/hypr in #5788
+    hypr_dir = f"{os.getenv("XDG_RUNTIME_DIR")}/hypr" if os.path.isdir(
+        f"{os.getenv("XDG_RUNTIME_DIR")}/hypr") else "/tmp/hypr"
+
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    s.connect("/tmp/hypr/{}/.socket.sock".format(os.getenv("HYPRLAND_INSTANCE_SIGNATURE")))
+    s.connect(f"{hypr_dir}/{os.getenv("HYPRLAND_INSTANCE_SIGNATURE")}/.socket.sock")
 
     s.send(cmd.encode("utf-8"))
     output = s.recv(20480).decode('utf-8')
