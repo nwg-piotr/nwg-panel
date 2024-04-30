@@ -2,7 +2,7 @@
 
 """
 nwg-shell helper script to preview system processes
-Copyright (c) 2023 Piotr Miller
+Copyright (c) 2023-2024 Piotr Miller
 e-mail: nwg.piotr@gmail.com
 GitHub: https://github.com/nwg-piotr/nwg-panel
 Project: https://nwg-piotr.github.io/nwg-shell
