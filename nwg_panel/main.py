@@ -159,7 +159,7 @@ def hypr_watcher():
     import socket
 
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    client.connect("/tmp/hypr/{}/.socket2.sock".format(his))
+    client.connect("{}/hypr/{}/.socket2.sock".format(os.getenv('$XDG_RUNTIME_DIR'),his))
 
     global last_client_addr, last_client_title
     client_addr, client_title = None, None
