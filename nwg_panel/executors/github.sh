@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 
 # Based on the 'Github notifications' example from Waybar's Wiki
 # Depends on jq Command-line JSON processor
