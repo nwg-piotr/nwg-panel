@@ -159,8 +159,9 @@ def hypr_watcher():
     import socket
 
     # /tmp/hypr moved to $XDG_RUNTIME_DIR/hypr in #5788
-    hypr_dir = f"{os.getenv("XDG_RUNTIME_DIR")}/hypr" if os.path.isdir(
-        f"{os.getenv("XDG_RUNTIME_DIR")}/hypr") else "/tmp/hypr"
+    xdg_runtime_dir = os.getenv("XDG_RUNTIME_DIR")
+    hypr_dir = f"{xdg_runtime_dir}/hypr" if xdg_runtime_dir and os.path.isdir(
+        f"{xdg_runtime_dir}/hypr") else "/tmp/hypr"
 
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     client.connect(f"{hypr_dir}/{his}/.socket2.sock")
