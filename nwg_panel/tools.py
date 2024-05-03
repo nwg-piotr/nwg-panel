@@ -827,7 +827,7 @@ def hyprctl(cmd, buf_size=2048):
 
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     try:
-        s.connect(f"{hypr_dir}/{os.getenv("HYPRLAND_INSTANCE_SIGNATURE")}/.socket.sock")
+        s.connect(f"{hypr_dir}/{os.getenv('HYPRLAND_INSTANCE_SIGNATURE')}/.socket.sock")
         s.send(cmd.encode("utf-8"))
 
         output = b""

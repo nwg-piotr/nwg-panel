@@ -51,7 +51,7 @@ def hyprctl(cmd):
         f"{xdg_runtime_dir}/hypr") else "/tmp/hypr"
 
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    s.connect(f"{hypr_dir}/{os.getenv("HYPRLAND_INSTANCE_SIGNATURE")}/.socket.sock")
+    s.connect(f"{hypr_dir}/{os.getenv('HYPRLAND_INSTANCE_SIGNATURE')}/.socket.sock")
 
     s.send(cmd.encode("utf-8"))
     output = s.recv(20480).decode('utf-8')
