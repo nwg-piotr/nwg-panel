@@ -362,14 +362,19 @@ def list_outputs(sway=False, tree=None, silent=False):
             print("'wlr-randr' command not found, terminating")
             sys.exit(1)
 
+    # We used to assign Gdk.Monitor to output on the basis of x and y coordinates, but it no longer works,
+    # starting from gtk3-1:3.24.42: all monitors have x=0, y=0. This is most likely a bug, but from now on
+    # we must rely on gdk monitors order. Hope it's going to work.
+    monitors = []
     display = Gdk.Display.get_default()
     for i in range(display.get_n_monitors()):
         monitor = display.get_monitor(i)
-        geometry = monitor.get_geometry()
+        monitors.append(monitor)
 
-        for key in outputs_dict:
-            if int(outputs_dict[key]["x"]) == geometry.x and int(outputs_dict[key]["y"]) == geometry.y:
-                outputs_dict[key]["monitor"] = monitor
+    idx = 0
+    for key in outputs_dict:
+        outputs_dict[key]["monitor"] = monitors[idx]
+        idx += 1
 
     return outputs_dict
 
