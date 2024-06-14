@@ -85,14 +85,12 @@ class Playerctl(Gtk.EventBox):
         manager.manage_player(player)
 
     def on_name_appeared(self, manager, name):
-        print("name appeared")
         self.subscribe()
         self.deinit_player()
         self.manage_player_by_name(manager, name)
         self.init_player(manager.props.players[self.player_idx])
 
     def on_player_vanished(self, manager, player):
-        print("player vanished")
         self.subscribe()
         # Non-active player vanished, do nothing
         if self.player and player.props.player_name != self.player.props.player_name:
@@ -199,7 +197,7 @@ class Playerctl(Gtk.EventBox):
                 self.player_idx -= 1
             else:
                 self.player_idx = self.num_players - 1
-        print(f"Player {self.player_idx}")
+        print(f"Switched to player {self.player_idx}")
         self.subscribe()
 
     def build_box(self):
