@@ -390,7 +390,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
         if item == "playerctl":
             if item in panel:
-                playerctl = Playerctl(panel[item], icons_path)
+                playerctl = Playerctl(panel[item], voc, icons_path)
                 container.pack_start(playerctl, False, False, panel["items-padding"])
             else:
                 print("'{}' not defined in this panel instance".format(item))

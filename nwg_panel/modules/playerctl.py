@@ -5,9 +5,10 @@ import threading
 from urllib.parse import unquote, urlparse
 
 import gi
+
 gi.require_version('Playerctl', '2.0')
 
-from gi.repository import GLib, Gtk
+from gi.repository import GLib, Gtk, Gdk
 from gi.repository import Playerctl as Ctl
 import requests
 
@@ -17,7 +18,7 @@ from nwg_panel.tools import check_key, eprint, local_dir, update_image
 class Playerctl(Gtk.EventBox):
     PlayerOps = Enum('PlayerOps', ['PLAY_PAUSE', 'NEXT', 'PREVIOUS'])
 
-    def __init__(self, settings, icons_path=""):
+    def __init__(self, settings, voc, icons_path=""):
         self.settings = settings
         self.icons_path = icons_path
         Gtk.EventBox.__init__(self)
@@ -33,11 +34,18 @@ class Playerctl(Gtk.EventBox):
         check_key(settings, "angle", 0.0)
         check_key(settings, "button-css-name", "")
 
+        self.voc = voc
+
         self.old_cover_url = ""
         self.old_media_info = ""
 
         self.player = None
         self.player_handler_ids = []
+
+        self.num_players = 0
+        self.player_idx = 0
+        self.add_events(Gdk.EventMask.SCROLL_MASK)
+        self.connect('scroll-event', self.on_scroll)
 
         self.build_box()
         self.subscribe()
@@ -60,9 +68,16 @@ class Playerctl(Gtk.EventBox):
         for name in reversed(self.manager.props.player_names):
             self.manage_player_by_name(self.manager, name)
 
+        self.num_players = len(self.manager.props.players)
+        if self.num_players > 1:
+            self.num_players_lbl.set_text(f" {self.player_idx + 1}/{self.num_players} ")
+            self.num_players_lbl.set_tooltip_text(
+                f"Player {self.player_idx + 1}/{self.num_players}, {self.voc["scroll-to-switch"]}")
+        else:
+            self.num_players_lbl.set_text("")
+
         if len(self.manager.props.players) > 0:
-            # Populate the top player only
-            self.init_player(self.manager.props.players[0])
+            self.init_player(self.manager.props.players[self.player_idx])
 
     @staticmethod
     def manage_player_by_name(manager, name):
@@ -70,11 +85,15 @@ class Playerctl(Gtk.EventBox):
         manager.manage_player(player)
 
     def on_name_appeared(self, manager, name):
+        print("name appeared")
+        self.subscribe()
         self.deinit_player()
         self.manage_player_by_name(manager, name)
-        self.init_player(manager.props.players[0])
+        self.init_player(manager.props.players[self.player_idx])
 
     def on_player_vanished(self, manager, player):
+        print("player vanished")
+        self.subscribe()
         # Non-active player vanished, do nothing
         if self.player and player.props.player_name != self.player.props.player_name:
             return
@@ -82,7 +101,7 @@ class Playerctl(Gtk.EventBox):
         # Active player vanished, populate another one if exists
         self.deinit_player()
         if len(manager.props.players) > 0:
-            self.init_player(manager.props.players[0])
+            self.init_player(manager.props.players[self.player_idx])
 
     def init_player(self, player):
         self.player = player
@@ -169,6 +188,20 @@ class Playerctl(Gtk.EventBox):
         if not path:
             update_image(self.cover_img, "music", self.settings["cover-size"], self.icons_path)
 
+    def on_scroll(self, widget, event):
+        if event.direction == Gdk.ScrollDirection.UP:
+            if self.player_idx < self.num_players - 1:
+                self.player_idx += 1
+            else:
+                self.player_idx = 0
+        if event.direction == Gdk.ScrollDirection.DOWN:
+            if self.player_idx > 0:
+                self.player_idx -= 1
+            else:
+                self.player_idx = self.num_players - 1
+        print(f"Player {self.player_idx}")
+        self.subscribe()
+
     def build_box(self):
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         if self.settings["angle"] != 0.0:
@@ -207,6 +240,11 @@ class Playerctl(Gtk.EventBox):
         btn.connect("clicked", self.launch, self.PlayerOps.NEXT)
         button_box.pack_start(btn, False, False, 1)
 
+        self.num_players_lbl = Gtk.Label.new("")
+        if self.settings["label-css-name"]:
+            self.num_players_lbl.set_property("name", self.settings["label-css-name"])
+        self.num_players_lbl.set_angle(self.settings["angle"])
+
         self.label = AutoScrollLabel(self.settings["scroll"],
                                      self.settings["chars"],
                                      self.settings["interval"])
@@ -221,10 +259,12 @@ class Playerctl(Gtk.EventBox):
             self.box.pack_start(button_box, False, False, 2)
             if self.settings["show-cover"]:
                 self.box.pack_start(self.cover_img, False, False, 0)
-            self.box.pack_start(self.label, False, False, 10)
+            self.box.pack_start(self.num_players_lbl, False, False, 0)
+            self.box.pack_start(self.label, False, False, 5)
         else:
             if self.settings["show-cover"]:
                 self.box.pack_start(self.cover_img, False, False, 2)
+            self.box.pack_start(self.num_players_lbl, False, False, 0)
             self.box.pack_start(self.label, False, False, 2)
             self.box.pack_start(button_box, False, False, 10)
 
