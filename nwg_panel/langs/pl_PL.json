@@ -194,6 +194,7 @@
   "script": "Skrypt",
   "script-tooltip": "Skrypt do wykonania: powinien zwracać nazwę\nlub ścieżkę ikony i tekst, w jednym lub dwóch wierszach.\nWięcej informacji w Wiki.",
   "scroll": "Przewijanie",
+  "scroll-to-switch": "przewiń aby przełączyć",
   "select": "Wybierz",
   "set-0-to-disable": "Ustaw 0 aby wyłączyć",
   "settings": "Ustawienia",

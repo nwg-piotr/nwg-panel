@@ -194,6 +194,7 @@
   "script": "Script",
   "script-tooltip": "Script to execute: should return \nan icon name or path and a label \nin 1 or 2 lines of text. See Wiki \nfor details.",
   "scroll": "Scroll",
+  "scroll-to-switch": "scroll to switch",
   "select": "Select",
   "set-0-to-disable": "Set 0 to disable",
   "settings": "Settings",

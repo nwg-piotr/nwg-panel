@@ -194,6 +194,7 @@
   "script": "スクリプト",
   "script-tooltip": "実行するスクリプト：アイコン名またはパスとラベルを\n1または2行のテキストで返す必要があります。詳細はWikiを参照してください。",
   "scroll": "スクロール",
+  "scroll-to-switch": "スクロールして切り替える",
   "select": "選択",
   "set-0-to-disable": "0 に設定して無効化",
   "settings": "設定",
