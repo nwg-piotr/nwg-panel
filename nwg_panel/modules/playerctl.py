@@ -72,7 +72,7 @@ class Playerctl(Gtk.EventBox):
         if self.num_players > 1:
             self.num_players_lbl.set_text(f" {self.player_idx + 1}/{self.num_players} ")
             self.num_players_lbl.set_tooltip_text(
-                f"Player {self.player_idx + 1}/{self.num_players}, {self.voc["scroll-to-switch"]}")
+                f"Player {self.player_idx + 1}/{self.num_players}, {self.voc['scroll-to-switch']}")
         else:
             self.num_players_lbl.set_text("")
 
