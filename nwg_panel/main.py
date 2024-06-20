@@ -49,6 +49,7 @@ from nwg_panel.modules.dwl_tags import DwlTags
 from nwg_panel.modules.swaync import SwayNC
 from nwg_panel.modules.sway_mode import SwayMode
 from nwg_panel.modules.keyboard_layout import KeyboardLayout
+from nwg_panel.modules.idle_inihibitor import IdleInhibitor
 
 try:
     from nwg_panel.modules.openweather import OpenWeather
@@ -411,6 +412,10 @@ def instantiate_content(panel, container, content_list, icons_path=""):
         if item == "cpu-avg":
             cpu_avg = CpuAvg()
             container.pack_start(cpu_avg, False, False, panel["items-padding"])
+
+        if item == "idle-inhibitor":
+            idle_inhibitor = IdleInhibitor({}, icons_path)
+            container.pack_start(idle_inhibitor, False, False, panel["items-padding"])
 
         if item == "dwl-tags":
             if os.path.isfile(common.dwl_data_file):
