@@ -79,6 +79,8 @@ class HyprlandWorkspaces(Gtk.Box):
             name = "{} {}".format(num, self.ws_id2name[num])
 
         lbl = Gtk.Label.new("{}".format(name)) if not add_dot else Gtk.Label.new("{}.".format(name))
+        if add_dot:
+            lbl.set_property("name", "workspace-occupied")
         lbl.set_use_markup(True)
         if self.settings["angle"] != 0.0:
             lbl.set_angle(self.settings["angle"])
