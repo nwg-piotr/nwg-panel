@@ -22,8 +22,12 @@ class HyprlandWorkspaces(Gtk.Box):
         self.ws_nums = []
 
         self.build_box()
-        if "id" in activeworkspace:
-            self.refresh(monitors, workspaces, clients, activewindow, activeworkspace)
+        print("monitors", monitors)
+        print("workspaces", workspaces)
+        print("clients", clients)
+        print("activewindow", activewindow)
+        print("activeworkspace", activeworkspace)
+        self.refresh(monitors, workspaces, clients, activewindow, activeworkspace)
 
     def build_box(self):
         check_key(self.settings, "num-ws", 10)
