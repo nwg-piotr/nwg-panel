@@ -7,7 +7,6 @@ from nwg_panel.tools import check_key, update_image_fallback_desktop, hyprctl
 
 class HyprlandWorkspaces(Gtk.Box):
     def __init__(self, settings, monitors, workspaces, clients, activewindow, activeworkspace, icons_path):
-        print("HyprlandWorkspaces activeworkspace:", activeworkspace)
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.settings = settings
         self.num_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
@@ -23,7 +22,7 @@ class HyprlandWorkspaces(Gtk.Box):
         self.ws_nums = []
 
         self.build_box()
-        self.refresh(monitors, workspaces, clients, activewindow, activeworkspace)
+        # self.refresh(monitors, workspaces, clients, activewindow, activeworkspace)
 
     def build_box(self):
         check_key(self.settings, "num-ws", 10)
