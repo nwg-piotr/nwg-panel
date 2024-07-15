@@ -264,6 +264,7 @@ def refresh_dwl(*args):
 
 
 def instantiate_content(panel, container, content_list, icons_path=""):
+    print(">>> instantiate_content")
     check_key(panel, "position", "top")
     check_key(panel, "items-padding", 0)
 
@@ -575,6 +576,7 @@ def main():
     common.outputs = list_outputs(sway=sway, tree=tree)
 
     panels = load_json(config_file)
+    print("Panels:", panels)
 
     screen = Gdk.Screen.get_default()
     provider = Gtk.CssProvider()
@@ -881,8 +883,6 @@ def main():
             thread = threading.Thread(target=hypr_watcher)
             thread.daemon = True
             thread.start()
-    else:
-        print("Hyprland instance signature not found")
 
     if tray_available and len(common.tray_list) > 0:
         sni_system_tray.init_tray(common.tray_list)
