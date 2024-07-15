@@ -174,6 +174,7 @@ class SwayWorkspaces(Gtk.Box):
                     # mark non-empty WS with a dot
                     if self.settings["mark-content"]:
                         if int_num in non_empty:
+                            lbl.set_property("name", "workspace-occupied")
                             if not text.endswith("."):
                                 text += "."
                         else:
