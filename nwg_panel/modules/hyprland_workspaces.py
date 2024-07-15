@@ -22,7 +22,7 @@ class HyprlandWorkspaces(Gtk.Box):
         self.ws_nums = []
 
         self.build_box()
-        if activeworkspace:
+        if "id" in activeworkspace:
             self.refresh(monitors, workspaces, clients, activewindow, activeworkspace)
 
     def build_box(self):
