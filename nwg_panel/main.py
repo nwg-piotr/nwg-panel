@@ -881,6 +881,8 @@ def main():
             thread = threading.Thread(target=hypr_watcher)
             thread.daemon = True
             thread.start()
+    else:
+        print("Hyprland instance signature not found")
 
     if tray_available and len(common.tray_list) > 0:
         sni_system_tray.init_tray(common.tray_list)
