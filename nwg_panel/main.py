@@ -264,7 +264,6 @@ def refresh_dwl(*args):
 
 
 def instantiate_content(panel, container, content_list, icons_path=""):
-    print(">>> instantiate_content")
     check_key(panel, "position", "top")
     check_key(panel, "items-padding", 0)
 
@@ -274,6 +273,9 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
         else:
             monitors, workspaces, clients, activewindow, activeworkspace = {}, {}, {}, {}, {}
+
+        for item in [monitors, workspaces, clients, activewindow, activeworkspace]:
+            print(">>>, item")
 
     for item in content_list:
         if item == "sway-taskbar":
@@ -576,7 +578,6 @@ def main():
     common.outputs = list_outputs(sway=sway, tree=tree)
 
     panels = load_json(config_file)
-    print("Panels:", panels)
 
     screen = Gdk.Screen.get_default()
     provider = Gtk.CssProvider()
