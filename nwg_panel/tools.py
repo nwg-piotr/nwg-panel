@@ -887,7 +887,6 @@ def h_get_activewindow():
 
 def h_get_active_workspace():
     reply = hyprctl("j/activeworkspace")
-    print(">>> reply:", reply)
     try:
         return json.loads(reply)
     except Exception as e:
