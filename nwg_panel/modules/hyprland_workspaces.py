@@ -116,7 +116,6 @@ class HyprlandWorkspaces(Gtk.Box):
 
         # fix #310
         active_ws = activeworkspace["id"]
-        print(">>> active_ws", active_ws)
 
         for num in self.ws_nums:
             if num in occupied_workspaces or self.settings["show-empty"]:
