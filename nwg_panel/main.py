@@ -274,9 +274,6 @@ def instantiate_content(panel, container, content_list, icons_path=""):
         else:
             monitors, workspaces, clients, activewindow, activeworkspace = {}, {}, {}, {}, {}
 
-        for item in [monitors, workspaces, clients, activewindow, activeworkspace]:
-            print(">>>", item)
-
     for item in content_list:
         if item == "sway-taskbar":
             if "sway-taskbar" in panel:
@@ -351,7 +348,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             if his:
                 if "hyprland-workspaces" in panel:
                     workspaces = HyprlandWorkspaces(panel["hyprland-workspaces"], monitors, workspaces, clients,
-                                                    activewindow, 2, icons_path=icons_path)
+                                                    activewindow, activeworkspace, icons_path=icons_path)
                     container.pack_start(workspaces, False, False, panel["items-padding"])
                     common.h_workspaces_list.append(workspaces)
                 else:
