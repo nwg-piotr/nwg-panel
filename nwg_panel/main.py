@@ -351,7 +351,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             if his:
                 if "hyprland-workspaces" in panel:
                     workspaces = HyprlandWorkspaces(panel["hyprland-workspaces"], monitors, workspaces, clients,
-                                                    activewindow, activeworkspace, icons_path=icons_path)
+                                                    activewindow, 2, icons_path=icons_path)
                     container.pack_start(workspaces, False, False, panel["items-padding"])
                     common.h_workspaces_list.append(workspaces)
                 else:
