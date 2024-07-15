@@ -115,10 +115,7 @@ class HyprlandWorkspaces(Gtk.Box):
             pinned = activewindow["pinned"]
 
         # fix #310
-        if activeworkspace and "id" in activeworkspace:
-            active_ws = activeworkspace["id"]
-        else:
-            active_ws = 0
+        active_ws = activeworkspace["id"]
 
         for num in self.ws_nums:
             if num in occupied_workspaces or self.settings["show-empty"]:
