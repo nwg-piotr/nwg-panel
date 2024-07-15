@@ -275,7 +275,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
             monitors, workspaces, clients, activewindow, activeworkspace = {}, {}, {}, {}, {}
 
         for item in [monitors, workspaces, clients, activewindow, activeworkspace]:
-            print(">>>, item")
+            print(">>>", item)
 
     for item in content_list:
         if item == "sway-taskbar":
