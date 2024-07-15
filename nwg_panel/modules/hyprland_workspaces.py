@@ -22,7 +22,7 @@ class HyprlandWorkspaces(Gtk.Box):
         self.ws_nums = []
 
         self.build_box()
-        # self.refresh(monitors, workspaces, clients, activewindow, activeworkspace)
+        self.refresh(monitors, workspaces, clients, activewindow, activeworkspace)
 
     def build_box(self):
         check_key(self.settings, "num-ws", 10)
@@ -115,7 +115,8 @@ class HyprlandWorkspaces(Gtk.Box):
             pinned = activewindow["pinned"]
 
         # fix #310
-        active_ws = activeworkspace["id"]
+        # active_ws = activeworkspace["id"]
+        active_ws = 0
 
         for num in self.ws_nums:
             if num in occupied_workspaces or self.settings["show-empty"]:
