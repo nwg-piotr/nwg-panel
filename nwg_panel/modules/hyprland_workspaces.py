@@ -79,8 +79,8 @@ class HyprlandWorkspaces(Gtk.Box):
             name = "{} {}".format(num, self.ws_id2name[num])
 
         lbl = Gtk.Label.new("{}".format(name)) if not add_dot else Gtk.Label.new("{}.".format(name))
-        if add_dot:
-            lbl.set_property("name", "workspace-occupied")
+        # if add_dot:
+        #     lbl.set_property("name", "workspace-occupied")
         lbl.set_use_markup(True)
         if self.settings["angle"] != 0.0:
             lbl.set_angle(self.settings["angle"])
@@ -124,8 +124,11 @@ class HyprlandWorkspaces(Gtk.Box):
 
         for num in self.ws_nums:
             if num in occupied_workspaces or self.settings["show-empty"]:
+                occ = num in occupied_workspaces
                 dot = num in occupied_workspaces and self.settings["show-empty"] and self.settings["mark-content"]
                 eb, lbl = self.build_number(num, add_dot=dot, active_win_ws=active_ws)
+                if occ:
+                    lbl.set_property("name", "workspace-occupied")
                 self.num_box.pack_start(eb, False, False, 0)
                 self.num_box.show_all()
 
