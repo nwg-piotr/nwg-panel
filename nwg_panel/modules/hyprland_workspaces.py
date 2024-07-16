@@ -27,7 +27,7 @@ class HyprlandWorkspaces(Gtk.Box):
         print("clients", clients)
         print("activewindow", activewindow)
         print("activeworkspace", activeworkspace)
-        self.refresh(monitors, workspaces, clients, activewindow, activeworkspace)
+        # self.refresh(monitors, workspaces, clients, activewindow, activeworkspace)
 
     def build_box(self):
         check_key(self.settings, "num-ws", 10)
