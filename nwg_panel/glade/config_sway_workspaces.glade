@@ -266,7 +266,8 @@
             <property name="halign">start</property>
             <property name="label" translatable="yes">&lt;span size="small"&gt;&lt;b&gt;CSS IDs&lt;/b&gt;: 
 #sway-workspaces, #sway-workspaces-item,
-#sway-workspaces-icon, #sway-workspaces-name&lt;/span&gt;</property>
+#sway-workspaces-icon, #sway-workspaces-name
+#workspace-occupied&lt;/span&gt;</property>
             <property name="use-markup">True</property>
             <property name="wrap">True</property>
           </object>
