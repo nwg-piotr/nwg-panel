@@ -885,8 +885,17 @@ def h_get_activewindow():
         return {}
 
 
+def h_get_active_workspace():
+    reply = hyprctl("j/activeworkspace")
+    try:
+        return json.loads(reply)
+    except Exception as e:
+        eprint(e)
+        return {}
+
+
 def h_modules_get_all():
-    return h_list_monitors(), h_list_workspaces(), h_list_clients(), h_get_activewindow()
+    return h_list_monitors(), h_list_workspaces(), h_list_clients(), h_get_activewindow(), h_get_active_workspace()
 
 
 def cmd_through_compositor(cmd):

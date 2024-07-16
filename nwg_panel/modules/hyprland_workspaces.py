@@ -6,7 +6,7 @@ from nwg_panel.tools import check_key, update_image_fallback_desktop, hyprctl
 
 
 class HyprlandWorkspaces(Gtk.Box):
-    def __init__(self, settings, monitors, workspaces, clients, activewindow, icons_path):
+    def __init__(self, settings, monitors, workspaces, clients, activewindow, activeworkspace, icons_path):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.settings = settings
         self.num_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
@@ -22,7 +22,7 @@ class HyprlandWorkspaces(Gtk.Box):
         self.ws_nums = []
 
         self.build_box()
-        self.refresh(monitors, workspaces, clients, activewindow)
+        self.refresh(monitors, workspaces, clients, activewindow, activeworkspace)
 
     def build_box(self):
         check_key(self.settings, "num-ws", 10)
@@ -79,8 +79,8 @@ class HyprlandWorkspaces(Gtk.Box):
             name = "{} {}".format(num, self.ws_id2name[num])
 
         lbl = Gtk.Label.new("{}".format(name)) if not add_dot else Gtk.Label.new("{}.".format(name))
-        if add_dot:
-            lbl.set_property("name", "workspace-occupied")
+        # if add_dot:
+        #     lbl.set_property("name", "workspace-occupied")
         lbl.set_use_markup(True)
         if self.settings["angle"] != 0.0:
             lbl.set_angle(self.settings["angle"])
@@ -90,7 +90,7 @@ class HyprlandWorkspaces(Gtk.Box):
 
         return eb, lbl
 
-    def refresh(self, monitors, workspaces, clients, activewindow):
+    def refresh(self, monitors, workspaces, clients, activewindow, activeworkspace):
         occupied_workspaces = []
         self.ws_id2name = {}
 
@@ -113,21 +113,22 @@ class HyprlandWorkspaces(Gtk.Box):
                 client_title = "X|{}".format(client_title)
             floating = activewindow["floating"]
             pinned = activewindow["pinned"]
-            active_ws = activewindow["workspace"]["id"]
         else:
             client_class = ""
             client_title = ""
             floating = False
             pinned = False
-            for m in monitors:
-                if m["focused"]:
-                    active_ws = m["activeWorkspace"]["id"]
-                    break
+
+        # fix #310
+        active_ws = activeworkspace["id"]
 
         for num in self.ws_nums:
             if num in occupied_workspaces or self.settings["show-empty"]:
+                occ = num in occupied_workspaces
                 dot = num in occupied_workspaces and self.settings["show-empty"] and self.settings["mark-content"]
                 eb, lbl = self.build_number(num, add_dot=dot, active_win_ws=active_ws)
+                if occ:
+                    lbl.set_property("name", "workspace-occupied")
                 self.num_box.pack_start(eb, False, False, 0)
                 self.num_box.show_all()
 

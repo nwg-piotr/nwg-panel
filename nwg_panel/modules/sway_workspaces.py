@@ -171,10 +171,13 @@ class SwayWorkspaces(Gtk.Box):
                     else:
                         lbl.hide()
 
+                    # mark non-empty WS with CSS ID
+                    if int_num in non_empty:
+                        lbl.set_property("name", "workspace-occupied")
+
                     # mark non-empty WS with a dot
                     if self.settings["mark-content"]:
                         if int_num in non_empty:
-                            lbl.set_property("name", "workspace-occupied")
                             if not text.endswith("."):
                                 text += "."
                         else:
@@ -263,13 +266,13 @@ class SwayWorkspaces(Gtk.Box):
             for item in tree.descendants():
                 if item.type == "workspace":
                     # find non-empty workspaces
-                    if self.settings["mark-content"] or self.settings["hide-empty"]:
-                        tasks_num = 0
-                        for d in item.descendants():
-                            if d.type == "con" and d.name:
-                                tasks_num += 1
-                        if tasks_num > 0:
-                            non_empty.append(item.num)
+                    # if self.settings["mark-content"] or self.settings["hide-empty"]:
+                    tasks_num = 0
+                    for d in item.descendants():
+                        if d.type == "con" and d.name:
+                            tasks_num += 1
+                    if tasks_num > 0:
+                        non_empty.append(item.num)
 
                     for node in item.floating_nodes:
                         if str(node.workspace().num) in self.settings["numbers"]:
