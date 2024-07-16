@@ -22,12 +22,7 @@ class HyprlandWorkspaces(Gtk.Box):
         self.ws_nums = []
 
         self.build_box()
-        print("monitors", monitors)
-        print("workspaces", workspaces)
-        print("clients", clients)
-        print("activewindow", activewindow)
-        print("activeworkspace", activeworkspace)
-        # self.refresh(monitors, workspaces, clients, activewindow, activeworkspace)
+        self.refresh(monitors, workspaces, clients, activewindow, activeworkspace)
 
     def build_box(self):
         check_key(self.settings, "num-ws", 10)
@@ -118,6 +113,11 @@ class HyprlandWorkspaces(Gtk.Box):
                 client_title = "X|{}".format(client_title)
             floating = activewindow["floating"]
             pinned = activewindow["pinned"]
+        else:
+            client_class = ""
+            client_title = ""
+            floating = False
+            pinned = False
 
         # fix #310
         active_ws = activeworkspace["id"]
