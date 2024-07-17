@@ -188,7 +188,7 @@ def hypr_watcher():
         if event_name in ["monitoradded", "openwindow", "movewindow"]:
             monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
             for item in common.h_taskbars_list:
-                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow, activeworkspace)
+                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
             last_client_title = client_title
             last_client_addr = client_addr
             continue
@@ -204,7 +204,7 @@ def hypr_watcher():
         if event_name == "activewindow" and client_title != last_client_title:
             monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
             for item in common.h_taskbars_list:
-                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow, activeworkspace)
+                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
 
             for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow, activeworkspace)
@@ -215,7 +215,7 @@ def hypr_watcher():
         if event_name == "activewindowv2" and client_addr != last_client_addr:
             monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
             for item in common.h_taskbars_list:
-                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow, activeworkspace)
+                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
 
             for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow, activeworkspace)
@@ -226,7 +226,7 @@ def hypr_watcher():
         if event_name in ["changefloatingmode", "closewindow"]:
             monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
             for item in common.h_taskbars_list:
-                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow, activeworkspace)
+                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
 
             for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow, activeworkspace)
