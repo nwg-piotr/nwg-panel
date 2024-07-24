@@ -375,10 +375,8 @@ def list_outputs(sway=False, tree=None, silent=False):
         monitor = display.get_monitor(i)
         monitors.append(monitor)
 
-    idx = 0
-    for key in outputs_dict:
-        outputs_dict[key]["monitor"] = monitors[idx]
-        idx += 1
+    for key, monitor in zip(outputs_dict.keys(), monitors):
+        outputs_dict[key]["monitor"] = monitor
 
     return outputs_dict
 
