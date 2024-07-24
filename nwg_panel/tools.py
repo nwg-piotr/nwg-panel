@@ -358,6 +358,10 @@ def list_outputs(sway=False, tree=None, silent=False):
                                                   'transform': transform,
                                                   'scale': scale,
                                                   'monitor': None}
+                        #Each monitor only have a single transform this avoid parsing multiple times the same monitor
+                        #Disabled monitors don't have transforms.
+                        # Gdk doesn't report disabled monitor, not filtering them would cause crashes
+                        transform = None
         else:
             print("'wlr-randr' command not found, terminating")
             sys.exit(1)
