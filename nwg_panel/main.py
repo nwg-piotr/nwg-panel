@@ -267,14 +267,14 @@ def instantiate_content(panel, container, content_list, icons_path=""):
     check_key(panel, "position", "top")
     check_key(panel, "items-padding", 0)
 
-    # list initial data for Hyprland modules
-    if his:
-        if "hyprland-workspaces" in content_list or "hyprland-taskbar" in content_list:
-            monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
-        else:
-            monitors, workspaces, clients, activewindow, activeworkspace = {}, {}, {}, {}, {}
-
     for item in content_list:
+        # list initial data for Hyprland modules
+        if his:
+            if "hyprland-workspaces" in content_list or "hyprland-taskbar" in content_list:
+                monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
+            else:
+                monitors, workspaces, clients, activewindow, activeworkspace = {}, {}, {}, {}, {}
+
         if item == "sway-taskbar":
             if "sway-taskbar" in panel:
                 if sway:
