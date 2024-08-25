@@ -76,7 +76,7 @@ def update_icon_from_pixmap(image, item, icon_size):
 
 
 def update_tooltip(image, item):
-    icon_name, icon_data, title, description = item.properties["Tooltip"]
+    icon_name, icon_data, title, description = item.properties["ToolTip"] if "ToolTip" in item.properties else item.properties["Tooltip"]
     tooltip = title
     if description:
         tooltip = "<b>{}</b>\n{}".format(title, description)
@@ -131,7 +131,7 @@ class Tray(Gtk.EventBox):
             elif "IconPixmap" in item.properties and len(item.properties["IconPixmap"]) != 0:
                 update_icon_from_pixmap(image, item, self.icon_size)
 
-            if "Tooltip" in item.properties:
+            if "Tooltip" in item.properties or "ToolTip" in item.properties:
                 update_tooltip(image, item)
             elif "Title" in item.properties:
                 image.set_tooltip_markup(item.properties["Title"])
@@ -168,7 +168,7 @@ class Tray(Gtk.EventBox):
             update_icon_from_pixmap(image, item, self.icon_size)
             pass
 
-        if "Tooltip" in changed_properties:
+        if "Tooltip" in changed_properties or "ToolTip" in changed_properties:
             update_tooltip(image, item)
         elif "Title" in changed_properties:
             image.set_tooltip_markup(item.properties["Title"])

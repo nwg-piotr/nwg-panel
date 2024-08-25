@@ -1,9 +1,12 @@
 from gi.repository import Gdk
 
 from dasbus.connection import SessionMessageBus
+from dasbus.specification import DBusSpecificationParser
 from dasbus.client.observer import DBusObserver
 from dasbus.client.proxy import disconnect_proxy
 from dasbus.error import DBusError
+
+from nwg_panel.tools import load_resource
 
 PROPERTIES = [
     "Id",
@@ -57,6 +60,13 @@ class StatusNotifierItem(object):
 
     def item_available_handler(self, _observer):
         self.item_proxy = self.session_bus.get_proxy(self.service_name, self.object_path)
+        try:
+            spec = self.item_proxy._handler.specification
+            if spec is not None:
+                if not any("StatusNotifierItem" in ifname for ifname in spec.interfaces):
+                    DBusSpecificationParser._parse_xml(spec, load_resource(__package__,"org.kde.StatusNotifierItem.xml"))
+        except:
+            pass
         if hasattr(self.item_proxy, "PropertiesChanged"):
             self.item_proxy.PropertiesChanged.connect(
                 lambda _if, changed, invalid: self.change_handler(list(changed), invalid)

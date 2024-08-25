@@ -788,7 +788,6 @@ def get_cache_dir():
     else:
         return None
 
-
 def file_age(path):
     return time.time() - os.stat(path)[stat.ST_MTIME]
 
@@ -909,3 +908,28 @@ def cmd_through_compositor(cmd):
         elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
             cmd = f"hyprctl dispatch exec '{cmd}'"
     return cmd
+
+def load_resource(package, resource_name):
+    try:
+        import importlib.resources as resources
+        with resources.open_binary(package, resource_name) as resource_file:
+            return resource_file.read()
+    except:
+        pass
+        
+    try:
+        import importlib.util
+        spec = importlib.util.find_spec(package)
+        if spec is not None and spec.loader is not None and hasattr(spec.loader, 'get_data'):
+            return spec.loader.get_data(resource_name)
+    except Exception:
+        pass
+
+    try:
+        import pkgutil
+        data = pkgutil.get_data(package, resource_name)
+        if data is None:
+            raise FileNotFoundError(f"Resource {resource_name} not found in package {package}.")
+        return data
+    except ImportError as e:
+        raise ImportError("Failed to load the resource using any available method.") from e
