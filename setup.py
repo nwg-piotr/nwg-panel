@@ -13,7 +13,8 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_data={
-        "": ["config/*", "icons_dark/*", "icons_light/*", "icons_color/*", "langs/*", "executors/*", "local/*"]
+        "": ["config/*", "icons_dark/*", "icons_light/*", "icons_color/*", "langs/*", "executors/*", "local/*",
+             "modules/sni_system_tray/org.kde.StatusNotifierItem.xml"]
     },
     url='https://github.com/nwg-piotr/nwg-panel',
     license='MIT',
