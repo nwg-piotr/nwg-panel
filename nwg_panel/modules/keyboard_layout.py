@@ -95,7 +95,7 @@ class KeyboardLayout(Gtk.EventBox):
                     self.label.set_text(label)
                 self.show_all()
             else:
-                eprint("KeyboardLayout module: failed listing devices, won't create UI, sorry.")
+                print("KeyboardLayout module: failed listing devices, won't create UI, sorry.")
 
 
     def list_keyboards(self):
