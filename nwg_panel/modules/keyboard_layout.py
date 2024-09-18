@@ -94,6 +94,9 @@ class KeyboardLayout(Gtk.EventBox):
                 if label:
                     self.label.set_text(label)
                 self.show_all()
+            else:
+                eprint("KeyboardLayout module: failed listing devices, won't create UI, sorry.")
+
 
     def list_keyboards(self):
         if self.compositor == "Hyprland":
