@@ -45,54 +45,57 @@ class KeyboardLayout(Gtk.EventBox):
 
         if self.compositor:
             self.keyboards = self.list_keyboards()
-            self.keyboard_names = []
-            for k in self.keyboards:
-                if self.compositor == "Hyprland":
-                    self.keyboard_names.append(k["name"])
-                # On sway some devices may be listed twice, let's add them just once
-                elif k.identifier not in self.keyboard_names:
-                    self.keyboard_names.append(k.identifier)
-            # print(f"keyboard_names = {self.keyboard_names}")
+            if self.keyboards:
+                self.keyboard_names = []
+                for k in self.keyboards:
+                    if self.compositor == "Hyprland":
+                        self.keyboard_names.append(k["name"])
+                    # On sway some devices may be listed twice, let's add them just once
+                    elif k.identifier not in self.keyboard_names:
+                        self.keyboard_names.append(k.identifier)
 
-            self.kb_layouts = self.get_kb_layouts()
-            # print(f"kb_layouts = {self.kb_layouts}")
+                self.kb_layouts = self.get_kb_layouts()
 
-            check_key(settings, "keyboard-device-sway", "")
-            check_key(settings, "keyboard-device-hyprland", "")
-            self.device_name = settings["keyboard-device-sway"] if self.compositor == "sway" else settings[
-                "keyboard-device-hyprland"]
+                check_key(settings, "keyboard-device-sway", "")
+                check_key(settings, "keyboard-device-hyprland", "")
+                self.device_name = settings["keyboard-device-sway"] if self.compositor == "sway" else settings[
+                    "keyboard-device-hyprland"]
 
-            check_key(settings, "root-css-name", "root-executor")
-            check_key(settings, "css-name", "")
-            check_key(settings, "icon-placement", "left")
-            check_key(settings, "icon-size", 16)
-            check_key(settings, "show-icon", True)
-            check_key(settings, "tooltip-text", "LMB: Next layout, RMB: Menu")
-            check_key(settings, "angle", 0.0)
+                check_key(settings, "root-css-name", "root-executor")
+                check_key(settings, "css-name", "")
+                check_key(settings, "icon-placement", "left")
+                check_key(settings, "icon-size", 16)
+                check_key(settings, "show-icon", True)
+                check_key(settings, "tooltip-text", "LMB: Next layout, RMB: Menu")
+                check_key(settings, "angle", 0.0)
 
-            self.label.set_angle(settings["angle"])
+                self.label.set_angle(settings["angle"])
 
-            if settings["angle"] != 0.0:
-                self.box.set_orientation(Gtk.Orientation.VERTICAL)
+                if settings["angle"] != 0.0:
+                    self.box.set_orientation(Gtk.Orientation.VERTICAL)
 
-            update_image(self.image, "input-keyboard", self.settings["icon-size"], self.icons_path)
+                update_image(self.image, "input-keyboard", self.settings["icon-size"], self.icons_path)
 
-            self.set_property("name", settings["root-css-name"])
-            if settings["css-name"]:
-                self.label.set_property("name", settings["css-name"])
+                self.set_property("name", settings["root-css-name"])
+                if settings["css-name"]:
+                    self.label.set_property("name", settings["css-name"])
+                else:
+                    self.label.set_property("name", "executor-label")
+
+                if settings["tooltip-text"]:
+                    self.set_tooltip_text(settings["tooltip-text"])
+
+                self.connect('button-release-event', self.on_button_release)
+                self.connect('enter-notify-event', on_enter_notify_event)
+                self.connect('leave-notify-event', on_leave_notify_event)
+
+                self.build_box()
+                label = self.get_current_layout()
+                if label:
+                    self.label.set_text(label)
+                self.show_all()
             else:
-                self.label.set_property("name", "executor-label")
-
-            if settings["tooltip-text"]:
-                self.set_tooltip_text(settings["tooltip-text"])
-
-            self.connect('button-release-event', self.on_button_release)
-            self.connect('enter-notify-event', on_enter_notify_event)
-            self.connect('leave-notify-event', on_leave_notify_event)
-
-            self.build_box()
-            self.refresh()
-            self.show_all()
+                print("KeyboardLayout module: failed listing devices, won't create UI, sorry.")
 
     def list_keyboards(self):
         if self.compositor == "Hyprland":

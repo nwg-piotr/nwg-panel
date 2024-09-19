@@ -761,12 +761,14 @@ def main():
                 left_box.pack_start(ms, False, False, 0)
 
             instantiate_content(panel, left_box, panel["modules-left"], icons_path=icons_path)
+            print("left box created")
 
             center_box = Gtk.Box(orientation=o, spacing=panel["spacing"])
             center_box.set_property("name", "center-box")
             inner_box.pack_start(center_box, True, False, 0)
             check_key(panel, "modules-center", [])
             instantiate_content(panel, center_box, panel["modules-center"], icons_path=icons_path)
+            print("center box created")
 
             right_box = Gtk.Box(orientation=o, spacing=panel["spacing"])
             right_box.set_property("name", "right-box")
@@ -776,6 +778,7 @@ def main():
             inner_box.pack_start(helper_box, False, True, 0)
             check_key(panel, "modules-right", [])
             instantiate_content(panel, right_box, panel["modules-right"], icons_path=icons_path)
+            print("right box created")
 
             if panel["menu-start"] == "right":
                 ms = MenuStart(panel["menu-start-settings"], icons_path=icons_path)
