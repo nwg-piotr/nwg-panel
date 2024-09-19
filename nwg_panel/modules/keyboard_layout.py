@@ -97,7 +97,6 @@ class KeyboardLayout(Gtk.EventBox):
             else:
                 print("KeyboardLayout module: failed listing devices, won't create UI, sorry.")
 
-
     def list_keyboards(self):
         if self.compositor == "Hyprland":
             o = hyprctl("j/devices")
