@@ -75,6 +75,10 @@ class StatusNotifierItem(object):
             self.item_proxy.NewTitle.connect(
                 lambda: self.change_handler(["Title"])
             )
+        if hasattr(self.item_proxy, 'NewToolTip'):
+            self.item_proxy.NewToolTip.connect(
+                lambda: self.change_handler(["ToolTip"])
+            )
         if hasattr(self.item_proxy, 'NewIcon'):
             self.item_proxy.NewIcon.connect(
                 lambda: self.change_handler(["IconName", "IconPixmap"])
