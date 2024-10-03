@@ -193,7 +193,7 @@ def hypr_watcher():
             last_client_addr = client_addr
             continue
 
-        if event_name == "focusedmon":
+        if event_name in ["focusedmon", "createworkspace"]:
             monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
             for item in common.h_workspaces_list:
                 GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow, activeworkspace)
