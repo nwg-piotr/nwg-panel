@@ -152,7 +152,6 @@ def restart():
     subprocess.Popen(restart_cmd, shell=True)
 
 
-# read from Hyprland socket2 on async thread
 def hypr_watcher():
     import socket
 
@@ -173,7 +172,7 @@ def hypr_watcher():
         event_names = []
         for line in lines:
             event_names.append(line.split(">>")[0])
-        print(event_names)
+        # print(f"events: {event_names}")
 
         for event_name in event_names:
             if event_name in ["activespecial",
@@ -194,7 +193,7 @@ def hypr_watcher():
                     just_refreshed = False
                     break
 
-                print(f">>> Refreshing on {event_name}")
+                # print(f">>> refreshing on {event_name}")
                 monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
                 for item in common.h_taskbars_list:
                     GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
@@ -204,7 +203,6 @@ def hypr_watcher():
 
                 if event_name in ["createworkspace", "destroyworkspace", "focusedmon", "workspace"]:
                     just_refreshed = True
-
                 break
 
 
@@ -854,6 +852,7 @@ def main():
     if his:
         if len(common.h_taskbars_list) > 0 or len(common.h_workspaces_list) > 0:
             print("his: '{}', starting hypr_watcher".format(his))
+            # read from Hyprland socket2 on another thread
             thread = threading.Thread(target=hypr_watcher)
             thread.daemon = True
             thread.start()
