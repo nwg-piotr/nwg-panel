@@ -87,8 +87,6 @@ his = os.getenv('HYPRLAND_INSTANCE_SIGNATURE')
 if his:
     from nwg_panel.modules.hyprland_taskbar import HyprlandTaskbar
     from nwg_panel.modules.hyprland_workspaces import HyprlandWorkspaces
-last_client_addr = ""
-last_client_title = ""
 
 common_settings = {}
 restart_cmd = ""
@@ -154,7 +152,6 @@ def restart():
     subprocess.Popen(restart_cmd, shell=True)
 
 
-# read from Hyprland socket2 on async thread
 def hypr_watcher():
     import socket
 
@@ -165,74 +162,48 @@ def hypr_watcher():
 
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     client.connect(f"{hypr_dir}/{his}/.socket2.sock")
-
-    global last_client_addr, last_client_title
-    client_addr, client_title = None, None
+    just_refreshed = False
 
     while True:
         datagram = client.recv(2048)
         e_full_string = datagram.decode('utf-8').strip()
-        # eprint("Event: {}".format(e_full_string))
+        lines = e_full_string.splitlines()
 
-        # remember client address & title (string) for further event filtering
-        if e_full_string.startswith("activewindow"):
-            lines = e_full_string.splitlines()
-            for line in lines:
-                if line.startswith("activewindowv2"):
-                    client_addr = e_full_string.split(">>")[1].strip()
-                elif line.startswith("activewindow>>"):
-                    client_title = line.split(">>")[1].strip()
+        event_names = []
+        for line in lines:
+            event_names.append(line.split(">>")[0])
+        # print(f"events: {event_names}")
 
-        event_name = e_full_string.split(">>")[0]
+        for event_name in event_names:
+            if event_name in ["activespecial",
+                              "activewindow",
+                              "activewindowv2",
+                              "changefloatingmode",
+                              "closewindow",
+                              "createworkspace",
+                              "destroyworkspace",
+                              "focusedmon",
+                              "monitoradded",
+                              "movewindow",
+                              "openwindow",
+                              "windowtitle",
+                              "workspace"]:
 
-        if event_name in ["monitoradded", "openwindow", "movewindow"]:
-            monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
-            for item in common.h_taskbars_list:
-                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
-            last_client_title = client_title
-            last_client_addr = client_addr
-            continue
+                if "activewindow" in event_name and just_refreshed:
+                    just_refreshed = False
+                    break
 
-        if event_name in ["focusedmon", "createworkspace"]:
-            monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
-            for item in common.h_workspaces_list:
-                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow, activeworkspace)
-            last_client_title = client_title
-            last_client_addr = client_addr
-            continue
+                # print(f">>> refreshing on {event_name}")
+                monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
+                for item in common.h_taskbars_list:
+                    GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
 
-        if event_name == "activewindow" and client_title != last_client_title:
-            monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
-            for item in common.h_taskbars_list:
-                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
+                for item in common.h_workspaces_list:
+                    GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow, activeworkspace)
 
-            for item in common.h_workspaces_list:
-                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow, activeworkspace)
-
-            last_client_title = client_title
-            continue
-
-        if event_name == "activewindowv2" and client_addr != last_client_addr:
-            monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
-            for item in common.h_taskbars_list:
-                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
-
-            for item in common.h_workspaces_list:
-                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow, activeworkspace)
-
-            last_client_addr = client_addr
-            continue
-
-        if event_name in ["changefloatingmode", "closewindow"]:
-            monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
-            for item in common.h_taskbars_list:
-                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
-
-            for item in common.h_workspaces_list:
-                GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow, activeworkspace)
-
-            last_client_addr = ""
-            last_client_title = ""
+                if event_name in ["createworkspace", "destroyworkspace", "focusedmon", "workspace"]:
+                    just_refreshed = True
+                break
 
 
 def on_i3ipc_event(i3conn, event):
@@ -881,6 +852,7 @@ def main():
     if his:
         if len(common.h_taskbars_list) > 0 or len(common.h_workspaces_list) > 0:
             print("his: '{}', starting hypr_watcher".format(his))
+            # read from Hyprland socket2 on another thread
             thread = threading.Thread(target=hypr_watcher)
             thread.daemon = True
             thread.start()
