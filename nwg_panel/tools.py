@@ -536,11 +536,14 @@ def list_sinks():
                 for line in lines:
                     details = line.split()
                     name = details[1][1:-1]
-                    desc = " ".join(details[2:])[1:-1]
-                    sinks.append({"name": name, "desc": desc})
+                    desc = " ".join(details[3:])[1:-1]
+                    sink = {"name": name, "desc": desc, "running": True if "Running" in line else False}
+                    sinks.append(sink)
+
         except Exception as e:
             eprint(e)
-    if nwg_panel.common.commands["pactl"]:
+
+    elif nwg_panel.common.commands["pactl"]:
         try:
             output = cmd2string("pactl list sinks")
             if output:
@@ -557,6 +560,8 @@ def list_sinks():
                             sink.update({"name": line.split(": ")[1]})
                         elif line.lower().startswith("description"):
                             sink.update({"desc": line.split(": ")[1]})
+                        elif line.lower().startswith("state"):
+                            sink.update({"running": True if "RUNNING" in line else False})
                 if sink:
                     sinks.append(sink)
         except Exception as e:

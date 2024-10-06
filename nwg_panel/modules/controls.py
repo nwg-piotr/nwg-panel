@@ -837,6 +837,8 @@ class SinkBox(Gtk.Box):
                 desc = sink["desc"]
                 if len(desc) > 26:
                     desc = "{}\u2026".format(desc[:26])
+                if sink["running"]:
+                    desc = f"✓ {desc}"
                 label = Gtk.Label(desc)
                 hbox.pack_start(label, True, True, 0)
                 eb.add(vbox)
