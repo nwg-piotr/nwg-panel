@@ -299,9 +299,9 @@ def list_outputs(sway=False, silent=False):
         if not silent:
             print("Running on Hyprland")
         cmd = "hyprctl -j monitors"
-        output = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
-        monitors = json.loads(output)
-        for item in monitors:
+        result = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
+        outputs = json.loads(result)
+        for item in outputs:
             outputs_dict[item["name"]] = {"x": item["x"],
                                           "y": item["y"],
                                           "width": int(item["width"] / item["scale"]),
@@ -361,9 +361,9 @@ def list_outputs(sway=False, silent=False):
                                                   'description': description,
                                                   'scale': scale,
                                                   'monitor': None}
-                        #Each monitor only have a single transform this avoid parsing multiple times the same monitor
-                        #Disabled monitors don't have transforms.
-                        # Gdk doesn't report disabled monitor, not filtering them would cause crashes
+                        # Each monitor only has a single transform, this is to avoid parsing the same monitor multiple times
+                        # Disabled monitors don't have transforms.
+                        # Gdk doesn't report disabled monitors, not filtering them would cause crashes
                         transform = None
         else:
             print("'wlr-randr' command not found, terminating")
