@@ -543,7 +543,7 @@ def main():
     copy_files(os.path.join(dir_name, "local"), local_dir())
 
     tree = common.i3.get_tree() if sway else None
-    common.outputs = list_outputs(sway=sway, tree=tree)
+    common.outputs, common.mon_desc2output_name = list_outputs(sway=sway, tree=tree)
 
     panels = load_json(config_file)
 
@@ -835,7 +835,7 @@ def main():
     if sway:
         common.outputs_num = num_active_outputs(common.i3.get_outputs())
     else:
-        common.outputs = list_outputs(sway=sway, tree=tree, silent=True)
+        common.outputs, common.mon_desc2output_name = list_outputs(sway=sway, tree=tree, silent=True)
         common.outputs_num = len(common.outputs)
 
     if sway:

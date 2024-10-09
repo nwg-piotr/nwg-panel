@@ -307,6 +307,7 @@ def list_outputs(sway=False, tree=None, silent=False):
                                           "y": item["y"],
                                           "width": int(item["width"] / item["scale"]),
                                           "height": int(item["height"] / item["scale"]),
+                                          "description": item["description"],
                                           "monitor": None}
             # swap for rotated displays
             if item["transform"] in [1, 3, 5, 7]:
@@ -378,7 +379,12 @@ def list_outputs(sway=False, tree=None, silent=False):
     for key, monitor in zip(outputs_dict.keys(), monitors):
         outputs_dict[key]["monitor"] = monitor
 
-    return outputs_dict
+    # map monitor descriptions to output names
+    mon_desc2output_name = {}
+    for key in outputs_dict:
+        mon_desc2output_name[outputs_dict[key]["description"]] = key if "description" in outputs_dict[key] else ""
+
+    return outputs_dict, mon_desc2output_name
 
 
 def check_key(dictionary, key, default_value):
