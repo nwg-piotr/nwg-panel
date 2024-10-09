@@ -277,7 +277,7 @@ def num_active_outputs(outputs):
     return a
 
 
-def list_outputs(sway=False, tree=None, silent=False):
+def list_outputs(sway=False, silent=False):
     """
     Get output names and geometry from i3 tree, assign to Gdk.Display monitors.
     :return: {"name": str, "x": int, "y": int, "width": int, "height": int, "monitor": Gkd.Monitor}
@@ -286,15 +286,14 @@ def list_outputs(sway=False, tree=None, silent=False):
     if sway:
         if not silent:
             print("Running on sway")
-        if not tree:
-            tree = nwg_panel.common.i3.get_tree()
-        for item in tree:
-            if item.type == "output" and not item.name.startswith("__"):
-                outputs_dict[item.name] = {"x": item.rect.x,
-                                           "y": item.rect.y,
-                                           "width": item.rect.width,
-                                           "height": item.rect.height,
-                                           "monitor": None}
+        outputs = nwg_panel.common.i3.get_outputs()
+        for item in outputs:
+            outputs_dict[item.name] = {"x": item.rect.x,
+                                       "y": item.rect.y,
+                                       "width": item.rect.width,
+                                       "height": item.rect.height,
+                                       "description": f"{item.make} {item.model} {item.serial}",
+                                       "monitor": None}
 
     elif os.getenv('HYPRLAND_INSTANCE_SIGNATURE') is not None:
         if not silent:
@@ -320,10 +319,11 @@ def list_outputs(sway=False, tree=None, silent=False):
         if nwg_panel.common.commands["wlr-randr"]:
             lines = subprocess.check_output("wlr-randr", shell=True).decode("utf-8").strip().splitlines()
             if lines:
-                name, w, h, x, y, transform, scale = None, None, None, None, None, None, 1.0
+                name, description, w, h, x, y, transform, scale = None, None, None, None, None, None, None, 1.0
                 for line in lines:
                     if not line.startswith(" "):
                         name = line.split()[0]
+                        description = line.split()[1]
                     elif "current" in line:
                         w_h = line.split()[0].split('x')
                         w = int(w_h[0])
@@ -349,6 +349,7 @@ def list_outputs(sway=False, tree=None, silent=False):
                                                   'width': int(w / scale),
                                                   'height': int(h / scale),
                                                   'transform': transform,
+                                                  'description': description,
                                                   'monitor': None}
                         else:
                             outputs_dict[name] = {'name': name,
@@ -357,6 +358,7 @@ def list_outputs(sway=False, tree=None, silent=False):
                                                   'width': int(h / scale),
                                                   'height': int(w / scale),
                                                   'transform': transform,
+                                                  'description': description,
                                                   'scale': scale,
                                                   'monitor': None}
                         #Each monitor only have a single transform this avoid parsing multiple times the same monitor
@@ -382,7 +384,8 @@ def list_outputs(sway=False, tree=None, silent=False):
     # map monitor descriptions to output names
     mon_desc2output_name = {}
     for key in outputs_dict:
-        mon_desc2output_name[outputs_dict[key]["description"]] = key if "description" in outputs_dict[key] else ""
+        if "description" in outputs_dict[key]:
+            mon_desc2output_name[outputs_dict[key]["description"]] = key
 
     return outputs_dict, mon_desc2output_name
 

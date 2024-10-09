@@ -4349,7 +4349,7 @@ def main():
         tree = i3.get_tree()
 
     global outputs
-    outputs, mon_desc2output_name = list_outputs(sway=sway, tree=tree)
+    outputs, mon_desc2output_name = list_outputs(sway=sway)
 
     global selector_window
     selector_window = PanelSelector()
