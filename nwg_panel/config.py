@@ -965,6 +965,9 @@ class EditorWrapper(object):
 
         self.cb_monitor.append("All", "All")
 
+        if self.panel["monitor"] and (self.panel["monitor"] in mon_desc2output_name or self.panel["monitor"] == "All"):
+            self.cb_monitor.set_active_id(self.panel["monitor"])
+
         self.cb_output.connect("changed", clear_active_id, self.cb_monitor)
         self.cb_monitor.connect("changed", clear_active_id,self.cb_output)
 
