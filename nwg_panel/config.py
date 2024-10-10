@@ -963,8 +963,6 @@ class EditorWrapper(object):
         for key in mon_desc2output_name:
             self.cb_monitor.append(key, key)
 
-        self.cb_monitor.append("All", "All")
-
         if self.panel["monitor"] and (self.panel["monitor"] in mon_desc2output_name or self.panel["monitor"] == "All"):
             self.cb_monitor.set_active_id(self.panel["monitor"])
 
@@ -4372,8 +4370,8 @@ def main():
             print("'python-i3ipc' package required on sway, terminating")
             sys.exit(1)
 
-        i3 = Connection()
-        tree = i3.get_tree()
+        # i3 = Connection()
+        # tree = i3.get_tree()
 
     global outputs, mon_desc2output_name
     outputs, mon_desc2output_name = list_outputs(sway=sway)
