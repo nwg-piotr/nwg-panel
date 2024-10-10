@@ -4364,15 +4364,6 @@ def main():
     check_commands()
     load_vocabulary()
 
-    if sway:
-        try:
-            from i3ipc import Connection
-        except ModuleNotFoundError:
-            print("'python-i3ipc' package required on sway, terminating")
-            sys.exit(1)
-
-        common.i3 = Connection()
-
     global outputs, mon_desc2output_name
     outputs, mon_desc2output_name = list_outputs(sway=sway)
 
