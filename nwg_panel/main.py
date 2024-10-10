@@ -568,6 +568,10 @@ def main():
     to_append = []
     for panel in panels:
         check_key(panel, "output", "")
+        check_key(panel, "monitor", "")
+        if panel["monitor"]:
+            panel["output"] = common.mon_desc2output_name[panel["monitor"]]
+            print(f"Panel output '{panel["output"]}' assigned on the basis of panel monitor '{panel['monitor']}'")
 
         clones = []
         if panel["output"] == "All" and len(common.outputs) >= 1:
@@ -789,11 +793,13 @@ def main():
 
             check_key(panel, "layer", "top")
             o = panel["output"] if "output" in panel else "undefined"
-            print("Panel '{}': output: {}, position: {}, layer: {}, width: {}, height: {}".format(panel["name"], o,
-                                                                                                  panel["position"],
-                                                                                                  panel["layer"],
-                                                                                                  panel["width"],
-                                                                                                  panel["height"]))
+            m = panel["monitor"] if "monitor" in panel else "undefined"
+            print("Panel '{}': output: {}, monitor: {}, position: {}, layer: {}, width: {}, height: {}".format(
+                panel["name"], o, m,
+                panel["position"],
+                panel["layer"],
+                panel["width"],
+                panel["height"]))
 
             if monitor:
                 GtkLayerShell.set_monitor(window, monitor)
