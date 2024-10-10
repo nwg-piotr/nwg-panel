@@ -15,6 +15,8 @@ from gi.repository import Gtk, Gdk, GLib
 from nwg_panel.tools import get_config_dir, local_dir, load_json, save_json, load_string, list_outputs, check_key, \
     list_configs, update_gtk_entry, is_command, check_commands, cmd2string, eprint, temp_dir, load_shell_data, hyprctl
 
+from nwg_panel import common
+
 from nwg_panel.__about__ import __version__
 
 dir_name = os.path.dirname(__file__)
@@ -4362,7 +4364,6 @@ def main():
     check_commands()
     load_vocabulary()
 
-    tree = None
     if sway:
         try:
             from i3ipc import Connection
@@ -4370,8 +4371,7 @@ def main():
             print("'python-i3ipc' package required on sway, terminating")
             sys.exit(1)
 
-        # i3 = Connection()
-        # tree = i3.get_tree()
+        common.i3 = Connection()
 
     global outputs, mon_desc2output_name
     outputs, mon_desc2output_name = list_outputs(sway=sway)
