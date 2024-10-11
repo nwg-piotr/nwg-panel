@@ -277,36 +277,45 @@ def num_active_outputs(outputs):
     return a
 
 
-def list_outputs(sway=False, tree=None, silent=False):
+def list_outputs(sway=False, silent=False):
     """
     Get output names and geometry from i3 tree, assign to Gdk.Display monitors.
     :return: {"name": str, "x": int, "y": int, "width": int, "height": int, "monitor": Gkd.Monitor}
     """
     outputs_dict = {}
     if sway:
+        if sway:
+            try:
+                from i3ipc import Connection
+            except ModuleNotFoundError:
+                print("'python-i3ipc' package required on sway, terminating")
+                sys.exit(1)
+
+            i3 = Connection()
+
         if not silent:
             print("Running on sway")
-        if not tree:
-            tree = nwg_panel.common.i3.get_tree()
-        for item in tree:
-            if item.type == "output" and not item.name.startswith("__"):
-                outputs_dict[item.name] = {"x": item.rect.x,
-                                           "y": item.rect.y,
-                                           "width": item.rect.width,
-                                           "height": item.rect.height,
-                                           "monitor": None}
+        outputs = i3.get_outputs()
+        for item in outputs:
+            outputs_dict[item.name] = {"x": item.rect.x,
+                                       "y": item.rect.y,
+                                       "width": item.rect.width,
+                                       "height": item.rect.height,
+                                       "description": f"{item.make} {item.model} {item.serial}",
+                                       "monitor": None}
 
     elif os.getenv('HYPRLAND_INSTANCE_SIGNATURE') is not None:
         if not silent:
             print("Running on Hyprland")
         cmd = "hyprctl -j monitors"
-        output = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
-        monitors = json.loads(output)
-        for item in monitors:
+        result = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
+        outputs = json.loads(result)
+        for item in outputs:
             outputs_dict[item["name"]] = {"x": item["x"],
                                           "y": item["y"],
                                           "width": int(item["width"] / item["scale"]),
                                           "height": int(item["height"] / item["scale"]),
+                                          "description": item["description"],
                                           "monitor": None}
             # swap for rotated displays
             if item["transform"] in [1, 3, 5, 7]:
@@ -319,10 +328,11 @@ def list_outputs(sway=False, tree=None, silent=False):
         if nwg_panel.common.commands["wlr-randr"]:
             lines = subprocess.check_output("wlr-randr", shell=True).decode("utf-8").strip().splitlines()
             if lines:
-                name, w, h, x, y, transform, scale = None, None, None, None, None, None, 1.0
+                name, description, w, h, x, y, transform, scale = None, None, None, None, None, None, None, 1.0
                 for line in lines:
                     if not line.startswith(" "):
                         name = line.split()[0]
+                        description = line.split()[1]
                     elif "current" in line:
                         w_h = line.split()[0].split('x')
                         w = int(w_h[0])
@@ -348,6 +358,7 @@ def list_outputs(sway=False, tree=None, silent=False):
                                                   'width': int(w / scale),
                                                   'height': int(h / scale),
                                                   'transform': transform,
+                                                  'description': description,
                                                   'monitor': None}
                         else:
                             outputs_dict[name] = {'name': name,
@@ -356,11 +367,12 @@ def list_outputs(sway=False, tree=None, silent=False):
                                                   'width': int(h / scale),
                                                   'height': int(w / scale),
                                                   'transform': transform,
+                                                  'description': description,
                                                   'scale': scale,
                                                   'monitor': None}
-                        #Each monitor only have a single transform this avoid parsing multiple times the same monitor
-                        #Disabled monitors don't have transforms.
-                        # Gdk doesn't report disabled monitor, not filtering them would cause crashes
+                        # Each monitor only has a single transform, this is to avoid parsing the same monitor multiple times
+                        # Disabled monitors don't have transforms.
+                        # Gdk doesn't report disabled monitors, not filtering them would cause crashes
                         transform = None
         else:
             print("'wlr-randr' command not found, terminating")
@@ -378,7 +390,13 @@ def list_outputs(sway=False, tree=None, silent=False):
     for key, monitor in zip(outputs_dict.keys(), monitors):
         outputs_dict[key]["monitor"] = monitor
 
-    return outputs_dict
+    # map monitor descriptions to output names
+    mon_desc2output_name = {}
+    for key in outputs_dict:
+        if "description" in outputs_dict[key]:
+            mon_desc2output_name[outputs_dict[key]["description"]] = key
+
+    return outputs_dict, mon_desc2output_name
 
 
 def check_key(dictionary, key, default_value):
@@ -909,10 +927,11 @@ def cmd_through_compositor(cmd):
     common_settings = load_json(cs_file)
     if "run-through-compositor" not in common_settings or common_settings["run-through-compositor"] :
         if os.getenv("SWAYSOCK"):
-            cmd = f"swaymsg exec '{cmd}'"
+            cmd = f'swaymsg exec "{cmd}"'
         elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
-            cmd = f"hyprctl dispatch exec '{cmd}'"
+            cmd = f'hyprctl dispatch exec "{cmd}"'
     return cmd
+
 
 def load_resource(package, resource_name):
     try:

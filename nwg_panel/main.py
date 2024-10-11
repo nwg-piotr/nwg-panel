@@ -542,8 +542,10 @@ def main():
     copy_files(os.path.join(dir_name, "config"), common.config_dir, args.restore)
     copy_files(os.path.join(dir_name, "local"), local_dir())
 
-    tree = common.i3.get_tree() if sway else None
-    common.outputs = list_outputs(sway=sway, tree=tree)
+    # tree = common.i3.get_tree() if sway else None
+    common.outputs, common.mon_desc2output_name = list_outputs(sway=sway)
+    print(f"Outputs: {common.outputs}")
+    print(f"Descriptions: {common.mon_desc2output_name}")
 
     panels = load_json(config_file)
 
@@ -566,6 +568,9 @@ def main():
     to_append = []
     for panel in panels:
         check_key(panel, "output", "")
+        check_key(panel, "monitor", "")
+        if panel["monitor"]:
+            panel["output"] = common.mon_desc2output_name[panel["monitor"]]
 
         clones = []
         if panel["output"] == "All" and len(common.outputs) >= 1:
@@ -787,11 +792,13 @@ def main():
 
             check_key(panel, "layer", "top")
             o = panel["output"] if "output" in panel else "undefined"
-            print("Panel '{}': output: {}, position: {}, layer: {}, width: {}, height: {}".format(panel["name"], o,
-                                                                                                  panel["position"],
-                                                                                                  panel["layer"],
-                                                                                                  panel["width"],
-                                                                                                  panel["height"]))
+            m = panel["monitor"] if "monitor" in panel else "undefined"
+            print("Panel '{}': output: {}, monitor: {}, position: {}, layer: {}, width: {}, height: {}".format(
+                panel["name"], o, m,
+                panel["position"],
+                panel["layer"],
+                panel["width"],
+                panel["height"]))
 
             if monitor:
                 GtkLayerShell.set_monitor(window, monitor)
@@ -835,7 +842,7 @@ def main():
     if sway:
         common.outputs_num = num_active_outputs(common.i3.get_outputs())
     else:
-        common.outputs = list_outputs(sway=sway, tree=tree, silent=True)
+        common.outputs, common.mon_desc2output_name = list_outputs(sway=sway, silent=True)
         common.outputs_num = len(common.outputs)
 
     if sway:

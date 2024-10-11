@@ -15,6 +15,8 @@ from gi.repository import Gtk, Gdk, GLib
 from nwg_panel.tools import get_config_dir, local_dir, load_json, save_json, load_string, list_outputs, check_key, \
     list_configs, update_gtk_entry, is_command, check_commands, cmd2string, eprint, temp_dir, load_shell_data, hyprctl
 
+from nwg_panel import common
+
 from nwg_panel.__about__ import __version__
 
 dir_name = os.path.dirname(__file__)
@@ -49,6 +51,7 @@ configs = {}
 editor = None
 selector_window = None
 outputs = {}
+mon_desc2output_name = {}
 
 voc = {}
 shell_data = load_shell_data()
@@ -252,6 +255,10 @@ SKELETON_PANEL: dict = {
     }
 }
 
+
+def clear_active_id(combo, target_combo):
+    if combo.get_active_id():
+        target_combo.set_active_id("")
 
 def load_vocabulary():
     global voc
@@ -513,7 +520,7 @@ class PanelSelector(Gtk.Window):
             panels = configs[path]
             panel_idx = 0
             for panel in panels:
-                for item in ["name", "output", "position"]:
+                for item in ["name", "output", "monitor", "position"]:
                     check_key(panel, item, "")
                 listbox = Gtk.ListBox()
                 listbox.set_selection_mode(Gtk.SelectionMode.NONE)
@@ -529,13 +536,24 @@ class PanelSelector(Gtk.Window):
 
                 ivbox.pack_start(hbox, False, False, 3)
 
+                target = panel["output"] if panel["output"] else panel["monitor"]
+
+                label = Gtk.Label()
+                label.set_markup(f"{voc['panel']}: <b>{panel['name']}</b>\tOut: {target}")
+
                 label = Gtk.Label()
                 label.set_markup("{}: '<b>{}</b>'".format(voc["panel"], panel["name"]))
                 label.set_halign(Gtk.Align.START)
                 lbl_box.pack_start(label, True, True, 6)
 
                 label = Gtk.Label()
-                label.set_markup("{}: <b>{}</b>".format(voc["output"], panel["output"]))
+                target = panel["output"] if panel["output"] else panel["monitor"]
+                if panel['output']:
+                    label.set_markup("{}: {}".format(voc["output"], panel["output"]))
+                elif panel['monitor']:
+                    label.set_markup("{}: <small>{}</small>".format(voc["output"], panel["monitor"]))
+                else:
+                    label.set_markup("{}: {}".format(voc["output"], voc['undefined']))
                 label.set_halign(Gtk.Align.START)
                 lbl_box.pack_start(label, True, True, 6)
 
@@ -822,6 +840,7 @@ class EditorWrapper(object):
 
         self.eb_name = None
         self.cb_output = None
+        self.cb_monitor = None
         self.cb_position = None
         self.cb_controls = None
         self.cb_layer = None
@@ -875,6 +894,7 @@ class EditorWrapper(object):
         defaults = {
             "name": "",
             "output": "",
+            "monitor": "",
             "layer": "bottom",
             "position": "top",
             "controls": "off",
@@ -909,6 +929,7 @@ class EditorWrapper(object):
 
         builder.get_object("lbl-panel-name").set_text("{}:".format(voc["panel-name"]))
         builder.get_object("lbl-output").set_text("{}:".format(voc["output"]))
+        builder.get_object("lbl-monitor").set_text("{}:".format(voc["monitor"]))
         builder.get_object("lbl-position").set_text("{}:".format(voc["position"]))
         builder.get_object("lbl-layer").set_text("{}:".format(voc["layer"]))
         builder.get_object("lbl-controls").set_text("{}:".format(voc["controls"]))
@@ -936,6 +957,7 @@ class EditorWrapper(object):
         self.eb_name.connect("changed", validate_name)
 
         self.cb_output = builder.get_object("output")
+        self.cb_output.append("", "")
         for key in outputs:
             self.cb_output.append(key, key)
 
@@ -948,6 +970,20 @@ class EditorWrapper(object):
         if self.cb_output.get_active_id() and self.cb_output.get_active_id() in outputs:
             screen_width = outputs[self.cb_output.get_active_id()]["width"]
             screen_height = outputs[self.cb_output.get_active_id()]["height"]
+
+        self.cb_monitor = builder.get_object("monitor")
+        self.cb_monitor.append("", "")
+        for key in mon_desc2output_name:
+            self.cb_monitor.append(key, key)
+
+        if self.panel["monitor"] and (self.panel["monitor"] in mon_desc2output_name or self.panel["monitor"] == "All"):
+            self.cb_monitor.set_active_id(self.panel["monitor"])
+
+        self.cb_output.connect("changed", clear_active_id, self.cb_monitor)
+        self.cb_monitor.connect("changed", clear_active_id,self.cb_output)
+
+        if self.panel["output"] and (self.panel["output"] in outputs or self.panel["output"] == "All"):
+            self.cb_output.set_active_id(self.panel["output"])
 
         self.cb_position = builder.get_object("position")
         self.cb_position.set_active_id(self.panel["position"])
@@ -1087,8 +1123,10 @@ class EditorWrapper(object):
             self.panel["name"] = val
 
         val = self.cb_output.get_active_id()
-        if val:
-            self.panel["output"] = val
+        self.panel["output"] = val if val else ""
+
+        val = self.cb_monitor.get_active_id()
+        self.panel["monitor"] = val if val else ""
 
         val = self.cb_position.get_active_id()
         if val:
@@ -4337,19 +4375,8 @@ def main():
     check_commands()
     load_vocabulary()
 
-    tree = None
-    if sway:
-        try:
-            from i3ipc import Connection
-        except ModuleNotFoundError:
-            print("'python-i3ipc' package required on sway, terminating")
-            sys.exit(1)
-
-        i3 = Connection()
-        tree = i3.get_tree()
-
-    global outputs
-    outputs = list_outputs(sway=sway, tree=tree)
+    global outputs, mon_desc2output_name
+    outputs, mon_desc2output_name = list_outputs(sway=sway)
 
     global selector_window
     selector_window = PanelSelector()
