@@ -520,7 +520,7 @@ class PanelSelector(Gtk.Window):
             panels = configs[path]
             panel_idx = 0
             for panel in panels:
-                for item in ["name", "output", "position"]:
+                for item in ["name", "output", "monitor", "position"]:
                     check_key(panel, item, "")
                 listbox = Gtk.ListBox()
                 listbox.set_selection_mode(Gtk.SelectionMode.NONE)
@@ -542,7 +542,8 @@ class PanelSelector(Gtk.Window):
                 lbl_box.pack_start(label, True, True, 6)
 
                 label = Gtk.Label()
-                label.set_markup("{}: <b>{}</b>".format(voc["output"], panel["output"]))
+                target = panel["output"] if panel["output"] else panel["monitor"]
+                label.set_markup("{}/{}: <b>{}</b>".format(voc["output"], voc["monitor"], target))
                 label.set_halign(Gtk.Align.START)
                 lbl_box.pack_start(label, True, True, 6)
 
