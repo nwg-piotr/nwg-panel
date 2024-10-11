@@ -545,7 +545,7 @@ def main():
     # tree = common.i3.get_tree() if sway else None
     common.outputs, common.mon_desc2output_name = list_outputs(sway=sway)
     print(f"Outputs: {common.outputs}")
-    print(f"Description->output name: {common.mon_desc2output_name}")
+    print(f"Descriptions: {common.mon_desc2output_name}")
 
     panels = load_json(config_file)
 
@@ -571,7 +571,6 @@ def main():
         check_key(panel, "monitor", "")
         if panel["monitor"]:
             panel["output"] = common.mon_desc2output_name[panel["monitor"]]
-            print(f"Panel output '{panel["output"]}' assigned on the basis of panel monitor '{panel['monitor']}'")
 
         clones = []
         if panel["output"] == "All" and len(common.outputs) >= 1:
