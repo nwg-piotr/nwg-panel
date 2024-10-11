@@ -785,7 +785,7 @@ def main():
             window.add(vbox)
 
             GtkLayerShell.init_for_window(window)
-            GtkLayerShell.set_namespace(window, f"nwg-panel")
+            GtkLayerShell.set_namespace(window, "nwg-panel")
 
             monitor = None
             try:
