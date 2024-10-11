@@ -284,14 +284,13 @@ def list_outputs(sway=False, silent=False):
     """
     outputs_dict = {}
     if sway:
-        if sway:
-            try:
-                from i3ipc import Connection
-            except ModuleNotFoundError:
-                print("'python-i3ipc' package required on sway, terminating")
-                sys.exit(1)
+        try:
+            from i3ipc import Connection
+        except ModuleNotFoundError:
+            print("'python-i3ipc' package required on sway, terminating")
+            sys.exit(1)
 
-            i3 = Connection()
+        i3 = Connection()
 
         if not silent:
             print("Running on sway")

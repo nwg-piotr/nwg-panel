@@ -570,7 +570,10 @@ def main():
         check_key(panel, "output", "")
         check_key(panel, "monitor", "")
         if panel["monitor"]:
-            panel["output"] = common.mon_desc2output_name[panel["monitor"]]
+            try:
+                panel["output"] = common.mon_desc2output_name[panel["monitor"]]
+            except KeyError as err:
+                eprint(f"Monitor description unknown: {err}")
 
         clones = []
         if panel["output"] == "All" and len(common.outputs) >= 1:
