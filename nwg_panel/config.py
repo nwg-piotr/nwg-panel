@@ -536,6 +536,11 @@ class PanelSelector(Gtk.Window):
 
                 ivbox.pack_start(hbox, False, False, 3)
 
+                target = panel["output"] if panel["output"] else panel["monitor"]
+
+                label = Gtk.Label()
+                label.set_markup(f"{voc['panel']}: <b>{panel['name']}</b>\tOut: {target}")
+
                 label = Gtk.Label()
                 label.set_markup("{}: '<b>{}</b>'".format(voc["panel"], panel["name"]))
                 label.set_halign(Gtk.Align.START)
@@ -543,7 +548,12 @@ class PanelSelector(Gtk.Window):
 
                 label = Gtk.Label()
                 target = panel["output"] if panel["output"] else panel["monitor"]
-                label.set_markup("{}/{}: <b>{}</b>".format(voc["output"], voc["monitor"], target))
+                if panel['output']:
+                    label.set_markup("{}: {}".format(voc["output"], panel["output"]))
+                elif panel['monitor']:
+                    label.set_markup("{}: <small>{}</small>".format(voc["output"], panel["monitor"]))
+                else:
+                    label.set_markup("{}: {}".format(voc["output"], voc['undefined']))
                 label.set_halign(Gtk.Align.START)
                 lbl_box.pack_start(label, True, True, 6)
 
