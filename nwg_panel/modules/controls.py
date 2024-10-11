@@ -619,7 +619,6 @@ class PopupWindow(Gtk.Window):
 
     def toggle_mute(self, e, slider):
         toggle_mute()
-        self.parent.refresh()
         self.refresh()
 
     def custom_item(self, name, icon, cmd):
@@ -651,6 +650,7 @@ class PopupWindow(Gtk.Window):
     def refresh(self, schedule=False):
         if self.get_visible():
             self.refresh_sinks()
+            self.parent.refresh_output()
 
             if "battery" in self.settings["components"]:
                 if self.parent.bat_icon_name != self.bat_icon_name:
