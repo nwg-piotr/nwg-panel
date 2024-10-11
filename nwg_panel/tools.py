@@ -927,10 +927,11 @@ def cmd_through_compositor(cmd):
     common_settings = load_json(cs_file)
     if "run-through-compositor" not in common_settings or common_settings["run-through-compositor"] :
         if os.getenv("SWAYSOCK"):
-            cmd = f"swaymsg exec '{cmd}'"
+            cmd = f'swaymsg exec "{cmd}"'
         elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
-            cmd = f"hyprctl dispatch exec '{cmd}'"
+            cmd = f'hyprctl dispatch exec "{cmd}"'
     return cmd
+
 
 def load_resource(package, resource_name):
     try:
