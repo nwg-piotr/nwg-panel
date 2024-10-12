@@ -499,8 +499,11 @@ def list_sink_inputs():
     """
     Thanks to @fm16191 for https://github.com/fm16191/pactl-json-parser
     """
-    p = subprocess.run("pactl list sink-inputs".split(), capture_output=True)
-    result = p.stdout.decode()
+    # This used to return localized output, returning unexpected values #327
+    # p = subprocess.run("pactl list sink-inputs".split(), capture_output=True)
+    # result = p.stdout.decode()
+
+    result = cmd2string("pactl list sink-inputs")
 
     # Syntax fix
     result = result.replace(u"\xa0", " ")  # Broken encoding for spaces
