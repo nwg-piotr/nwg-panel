@@ -925,13 +925,14 @@ def h_modules_get_all():
 
 
 def cmd_through_compositor(cmd):
+    cmd = cmd.replace("\"", "'")
     cs_file = os.path.join(get_config_dir(), "common-settings.json")
     common_settings = load_json(cs_file)
     if "run-through-compositor" not in common_settings or common_settings["run-through-compositor"] :
         if os.getenv("SWAYSOCK"):
-            cmd = f'swaymsg exec "{cmd.replace("\"", "'")}"'
+            cmd = f'swaymsg exec "{cmd}"'
         elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
-            cmd = f'hyprctl dispatch exec "{cmd.replace("\"", "'")}"'
+            cmd = f'hyprctl dispatch exec "{cmd}"'
     return cmd
 
 
