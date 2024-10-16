@@ -592,20 +592,23 @@ class PopupWindow(Gtk.Window):
             for c in self.per_app_vol_box.get_children():
                 c.destroy()
             for inp in sink_inputs:
-                props = sink_inputs[inp]["Properties"]
-                icon_name = props[
-                    "application.icon_name"] if "application.icon_name" in props else "emblem-music-symbolic"
-                vol = 0
-                for p in sink_inputs[inp]["Volume"].split():
-                    if p.endswith("%"):
-                        try:
-                            vol = int(p[:-1])
-                        except:
-                            pass
-                scale = PerAppSlider(inp, vol, icon_name, props["application.name"], props["media.name"])
-                self.per_app_sliders.append(scale)
-                self.per_app_vol_box.pack_start(scale, False, False, 0)
-        self.show_all()
+                props = sink_inputs[inp]["Properties"] if "Properties" in sink_inputs[inp]["Properties"] else {}
+                if props:
+                    icon_name = props[
+                        "application.icon_name"] if "application.icon_name" in props else "emblem-music-symbolic"
+                    vol = 0
+                    if "Volume" in sink_inputs[inp]:
+                        for p in sink_inputs[inp]["Volume"].split():
+                            if p.endswith("%"):
+                                try:
+                                    vol = int(p[:-1])
+                                except:
+                                    pass
+                        if "application.name" in props and "media.name" in props:
+                            scale = PerAppSlider(inp, vol, icon_name, props["application.name"], props["media.name"])
+                            self.per_app_sliders.append(scale)
+                            self.per_app_vol_box.pack_start(scale, False, False, 0)
+                            self.show_all()
 
     def switch_menu_box(self, widget, event):
         if self.menu_box.get_visible():
@@ -681,32 +684,36 @@ class PopupWindow(Gtk.Window):
                 for inp in sink_inputs:
                     if inp not in already_have_slider:
                         # We have no slider for input {inp}. Let's add it.
-                        props = sink_inputs[inp]["Properties"]
-                        icon_name = props[
-                            "application.icon_name"] if "application.icon_name" in props else "emblem-music-symbolic"
-                        vol = 0
-                        for p in sink_inputs[inp]["Volume"].split():
-                            if p.endswith("%"):
-                                try:
-                                    vol = int(p[:-1])
-                                except:
-                                    pass
-                        scale = PerAppSlider(inp, vol, icon_name, props["application.name"], props["media.name"])
-                        self.per_app_sliders.append(scale)
-                        self.per_app_vol_box.pack_start(scale, False, False, 0)
-                        scale.show_all()
+                        props = sink_inputs[inp]["Properties"] if "Properties" in sink_inputs[inp] else {}
+                        if props:
+                            icon_name = props[
+                                "application.icon_name"] if "application.icon_name" in props else "emblem-music-symbolic"
+                            vol = 0
+                            if "Volume" in sink_inputs[inp]:
+                                for p in sink_inputs[inp]["Volume"].split():
+                                    if p.endswith("%"):
+                                        try:
+                                            vol = int(p[:-1])
+                                        except:
+                                            pass
+                                if "application.name" in props and "media.name" in props:
+                                    scale = PerAppSlider(inp, vol, icon_name, props["application.name"],
+                                                         props["media.name"])
+                                    self.per_app_sliders.append(scale)
+                                    self.per_app_vol_box.pack_start(scale, False, False, 0)
+                                    scale.show_all()
 
-                    vol = 0
-                    for p in sink_inputs[inp]["Volume"].split():
-                        if p.endswith("%"):
-                            try:
-                                vol = int(p[:-1])
-                            except:
-                                pass
+                                vol = 0
+                                for p in sink_inputs[inp]["Volume"].split():
+                                    if p.endswith("%"):
+                                        try:
+                                            vol = int(p[:-1])
+                                        except:
+                                            pass
 
-                    for sc in self.per_app_sliders:
-                        if sc.input_num == inp:
-                            sc.scale.set_value(vol)
+                                for sc in self.per_app_sliders:
+                                    if sc.input_num == inp:
+                                        sc.scale.set_value(vol)
 
                 # In case the app is closed while popup still open
                 for sc in self.per_app_sliders:
