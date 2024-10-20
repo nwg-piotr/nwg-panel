@@ -349,6 +349,7 @@ class PopupWindow(Gtk.Window):
             inner_hbox.pack_start(self.bri_image, False, False, 6)
 
             self.bri_scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
+            self.bri_scale.set_increments(0.5, 0.5)
 
             if self.settings["backlight-controller"] == "ddcutil":
                 self.bri_scale_handler = self.bri_scale.connect("value-changed", self.on_value_changed)
@@ -381,6 +382,7 @@ class PopupWindow(Gtk.Window):
             inner_hbox.pack_start(eb, False, False, 6)
 
             self.vol_scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
+            self.vol_scale.set_increments(0.5, 0.5)
             self.vol_scale.set_value(self.parent.vol_value)
             self.vol_scale_handler = self.vol_scale.connect("value-changed", self.set_vol)
 
@@ -811,6 +813,7 @@ class PerAppSlider(Gtk.Box):
         lbl.set_markup('<span size="small">{}</span>'.format(name))
         vbox.pack_start(lbl, False, False, 0)
         self.scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=153, step=1)
+        self.scale.set_increments(0.5, 0.5)
         self.scale.connect("value-changed", self.set_volume)
         self.scale.set_value(volume)
         self.scale.set_draw_value(False)
