@@ -130,6 +130,7 @@ def signal_handler(sig, frame):
     elif sig == sig_dwl:
         refresh_dwl()
     else:
+        print("Signal", sig)
         return
 
 
@@ -508,7 +509,7 @@ def main():
     global sig_dwl
     sig_dwl = args.sigdwl
 
-    catchable_sigs = set(signal.Signals) - {signal.SIGKILL, signal.SIGSTOP}
+    catchable_sigs = set(signal.Signals) - {signal.SIGKILL, signal.SIGSTOP, signal.SIGCHLD}
     for sig in catchable_sigs:
         try:
             signal.signal(sig, signal_handler)
