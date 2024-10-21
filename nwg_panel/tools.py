@@ -930,7 +930,7 @@ def cmd_through_compositor(cmd):
     common_settings = load_json(cs_file)
     if "run-through-compositor" not in common_settings or common_settings["run-through-compositor"] :
         if os.getenv("SWAYSOCK"):
-            if os.getenv("XDG_SESSION_DESKTOP") == "miracle-wm":
+            if "miracle-wm" in os.getenv("XDG_SESSION_DESKTOP"):
                 cmd = f'miraclemsg exec "{cmd}"'
             else:
                 cmd = f'swaymsg exec "{cmd}"'
