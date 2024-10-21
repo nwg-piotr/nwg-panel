@@ -130,7 +130,6 @@ def signal_handler(sig, frame):
     elif sig == sig_dwl:
         refresh_dwl()
     else:
-        print("Signal", sig)
         return
 
 
