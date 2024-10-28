@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import time
 
 from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
@@ -18,7 +17,7 @@ class RandomWallpaper(Gtk.Button):
         self.image_info = {}
 
         defaults = {
-            "source": "remote",
+            "source": "wallhaven.cc",
             "output": [],
             "monitor": [],
             "tags": ["nature"],
@@ -110,12 +109,10 @@ class RandomWallpaper(Gtk.Button):
         paths = os.listdir(self.settings["local-path"])
         idx = random.randint(0, len(paths) - 1)
         image_path = os.path.join(self.settings["local-path"], paths[idx])
-        print(">>>", image_path)
 
         cmd = "pkill swaybg"
         subprocess.Popen('{}'.format(cmd), shell=True)
         print(f"Executing: {cmd}")
-
         subprocess.Popen('{}'.format(cmd), shell=True)
 
         if self.settings["output"]:
