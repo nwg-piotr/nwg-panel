@@ -24,7 +24,7 @@ class RandomWallpaper(Gtk.Button):
             "save-path": "",
             "source": "remote",
             "local-path": "/usr/share/backgrounds/nwg-shell",
-            "interval": 1,
+            "interval": 0,
             "icon": "preferences-desktop-wallpaper",
             "icon-size": 16,
         }
@@ -175,8 +175,9 @@ class RandomWallpaper(Gtk.Button):
 
     def apply_and_reset_timer(self, btn):
         self.apply_wallpaper(None)
-        GLib.Source.remove(self.src_tag)
-        self.src_tag = GLib.timeout_add_seconds(self.settings["interval"] * 60, self.apply_wallpaper, None)
+        if self.settings["interval"] > 0:
+            GLib.Source.remove(self.src_tag)
+            self.src_tag = GLib.timeout_add_seconds(self.settings["interval"] * 60, self.apply_wallpaper, None)
 
     def display_image_info_window(self, item):
         w = ImageInfoWindow(self.image_info, self.voc)
