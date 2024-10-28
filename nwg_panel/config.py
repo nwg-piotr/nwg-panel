@@ -773,7 +773,8 @@ class EditorWrapper(object):
             "hyprland-taskbar",
             "hyprland-workspaces",
             "keyboard-layout",
-            "tray"
+            "tray",
+            "random-wallpaper"
         ]
 
         self.scrolled_window = builder.get_object("scrolled-window")

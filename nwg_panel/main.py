@@ -49,6 +49,7 @@ from nwg_panel.modules.dwl_tags import DwlTags
 from nwg_panel.modules.swaync import SwayNC
 from nwg_panel.modules.sway_mode import SwayMode
 from nwg_panel.modules.keyboard_layout import KeyboardLayout
+from nwg_panel.modules.random_wallpaper import RandomWallpaper
 
 try:
     from nwg_panel.modules.openweather import OpenWeather
@@ -381,6 +382,12 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
         if item == "cpu-avg":
             cpu_avg = CpuAvg()
+            container.pack_start(cpu_avg, False, False, panel["items-padding"])
+
+        if item == "random-wallpaper":
+            if item not in panel:
+                panel[item] = {}
+            cpu_avg = RandomWallpaper(panel[item], voc, icons_path)
             container.pack_start(cpu_avg, False, False, panel["items-padding"])
 
         if item == "dwl-tags":
