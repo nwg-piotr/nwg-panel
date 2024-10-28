@@ -15,7 +15,7 @@ from nwg_panel.tools import update_image, local_dir, cmd_through_compositor, cre
 class RandomWallpaper(Gtk.Button):
     def __init__(self, settings, voc, icons_path=""):
         defaults = {
-            "tags": ["nature"],
+            "tags": ["starwars"],
             "output": [],
             "ratios": "16x9,16x10",
             "atleast": "1920x1080",
@@ -109,6 +109,13 @@ class RandomWallpaper(Gtk.Button):
         paths = os.listdir(self.settings["local-path"])
         idx = random.randint(0, len(paths) - 1)
         image_path = os.path.join(self.settings["local-path"], paths[idx])
+
+        cmd = "pkill -f swaybg"
+        cmd = cmd_through_compositor(cmd)
+        print(f"Executing: {cmd}")
+
+        subprocess.Popen('{}'.format(cmd), shell=True)
+
         if self.settings["output"]:
             cmd = "swaybg -o '{}' -i {} -m fill".format(image_path, self.wallpaper_path)
         else:
@@ -127,6 +134,9 @@ class RandomWallpaper(Gtk.Button):
         else:
             thread = threading.Thread(target=self.load_wallhaven_image)
             thread.start()
+            cmd = "pkill -f swaybg"
+            cmd = cmd_through_compositor(cmd)
+            print(f"Executing: {cmd}")
 
             if self.settings["output"]:
                 cmd = "swaybg -o '{}' -i {} -m fill".format(self.settings["wallpaper-output"], self.wallpaper_path)
