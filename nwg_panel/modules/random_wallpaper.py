@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import time
 
 from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
@@ -14,22 +15,22 @@ from nwg_panel.tools import update_image, local_dir, cmd_through_compositor, cre
 
 class RandomWallpaper(Gtk.Button):
     def __init__(self, settings, voc, icons_path=""):
+        self.image_info = {}
+
         defaults = {
-            "tags": ["nature"],
+            "source": "remote",
             "output": [],
+            "monitor": [],
+            "tags": ["nature"],
             "ratios": "16x9,16x10",
             "atleast": "1920x1080",
             "apikey": '',
-            "refresh-on-startup": True,
             "save-path": "",
-            "source": "remote",
             "local-path": "/usr/share/backgrounds/nwg-shell",
-            "interval": 0,
-            "icon": "preferences-desktop-wallpaper",
             "icon-size": 16,
+            "interval": 0,
+            "refresh-on-startup": True,
         }
-        self.image_info = {}
-
         for key in defaults:
             if key not in settings:
                 settings[key] = defaults[key]
@@ -44,7 +45,7 @@ class RandomWallpaper(Gtk.Button):
         self.settings = settings
 
         image = Gtk.Image()
-        update_image(image, settings["icon"], settings["icon-size"], icons_path)
+        update_image(image, "preferences-desktop-wallpaper", settings["icon-size"], icons_path)
         self.set_image(image)
 
         self.set_tooltip_text(voc["random-wallpaper-tooltip"])
@@ -109,9 +110,10 @@ class RandomWallpaper(Gtk.Button):
         paths = os.listdir(self.settings["local-path"])
         idx = random.randint(0, len(paths) - 1)
         image_path = os.path.join(self.settings["local-path"], paths[idx])
+        print(">>>", image_path)
 
         cmd = "pkill swaybg"
-        cmd = cmd_through_compositor(cmd)
+        subprocess.Popen('{}'.format(cmd), shell=True)
         print(f"Executing: {cmd}")
 
         subprocess.Popen('{}'.format(cmd), shell=True)
@@ -135,7 +137,6 @@ class RandomWallpaper(Gtk.Button):
             thread = threading.Thread(target=self.load_wallhaven_image)
             thread.start()
             cmd = "pkill swaybg"
-            cmd = cmd_through_compositor(cmd)
             print(f"Executing: {cmd}")
 
             if self.settings["output"]:
