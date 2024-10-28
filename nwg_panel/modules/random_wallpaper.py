@@ -6,18 +6,19 @@ import os
 import subprocess
 import random
 import requests
+import threading
 
 from shutil import copyfile
-from nwg_panel.tools import update_image, local_dir, cmd_through_compositor, eprint
+from nwg_panel.tools import update_image, local_dir, cmd_through_compositor, create_background_task, eprint
 
 
 class RandomWallpaper(Gtk.Button):
     def __init__(self, settings, voc, icons_path=""):
         defaults = {
-            "tags": ["landscape"],
+            "tags": ["nature"],
             "output": [],
             "ratios": "16x9,16x10",
-            "atleast": "2560x1440",
+            "atleast": "1920x1080",
             "apikey": '',
             "refresh-on-startup": True,
             "save-path": "",
@@ -36,6 +37,7 @@ class RandomWallpaper(Gtk.Button):
         self.wallpaper_path = os.path.join(local_dir(), "wallpaper.jpg")
 
         self.voc = voc
+        self.src_tag = 0
 
         Gtk.Button.__init__(self)
         self.set_always_show_image(True)
@@ -57,12 +59,12 @@ class RandomWallpaper(Gtk.Button):
             self.apply_wallpaper(None)
 
         if self.settings["interval"] > 0:
-            GLib.timeout_add_seconds(self.settings["interval"] * 60, self.apply_wallpaper, None)
+            self.src_tag = GLib.timeout_add_seconds(self.settings["interval"] * 60, self.apply_wallpaper, None)
 
     def load_wallhaven_image(self):
         api_key = self.settings['apikey'] if self.settings["apikey"] else None
         api_key_status = "set" if self.settings['apikey'] else "unset"
-        tags = " ".join(self.settings['tags']) if self.settings['tags'] else "landscape"
+        tags = " ".join(self.settings['tags']) if self.settings['tags'] else ""
         ratios = self.settings['ratios'] if self.settings['ratios'] else "16x9,16x10"
         atleast = self.settings["atleast"] if self.settings["atleast"] else "1920x1080"
         print(
@@ -123,7 +125,8 @@ class RandomWallpaper(Gtk.Button):
             else:
                 eprint(f"Local wallpaper path '{self.settings['local-path']}' not found or empty")
         else:
-            self.load_wallhaven_image()
+            thread = threading.Thread(target=self.load_wallhaven_image)
+            thread.start()
 
             if self.settings["output"]:
                 cmd = "swaybg -o '{}' -i {} -m fill".format(self.settings["wallpaper-output"], self.wallpaper_path)
@@ -144,7 +147,7 @@ class RandomWallpaper(Gtk.Button):
         menu.set_reserve_toggle_size(False)
 
         item = Gtk.MenuItem.new_with_label(self.voc["refresh"])
-        item.connect("activate", self.apply_wallpaper)
+        item.connect("activate", self.apply_and_reset_timer)
         menu.append(item)
 
         item = Gtk.MenuItem.new_with_label(self.voc["image-info"])
@@ -159,6 +162,11 @@ class RandomWallpaper(Gtk.Button):
         menu.popup_at_widget(self, Gdk.Gravity.STATIC, Gdk.Gravity.STATIC, None)
 
         button.on_leave_notify_event(button, None)
+
+    def apply_and_reset_timer(self, btn):
+        self.apply_wallpaper(None)
+        GLib.Source.remove(self.src_tag)
+        self.src_tag = GLib.timeout_add_seconds(self.settings["interval"] * 60, self.apply_wallpaper, None)
 
     def display_image_info_window(self, item):
         w = ImageInfoWindow(self.image_info, self.voc)
