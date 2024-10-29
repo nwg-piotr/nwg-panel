@@ -189,7 +189,7 @@ class RandomWallpaper(Gtk.Button):
         menu.show_all()
         menu.popup_at_widget(self, Gdk.Gravity.STATIC, Gdk.Gravity.STATIC, None)
 
-        button.on_leave_notify_event(button, None)
+        on_leave_notify_event(button, None)
 
     def apply_and_reset_timer(self, btn):
         self.apply_wallpaper(None)
