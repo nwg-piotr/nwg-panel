@@ -17,7 +17,7 @@ class RandomWallpaper(Gtk.Button):
         self.image_info = {}
 
         defaults = {
-            "source": "wallhaven.cc",
+            "source": "local",
             "output": [],
             "monitor": [],
             "tags": ["nature"],
@@ -25,7 +25,7 @@ class RandomWallpaper(Gtk.Button):
             "atleast": "1920x1080",
             "apikey": '',
             "save-path": "",
-            "local-path": "/usr/share/backgrounds/nwg-shell",
+            "local-path": "",
             "icon-size": 16,
             "interval": 0,
             "refresh-on-startup": True,
@@ -106,30 +106,40 @@ class RandomWallpaper(Gtk.Button):
             eprint("Failed to fetch Wallhaven image")
 
     def load_and_apply_local_image(self):
+        if not os.path.isdir(self.settings["local-path"]):
+            eprint("Local wallpaper path does not exist")
+            return
         paths = os.listdir(self.settings["local-path"])
+        if len(paths) == 0:
+            eprint(f"No files found in {self.settings['local-path']}")
+            return
         idx = random.randint(0, len(paths) - 1)
         image_path = os.path.join(self.settings["local-path"], paths[idx])
+        ext = image_path.split(".")[-1]
+        if ext.upper() in ["PNG", "JPG", "JPEG", "TIF", "TIFF", "SVG"]:
+            print(f"Setting '{image_path}' as wallpaper")
+            cmd = "pkill swaybg"
+            subprocess.Popen('{}'.format(cmd), shell=True)
+            print(f"Executing: {cmd}")
+            subprocess.Popen('{}'.format(cmd), shell=True)
 
-        cmd = "pkill swaybg"
-        subprocess.Popen('{}'.format(cmd), shell=True)
-        print(f"Executing: {cmd}")
-        subprocess.Popen('{}'.format(cmd), shell=True)
+            if self.settings["output"]:
+                cmd = "swaybg -o '{}' -i {} -m fill".format(image_path, self.wallpaper_path)
+            else:
+                cmd = "swaybg -i {} -m fill".format(image_path)
 
-        if self.settings["output"]:
-            cmd = "swaybg -o '{}' -i {} -m fill".format(image_path, self.wallpaper_path)
+            cmd = cmd_through_compositor(cmd)
+            print(f"Executing: {cmd}")
+            subprocess.Popen('{}'.format(cmd), shell=True)
         else:
-            cmd = "swaybg -i {} -m fill".format(image_path)
-
-        cmd = cmd_through_compositor(cmd)
-        print(f"Executing: {cmd}")
-        subprocess.Popen('{}'.format(cmd), shell=True)
+            eprint(f"'{image_path}' is not a valid image file")
 
     def apply_wallpaper(self, button):
         if self.settings["source"] == "local":
             if os.path.isdir(self.settings["local-path"]) and len(os.listdir(self.settings["local-path"])) > 0:
                 self.load_and_apply_local_image()
             else:
-                eprint(f"Local wallpaper path '{self.settings['local-path']}' not found or empty")
+                eprint(f"Local wallpaper path {self.settings['local-path']} not found or empty")
         else:
             thread = threading.Thread(target=self.load_wallhaven_image)
             thread.start()
