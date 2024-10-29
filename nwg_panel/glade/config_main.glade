@@ -241,6 +241,7 @@
                           <object class="GtkListBoxRow">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
                             <child>
                               <object class="GtkEventBox" id="eb-random-wallpaper">
                                 <property name="visible">True</property>
