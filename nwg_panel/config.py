@@ -803,6 +803,7 @@ class EditorWrapper(object):
 
         builder.get_object("eb-clock").connect("button-press-event", self.edit_clock)
         builder.get_object("eb-playerctl").connect("button-press-event", self.edit_playerctl)
+        builder.get_object("eb-random-wallpaper").connect("button-press-event", self.edit_random_wallpaper)
         builder.get_object("eb-sway-taskbar").connect("button-press-event", self.edit_sway_taskbar)
         builder.get_object("eb-sway-workspaces").connect("button-press-event", self.edit_sway_workspaces)
         builder.get_object("eb-scratchpad").connect("button-press-event", self.edit_scratchpad)
@@ -1871,6 +1872,36 @@ class EditorWrapper(object):
         settings["smooth-scrolling-threshold"] = int(self.nc_smooth_scrolling_threshold.get_value())
 
         save_json(self.config, self.file)
+
+    def edit_random_wallpaper(self, *args):
+        self.load_panel()
+        self.edited = "random-wallpaper"
+        check_key(self.panel, "random-wallpaper", {})
+        settings = self.panel["random-wallpaper"] if "random-wallpaper" in self.panel else {}
+        defaults = {
+            "source": "wallhaven.cc",
+            "output": [],
+            "monitor": [],
+            "tags": ["nature"],
+            "ratios": "16x9,16x10",
+            "atleast": "1920x1080",
+            "apikey": '',
+            "save-path": "",
+            "local-path": "",
+            "icon-size": 16,
+            "interval": 0,
+            "refresh-on-startup": True
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_random_wallpaper.glade"))
+        frame = builder.get_object("frame")
+        frame.set_label("  {}: RandomWallpaper  ".format(voc["module"]))
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(frame)
 
     def edit_playerctl(self, *args):
         self.load_panel()
