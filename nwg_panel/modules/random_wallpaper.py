@@ -12,12 +12,22 @@ from shutil import copyfile
 from nwg_panel.tools import update_image, local_dir, cmd_through_compositor, create_background_task, eprint
 
 
+def on_enter_notify_event(widget, event):
+    widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
+    widget.set_state_flags(Gtk.StateFlags.SELECTED, clear=False)
+
+
+def on_leave_notify_event(widget, event):
+    widget.unset_state_flags(Gtk.StateFlags.DROP_ACTIVE)
+    widget.unset_state_flags(Gtk.StateFlags.SELECTED)
+
+
 class RandomWallpaper(Gtk.Button):
     def __init__(self, settings, voc, icons_path=""):
         self.image_info = {}
 
         defaults = {
-            "source": "local",
+            "source": "wallhaven.cc",
             "output": [],
             "monitor": [],
             "tags": ["nature"],
@@ -50,8 +60,8 @@ class RandomWallpaper(Gtk.Button):
         self.set_tooltip_text(voc["random-wallpaper-tooltip"])
         self.connect('clicked', self.display_menu)
 
-        self.connect('enter-notify-event', self.on_enter_notify_event)
-        self.connect('leave-notify-event', self.on_leave_notify_event)
+        self.connect('enter-notify-event', on_enter_notify_event)
+        self.connect('leave-notify-event', on_leave_notify_event)
 
         self.show()
 
@@ -199,14 +209,6 @@ class RandomWallpaper(Gtk.Button):
             subprocess.Popen(f"notify-send '{output_file_name}' '{msg}' -i preferences-desktop-wallpaper", shell=True)
         except Exception as e:
             eprint(f"Failed saving: {os.path.join(save_path, output_file_name)}: {e}")
-
-    def on_enter_notify_event(self, widget, event):
-        widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
-        widget.set_state_flags(Gtk.StateFlags.SELECTED, clear=False)
-
-    def on_leave_notify_event(self, widget, event):
-        widget.unset_state_flags(Gtk.StateFlags.DROP_ACTIVE)
-        widget.unset_state_flags(Gtk.StateFlags.SELECTED)
 
 
 class ImageInfoWindow(Gtk.Window):
