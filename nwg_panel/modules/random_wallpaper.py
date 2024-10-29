@@ -37,7 +37,7 @@ class RandomWallpaper(Gtk.Button):
             "save-path": "",
             "local-path": "",
             "icon-size": 16,
-            "interval": 0,
+            "interval": 1,
             "refresh-on-startup": True,
         }
         for key in defaults:
