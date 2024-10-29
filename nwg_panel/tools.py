@@ -869,7 +869,7 @@ def hyprctl(cmd, buf_size=2048):
             else:
                 break
         s.close()
-        return output.decode('utf-8')
+        return output.decode('utf-8', errors='replace')
     except Exception as e:
         eprint(f"hyprctl: {e}")
         return ""

@@ -167,7 +167,7 @@ def hypr_watcher():
 
     while True:
         datagram = client.recv(2048)
-        e_full_string = datagram.decode('utf-8').strip()
+        e_full_string = datagram.decode('utf-8', errors='replace').strip()
         lines = e_full_string.splitlines()
 
         event_names = []
