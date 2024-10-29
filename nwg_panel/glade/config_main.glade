@@ -230,6 +230,28 @@
                   <object class="GtkListBoxRow">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <child>
+                      <object class="GtkEventBox" id="eb-random-wallpaper">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <child>
+                          <object class="GtkLabel" id="random-wallpaper">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="margin-left">6</property>
+                            <property name="margin-start">6</property>
+                            <property name="label" translatable="yes">Random wallpaper</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkListBoxRow">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
                     <property name="selectable">False</property>
                     <child>
                       <object class="GtkEventBox" id="eb-sway-taskbar">

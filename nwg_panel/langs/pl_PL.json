@@ -176,10 +176,9 @@
   "processes-polling-rate": "Częstotliwość odpytywania procesów",
   "processes-polling-rate-tooltip": "Interwał odświeżania danych przez narzędzie nwg-processes. Domyślnie: 2000 ms. Używaj większej wartości na wolniejszych maszynach. Ustaw 0 by zatrzymać odświeżanie.",
   "processes-tooltip": "Określa czy wyświetlać pozycję procesów systemowych w menu.",
-
+  "random-wallpaper": "Losowa tapeta",
   "random-wallpaper-save": "Zapisz obraz",
   "random-wallhaven-wallpaper": "Losowa tepeta z wallhaven.cc",
-  "random-wallpaper-tooltip": "Losowa tapeta",
   "readme-tooltip": "Określa czy wyświetlać pozycję przeglądarki README w menu.",
   "readme-label-tooltip": "Etykieta README w menu modułu Controls",
   "refresh": "Odśwież",

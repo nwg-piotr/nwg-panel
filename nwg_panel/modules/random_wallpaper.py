@@ -57,7 +57,7 @@ class RandomWallpaper(Gtk.Button):
         update_image(image, "preferences-desktop-wallpaper", settings["icon-size"], icons_path)
         self.set_image(image)
 
-        self.set_tooltip_text(voc["random-wallpaper-tooltip"])
+        self.set_tooltip_text(voc["random-wallpaper"])
         self.connect('clicked', self.display_menu)
 
         self.connect('enter-notify-event', on_enter_notify_event)

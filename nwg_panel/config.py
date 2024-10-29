@@ -735,6 +735,7 @@ class EditorWrapper(object):
         builder.get_object("tray").set_text(voc["tray"])
         builder.get_object("clock").set_text(voc["clock"])
         builder.get_object("playerctl").set_text(voc["playerctl"])
+        builder.get_object("random-wallpaper").set_text(voc["random-wallpaper"])
         builder.get_object("sway-taskbar").set_text(voc["sway-taskbar"])
         builder.get_object("sway-workspaces").set_text(voc["sway-workspaces"])
         builder.get_object("scratchpad").set_text(voc["sway-scratchpad"])
