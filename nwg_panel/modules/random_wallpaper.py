@@ -155,6 +155,7 @@ class RandomWallpaper(Gtk.Button):
             thread.start()
             cmd = "pkill swaybg"
             print(f"Executing: {cmd}")
+            subprocess.Popen('{}'.format(cmd), shell=True)
 
             if self.settings["output"]:
                 cmd = "swaybg -o '{}' -i {} -m fill".format(self.settings["wallpaper-output"], self.wallpaper_path)
