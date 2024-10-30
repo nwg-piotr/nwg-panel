@@ -37,13 +37,14 @@ class RandomWallpaper(Gtk.Button):
             "save-path": "",
             "local-path": "",
             "icon-size": 16,
-            "interval": 0,
+            "interval": 0.5,
             "refresh-on-startup": True,
         }
         for key in defaults:
             if key not in settings:
                 settings[key] = defaults[key]
         self.settings = settings
+        self.icons_path = icons_path
         self.wallpaper_path = os.path.join(local_dir(), "wallpaper.jpg")
 
         self.voc = voc
@@ -54,7 +55,7 @@ class RandomWallpaper(Gtk.Button):
         self.settings = settings
 
         image = Gtk.Image()
-        update_image(image, "preferences-desktop-wallpaper", settings["icon-size"], icons_path)
+        update_image(image, "wallpaper", settings["icon-size"], icons_path)
         self.set_image(image)
 
         self.set_tooltip_text(voc["random-wallpaper"])
@@ -70,6 +71,9 @@ class RandomWallpaper(Gtk.Button):
 
         if self.settings["interval"] > 0:
             self.src_tag = GLib.timeout_add_seconds(self.settings["interval"] * 60, self.apply_wallpaper, None)
+            image = Gtk.Image()
+            update_image(image, "wallpaper-refresh", settings["icon-size"], icons_path)
+            self.set_image(image)
 
     def load_wallhaven_image(self):
         api_key = self.settings['apikey'] if self.settings["apikey"] else None
@@ -144,7 +148,7 @@ class RandomWallpaper(Gtk.Button):
         else:
             eprint(f"'{image_path}' is not a valid image file")
 
-    def apply_wallpaper(self, button):
+    def apply_wallpaper(self, widget):
         if self.settings["source"] == "local":
             if os.path.isdir(self.settings["local-path"]) and len(os.listdir(self.settings["local-path"])) > 0:
                 self.load_and_apply_local_image()
@@ -176,8 +180,17 @@ class RandomWallpaper(Gtk.Button):
         menu.set_reserve_toggle_size(False)
 
         item = Gtk.MenuItem.new_with_label(self.voc["refresh"])
-        item.connect("activate", self.apply_and_reset_timer)
+        item.connect("activate", self.apply_wallpaper)
         menu.append(item)
+
+        if self.settings["interval"] > 0:
+            if self.src_tag > 0:
+                item = Gtk.MenuItem.new_with_label(self.voc['pause-refresh'])
+                item.connect("activate", self.pause_refresh)
+            else:
+                item = Gtk.MenuItem.new_with_label(self.voc['resume-refresh'])
+                item.connect("activate", self.resume_refresh)
+            menu.append(item)
 
         item = Gtk.MenuItem.new_with_label(self.voc["image-info"])
         item.connect("activate", self.display_image_info_window)
@@ -191,6 +204,22 @@ class RandomWallpaper(Gtk.Button):
         menu.popup_at_widget(self, Gdk.Gravity.STATIC, Gdk.Gravity.STATIC, None)
 
         on_leave_notify_event(button, None)
+
+    def pause_refresh(self, item):
+        if self.src_tag > 0:
+            GLib.Source.remove(self.src_tag)
+            self.src_tag = 0
+
+            image = Gtk.Image()
+            update_image(image, "wallpaper", self.settings["icon-size"], self.icons_path)
+            self.set_image(image)
+
+    def resume_refresh(self, item):
+        self.src_tag = GLib.timeout_add_seconds(self.settings["interval"] * 60, self.apply_wallpaper, None)
+
+        image = Gtk.Image()
+        update_image(image, "wallpaper-refresh", self.settings["icon-size"], self.icons_path)
+        self.set_image(image)
 
     def apply_and_reset_timer(self, btn):
         self.apply_wallpaper(None)
