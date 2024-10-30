@@ -55,16 +55,6 @@
           </packing>
         </child>
         <child>
-          <object class="GtkComboBox" id="source">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkLabel" id="lbl-general">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -297,7 +287,17 @@
           </packing>
         </child>
         <child>
-          <object class="GtkComboBox" id="output">
+          <object class="GtkComboBoxText" id="source">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText" id="output">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
           </object>
@@ -307,7 +307,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkComboBox" id="monitor">
+          <object class="GtkComboBoxText" id="monitor">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
           </object>

@@ -1899,6 +1899,27 @@ class EditorWrapper(object):
         frame = builder.get_object("frame")
         frame.set_label("  {}: RandomWallpaper  ".format(voc["module"]))
 
+        builder.get_object("lbl-general").set_text("{}:".format(voc["general"]))
+        builder.get_object("lbl-source").set_text("{}:".format(voc["source"]))
+        builder.get_object("lbl-output").set_text("{}:".format(voc["output"]))
+        builder.get_object("lbl-monitor").set_text("{}:".format(voc["monitor"]))
+        builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
+        builder.get_object("lbl-interval").set_text("{}:".format(voc["refresh-interval"]))
+        builder.get_object("lbl-local-backgrounds").set_text("{}:".format(voc["local-background-path"]))
+        builder.get_object("refresh-on-startup").set_label("{}".format(voc["refresh-on-startup"]))
+        builder.get_object("lbl-tags").set_text("{}:".format(voc["tags"]))
+        builder.get_object("lbl-ratios").set_text("{}:".format(voc["aspect-ratios"]))
+        builder.get_object("lbl-atleast").set_text("{}:".format(voc["atleast"]))
+        builder.get_object("lbl-apikey").set_text("{}:".format(voc["api-key"]))
+        # move to form fields
+        builder.get_object("apikey").set_tooltip_text("{}:".format(voc["api-key-tooltip-wallhaven"]))
+        builder.get_object("lbl-file-save-path").set_text("{}:".format(voc["file-save-path"]))
+
+        self.rw_combo_source = builder.get_object("source")
+        self.rw_combo_source.append("local", voc["local"])
+        self.rw_combo_source.append("wallhaven.cc", "wallhaven.cc")
+        self.rw_combo_source.set_active_id(settings["source"])
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
