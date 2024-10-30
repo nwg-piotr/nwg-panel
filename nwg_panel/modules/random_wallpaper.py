@@ -201,7 +201,7 @@ class RandomWallpaper(Gtk.Button):
         menu.append(item)
 
         menu.show_all()
-        menu.popup_at_widget(self, Gdk.Gravity.STATIC, Gdk.Gravity.STATIC, None)
+        menu.popup_at_widget(self, Gdk.Gravity.NORTH, Gdk.Gravity.SOUTH, None)
 
         on_leave_notify_event(button, None)
 
