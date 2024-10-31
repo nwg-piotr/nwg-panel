@@ -1899,8 +1899,6 @@ class EditorWrapper(object):
         settings = self.panel["random-wallpaper"] if "random-wallpaper" in self.panel else {}
         defaults = {
             "source": "wallhaven.cc",
-            "output": "",
-            "monitor": "",
             "tags": ["nature"],
             "ratios": "16x9,16x10",
             "atleast": "1920x1080",
@@ -1923,8 +1921,6 @@ class EditorWrapper(object):
 
         builder.get_object("lbl-general").set_text("{}:".format(voc["general"]))
         builder.get_object("lbl-source").set_text("{}:".format(voc["source"]))
-        builder.get_object("lbl-output").set_text("{}:".format(voc["output"]))
-        builder.get_object("lbl-monitor").set_text("{}:".format(voc["monitor"]))
         builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
         builder.get_object("lbl-interval").set_text("{}:".format(voc["refresh-interval"]))
         builder.get_object("lbl-local-backgrounds").set_text("{}:".format(voc["local-background-path"]))
@@ -1939,25 +1935,6 @@ class EditorWrapper(object):
         self.rw_combo_source.append("local", voc["local"])
         self.rw_combo_source.append("wallhaven.cc", "wallhaven.cc")
         self.rw_combo_source.set_active_id(settings["source"])
-
-        self.cb_output = builder.get_object("output")
-        self.cb_output.append("", "")
-        for key in outputs:
-            self.cb_output.append(key, key)
-
-        if self.panel["output"] and (settings["output"] in outputs or settings["output"] == "All"):
-            self.cb_output.set_active_id(self.panel["output"])
-
-        self.cb_monitor = builder.get_object("monitor")
-        self.cb_monitor.append("", "")
-        for key in mon_desc2output_name:
-            self.cb_monitor.append(key, key)
-
-        if settings["monitor"] and (settings["monitor"] in mon_desc2output_name or settings["monitor"] == "All"):
-            self.cb_monitor.set_active_id(self.panel["monitor"])
-
-        self.cb_output.connect("changed", clear_active_id, self.cb_monitor)
-        self.cb_monitor.connect("changed", clear_active_id, self.cb_output)
 
         self.sc_icon_size = builder.get_object("icon-size")
         self.sc_icon_size.set_numeric(True)
@@ -2008,12 +1985,6 @@ class EditorWrapper(object):
 
         settings["source"] = self.rw_combo_source.get_active_id()
 
-        val = self.cb_output.get_active_id() if self.cb_output.get_active_id() else ""
-        settings["output"] = val
-
-        val = self.cb_monitor.get_active_id() if self.cb_monitor.get_active_id() else ""
-        settings["monitor"] = val
-
         settings["icon-size"] = int(self.sc_icon_size.get_value())
 
         settings["interval"] = int(self.sc_interval.get_value())
@@ -2033,9 +2004,6 @@ class EditorWrapper(object):
         settings["local-path"] = val
 
         settings["refresh-on-startup"] = self.cb_refresh_on_startup.get_active()
-
-        for key in settings:
-            print(f"{key}: {settings[key]}")
 
         save_json(self.config, self.file)
 
