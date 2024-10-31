@@ -21,6 +21,7 @@
   "aspect-ratios": "Aspect ratios",
   "atleast": "Minimum resolution",
   "atleast-tooltip": "Minimum screen resolution. Set your biggest display dimesions here.",
+  "automatic-width": "Automatic width",
   "backlight-controller-tooltip": "Backlight control application",
   "backlight-device": "Backlight device",
   "backlight-device-tooltip": "Backlight device path (for 'light')\nor name (for 'brightnessctl')\nor I2C bus number (for 'ddcutil').\nUse 'light -L' or 'brightnessctl -l'\nor 'ddcutil --help' to\ncheck available devices.\nLEAVE BLANK IF EVERYTHING WORKS",

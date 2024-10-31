@@ -21,6 +21,7 @@
   "aspect-ratios": "Proporcje",
   "atleast": "Min. rozdzielczość",
   "atleast-tooltip": "Minimalna rozdzielczość ekranu. Ustaw tu rozmiary swojego największego monitora.",
+  "automatic-width": "Automatyczna szerokość",
   "backlight-controller-tooltip": "Aplikacja sterująca podświetleniem",
   "backlight-device": "Urządzenie podświetlenia",
   "backlight-device-tooltip": "Ścieżka urządzenia (dla 'light')\nlub nazwa (dla 'brightnessctl')\nlub numer magistrali I2C (dla 'ddcutil').\nUżyj 'light -L' lub 'brightnessctl -l'\nlub 'ddcutil --help' by sprawdzić\ndostępne urządzenia.\nZostaw puste jeśli wszystko działa.",

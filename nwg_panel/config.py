@@ -955,6 +955,7 @@ class EditorWrapper(object):
         builder.get_object("lbl-controls").set_text("{}:".format(voc["controls"]))
         builder.get_object("lbl-menu-start").set_text("{}:".format(voc["menu-start"]))
         builder.get_object("lbl-width").set_text("{}:".format(voc["width"]))
+        builder.get_object("width-auto").set_label(voc["automatic-width"])
         builder.get_object("lbl-height").set_text("{}:".format(voc["height"]))
         builder.get_object("lbl-top-margin").set_text("{}:".format(voc["top-margin"]))
         builder.get_object("lbl-bottom-margin").set_text("{}:".format(voc["bottom-margin"]))
