@@ -162,7 +162,7 @@ class RandomWallpaper(Gtk.Button):
             subprocess.Popen('{}'.format(cmd), shell=True)
 
             if self.settings["output"]:
-                cmd = "swaybg -o '{}' -i {} -m fill".format(self.settings["wallpaper-output"], self.wallpaper_path)
+                cmd = "swaybg -o '{}' -i {} -m fill".format(self.settings["output"], self.wallpaper_path)
             else:
                 cmd = "swaybg -i {} -m fill".format(self.wallpaper_path)
 
