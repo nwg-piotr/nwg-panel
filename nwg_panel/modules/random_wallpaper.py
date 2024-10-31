@@ -175,7 +175,6 @@ class RandomWallpaper(Gtk.Button):
             thread = threading.Thread(target=self.load_apply_wallhaven_image)
             thread.start()
 
-
         return True
 
     def display_menu(self, button):
