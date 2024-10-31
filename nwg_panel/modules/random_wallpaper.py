@@ -105,7 +105,7 @@ class RandomWallpaper(Gtk.Button):
             except (IndexError, KeyError):
                 msg = self.voc["no-wallpaper-found"]
                 tags = ",".join(self.settings["tags"])
-                subprocess.Popen(f"notify-send '{msg}' {tags} -i preferences-desktop-wallpaper",
+                subprocess.Popen(f"notify-send '{msg}' {tags} -i preferences-desktop-wallpaper -t 6000",
                                  shell=True)
 
             self.image_info = image_data["data"][0]
