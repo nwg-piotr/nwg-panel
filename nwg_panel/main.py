@@ -49,6 +49,7 @@ from nwg_panel.modules.dwl_tags import DwlTags
 from nwg_panel.modules.swaync import SwayNC
 from nwg_panel.modules.sway_mode import SwayMode
 from nwg_panel.modules.keyboard_layout import KeyboardLayout
+from nwg_panel.modules.random_wallpaper import RandomWallpaper
 
 try:
     from nwg_panel.modules.openweather import OpenWeather
@@ -166,7 +167,7 @@ def hypr_watcher():
 
     while True:
         datagram = client.recv(2048)
-        e_full_string = datagram.decode('utf-8').strip()
+        e_full_string = datagram.decode('utf-8', errors='replace').strip()
         lines = e_full_string.splitlines()
 
         event_names = []
@@ -295,11 +296,11 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
         if item == "hyprland-taskbar":
             if "hyprland-taskbar" in panel:
-                if panel["layer"] in ["bottom", "background"]:
-                    eprint(
-                        "Panel '{}': On Hyprland, panels must be placed on 'top' or 'overlay' layer, but '{}' found in "
-                        "settings. Changing to 'top'.".format(panel["name"], panel["layer"]))
-                    panel["layer"] = "top"  # or context menu will remain invisible
+                # if panel["layer"] in ["bottom", "background"]:
+                #     eprint(
+                #         "Panel '{}': On Hyprland, panels must be placed on 'top' or 'overlay' layer, but '{}' found in "
+                #         "settings. Changing to 'top'.".format(panel["name"], panel["layer"]))
+                #     panel["layer"] = "top"  # or context menu will remain invisible
                 if his:
                     check_key(panel["hyprland-taskbar"], "all-outputs", False)
                     if panel["hyprland-taskbar"]["all-outputs"] or "output" not in panel:
@@ -381,6 +382,12 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
         if item == "cpu-avg":
             cpu_avg = CpuAvg()
+            container.pack_start(cpu_avg, False, False, panel["items-padding"])
+
+        if item == "random-wallpaper":
+            if item not in panel:
+                panel[item] = {}
+            cpu_avg = RandomWallpaper(panel[item], voc, icons_path)
             container.pack_start(cpu_avg, False, False, panel["items-padding"])
 
         if item == "dwl-tags":

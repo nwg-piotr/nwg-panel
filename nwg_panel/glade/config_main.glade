@@ -15,511 +15,550 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
-              <object class="GtkListBox">
+              <object class="GtkScrolledWindow" id="menu-scrolled-window">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="margin-start">6</property>
+                <property name="can-focus">True</property>
+                <property name="hscrollbar-policy">never</property>
+                <property name="shadow-type">in</property>
                 <child>
-                  <object class="GtkListBoxRow">
+                  <object class="GtkViewport">
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
+                    <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkEventBox" id="eb-panel">
+                      <object class="GtkListBox">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="margin-left">6</property>
+                        <property name="margin-start">6</property>
                         <child>
-                          <object class="GtkLabel" id="panel">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Panel</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-panel">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="panel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Panel</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-modules-left">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="modules-left">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Modules left</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-modules-left">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="modules-left">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Modules left</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-modules-center">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="modules-center">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Modules center</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-modules-center">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="modules-center">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Modules center</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-modules-right">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="modules-right">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Modules right</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-modules-right">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="modules-right">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Modules right</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-controls">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="controls">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Controls</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-controls">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="controls">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Controls</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-swaync">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="notifications">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Notifications</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-swaync">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="notifications">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Notifications</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-tray">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="tray">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Tray</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-tray">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="tray">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Tray</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-clock">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="clock">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Clock</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-clock">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="clock">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Clock</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-playerctl">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="playerctl">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Playerctl</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-playerctl">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="playerctl">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Playerctl</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-sway-taskbar">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="sway-taskbar">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Sway Taskbar</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-random-wallpaper">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="random-wallpaper">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Random wallpaper</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-sway-workspaces">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="sway-workspaces">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="margin-end">6</property>
-                            <property name="label" translatable="yes">Sway Workspaces</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-sway-taskbar">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="sway-taskbar">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Sway Taskbar</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-scratchpad">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="scratchpad">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Sway Scratchpad</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-sway-workspaces">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="sway-workspaces">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-right">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="margin-end">6</property>
+                                    <property name="label" translatable="yes">Sway Workspaces</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-sway-mode">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="sway-mode">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Sway Mode</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-scratchpad">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="scratchpad">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Sway Scratchpad</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-brightness-slider">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="brightness-slider">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Brightness slider</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-sway-mode">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="sway-mode">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Sway Mode</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-openweather">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="openweather">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Openweather</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-brightness-slider">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="brightness-slider">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Brightness slider</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-dwl-tags">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="dwl-tags">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Dwl Tags</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-openweather">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="openweather">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Openweather</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-hyprland-taskbar">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="hyprland-taskbar">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Hyprland Taskbar</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-dwl-tags">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="dwl-tags">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Dwl Tags</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-hyprland-workspaces">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="hyprland-workspaces">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Hyprland Workspaces</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-hyprland-taskbar">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="hyprland-taskbar">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Hyprland Taskbar</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-keyboard-layout">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="keyboard-layout">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Keyboard layout</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-hyprland-workspaces">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="hyprland-workspaces">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Hyprland Workspaces</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-executors">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="executors">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Executors</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-keyboard-layout">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="keyboard-layout">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Keyboard layout</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-buttons">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="buttons">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Buttons</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-executors">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="executors">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Executors</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="selectable">False</property>
-                    <child>
-                      <object class="GtkEventBox" id="eb-menu-start">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="menu-start">
+                          <object class="GtkListBoxRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-left">6</property>
-                            <property name="margin-start">6</property>
-                            <property name="label" translatable="yes">Menu Start</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-buttons">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="buttons">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Buttons</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkListBoxRow">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-menu-start">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="menu-start">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Menu Start</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
                       </object>
@@ -530,7 +569,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">0</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -547,7 +586,7 @@
                 <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="padding">6</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
