@@ -100,7 +100,13 @@ class RandomWallpaper(Gtk.Button):
         # Get the image URL from the response
         if response.status_code == 200:
             image_data = response.json()
-            image_url = image_data["data"][0]["path"]
+            try:
+                image_url = image_data["data"][0]["path"]
+            except (IndexError, KeyError):
+                msg = self.voc["no-wallpaper-found"]
+                tags = ",".join(self.settings["tags"])
+                subprocess.Popen(f"notify-send '{msg}' {tags} -i preferences-desktop-wallpaper",
+                                 shell=True)
 
             self.image_info = image_data["data"][0]
 
