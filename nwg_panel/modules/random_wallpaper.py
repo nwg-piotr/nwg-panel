@@ -28,8 +28,6 @@ class RandomWallpaper(Gtk.Button):
 
         defaults = {
             "source": "wallhaven",
-            "output": "",
-            "monitor": "",
             "tags": ["nature"],
             "ratios": "16x9,16x10",
             "atleast": "1920x1080",
@@ -137,10 +135,7 @@ class RandomWallpaper(Gtk.Button):
             print(f"Executing: {cmd}")
             subprocess.Popen('{}'.format(cmd), shell=True)
 
-            if self.settings["output"]:
-                cmd = "swaybg -o '{}' -i {} -m fill".format(image_path, self.wallpaper_path)
-            else:
-                cmd = "swaybg -i {} -m fill".format(image_path)
+            cmd = "swaybg -i {} -m fill".format(image_path)
 
             cmd = cmd_through_compositor(cmd)
             print(f"Executing: {cmd}")
@@ -161,10 +156,7 @@ class RandomWallpaper(Gtk.Button):
             print(f"Executing: {cmd}")
             subprocess.Popen('{}'.format(cmd), shell=True)
 
-            if self.settings["output"]:
-                cmd = "swaybg -o '{}' -i {} -m fill".format(self.settings["output"], self.wallpaper_path)
-            else:
-                cmd = "swaybg -i {} -m fill".format(self.wallpaper_path)
+            cmd = "swaybg -i {} -m fill".format(self.wallpaper_path)
 
             if os.path.isfile(self.wallpaper_path):
                 cmd = cmd_through_compositor(cmd)
