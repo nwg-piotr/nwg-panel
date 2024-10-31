@@ -27,9 +27,9 @@ class RandomWallpaper(Gtk.Button):
         self.image_info = {}
 
         defaults = {
-            "source": "wallhaven.cc",
-            "output": [],
-            "monitor": [],
+            "source": "wallhaven",
+            "output": "",
+            "monitor": "",
             "tags": ["nature"],
             "ratios": "16x9,16x10",
             "atleast": "1920x1080",
@@ -37,7 +37,7 @@ class RandomWallpaper(Gtk.Button):
             "save-path": "",
             "local-path": "",
             "icon-size": 16,
-            "interval": 1,
+            "interval": 0,
             "refresh-on-startup": True,
         }
         for key in defaults:

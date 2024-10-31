@@ -256,9 +256,26 @@ SKELETON_PANEL: dict = {
 }
 
 
+def validate_tags(entry):
+    txt = entry.get_text()
+    # Sanitize
+    if " " in txt:
+        txt = txt.replace(" ", "")
+        entry.set_text(txt)
+    if ",," in txt:
+        txt = txt.replace(",,", ",")
+        entry.set_text(txt)
+    for c in txt:
+        if ord(c) > 128:
+            txt = txt.replace(c, "")
+            entry.set_text(txt)
+    # txt = txt.strip(",")
+    entry.set_text(txt)
+
 def clear_active_id(combo, target_combo):
     if combo.get_active_id():
         target_combo.set_active_id("")
+
 
 def load_vocabulary():
     global voc
@@ -1219,6 +1236,8 @@ class EditorWrapper(object):
             self.update_clock()
         elif self.edited == "playerctl":
             self.update_playerctl()
+        elif self.edited == "random-wallpaper":
+            self.update_random_wallpaper()
         elif self.edited == "sway-workspaces":
             self.update_sway_workspaces()
         elif self.edited == "scratchpad":
@@ -1880,13 +1899,13 @@ class EditorWrapper(object):
         settings = self.panel["random-wallpaper"] if "random-wallpaper" in self.panel else {}
         defaults = {
             "source": "wallhaven.cc",
-            "output": [],
-            "monitor": [],
+            "output": "",
+            "monitor": "",
             "tags": ["nature"],
             "ratios": "16x9,16x10",
             "atleast": "1920x1080",
             "apikey": '',
-            "save-path": "",
+            "save-path": os.getenv("HOME"),
             "local-path": "",
             "icon-size": 16,
             "interval": 0,
@@ -1894,6 +1913,9 @@ class EditorWrapper(object):
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
+
+        if not settings["local-path"] and os.path.isdir("/usr/share/backgrounds"):
+            settings["local-path"] = "/usr/share/backgrounds"
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_random_wallpaper.glade"))
         frame = builder.get_object("frame")
@@ -1911,8 +1933,6 @@ class EditorWrapper(object):
         builder.get_object("lbl-ratios").set_text("{}:".format(voc["aspect-ratios"]))
         builder.get_object("lbl-atleast").set_text("{}:".format(voc["atleast"]))
         builder.get_object("lbl-apikey").set_text("{}:".format(voc["api-key"]))
-        # move to form fields
-        builder.get_object("apikey").set_tooltip_text("{}:".format(voc["api-key-tooltip-wallhaven"]))
         builder.get_object("lbl-file-save-path").set_text("{}:".format(voc["file-save-path"]))
 
         self.rw_combo_source = builder.get_object("source")
@@ -1920,9 +1940,104 @@ class EditorWrapper(object):
         self.rw_combo_source.append("wallhaven.cc", "wallhaven.cc")
         self.rw_combo_source.set_active_id(settings["source"])
 
+        self.cb_output = builder.get_object("output")
+        self.cb_output.append("", "")
+        for key in outputs:
+            self.cb_output.append(key, key)
+
+        if self.panel["output"] and (settings["output"] in outputs or settings["output"] == "All"):
+            self.cb_output.set_active_id(self.panel["output"])
+
+        self.cb_monitor = builder.get_object("monitor")
+        self.cb_monitor.append("", "")
+        for key in mon_desc2output_name:
+            self.cb_monitor.append(key, key)
+
+        if settings["monitor"] and (settings["monitor"] in mon_desc2output_name or settings["monitor"] == "All"):
+            self.cb_monitor.set_active_id(self.panel["monitor"])
+
+        self.cb_output.connect("changed", clear_active_id, self.cb_monitor)
+        self.cb_monitor.connect("changed", clear_active_id, self.cb_output)
+
+        self.sc_icon_size = builder.get_object("icon-size")
+        self.sc_icon_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=128, step_increment=1, page_increment=10, page_size=1)
+        self.sc_icon_size.configure(adj, 1, 0)
+        self.sc_icon_size.set_value(settings["icon-size"])
+
+        self.sc_interval = builder.get_object("interval")
+        self.sc_interval.set_tooltip_text(voc["wallpaper-refresh-tooltip"])
+        self.sc_interval.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=60, step_increment=1, page_increment=10, page_size=1)
+        self.sc_interval.configure(adj, 1, 0)
+        self.sc_interval.set_value(settings["interval"])
+
+        self.eb_tags = builder.get_object("tags")
+        self.eb_tags.set_tooltip_text(voc["tags-tooltip"])
+        tags = ",".join(settings["tags"])
+        self.eb_tags.set_text(tags)
+        self.eb_tags.connect("changed", validate_tags)
+
+        self.ratios = builder.get_object("ratios")
+        self.ratios.set_tooltip_text(voc["ratios-tooltip"])
+        self.ratios.set_text(settings["ratios"])
+
+        self.atleast = builder.get_object("atleast")
+        self.atleast.set_tooltip_text(voc["atleast-tooltip"])
+        self.atleast.set_text(settings["atleast"])
+
+        self.apikey = builder.get_object("apikey")
+        self.apikey.set_tooltip_text("{}:".format(voc["api-key-tooltip-wallhaven"]))
+        self.apikey.set_text(settings["apikey"])
+
+        self.save_path = builder.get_object("file-save-path")
+        self.save_path.set_current_folder(settings["save-path"])
+
+        self.local_path = builder.get_object("local-path")
+        self.local_path.set_current_folder(settings["local-path"])
+
+        self.cb_refresh_on_startup = builder.get_object("refresh-on-startup")
+        self.cb_refresh_on_startup.set_active(settings["refresh-on-startup"])
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
+
+    def update_random_wallpaper(self):
+        settings = self.panel["random-wallpaper"]
+
+        settings["source"] = self.rw_combo_source.get_active_id()
+
+        val = self.cb_output.get_active_id() if self.cb_output.get_active_id() else ""
+        settings["output"] = val
+
+        val = self.cb_monitor.get_active_id() if self.cb_monitor.get_active_id() else ""
+        settings["monitor"] = val
+
+        settings["icon-size"] = int(self.sc_icon_size.get_value())
+
+        settings["interval"] = int(self.sc_interval.get_value())
+
+        settings["tags"] = self.eb_tags.get_text().split(",")
+
+        settings["ratios"] = self.ratios.get_text()
+
+        settings["atleast"] = self.atleast.get_text()
+
+        settings["apikey"] = self.apikey.get_text()
+
+        val = self.save_path.get_file().get_path() if self.save_path.get_file().get_path() else ""
+        settings["save-path"] = val
+
+        val = self.local_path.get_file().get_path() if self.local_path.get_file().get_path() else ""
+        settings["local-path"] = val
+
+        settings["refresh-on-startup"] = self.cb_refresh_on_startup.get_active()
+
+        for key in settings:
+            print(f"{key}: {settings[key]}")
+
+        save_json(self.config, self.file)
 
     def edit_playerctl(self, *args):
         self.load_panel()

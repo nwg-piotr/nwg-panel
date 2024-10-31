@@ -75,10 +75,11 @@
             <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <child>
-              <object class="GtkFileChooserButton" id="local-backgrounds-path">
+              <object class="GtkFileChooserButton" id="local-path">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="title" translatable="yes"/>
+                <property name="action">select-folder</property>
+                <property name="title" translatable="yes">Select</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -167,7 +168,8 @@
           <object class="GtkFileChooserButton" id="file-save-path">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="title" translatable="yes"/>
+            <property name="action">select-folder</property>
+            <property name="title" translatable="yes">Select</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -279,6 +281,7 @@
           <object class="GtkLabel" id="lbl-local-backgrounds">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="halign">start</property>
             <property name="label" translatable="yes">Local backgrounds path:</property>
           </object>
           <packing>
