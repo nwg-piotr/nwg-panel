@@ -1923,7 +1923,7 @@ class EditorWrapper(object):
         builder.get_object("lbl-general").set_text("{}:".format(voc["general"]))
         builder.get_object("lbl-source").set_text("{}:".format(voc["source"]))
         builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
-        builder.get_object("lbl-interval").set_text("{}:".format(voc["refresh-interval"]))
+        builder.get_object("lbl-interval").set_text("{}:".format(voc["refresh-interval-minutes"]))
         builder.get_object("lbl-local-backgrounds").set_text("{}:".format(voc["local-background-path"]))
         builder.get_object("refresh-on-startup").set_label("{}".format(voc["refresh-on-startup"]))
         builder.get_object("lbl-tags").set_text("{}:".format(voc["tags"]))

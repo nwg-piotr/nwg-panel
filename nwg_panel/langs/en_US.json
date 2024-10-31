@@ -194,6 +194,7 @@
   "readme-label-tooltip": "README label in the Controls menu",
   "refresh": "Refresh",
   "refresh-interval": "Refresh interval [s]",
+  "refresh-interval-minutes": "Refresh interval [m]",
   "refresh-interval-tooltip": "Refresh interval in seconds.\nSet 0 for no auto-refresh.",
   "refresh-on-signal": "Refresh on signal",
   "refresh-on-startup": "Refresh on startup",

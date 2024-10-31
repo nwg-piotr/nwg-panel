@@ -194,6 +194,7 @@
   "readme-label-tooltip": "Etykieta README w menu modułu Controls",
   "refresh": "Odśwież",
   "refresh-interval": "Odświeżanie [s]",
+  "refresh-interval-minutes": "Odświeżanie [m]",
   "refresh-interval-tooltip": "Interwał odświeżania w sekundach.\nUstaw 0 by wyłączyć automatyczne odświeżanie.",
   "refresh-on-signal": "Odświeżaj na sygnał",
   "refresh-on-startup": "Odświeżaj przy uruchomieniu",
