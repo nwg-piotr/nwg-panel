@@ -37,7 +37,7 @@ class RandomWallpaper(Gtk.Button):
             "save-path": "",
             "local-path": "",
             "icon-size": 16,
-            "interval": 0,
+            "interval": 1,
             "refresh-on-startup": True,
         }
         for key in defaults:
@@ -180,7 +180,7 @@ class RandomWallpaper(Gtk.Button):
         menu.set_reserve_toggle_size(False)
 
         item = Gtk.MenuItem.new_with_label(self.voc["refresh"])
-        item.connect("activate", self.apply_wallpaper)
+        item.connect("activate", self.apply_and_reset_timer)
         menu.append(item)
 
         if self.settings["interval"] > 0:
