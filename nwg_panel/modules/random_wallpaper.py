@@ -149,6 +149,22 @@ class RandomWallpaper(Gtk.Button):
         else:
             eprint(f"'{image_path}' is not a valid image file")
 
+    def load_apply_wallhaven_image(self):
+        self.load_wallhaven_image()
+
+        cmd = "pkill swaybg"
+        print(f"Executing: {cmd}")
+        subprocess.Popen('{}'.format(cmd), shell=True)
+
+        cmd = "swaybg -i {} -m fill".format(self.wallpaper_path)
+
+        if os.path.isfile(self.wallpaper_path):
+            cmd = cmd_through_compositor(cmd)
+            print(f"Executing: {cmd}")
+            subprocess.Popen('{}'.format(cmd), shell=True)
+        else:
+            eprint(f"'{self.wallpaper_path}' image not found")
+
     def apply_wallpaper(self, widget):
         if self.settings["source"] == "local":
             if os.path.isdir(self.settings["local-path"]) and len(os.listdir(self.settings["local-path"])) > 0:
@@ -156,20 +172,9 @@ class RandomWallpaper(Gtk.Button):
             else:
                 eprint(f"Local wallpaper path {self.settings['local-path']} not found or empty")
         else:
-            thread = threading.Thread(target=self.load_wallhaven_image)
+            thread = threading.Thread(target=self.load_apply_wallhaven_image)
             thread.start()
-            cmd = "pkill swaybg"
-            print(f"Executing: {cmd}")
-            subprocess.Popen('{}'.format(cmd), shell=True)
 
-            cmd = "swaybg -i {} -m fill".format(self.wallpaper_path)
-
-            if os.path.isfile(self.wallpaper_path):
-                cmd = cmd_through_compositor(cmd)
-                print(f"Executing: {cmd}")
-                subprocess.Popen('{}'.format(cmd), shell=True)
-            else:
-                eprint(f"'{self.wallpaper_path}' image not found")
 
         return True
 
