@@ -9,7 +9,7 @@
   "all-workspaces": "Todos espaçõs de trabalho",
   "always-show-icon": "Sempre mostrar ícone",
   "angle": "Ângulo",
-  "angle-tooltip": "O ângulo que a linha de base do rótulo faz com a \nhorizontal, em graus, medido no sentido anti-horário."
+  "angle-tooltip": "O ângulo que a linha de base do rótulo faz com a \nhorizontal, em graus, medido no sentido anti-horário.",
   "api-key": "Chave de API",
   "api-key-tooltip": "Cole sua chave de API key (appid) aqui.",
   "append": "Anexar",
@@ -58,7 +58,7 @@
   "css-name-tooltip": "Determine a #id css para usar com este item.",
   "custom-items": "Items personalizados",
   "custom-labels": "Rótulos personalizados",
-  "custom-labels-tooltip": "Um só rótulo or separe-os com nova linha para multiplos rótulos personalizados\npara cada espaço de tralho numerado acima."
+  "custom-labels-tooltip": "Um só rótulo or separe-os com nova linha para multiplos rótulos personalizados\npara cada espaço de tralho numerado acima.",
   "custom-location-name": "Nome personalizado de localização",
   "custom-location-name-tooltip": "Se você não gostar do nome da localização fornecida pelo geocoder, \nvocê pode definir seu rótulo personalizado aqui.",
   "data-path": "Caminho dos dados",
