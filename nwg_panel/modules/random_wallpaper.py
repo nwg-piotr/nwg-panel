@@ -25,18 +25,17 @@ def on_leave_notify_event(widget, event):
 class RandomWallpaper(Gtk.Button):
     def __init__(self, settings, voc, icons_path=""):
         self.image_info = {}
-
         defaults = {
-            "source": "wallhaven",
+            "source": "wallhaven.cc",
             "tags": ["nature"],
             "ratios": "16x9,16x10",
             "atleast": "1920x1080",
             "apikey": '',
-            "save-path": "",
+            "save-path": os.getenv("HOME"),
             "local-path": "",
             "icon-size": 16,
             "interval": 0,
-            "refresh-on-startup": True,
+            "refresh-on-startup": True
         }
         for key in defaults:
             if key not in settings:
