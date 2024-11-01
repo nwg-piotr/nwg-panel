@@ -194,13 +194,14 @@ class RandomWallpaper(Gtk.Button):
                 item.connect("activate", self.resume_refresh)
             menu.append(item)
 
-        item = Gtk.MenuItem.new_with_label(self.voc["image-info"])
-        item.connect("activate", self.display_image_info_window)
-        menu.append(item)
+        if self.settings["source"] == "wallhaven.cc":
+            item = Gtk.MenuItem.new_with_label(self.voc["image-info"])
+            item.connect("activate", self.display_image_info_window)
+            menu.append(item)
 
-        item = Gtk.MenuItem.new_with_label(self.voc["random-wallpaper-save"])
-        item.connect("activate", self.save_wallpaper)
-        menu.append(item)
+            item = Gtk.MenuItem.new_with_label(self.voc["random-wallpaper-save"])
+            item.connect("activate", self.save_wallpaper)
+            menu.append(item)
 
         menu.show_all()
         menu.popup_at_widget(self, Gdk.Gravity.NORTH, Gdk.Gravity.SOUTH, None)
