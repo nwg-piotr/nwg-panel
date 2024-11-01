@@ -286,7 +286,6 @@ def load_vocabulary():
         sys.exit(1)
 
     lang = os.getenv("LANG").split(".")[0] if not shell_data["interface-locale"] else shell_data["interface-locale"]
-    print()
     # translate if translation available
     if lang != "en_US":
         loc_file = os.path.join(dir_name, "langs", "{}.json".format(lang))
