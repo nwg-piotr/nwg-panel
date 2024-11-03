@@ -711,10 +711,6 @@ def main():
 
             inner_box = Gtk.Box(orientation=o, spacing=0)
 
-            # set equal columns width by default if "modules-center" not empty; this may be overridden in config
-            if panel["modules-center"] and panel["homogeneous"]:
-                inner_box.set_homogeneous(True)
-
             hbox.pack_start(inner_box, True, True, 0)
             hbox.set_property("margin-start", panel["padding-horizontal"])
             hbox.set_property("margin-end", panel["padding-horizontal"])
@@ -751,7 +747,12 @@ def main():
 
             center_box = Gtk.Box(orientation=o, spacing=panel["spacing"])
             center_box.set_property("name", "center-box")
-            inner_box.pack_start(center_box, True, False, 0)
+
+            if panel["modules-center"] and panel["homogeneous"]:
+                inner_box.set_center_widget(center_box)
+            else:
+                inner_box.pack_start(center_box, True, False, 0)
+
             check_key(panel, "modules-center", [])
             instantiate_content(panel, center_box, panel["modules-center"], icons_path=icons_path)
             print("center box created")
@@ -761,7 +762,7 @@ def main():
             # Damn on the guy who invented `pack_start(child, expand, fill, padding)`!
             helper_box = Gtk.Box(orientation=o, spacing=0)
             helper_box.pack_end(right_box, False, False, 0)
-            inner_box.pack_start(helper_box, False, True, 0)
+            inner_box.pack_end(helper_box, False, True, 0)
             check_key(panel, "modules-right", [])
             instantiate_content(panel, right_box, panel["modules-right"], icons_path=icons_path)
             print("right box created")
