@@ -25,26 +25,33 @@ class HyprlandWorkspaces(Gtk.Box):
         self.refresh(monitors, workspaces, clients, activewindow, activeworkspace)
 
     def build_box(self):
-        check_key(self.settings, "num-ws", 10)
-        check_key(self.settings, "show-icon", True)
-        check_key(self.settings, "image-size", 16)
-        check_key(self.settings, "show-name", True)
-        check_key(self.settings, "name-length", 40)
-        check_key(self.settings, "show-empty", True)
-        check_key(self.settings, "mark-content", True)
-        check_key(self.settings, "show-names", True)
-        check_key(self.settings, "mark-floating", True)
-        check_key(self.settings, "mark-xwayland", True)
-        check_key(self.settings, "angle", 0.0)
+        defaults = {
+            "num-ws": 10,
+            "show-icon": True,
+            "image-size": 16,
+            "show-workspaces": True,
+            "show-name": True,
+            "name-length": 40,
+            "show-empty": True,
+            "mark-content": True,
+            "show-names": True,
+            "mark-floating": True,
+            "mark-xwayland": True,
+            "angle": 0.0
+        }
+        for key in defaults:
+            if key not in self.settings:
+                self.settings[key] = defaults[key]
 
         if self.settings["angle"] != 0.0:
             self.set_orientation(Gtk.Orientation.VERTICAL)
             self.num_box.set_orientation(Gtk.Orientation.VERTICAL)
 
-        self.pack_start(self.num_box, False, False, 0)
+        if self.settings["show-workspaces"]:
+            self.pack_start(self.num_box, False, False, 0)
 
-        for i in range(1, self.settings["num-ws"] + 1):
-            self.ws_nums.append(i)
+            for i in range(1, self.settings["num-ws"] + 1):
+                self.ws_nums.append(i)
 
         if self.settings["show-icon"]:
             self.pack_start(self.icon, False, False, 6)
@@ -91,20 +98,21 @@ class HyprlandWorkspaces(Gtk.Box):
         return eb, lbl
 
     def refresh(self, monitors, workspaces, clients, activewindow, activeworkspace):
-        occupied_workspaces = []
-        self.ws_id2name = {}
+        if self.settings["show-workspaces"]:
+            occupied_workspaces = []
+            self.ws_id2name = {}
 
-        for ws in workspaces:
-            for client in clients:
-                if client["workspace"]["id"] == ws["id"] and ws["id"] not in occupied_workspaces:
-                    occupied_workspaces.append(ws["id"])
-                    break
+            for ws in workspaces:
+                for client in clients:
+                    if client["workspace"]["id"] == ws["id"] and ws["id"] not in occupied_workspaces:
+                        occupied_workspaces.append(ws["id"])
+                        break
 
-            self.ws_id2name[ws["id"]] = ws["name"]
-        occupied_workspaces.sort()
+                self.ws_id2name[ws["id"]] = ws["name"]
+            occupied_workspaces.sort()
 
-        for c in self.num_box.get_children():
-            c.destroy()
+            for c in self.num_box.get_children():
+                c.destroy()
 
         if activewindow:
             client_class = activewindow["class"]
@@ -119,18 +127,19 @@ class HyprlandWorkspaces(Gtk.Box):
             floating = False
             pinned = False
 
-        # fix #310
-        active_ws = activeworkspace["id"]
+        if self.settings["show-workspaces"]:
+            # fix #310
+            active_ws = activeworkspace["id"]
 
-        for num in self.ws_nums:
-            if num in occupied_workspaces or self.settings["show-empty"]:
-                occ = num in occupied_workspaces
-                dot = num in occupied_workspaces and self.settings["show-empty"] and self.settings["mark-content"]
-                eb, lbl = self.build_number(num, add_dot=dot, active_win_ws=active_ws)
-                if occ:
-                    lbl.set_property("name", "workspace-occupied")
-                self.num_box.pack_start(eb, False, False, 0)
-                self.num_box.show_all()
+            for num in self.ws_nums:
+                if num in occupied_workspaces or self.settings["show-empty"]:
+                    occ = num in occupied_workspaces
+                    dot = num in occupied_workspaces and self.settings["show-empty"] and self.settings["mark-content"]
+                    eb, lbl = self.build_number(num, add_dot=dot, active_win_ws=active_ws)
+                    if occ:
+                        lbl.set_property("name", "workspace-occupied")
+                    self.num_box.pack_start(eb, False, False, 0)
+                    self.num_box.show_all()
 
         if self.settings["show-icon"]:
             self.update_icon(client_class, client_title)
