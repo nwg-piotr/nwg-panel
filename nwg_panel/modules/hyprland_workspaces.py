@@ -2,7 +2,7 @@
 
 from gi.repository import Gtk, Gdk
 
-from nwg_panel.tools import check_key, update_image_fallback_desktop, hyprctl
+from nwg_panel.tools import update_image_fallback_desktop, hyprctl
 
 
 class HyprlandWorkspaces(Gtk.Box):
