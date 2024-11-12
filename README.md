@@ -4,15 +4,15 @@
 This application is a part of the [nwg-shell](https://nwg-piotr.github.io/nwg-shell) project.
 
 **Nwg-panel** is a GTK3-based panel for [sway](https://github.com/swaywm/sway) and [Hyprland](https://github.com/hyprwm/Hyprland) 
-Wayland compositors. The panel is equipped with a graphical configuration program that frees the user from the need to 
+Wayland compositors. The panel is equipped with a graphical configuration tool, that frees the user from the need to 
 manually edit configuration files.
 
 <img src="https://github.com/nwg-piotr/nwg-panel/assets/20579136/09866188-6819-4dfb-99df-40af53be859b" width=640><br>
 
 <img src="https://github.com/nwg-piotr/nwg-panel/assets/20579136/1aeb8990-f355-4ba9-80e3-9aa2a46730ca" width=640><br>
 
-Currently, we have a dozen of modules, and we don't plan on many more. Many minor tasks that users request a module for,
-may be easily done with [executors](https://github.com/nwg-piotr/nwg-panel/wiki/modules:-Executor).
+Currently, we have a dozen of modules, and we don't plan on many more. Numerous minor tasks that users request a module 
+for, may be easily done with [executors](https://github.com/nwg-piotr/nwg-panel/wiki/modules:-Executor).
 
 - **Controls module**: basis system controls like brightness slider, volume slider (w/ per-app sliders), battery 
 level w/ low level notification, system processes viewer, user-defined custom items, user-defined drop-down menu 
@@ -24,6 +24,8 @@ application launcher button
 - **DWL tags**: deprecated and no longer supported; will be deleted in the future
 - **Executor**: a useful module that executes user-provided code and displays the output in the panel as an icon and 
 text; see Wiki for more info
+- **KeyboardLayout**: keyboard layout switcher, between values defined as `xkb_layout` (sway) or `kb_layout` (Hyprland).
+Use commas to separate values, e.g. `pl,us,de`
 - **Sway taskbar & Hyprland taskbar**: highly customizable modules to display a label with an icon for every running 
 window, together with some more info (workspace number, split orientation on sway, X-widows marker); right click opens 
 a menu that allows to move windows between workspaces, toggle floating and fullscreen, and also close windows.
@@ -37,8 +39,6 @@ buttons
 - **Scratchpad**: displays info on current scratchpad content and allows to open scratchpad windows 
 - **SwayMode**: a simple indicator of a sway mode other than "default"
 - **Tray**: SNI system tray module
-- **KeyboardLayout**: keyboard layout switcher, between values defined as `xkb_layout` (sway) or `kb_layout` (Hyprland).
-Use commas to separate values, e.g. `pl,us,de`.
 
 ## Installation
 
