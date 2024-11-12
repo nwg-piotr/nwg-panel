@@ -33,6 +33,7 @@ to the labels there's a field with currently focused window details
 - **Openweather**: displays weather forcast from OpenWeatherMap and weather alerts from weatherbit.io for given locations.
 - **Playerctl**: displays an icon and a label of the currently played tune, together with back / play-pause / forward 
 buttons
+- **RandomWallpaper**: provides you with random wallpapers from either a local folder, or the wallhaven.cc service
 - **Scratchpad**: displays info on current scratchpad content and allows to open scratchpad windows 
 - **SwayMode**: a simple indicator of a sway mode other than "default"
 - **Tray**: SNI system tray module
