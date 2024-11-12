@@ -272,6 +272,7 @@ def validate_tags(entry):
     # txt = txt.strip(",")
     entry.set_text(txt)
 
+
 def clear_active_id(combo, target_combo):
     if combo.get_active_id():
         target_combo.set_active_id("")
@@ -1001,7 +1002,7 @@ class EditorWrapper(object):
             self.cb_monitor.set_active_id(self.panel["monitor"])
 
         self.cb_output.connect("changed", clear_active_id, self.cb_monitor)
-        self.cb_monitor.connect("changed", clear_active_id,self.cb_output)
+        self.cb_monitor.connect("changed", clear_active_id, self.cb_output)
 
         if self.panel["output"] and (self.panel["output"] in outputs or self.panel["output"] == "All"):
             self.cb_output.set_active_id(self.panel["output"])
@@ -2267,6 +2268,7 @@ class EditorWrapper(object):
             "num-ws": 10,
             "show-icon": True,
             "image-size": 16,
+            "show-workspaces": True,
             "show-name": True,
             "name-length": 40,
             "show-empty": True,
@@ -2290,6 +2292,7 @@ class EditorWrapper(object):
         builder.get_object("lbl-window-name-length-limit").set_text("{}:".format(voc["window-name-length-limit"]))
         builder.get_object("show-empty").set_label("{}".format(voc["show-empty-ws"]))
         builder.get_object("mark-content").set_label("{}".format(voc["mark-non-empty-ws"]))
+        builder.get_object("show-workspaces").set_label("{}".format(voc["show-workspaces"]))
         builder.get_object("show-names").set_label("{}".format(voc["show-ws-names"]))
         builder.get_object("mark-floating").set_label("{}".format(voc["mark-floating-win"]))
         builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
@@ -2326,6 +2329,9 @@ class EditorWrapper(object):
         self.ws_mark_content = builder.get_object("mark-content")
         self.ws_mark_content.set_active(settings["mark-content"])
 
+        self.ws_show_workspaces = builder.get_object("show-workspaces")
+        self.ws_show_workspaces.set_active(settings["show-workspaces"])
+
         self.ws_show_names = builder.get_object("show-names")
         self.ws_show_names.set_active(settings["show-names"])
 
@@ -2354,6 +2360,7 @@ class EditorWrapper(object):
         settings["show-empty"] = self.ws_show_empty.get_active()
         settings["mark-content"] = self.ws_mark_content.get_active()
         settings["show-names"] = self.ws_show_names.get_active()
+        settings["show-workspaces"] = self.ws_show_workspaces.get_active()
         settings["mark-floating"] = self.ws_mark_floating.get_active()
         settings["mark-xwayland"] = self.ws_mark_xwayland.get_active()
         try:

@@ -29,7 +29,7 @@ class HyprlandWorkspaces(Gtk.Box):
             "num-ws": 10,
             "show-icon": True,
             "image-size": 16,
-            "show-workspaces": True,
+            "show-workspaces": False,
             "show-name": True,
             "name-length": 40,
             "show-empty": True,
