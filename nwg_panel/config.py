@@ -1947,7 +1947,7 @@ class EditorWrapper(object):
         self.sc_interval = builder.get_object("interval")
         self.sc_interval.set_tooltip_text(voc["wallpaper-refresh-tooltip"])
         self.sc_interval.set_numeric(True)
-        adj = Gtk.Adjustment(value=0, lower=0, upper=60, step_increment=1, page_increment=10, page_size=1)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=1440, step_increment=1, page_increment=10, page_size=1)
         self.sc_interval.configure(adj, 1, 0)
         self.sc_interval.set_value(settings["interval"])
 
