@@ -6,8 +6,9 @@ from nwg_panel.tools import update_image_fallback_desktop, hyprctl
 
 
 class HyprlandWorkspaces(Gtk.Box):
-    def __init__(self, settings, monitors, workspaces, clients, activewindow, activeworkspace, icons_path):
+    def __init__(self, settings, monitor_id, workspaces, clients, activewindow, activeworkspace, icons_path):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        print("monitor-id", monitor_id)
         self.settings = settings
         self.num_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         self.num_box.set_property("name", "hyprland-workspaces")
@@ -22,7 +23,7 @@ class HyprlandWorkspaces(Gtk.Box):
         self.ws_nums = []
 
         self.build_box()
-        self.refresh(monitors, workspaces, clients, activewindow, activeworkspace)
+        self.refresh(workspaces, clients, activewindow, activeworkspace)
 
     def build_box(self):
         defaults = {
@@ -97,7 +98,7 @@ class HyprlandWorkspaces(Gtk.Box):
 
         return eb, lbl
 
-    def refresh(self, monitors, workspaces, clients, activewindow, activeworkspace):
+    def refresh(self, workspaces, clients, activewindow, activeworkspace):
         if self.settings["show-workspaces"]:
             occupied_workspaces = []
             self.ws_id2name = {}

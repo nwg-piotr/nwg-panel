@@ -388,6 +388,8 @@ def list_outputs(sway=False, silent=False):
 
     for key, monitor in zip(outputs_dict.keys(), monitors):
         outputs_dict[key]["monitor"] = monitor
+        mon_id = monitors.index(monitor)
+        outputs_dict[key]["monitor-id"] = mon_id
 
     # map monitor descriptions to output names
     mon_desc2output_name = {}

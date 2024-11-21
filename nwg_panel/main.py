@@ -200,7 +200,7 @@ def hypr_watcher():
                     GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
 
                 for item in common.h_workspaces_list:
-                    GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow, activeworkspace)
+                    GLib.timeout_add(0, item.refresh, workspaces, clients, activewindow, activeworkspace)
 
                 if event_name in ["createworkspace", "destroyworkspace", "focusedmon", "workspace"]:
                     just_refreshed = True
@@ -319,7 +319,8 @@ def instantiate_content(panel, container, content_list, icons_path=""):
         if item == "hyprland-workspaces":
             if his:
                 if "hyprland-workspaces" in panel:
-                    workspaces = HyprlandWorkspaces(panel["hyprland-workspaces"], monitors, workspaces, clients,
+                    mon_id = common.outputs[panel["output"]]["monitor-id"]
+                    workspaces = HyprlandWorkspaces(panel["hyprland-workspaces"], mon_id, workspaces, clients,
                                                     activewindow, activeworkspace, icons_path=icons_path)
                     container.pack_start(workspaces, False, False, panel["items-padding"])
                     common.h_workspaces_list.append(workspaces)
@@ -804,8 +805,9 @@ def main():
             check_key(panel, "layer", "top")
             o = panel["output"] if "output" in panel else "undefined"
             m = panel["monitor"] if "monitor" in panel else "undefined"
-            print("Panel '{}': output: {}, monitor: {}, position: {}, layer: {}, width: {}, height: {}".format(
-                panel["name"], o, m,
+            m_id = common.outputs[panel["output"]]["monitor-id"]
+            print("Panel '{}': output: {}, monitor: {}, monitor-id {}, position: {}, layer: {}, width: {}, height: {}".format(
+                panel["name"], o, m, m_id,
                 panel["position"],
                 panel["layer"],
                 panel["width"],
