@@ -503,8 +503,9 @@ class PopupWindow(Gtk.Window):
         if settings["menu"] and "items" in settings["menu"] and settings["menu"]["items"]:
             template = settings["menu"]
 
-            sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-            v_box.pack_start(sep, True, True, 10)
+            if "custom-items" in settings and len(settings["custom-items"]) > 0:
+                sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+                v_box.pack_start(sep, True, True, 10)
 
             e_box = Gtk.EventBox()
             box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
