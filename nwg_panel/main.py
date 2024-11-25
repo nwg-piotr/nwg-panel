@@ -872,7 +872,7 @@ def main():
         if len(common.h_taskbars_list) > 0 or len(common.h_workspaces_list) > 0:
             print("his: '{}', starting hypr_watcher".format(his))
             # read from Hyprland socket2 on another thread
-            thread = threading.Thread(target=hypr_watcher)
+            thread = threading.Thread(target=hypr_watcher, daemon=True)
             thread.daemon = True
             thread.start()
 

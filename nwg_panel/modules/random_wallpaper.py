@@ -171,7 +171,7 @@ class RandomWallpaper(Gtk.Button):
             else:
                 eprint(f"Local wallpaper path {self.settings['local-path']} not found or empty")
         else:
-            thread = threading.Thread(target=self.load_apply_wallhaven_image)
+            thread = threading.Thread(target=self.load_apply_wallhaven_image, daemon=True)
             thread.start()
 
         return True
