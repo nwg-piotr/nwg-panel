@@ -921,6 +921,7 @@ class EditorWrapper(object):
             "controls": "off",
             "menu-start": "off",
             "width": "auto",
+            "width-as-percentage": False,
             "height": 0,
             "margin-top": 0,
             "margin-bottom": 0,
@@ -1041,6 +1042,9 @@ class EditorWrapper(object):
         upper = float(screen_width + 1) if screen_width is not None else 8193
         adj = Gtk.Adjustment(value=0, lower=0, upper=upper, step_increment=1, page_increment=10, page_size=1)
         self.sb_width.configure(adj, 1, 0)
+
+        self.ckb_width_percentage = builder.get_object("as-percentage")
+        self.ckb_width_percentage.set_active(self.panel["width-as-percentage"])
 
         self.ckb_width_auto = builder.get_object("width-auto")
         if isinstance(self.panel["width"], int):
@@ -1171,6 +1175,8 @@ class EditorWrapper(object):
         val = self.cb_layer.get_active_id()
         if val:
             self.panel["layer"] = val
+
+        self.panel["width-as-percentage"] = self.ckb_width_percentage.get_active()
 
         val = self.ckb_width_auto.get_active()
         if val:

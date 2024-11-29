@@ -618,6 +618,7 @@ def main():
         # This is to allow width "auto" value. Actually all non-numeric values will be removed.
         if "width" in panel and not isinstance(panel["width"], int):
             panel.pop("width")
+            panel["width-as-percentage"] = False
 
         if panel["output"] in common.outputs or not panel["output"]:
             check_key(panel, "spacing", 6)
@@ -627,6 +628,8 @@ def main():
             check_key(panel, "sigrt", 0)  # SIGRTMIN > hide_show_sig_num <= SIGRTMAX, (0 = disabled)
             check_key(panel, "use-sigrt", False)
             check_key(panel, "start-hidden", False)
+
+            check_key(panel, "width-as-percentage", True)
 
             window = Gtk.Window()
             global panel_windows_hide_show_sigs
@@ -648,6 +651,12 @@ def main():
             # Width undefined or "auto"
             if "output" in panel and panel["output"] and "width" not in panel:
                 panel["width"] = common.outputs[panel["output"]]["width"]
+
+            # Width defined as percentage
+            if "width" in panel and panel["width"] > 0 and panel["width-as-percentage"]:
+                if panel["width"] > 100:
+                    panel["width"] = 100
+                panel["width"] = int(common.outputs[panel["output"]]["width"] * panel["width"] / 100)
 
             check_key(panel, "width", 0)
             w = panel["width"]
