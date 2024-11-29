@@ -1854,7 +1854,8 @@ class EditorWrapper(object):
             "icon-size": 16,
             "root-css-name": "tray",
             "inner-css-name": "inner-tray",
-            "smooth-scrolling-threshold": 0
+            "smooth-scrolling-threshold": 0,
+            "new-left": False
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1867,6 +1868,7 @@ class EditorWrapper(object):
         builder.get_object("lbl-root-css-name").set_text("{}:".format(voc["root-css-name"]))
         builder.get_object("lbl-css-name").set_text("{}:".format(voc["css-name"]))
         builder.get_object("lbl-smooth-scrolling-threshold").set_text("{}:".format(voc["smooth-scrolling-threshold"]))
+        builder.get_object("new-left").set_label("{}".format(voc["new-left"]))
 
         self.nc_icon_size = builder.get_object("icon-size")
         self.nc_icon_size.set_numeric(True)
@@ -1886,6 +1888,9 @@ class EditorWrapper(object):
         self.nc_smooth_scrolling_threshold.configure(adj, 1, 0)
         self.nc_smooth_scrolling_threshold.set_value(settings["smooth-scrolling-threshold"])
 
+        self.ckb_new_left = builder.get_object("new-left")
+        self.ckb_new_left.set_active(settings["new-left"])
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -1897,6 +1902,7 @@ class EditorWrapper(object):
         settings["root-css-name"] = self.nc_root_css_name.get_text()
         settings["inner-css-name"] = self.nc_inner_css_name.get_text()
         settings["smooth-scrolling-threshold"] = int(self.nc_smooth_scrolling_threshold.get_value())
+        settings["new-left"] = self.ckb_new_left.get_active()
 
         save_json(self.config, self.file)
 
