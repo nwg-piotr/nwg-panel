@@ -629,7 +629,7 @@ def main():
             check_key(panel, "use-sigrt", False)
             check_key(panel, "start-hidden", False)
 
-            check_key(panel, "width-as-percentage", True)
+            check_key(panel, "width-as-percentage", False)
 
             window = Gtk.Window()
             global panel_windows_hide_show_sigs
