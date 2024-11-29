@@ -921,6 +921,7 @@ class EditorWrapper(object):
             "controls": "off",
             "menu-start": "off",
             "width": "auto",
+            "width-as-percentage": False,
             "height": 0,
             "margin-top": 0,
             "margin-bottom": 0,
@@ -1042,13 +1043,16 @@ class EditorWrapper(object):
         adj = Gtk.Adjustment(value=0, lower=0, upper=upper, step_increment=1, page_increment=10, page_size=1)
         self.sb_width.configure(adj, 1, 0)
 
+        self.ckb_width_percentage = builder.get_object("as-percentage")
+        self.ckb_width_percentage.set_active(self.panel["width-as-percentage"])
+
         self.ckb_width_auto = builder.get_object("width-auto")
         if isinstance(self.panel["width"], int):
             self.sb_width.set_value(float(self.panel["width"]))
         else:
             self.ckb_width_auto.set_active(True)
             self.sb_width.set_sensitive(False)
-        self.ckb_width_auto.connect("toggled", self.on_auto_toggle, self.sb_width, self.cb_output)
+        self.ckb_width_auto.connect("toggled", self.on_auto_toggle, self.sb_width, self.cb_output, self.ckb_width_percentage)
 
         self.sb_height = builder.get_object("height")
         self.sb_height.set_numeric(True)
@@ -1130,10 +1134,11 @@ class EditorWrapper(object):
             item.destroy()
         self.scrolled_window.add(frame)
 
-    def on_auto_toggle(self, checkbutton, sb_width, cb_output):
+    def on_auto_toggle(self, checkbutton, sb_width, cb_output, ckb_width_percentage):
         if not checkbutton.get_active():
             o_name = cb_output.get_active_id()
             sb_width.set_sensitive(True)
+            ckb_width_percentage.set_active(False)
             if o_name in outputs:
                 sb_width.set_value(float(outputs[o_name]["width"]))
         else:
@@ -1171,6 +1176,8 @@ class EditorWrapper(object):
         val = self.cb_layer.get_active_id()
         if val:
             self.panel["layer"] = val
+
+        self.panel["width-as-percentage"] = self.ckb_width_percentage.get_active()
 
         val = self.ckb_width_auto.get_active()
         if val:
@@ -1848,7 +1855,8 @@ class EditorWrapper(object):
             "icon-size": 16,
             "root-css-name": "tray",
             "inner-css-name": "inner-tray",
-            "smooth-scrolling-threshold": 0
+            "smooth-scrolling-threshold": 0,
+            "new-left": False
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -1861,6 +1869,7 @@ class EditorWrapper(object):
         builder.get_object("lbl-root-css-name").set_text("{}:".format(voc["root-css-name"]))
         builder.get_object("lbl-css-name").set_text("{}:".format(voc["css-name"]))
         builder.get_object("lbl-smooth-scrolling-threshold").set_text("{}:".format(voc["smooth-scrolling-threshold"]))
+        builder.get_object("new-left").set_label("{}".format(voc["new-left"]))
 
         self.nc_icon_size = builder.get_object("icon-size")
         self.nc_icon_size.set_numeric(True)
@@ -1880,6 +1889,9 @@ class EditorWrapper(object):
         self.nc_smooth_scrolling_threshold.configure(adj, 1, 0)
         self.nc_smooth_scrolling_threshold.set_value(settings["smooth-scrolling-threshold"])
 
+        self.ckb_new_left = builder.get_object("new-left")
+        self.ckb_new_left.set_active(settings["new-left"])
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -1891,6 +1903,7 @@ class EditorWrapper(object):
         settings["root-css-name"] = self.nc_root_css_name.get_text()
         settings["inner-css-name"] = self.nc_inner_css_name.get_text()
         settings["smooth-scrolling-threshold"] = int(self.nc_smooth_scrolling_threshold.get_value())
+        settings["new-left"] = self.ckb_new_left.get_active()
 
         save_json(self.config, self.file)
 

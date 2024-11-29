@@ -106,6 +106,7 @@ class Tray(Gtk.EventBox):
         check_key(settings, "root-css-name", "tray")
         check_key(settings, "inner-css-name", "inner-tray")
         check_key(settings, "smooth-scrolling-threshold", 0)
+        check_key(settings, "new-left", False)
 
         self.set_property("name", settings["root-css-name"])
 
@@ -139,7 +140,10 @@ class Tray(Gtk.EventBox):
             update_status(event_box, item)
 
             event_box.add(image)
-            self.box.pack_start(event_box, False, False, 6)
+            if not self.settings["new-left"]:
+                self.box.pack_start(event_box, False, False, 6)
+            else:
+                self.box.pack_end(event_box, False, False, 6)
             self.box.show_all()
 
             if "Menu" in item.properties:
