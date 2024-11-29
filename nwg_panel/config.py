@@ -1052,7 +1052,7 @@ class EditorWrapper(object):
         else:
             self.ckb_width_auto.set_active(True)
             self.sb_width.set_sensitive(False)
-        self.ckb_width_auto.connect("toggled", self.on_auto_toggle, self.sb_width, self.cb_output)
+        self.ckb_width_auto.connect("toggled", self.on_auto_toggle, self.sb_width, self.cb_output, self.ckb_width_percentage)
 
         self.sb_height = builder.get_object("height")
         self.sb_height.set_numeric(True)
@@ -1134,10 +1134,11 @@ class EditorWrapper(object):
             item.destroy()
         self.scrolled_window.add(frame)
 
-    def on_auto_toggle(self, checkbutton, sb_width, cb_output):
+    def on_auto_toggle(self, checkbutton, sb_width, cb_output, ckb_width_percentage):
         if not checkbutton.get_active():
             o_name = cb_output.get_active_id()
             sb_width.set_sensitive(True)
+            ckb_width_percentage.set_active(False)
             if o_name in outputs:
                 sb_width.set_value(float(outputs[o_name]["width"]))
         else:
