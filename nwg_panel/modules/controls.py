@@ -55,17 +55,23 @@ class Controls(Gtk.EventBox):
         self.bri_icon_name = "view-refresh-symbolic"
         self.bri_image = Gtk.Image.new_from_icon_name(self.bri_icon_name, Gtk.IconSize.MENU)
         self.bri_label = Gtk.Label() if settings["show-brightness"] else None
+        if self.bri_label:
+            self.bri_label.set_property("name", "executor-label")
         self.bri_value = 0
 
         self.vol_icon_name = "view-refresh-symbolic"
         self.vol_image = Gtk.Image.new_from_icon_name(self.vol_icon_name, Gtk.IconSize.MENU)
         self.vol_label = Gtk.Label() if settings["show-volume"] else None
+        if self.vol_label:
+            self.vol_label.set_property("name", "executor-label")
         self.vol_value = 0
         self.vol_muted = False
 
         self.bat_icon_name = "view-refresh-symbolic"
         self.bat_image = Gtk.Image.new_from_icon_name(self.bat_icon_name, Gtk.IconSize.MENU)
         self.bat_label = Gtk.Label() if settings["show-battery"] else None
+        if self.bat_label:
+            self.bat_label.set_property("name", "executor-label")
         self.bat_value = 0
         self.bat_time = ""
         self.bat_charging = False
