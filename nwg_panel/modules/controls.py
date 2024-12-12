@@ -656,7 +656,7 @@ class PopupWindow(Gtk.Window):
     def refresh(self, schedule=False):
         if self.get_visible():
             self.refresh_sinks()
-            self.parent.refresh_output()
+            # self.parent.refresh_output()
 
             if "battery" in self.settings["components"]:
                 if self.parent.bat_icon_name != self.bat_icon_name:
