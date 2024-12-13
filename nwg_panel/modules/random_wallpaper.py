@@ -50,6 +50,7 @@ class RandomWallpaper(Gtk.Button):
         Gtk.Button.__init__(self)
         self.set_always_show_image(True)
         self.settings = settings
+        self.set_property("name", "random-wallpaper-button")
 
         image = Gtk.Image()
         update_image(image, "wallpaper", settings["icon-size"], icons_path)

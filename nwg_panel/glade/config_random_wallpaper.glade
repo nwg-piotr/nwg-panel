@@ -278,10 +278,20 @@
           </packing>
         </child>
         <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">&lt;span size="small"&gt;&lt;b&gt;CSS IDs&lt;/b&gt;: 
+#random-wallpaper-button &lt;/span&gt;</property>
+            <property name="use-markup">True</property>
+            <property name="wrap">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">12</property>
+            <property name="width">2</property>
+          </packing>
         </child>
         <child>
           <placeholder/>
