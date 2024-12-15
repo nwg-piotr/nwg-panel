@@ -14,6 +14,7 @@ import glob
 import gi
 
 import nwg_panel.common
+from nwg_panel.icons import get_icon_name
 
 gi.require_version('GdkPixbuf', '2.0')
 gi.require_version('Gtk', '3.0')
@@ -22,8 +23,6 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk, Gdk, GdkPixbuf
 from shutil import copyfile
 from datetime import datetime
-
-import nwg_panel.common
 
 try:
     import psutil
@@ -44,109 +43,6 @@ def temp_dir():
         return os.getenv("TMP")
 
     return "/tmp"
-
-
-def get_app_dirs():
-    desktop_dirs = []
-
-    home = os.getenv("HOME")
-    xdg_data_home = os.getenv("XDG_DATA_HOME")
-    xdg_data_dirs = os.getenv("XDG_DATA_DIRS") if os.getenv("XDG_DATA_DIRS") else "/usr/local/share/:/usr/share/"
-
-    if xdg_data_home:
-        desktop_dirs.append(os.path.join(xdg_data_home, "applications"))
-    else:
-        if home:
-            desktop_dirs.append(os.path.join(home, ".local/share/applications"))
-
-    for d in xdg_data_dirs.split(":"):
-        desktop_dirs.append(os.path.join(d, "applications"))
-
-    # Add flatpak dirs if not found in XDG_DATA_DIRS
-    flatpak_dirs = [os.path.join(home, ".local/share/flatpak/exports/share/applications"),
-                    "/var/lib/flatpak/exports/share/applications"]
-    for d in flatpak_dirs:
-        if d not in desktop_dirs:
-            desktop_dirs.append(d)
-
-    return desktop_dirs
-
-
-# def map_odd_desktop_files():
-#     name2icon_dict = {}
-#     for d in nwg_panel.common.app_dirs:
-#         if os.path.exists(d):
-#             for path in os.listdir(d):
-#                 if os.path.isfile(os.path.join(d, path)):
-#                     if path.endswith(".desktop") and path.count(".") > 1:
-#                         try:
-#                             content = load_text_file(os.path.join(d, path))
-#                         except Exception as e:
-#                             eprint(e)
-#                         if content:
-#                             for line in content.splitlines():
-#                                 if line.startswith("[") and not line == "[Desktop Entry]":
-#                                     break
-#                                 if line.upper().startswith("ICON="):
-#                                     icon = line.split("=")[1]
-#                                     name2icon_dict[path] = icon
-#                                     break
-#
-#     return name2icon_dict
-
-
-def get_icon_name(app_name):
-    if not app_name:
-        return ""
-    # the name might've been already found in .desktop files and stored
-    if app_name in nwg_panel.common.app_name2icon_name:
-        return nwg_panel.common.app_name2icon_name[app_name]
-
-    # GIMP returns "app_id": null and for some reason "class": "Gimp-2.10" instead of just "gimp".
-    # Until the GTK3 version is released, let's make an exception for GIMP.
-    if "GIMP" in app_name.upper():
-        return "gimp"
-
-    for d in nwg_panel.common.app_dirs:
-        # This will work if the .desktop file name is app_id.desktop or wm_class.desktop
-        path = os.path.join(d, "{}.desktop".format(app_name))
-        content = None
-        if os.path.isfile(path):
-            content = load_text_file(path)
-        elif os.path.isfile(path.lower()):
-            content = load_text_file(path.lower())
-        if content:
-            for line in content.splitlines():
-                if line.upper().startswith("ICON"):
-                    icon_name = line.split("=")[1]
-                    # store for further use
-                    nwg_panel.common.app_name2icon_name[app_name] = icon_name
-                    return icon_name
-
-        # Otherwise, we need to search all .desktop files
-        if os.path.isdir(d):
-            for a_file in os.listdir(d):
-                if app_name.lower() in a_file.lower():
-                    path = os.path.join(d, a_file)
-                    content = load_text_file(path)
-                    if content:
-                        for line in content.splitlines():
-                            if line.upper().startswith("ICON"):
-                                icon_name = line.split("=")[1]
-                                # store for further use
-                                nwg_panel.common.app_name2icon_name[app_name] = icon_name
-                                return icon_name
-
-    # Search the dictionary made of .desktop files that use "reverse DNS"-style names, prepared on startup.
-    # see: https://github.com/nwg-piotr/nwg-panel/issues/64
-    # !!! This was case-sensitive, boo :/
-    # for key in nwg_panel.common.name2icon_dict.keys():
-    #     if app_name in key.split("."):
-    #         return nwg_panel.common.name2icon_dict[key]
-
-    # if all above fails
-    return app_name
-
 
 def local_dir():
     local_dir = os.path.join(os.path.join(os.getenv("HOME"), ".local/share/nwg-panel"))
