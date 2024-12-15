@@ -4,6 +4,7 @@ class_to_icon_cache = {}
 name_to_icon_cache = {}
 filename_to_icon_cache = {}
 
+
 def __get_app_dirs():
     desktop_dirs = []
 
@@ -28,6 +29,7 @@ def __get_app_dirs():
             desktop_dirs.append(d)
 
     return desktop_dirs
+
 
 def __process_desktop_file(file_path):
     with open(file_path, "r", encoding="utf-8") as f:
