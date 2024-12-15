@@ -81,7 +81,7 @@ class StatusNotifierItem(object):
             )
         if hasattr(self.item_proxy, 'NewIcon'):
             self.item_proxy.NewIcon.connect(
-                lambda: self.change_handler(["IconName", "IconPixmap"])
+                lambda: self.change_handler(["IconName", "IconPixmap", "IconThemePath"])
             )
         if hasattr(self.item_proxy, 'NewAttentionIcon'):
             self.item_proxy.NewAttentionIcon.connect(
