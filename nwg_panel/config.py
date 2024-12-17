@@ -2394,6 +2394,7 @@ class EditorWrapper(object):
             "css-name": "executor",
             "show-icon": True,
             "icon-size": 16,
+            "interval": 0,
             "icon-placement": "left",
             "tooltip-text": "LMB: Next layout, RMB: Menu",
             "angle": 0.0
@@ -2408,6 +2409,7 @@ class EditorWrapper(object):
         builder.get_object("lbl-css-name").set_text("{}:".format(voc["css-name"]))
         builder.get_object("lbl-icon-placement").set_text("{}:".format(voc["icon-placement"]))
         builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
+        builder.get_object("lbl-interval").set_text("{}:".format(voc["refresh-interval"]))
         builder.get_object("show-icon").set_label("{}".format(voc["show-icon"]))
         builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
 
@@ -2459,6 +2461,13 @@ class EditorWrapper(object):
         self.ws_angle.set_tooltip_text(voc["angle-tooltip"])
         self.ws_angle.set_active_id(str(settings["angle"]))
 
+        self.kl_interval = builder.get_object("interval")
+        self.kl_interval.set_tooltip_text(voc["refresh-interval-tooltip"])
+        self.kl_interval.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=3601, step_increment=1, page_increment=10, page_size=1)
+        self.kl_interval.configure(adj, 1, 0)
+        self.kl_interval.set_value(settings["interval"])
+
         self.cb_show_icon = builder.get_object("show-icon")
         self.cb_show_icon.set_active(settings["show-icon"])
 
@@ -2475,6 +2484,7 @@ class EditorWrapper(object):
         settings["css-name"] = self.kl_css_name.get_text()
         settings["icon-placement"] = self.kl_icon_placement.get_active_id()
         settings["icon-size"] = self.kl_icon_size.get_value()
+        settings["interval"] = self.kl_interval.get_value()
         settings["show-icon"] = self.cb_show_icon.get_active()
         try:
             settings["angle"] = float(self.ws_angle.get_active_id())

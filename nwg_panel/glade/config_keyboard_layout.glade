@@ -8,7 +8,7 @@
     <property name="label-xalign">0.5</property>
     <property name="shadow-type">out</property>
     <child>
-      <!-- n-columns=2 n-rows=10 -->
+      <!-- n-columns=2 n-rows=11 -->
       <object class="GtkGrid" id="grid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -18,21 +18,6 @@
         <property name="margin-bottom">6</property>
         <property name="row-spacing">6</property>
         <property name="column-spacing">12</property>
-        <child>
-          <object class="GtkLabel" id="note">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="halign">start</property>
-            <property name="label" translatable="yes">&lt;span size="small"&gt;&lt;b&gt;Note:&lt;/b&gt; on sway switching layouts for a certain keyboard device does not work.
-We will be switching for devices of 'type:keyboard' ¯\_(•_•)_/¯&lt;/span&gt;</property>
-            <property name="use-markup">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">9</property>
-            <property name="width">2</property>
-          </packing>
-        </child>
         <child>
           <object class="GtkEntry" id="tooltip-text">
             <property name="visible">True</property>
@@ -161,30 +146,18 @@ We will be switching for devices of 'type:keyboard' ¯\_(•_•)_/¯&lt;/span&g
           </packing>
         </child>
         <child>
-          <object class="GtkComboBoxText" id="angle">
+          <object class="GtkLabel" id="note">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <items>
-              <item id="0.0" translatable="yes">0°</item>
-              <item id="90.0" translatable="yes">90°</item>
-              <item id="270.0" translatable="yes">270°</item>
-            </items>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">7</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="lbl-angle">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="halign">end</property>
-            <property name="label" translatable="yes">Angle:</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">&lt;span size="small"&gt;&lt;b&gt;Note:&lt;/b&gt; on sway switching layouts for a certain keyboard device does not work.
+We will be switching for devices of 'type:keyboard' ¯\_(•_•)_/¯&lt;/span&gt;</property>
+            <property name="use-markup">True</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">7</property>
+            <property name="top-attach">10</property>
+            <property name="width">2</property>
           </packing>
         </child>
         <child>
@@ -193,6 +166,18 @@ We will be switching for devices of 'type:keyboard' ¯\_(•_•)_/¯&lt;/span&g
             <property name="can-focus">False</property>
             <property name="halign">end</property>
             <property name="label" translatable="yes">Device:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">9</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="lbl-angle">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Angle:</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -206,7 +191,44 @@ We will be switching for devices of 'type:keyboard' ¯\_(•_•)_/¯&lt;/span&g
           </object>
           <packing>
             <property name="left-attach">1</property>
+            <property name="top-attach">9</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText" id="angle">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <items>
+              <item id="0.0" translatable="yes">0°</item>
+              <item id="90.0" translatable="yes">90°</item>
+              <item id="270.0" translatable="yes">270°</item>
+            </items>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
             <property name="top-attach">8</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="lbl-interval">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Interval:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">7</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="interval">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">7</property>
           </packing>
         </child>
         <child>
