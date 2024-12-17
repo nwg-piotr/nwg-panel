@@ -4,12 +4,12 @@ import os
 
 import gi
 
-from nwg_panel.tools import check_key, update_image, eprint, hyprctl
+from nwg_panel.tools import check_key, update_image, create_background_task, eprint, hyprctl
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gdk, GLib
 
 
 def on_enter_notify_event(widget, event):
@@ -66,6 +66,7 @@ class KeyboardLayout(Gtk.EventBox):
                 check_key(settings, "icon-placement", "left")
                 check_key(settings, "icon-size", 16)
                 check_key(settings, "show-icon", True)
+                check_key(settings, "interval", 0)
                 check_key(settings, "tooltip-text", "LMB: Next layout, RMB: Menu")
                 check_key(settings, "angle", 0.0)
 
@@ -96,6 +97,8 @@ class KeyboardLayout(Gtk.EventBox):
                 self.show_all()
             else:
                 print("KeyboardLayout module: failed listing devices, won't create UI, sorry.")
+
+        self.refresh()
 
     def list_keyboards(self):
         if self.compositor == "Hyprland":
@@ -146,11 +149,15 @@ class KeyboardLayout(Gtk.EventBox):
                 return self.keyboards[0].xkb_active_layout_name
             return "unknown"
 
-    def refresh(self):
+    def update_label(self):
         self.keyboards = self.list_keyboards()
-        label = self.get_current_layout()
-        if label:
-            self.label.set_text(label)
+        txt = self.get_current_layout()
+        if txt:
+            self.label.set_text(txt)
+
+    def refresh(self, *args):
+        thread = create_background_task(self.update_label, self.settings["interval"])
+        thread.start()
 
     def build_box(self):
         if self.settings["show-icon"] and self.settings["icon-placement"] == "left":
@@ -172,7 +179,7 @@ class KeyboardLayout(Gtk.EventBox):
             # apply to all devices of type:keyboard
             self.i3.command(f'input type:keyboard xkb_switch_layout next')
 
-        self.refresh()
+        self.update_label()
 
     def on_menu_item(self, item, idx):
         if self.compositor == "Hyprland":
@@ -187,7 +194,7 @@ class KeyboardLayout(Gtk.EventBox):
             # apply to all devices of type:keyboard
             self.i3.command(f'input type:keyboard xkb_switch_layout {idx}')
 
-        self.refresh()
+        self.update_label()
 
     def on_right_click(self):
         menu = Gtk.Menu()

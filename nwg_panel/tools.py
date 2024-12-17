@@ -44,6 +44,7 @@ def temp_dir():
 
     return "/tmp"
 
+
 def local_dir():
     local_dir = os.path.join(os.path.join(os.getenv("HOME"), ".local/share/nwg-panel"))
     if not os.path.isdir(local_dir):
@@ -709,6 +710,7 @@ def get_cache_dir():
     else:
         return None
 
+
 def file_age(path):
     return time.time() - os.stat(path)[stat.ST_MTIME]
 
@@ -824,7 +826,7 @@ def cmd_through_compositor(cmd):
     cmd = cmd.replace("\"", "'")
     cs_file = os.path.join(get_config_dir(), "common-settings.json")
     common_settings = load_json(cs_file)
-    if "run-through-compositor" not in common_settings or common_settings["run-through-compositor"] :
+    if "run-through-compositor" not in common_settings or common_settings["run-through-compositor"]:
         if os.getenv("SWAYSOCK"):
             if os.getenv("XDG_SESSION_DESKTOP") and "miracle-wm" in os.getenv("XDG_SESSION_DESKTOP"):
                 cmd = f'miraclemsg exec "{cmd}"'
@@ -842,7 +844,7 @@ def load_resource(package, resource_name):
             return resource_file.read()
     except:
         pass
-        
+
     try:
         import importlib.util
         spec = importlib.util.find_spec(package)
