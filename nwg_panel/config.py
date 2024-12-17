@@ -2391,7 +2391,7 @@ class EditorWrapper(object):
         defaults = {
             "keyboard-device-hyprland": "",
             "root-css-name": "root-executor",
-            "css-name": "executor",
+            "css-name": "executor-label",
             "show-icon": True,
             "icon-size": 16,
             "interval": 0,

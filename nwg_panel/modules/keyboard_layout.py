@@ -62,7 +62,7 @@ class KeyboardLayout(Gtk.EventBox):
                     "keyboard-device-hyprland"]
 
                 check_key(settings, "root-css-name", "root-executor")
-                check_key(settings, "css-name", "")
+                check_key(settings, "css-name", "executor-label")
                 check_key(settings, "icon-placement", "left")
                 check_key(settings, "icon-size", 16)
                 check_key(settings, "show-icon", True)
