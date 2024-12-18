@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 
 from gi.repository import Gtk, GLib
-from i3ipc import Event
 
-from nwg_panel.tools import check_key, update_image
+from nwg_panel.tools import check_key, update_image, hyprctl
 
 
-class SwayMode(Gtk.Box):
-    def __init__(self, i3, settings, icons_path=""):
+class HyprlandSubmap(Gtk.Box):
+    def __init__(self, settings, icons_path=""):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.settings = settings
-        self.i3 = i3
         self.label = Gtk.Label.new("default")
+        self.submap = "default"
 
         icon = Gtk.Image()
 
@@ -37,19 +36,19 @@ class SwayMode(Gtk.Box):
             self.label.set_angle(settings["angle"])
 
         if settings["show-icon"]:
-            self.pack_start(icon, False, False, 2)
+            self.pack_start(icon, False, False, 0)
 
-        self.pack_start(self.label, False, False, 2)
+        self.pack_start(self.label, False, False, 6)
 
-        if not self.settings["show-default"]:
+        self.refresh()
+
+        if self.submap == "default" and not self.settings["show-default"]:
             GLib.idle_add(self.hide, priority=GLib.PRIORITY_HIGH)
 
-        self.i3.on(Event.MODE, self.on_i3ipc_event)
-
-    def on_i3ipc_event(self, i3conn, event):
-        mode = event.change
-        self.label.set_text(mode)
-        if mode != "default" or self.settings["show-default"]:
+    def refresh(self):
+        self.submap = hyprctl("submap").strip()
+        self.label.set_text(self.submap)
+        if self.submap != "default" or self.settings["show-default"]:
             self.show_all()
         else:
             self.hide()

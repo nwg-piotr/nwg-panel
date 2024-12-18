@@ -10,6 +10,7 @@ outputs_num = 0
 windows_list = []
 h_taskbars_list = []
 h_workspaces_list = []
+h_submaps_list = []
 controls_list = []
 executors_list = []
 tray_list = []

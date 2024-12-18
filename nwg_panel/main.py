@@ -48,6 +48,7 @@ from nwg_panel.modules.scratchpad import Scratchpad
 from nwg_panel.modules.dwl_tags import DwlTags
 from nwg_panel.modules.swaync import SwayNC
 from nwg_panel.modules.sway_mode import SwayMode
+from nwg_panel.modules.hyprland_submap import HyprlandSubmap
 from nwg_panel.modules.keyboard_layout import KeyboardLayout
 from nwg_panel.modules.random_wallpaper import RandomWallpaper
 
@@ -206,6 +207,10 @@ def hypr_watcher():
                     just_refreshed = True
                 break
 
+            elif event_name == "submap":
+                for item in common.h_submaps_list:
+                    GLib.timeout_add(0, item.refresh)
+
 
 def on_i3ipc_event(i3conn, event):
     if common_settings["restart-on-display"]:
@@ -327,6 +332,17 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                     print("'hyprland-workspaces' not defined in this panel instance")
             else:
                 eprint("'hyprland-workspaces' ignored")
+
+        if item == "hyprland-submap":
+            if his:
+                if item in panel:
+                    h_submap = HyprlandSubmap(panel[item], icons_path=icons_path)
+                else:
+                    h_submap = HyprlandSubmap({}, icons_path=icons_path)
+                container.pack_start(h_submap, False, False, panel["items-padding"])
+                common.h_submaps_list.append(h_submap)
+            else:
+                eprint("HyprlandSubmap module only works on Hyprland, ignoring")
 
         if item == "keyboard-layout":
             if his or sway:
