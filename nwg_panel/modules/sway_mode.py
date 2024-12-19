@@ -29,7 +29,7 @@ class SwayMode(Gtk.Box):
         for key in defaults:
             check_key(settings, key, defaults[key])
 
-        update_image(icon, "mode", self.settings["icon-size"], icons_path)
+        update_image(icon, "resize", self.settings["icon-size"], icons_path)
 
         if self.settings["css-name"]:
             self.set_property("name", self.settings["css-name"])
