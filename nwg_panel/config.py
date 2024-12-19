@@ -792,6 +792,7 @@ class EditorWrapper(object):
             "dwl-tags",
             "hyprland-taskbar",
             "hyprland-workspaces",
+            "hyprland-submap",
             "keyboard-layout",
             "tray",
             "random-wallpaper"
