@@ -589,6 +589,8 @@ def main():
     for panel in panels:
         check_key(panel, "output", "")
         check_key(panel, "monitor", "")
+        check_key(panel, "run-if-output-exist", [])
+        check_key(panel, "run-if-output-absent", [])
         if panel["monitor"]:
             try:
                 panel["output"] = common.mon_desc2output_name[panel["monitor"]]
@@ -604,9 +606,17 @@ def main():
                 clones.append(clone)
 
             to_append = to_append + clones
+        else:
+            for output in panel["run-if-output-exist"]:
+                if output not in common.outputs:
+                    to_remove.append(panel)
+            for output in panel["run-if-output-absent"]:
+                if output in common.outputs:
+                    to_remove.append(panel)
 
     for item in to_remove:
-        panels.remove(item)
+        if item in panels:
+            panels.remove(item)
 
     panels = panels + to_append
 
