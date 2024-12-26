@@ -70,10 +70,19 @@ def __process_desktop_file(file_path):
 
 
 def __populate_caches():
-    for d in __get_app_dirs():
+    app_dirs = __get_app_dirs()
+    seen_dirs = set()
+    while app_dirs:
+        d = app_dirs.pop(0)
         if os.path.isdir(d):
             for file_name in os.listdir(d):
-                file_path = os.path.join(d, file_name)
+                file_path = os.path.realpath(os.path.join(d, file_name))
+                if os.path.isdir(file_path):
+                    if file_path in seen_dirs:
+                        continue
+                    seen_dirs.add(file_path)
+                    app_dirs.insert(0, file_path)
+                    continue
                 __process_desktop_file(file_path)
 
 
