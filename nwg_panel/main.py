@@ -177,6 +177,10 @@ def hypr_watcher():
         # print(f"events: {event_names}")
 
         for event_name in event_names:
+            if common_settings["restart-on-display"] and (event_name in ["monitoradded", "monitorremoved"]):
+                print("Received event '{}'; restart in {} ms.".format(event_name, common_settings["restart-delay"]))
+                GLib.timeout_add(common_settings["restart-delay"], restart, priority=GLib.PRIORITY_HIGH)
+
             if event_name in ["activespecial",
                               "activewindow",
                               "activewindowv2",
