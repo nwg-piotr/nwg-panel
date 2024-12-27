@@ -80,6 +80,8 @@ def __populate_caches():
         if os.path.isdir(d):
             for file_name in os.listdir(d):
                 file_path = os.path.realpath(os.path.join(d, file_name))
+                if not os.path.exists(file_path):
+                    continue
                 if os.path.isdir(file_path):
                     app_dirs.insert(0, file_path)
                     continue
