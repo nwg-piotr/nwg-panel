@@ -32,8 +32,16 @@ def __get_app_dirs():
 
 
 def __process_desktop_file(file_path):
-    with open(file_path, "r", encoding="utf-8") as f:
-        content = f.read()
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+    except UnicodeDecodeError:
+        print(f"Warning: Invalid .desktop file '{file_path}'")
+        return
+    except OSError as e:
+        print(f"Warning: Unable to read .desktop file '{file_path}': {e}")
+        return
+
     icon_name = None
     app_names = []
     startup_wm_class = None
@@ -78,7 +86,13 @@ def __populate_caches():
             continue
         seen_dirs.add(d)
         if os.path.isdir(d):
-            for file_name in os.listdir(d):
+            try:
+                files = os.listdir(d)
+            except OSError as e:
+                print(f"Warning: Can't list files in directory '{d}': {e}")
+                continue
+
+            for file_name in files:
                 file_path = os.path.realpath(os.path.join(d, file_name))
                 if not os.path.exists(file_path):
                     continue
