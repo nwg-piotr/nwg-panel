@@ -59,6 +59,8 @@ shell_data = load_shell_data()
 SKELETON_PANEL: dict = {
     "name": "",
     "output": "",
+    "run-if-output-exist": [],
+    "run-if-output-absent": [],
     "layer": "bottom",
     "position": "top",
     "controls": "off",
@@ -277,6 +279,8 @@ def clear_active_id(combo, target_combo):
     if combo.get_active_id():
         target_combo.set_active_id("")
 
+def split_comma_separated_list(text):
+    return [x.strip() for x in text.split(",") if x.strip()]
 
 def load_vocabulary():
     global voc
@@ -863,6 +867,8 @@ class EditorWrapper(object):
 
         self.eb_name = None
         self.cb_output = None
+        self.eb_run_if_output_exist = None
+        self.eb_run_if_output_absent = None
         self.cb_monitor = None
         self.cb_position = None
         self.cb_controls = None
@@ -917,6 +923,8 @@ class EditorWrapper(object):
         defaults = {
             "name": "",
             "output": "",
+            "run-if-output-exist": [],
+            "run-if-output-absent": [],
             "monitor": "",
             "layer": "bottom",
             "position": "top",
@@ -970,6 +978,20 @@ class EditorWrapper(object):
         builder.get_object("lbl-css-name").set_text("{}:".format(voc["css-name"]))
         builder.get_object("lbl-hide-show-signal").set_text("{}: ".format(voc["hide-show-signal"]))
 
+        self.eb_run_if_output_exist = builder.get_object("run-if-output-exist")
+        self.eb_run_if_output_exist.set_text(",".join(self.panel["run-if-output-exist"]))
+        self.eb_run_if_output_exist.set_tooltip_text(voc["run-if-output-exist-tooltip"])
+        cb = builder.get_object("lbl-run-if-output-exist")
+        cb.set_text("{}:".format(voc["run-if-output-exist"]))
+        cb.set_tooltip_text(voc["run-if-output-exist-tooltip"])
+
+        self.eb_run_if_output_absent = builder.get_object("run-if-output-absent")
+        self.eb_run_if_output_absent.set_text(",".join(self.panel["run-if-output-absent"]))
+        self.eb_run_if_output_absent.set_tooltip_text(voc["run-if-output-absent-tooltip"])
+        cb = builder.get_object("lbl-run-if-output-absent")
+        cb.set_text("{}:".format(voc["run-if-output-absent"]))
+        cb.set_tooltip_text(voc["run-if-output-absent-tooltip"])
+        
         cb = builder.get_object("homogeneous")
         cb.set_label(voc["homogeneous"])
         cb.set_tooltip_text(voc["homogeneous-tooltip"])
@@ -1153,6 +1175,12 @@ class EditorWrapper(object):
 
         val = self.cb_output.get_active_id()
         self.panel["output"] = val if val else ""
+
+        val = self.eb_run_if_output_exist.get_text()
+        self.panel["run-if-output-exist"] = split_comma_separated_list(val)
+        
+        val = self.eb_run_if_output_absent.get_text()
+        self.panel["run-if-output-absent"] = split_comma_separated_list(val)
 
         val = self.cb_monitor.get_active_id()
         self.panel["monitor"] = val if val else ""

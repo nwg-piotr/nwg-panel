@@ -8,7 +8,7 @@
     <property name="label-xalign">0.5</property>
     <property name="shadow-type">out</property>
     <child>
-      <!-- n-columns=4 n-rows=21 -->
+      <!-- n-columns=4 n-rows=23 -->
       <object class="GtkGrid" id="grid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -513,6 +513,70 @@
             <property name="left-attach">2</property>
             <property name="top-attach">7</property>
           </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="lbl-run-if-output-exist">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Run if outputs exist:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">20</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="lbl-run-if-output-absent">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Run if outputs absent:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">21</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="run-if-output-exist">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="max-length">20</property>
+            <property name="width-chars">20</property>
+            <property name="max-width-chars">24</property>
+            <property name="caps-lock-warning">False</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">20</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="run-if-output-absent">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="max-length">20</property>
+            <property name="width-chars">20</property>
+            <property name="max-width-chars">24</property>
+            <property name="caps-lock-warning">False</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">21</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>
