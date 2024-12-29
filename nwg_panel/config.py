@@ -3265,6 +3265,7 @@ class EditorWrapper(object):
     def update_brightness_slider(self):
         settings = self.panel["brightness-slider"]
 
+        value = None
         for setting, widget in self.brightness_slider_config.items():
             if type(widget) == Gtk.Entry:
                 value = widget.get_text()
@@ -3276,7 +3277,8 @@ class EditorWrapper(object):
                 value = widget.get_active_id()
                 if setting == "angle":
                     value = float(value)
-            settings[setting] = value
+            if value is not None:
+                settings[setting] = value
         save_json(self.config, self.file)
 
     def edit_dwl_tags(self, *args):
