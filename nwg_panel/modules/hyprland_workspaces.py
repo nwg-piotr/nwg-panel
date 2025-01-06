@@ -3,7 +3,6 @@
 from gi.repository import Gtk, Gdk
 
 from nwg_panel.tools import update_image_fallback_desktop, hyprctl
-# from nwg_panel.modules.hyprland_monitors import get_hyprctl_monitor_id_from_name
 
 class HyprlandWorkspaces(Gtk.Box):
     def __init__(self, settings, panel_output, monitors, workspaces, clients, activewindow, activeworkspace, icons_path):
