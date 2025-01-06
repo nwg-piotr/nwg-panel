@@ -27,7 +27,7 @@ class HyprlandWorkspaces(Gtk.Box):
 
     def build_box(self, workspaces):
         defaults = {
-            # "num-ws": 10,
+            "num-ws": 10,
             "show-icon": True,
             "image-size": 16,
             "show-workspaces": True,
@@ -51,7 +51,7 @@ class HyprlandWorkspaces(Gtk.Box):
         if self.settings["show-workspaces"]:
             self.pack_start(self.num_box, False, False, 0)
 
-            for ws in workspaces:
+            for ws in workspaces[:self.settings["num-ws"]]:
                 if ws["monitor"] == self.monitor_name:
                     self.ws_nums.append(ws["id"])
 
@@ -105,6 +105,16 @@ class HyprlandWorkspaces(Gtk.Box):
         current_mon = [m for m in monitors if m["name"] == self.monitor_name][0]
         # active workspace on the current monitor is what we want
         active_ws = [ws for ws in workspaces if current_mon['activeWorkspace']["id"]==ws["id"]][0]
+        # choose workspaces around the active workspace
+        if len(workspaces)> self.settings["num-ws"]:
+            active_ws_id = workspaces.index(active_ws)
+            if active_ws_id < self.settings["num-ws"]//2:
+                workspaces = workspaces[:self.settings["num-ws"]]
+            elif active_ws_id > len(workspaces) - self.settings["num-ws"]//2:
+                workspaces = workspaces[-self.settings["num-ws"]:]
+            else:
+                workspaces = workspaces[active_ws_id-self.settings["num-ws"]//2:active_ws_id+self.settings["num-ws"]//2]
+
         if self.settings["show-workspaces"]:
             occupied_workspaces = [] # should not be sorted, as this should be in the same order as the workspaces in Hyprland
             self.ws_id2name = {}
