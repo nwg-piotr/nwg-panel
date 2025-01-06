@@ -164,7 +164,6 @@ def hypr_watcher():
 
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     client.connect(f"{hypr_dir}/{his}/.socket2.sock")
-    just_refreshed = False
 
     while True:
         datagram = client.recv(2048)
@@ -195,10 +194,6 @@ def hypr_watcher():
                               "windowtitle",
                               "workspace"]:
 
-                if "activewindow" in event_name and just_refreshed:
-                    just_refreshed = False
-                    break
-
                 # print(f">>> refreshing on {event_name}")
                 monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
                 for item in common.h_taskbars_list:
@@ -206,9 +201,6 @@ def hypr_watcher():
 
                 for item in common.h_workspaces_list:
                     GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow, activeworkspace)
-
-                if event_name in ["createworkspace", "destroyworkspace", "focusedmon", "workspace"]:
-                    just_refreshed = True
                 break
 
             elif event_name == "submap":
