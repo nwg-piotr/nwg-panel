@@ -789,6 +789,14 @@ def h_list_workspaces():
     except Exception as e:
         eprint(e)
         return {}
+    
+def h_list_workspace_rules():
+    reply = hyprctl("j/workspacerules")
+    try:
+        return json.loads(reply)
+    except Exception as e:
+        eprint(e)
+        return {}
 
 
 def h_list_clients():
