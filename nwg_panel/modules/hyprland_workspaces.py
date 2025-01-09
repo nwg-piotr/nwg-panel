@@ -29,6 +29,7 @@ class HyprlandWorkspaces(Gtk.Box):
         defaults = {
             "num-ws": 10,
             "show-icon": True,
+            "show-inactive-workspaces": True,
             "image-size": 16,
             "show-workspaces": True,
             "show-name": True,
@@ -59,7 +60,10 @@ class HyprlandWorkspaces(Gtk.Box):
                     workspace_from_rules.append(ws)
             self.workspace_from_rules = workspace_from_rules # storing the workspaces for the current monitor from rules
 
-            self.ws_nums = [int(ws["workspaceString"]) for ws in workspace_from_rules]
+            if self.settings["show-inactive-workspaces"]:
+                self.ws_nums = [int(ws["workspaceString"]) for ws in workspace_from_rules]
+            else:
+                self.ws_nums = []
             # Creating a list of workspaces from active workspaces
             for ws in workspaces[:self.settings["num-ws"]]:
                 if ws["monitor"] == self.monitor_name and ws["id"] not in self.ws_nums:
@@ -135,7 +139,10 @@ class HyprlandWorkspaces(Gtk.Box):
         if self.settings["show-workspaces"]:
             occupied_workspaces = [] # should not be sorted, as this should be in the same order as the workspaces in Hyprland
             self.ws_id2name = {}
-            self.ws_nums = [int(ws["workspaceString"]) for ws in self.workspace_from_rules] # start with workspaces from rules
+            if self.settings["show-inactive-workspaces"]:
+                self.ws_nums = [int(ws["workspaceString"]) for ws in self.workspace_from_rules] # start with workspaces from rules
+            else:
+                self.ws_nums = []
             # Updating occupied workspaces
             for ws in workspaces:
                 # add workspaces to the list if not already there, important for example when monitor is unplugged

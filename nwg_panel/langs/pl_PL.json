@@ -233,6 +233,7 @@
   "show-default-tooltip": "Określa czy wyświetlać moduł gdy nie wybrano żadnego trybu innego niż domyślny.",
   "show-empty-ws": "Pokazuj puste obszary robocze",
   "show-focused-window-icon": "Pokaż ikonę aktywnego okna",
+  "show-inactive-workspaces": "Pokazuj nieaktywne obszary robocze",
   "show-focused-window-name": "Pokaż nazwę aktywnego okna",
   "show-humidity": "Pokazuj wilgotność",
   "show-icon": "Pokazuj ikonę",
