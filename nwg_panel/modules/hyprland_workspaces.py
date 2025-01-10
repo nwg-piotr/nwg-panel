@@ -30,6 +30,7 @@ class HyprlandWorkspaces(Gtk.Box):
             "num-ws": 10,
             "show-icon": True,
             "show-inactive-workspaces": True,
+            "show-workspaces-from-all-outputs": True,
             "image-size": 16,
             "show-workspaces": True,
             "show-name": True,
@@ -56,7 +57,7 @@ class HyprlandWorkspaces(Gtk.Box):
             ws_rules = h_list_workspace_rules()
             workspace_from_rules = []
             for ws in ws_rules:
-                if ws["monitor"] == self.monitor_name:
+                if self.settings["show-workspaces-from-all-outputs"] or ws["monitor"] == self.monitor_name:
                     workspace_from_rules.append(ws)
             self.workspace_from_rules = workspace_from_rules # storing the workspaces for the current monitor from rules
 
@@ -66,7 +67,10 @@ class HyprlandWorkspaces(Gtk.Box):
                 self.ws_nums = []
             # Creating a list of workspaces from active workspaces
             for ws in workspaces[:self.settings["num-ws"]]:
-                if ws["monitor"] == self.monitor_name and ws["id"] not in self.ws_nums:
+                if (
+                    (self.settings["show-workspaces-from-all-outputs"] or ws["monitor"] == self.monitor_name)
+                    and ws["id"] not in self.ws_nums
+                    ):
                     self.ws_nums.append(ws["id"])
             self.ws_nums.sort() # sort workspaces by id
             self.ws_nums = self.choose_workspace_ids_around_active(self.ws_nums, self.ws_nums[0]) # choose workspaces around the first workspace
@@ -129,7 +133,11 @@ class HyprlandWorkspaces(Gtk.Box):
 
     def refresh(self, monitors, workspaces, clients, activewindow, activeworkspace):
         # filter workspaces for the current monitor
-        workspaces = [ws for ws in workspaces if ws["monitor"] == self.monitor_name]
+        workspaces = [
+                        ws for ws in workspaces 
+                        if (self.settings["show-workspaces-from-all-outputs"] 
+                            or ws["monitor"] == self.monitor_name)
+                        ]
         # sort workspaces
         workspaces.sort(key=lambda x: x["id"])
         current_mon = [m for m in monitors if m["name"] == self.monitor_name][0]

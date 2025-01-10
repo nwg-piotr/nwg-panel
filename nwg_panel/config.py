@@ -2313,6 +2313,7 @@ class EditorWrapper(object):
             "num-ws": 10,
             "show-icon": True,
             "show-inactive-workspaces": True,
+            "show-workspaces-from-all-outputs": True,
             "image-size": 16,
             "show-workspaces": True,
             "show-name": True,
@@ -2334,6 +2335,7 @@ class EditorWrapper(object):
         builder.get_object("lbl-num-workspaces").set_text("{}:".format(voc["number-of-workspaces"]))
         builder.get_object("show-icon").set_label("{}:".format(voc["show-focused-window-icon"]))
         builder.get_object("show-inactive-workspaces").set_label("{}:".format(voc["show-inactive-workspaces"]))
+        builder.get_object("show-workspaces-from-all-outputs").set_label("{}:".format(voc["show-workspaces-from-all-outputs"]))
         builder.get_object("show-name").set_label("{}:".format(voc["show-focused-window-name"]))
         builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
         builder.get_object("lbl-window-name-length-limit").set_text("{}:".format(voc["window-name-length-limit"]))
@@ -2357,6 +2359,10 @@ class EditorWrapper(object):
         self.ws_show_inactive = builder.get_object("show-inactive-workspaces")
         self.ws_show_inactive.set_label(voc["show-inactive-workspaces"])
         self.ws_show_inactive.set_active(settings["show-inactive-workspaces"])
+
+        self.ws_show_all_outputs = builder.get_object("show-workspaces-from-all-outputs")
+        self.ws_show_all_outputs.set_label(voc["show-workspaces-from-all-outputs"])
+        self.ws_show_all_outputs.set_active(settings["show-workspaces-from-all-outputs"])
 
         self.ws_show_name = builder.get_object("show-name")
         self.ws_show_name.set_label(voc["show-window-name"])
@@ -2406,6 +2412,7 @@ class EditorWrapper(object):
         settings["num-ws"] = int(self.sb_ws_num.get_value())
         settings["show-icon"] = self.ws_show_icon.get_active()
         settings["show-inactive-workspaces"] = self.ws_show_inactive.get_active()
+        settings["show-workspaces-from-all-outputs"] = self.ws_show_all_outputs.get_active()
         settings["image-size"] = int(self.ws_image_size.get_value())
         settings["show-name"] = self.ws_show_name.get_active()
         settings["name-length"] = int(self.ws_name_length.get_value())
