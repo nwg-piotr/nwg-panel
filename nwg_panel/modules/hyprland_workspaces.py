@@ -4,8 +4,10 @@ from gi.repository import Gtk, Gdk
 
 from nwg_panel.tools import update_image_fallback_desktop, hyprctl, h_list_workspace_rules
 
+
 class HyprlandWorkspaces(Gtk.Box):
-    def __init__(self, settings, panel_output, monitors, workspaces, clients, activewindow, activeworkspace, icons_path):
+    def __init__(self, settings, panel_output, monitors, workspaces, clients, activewindow, activeworkspace,
+                 icons_path):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.settings = settings
         self.num_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
@@ -18,7 +20,6 @@ class HyprlandWorkspaces(Gtk.Box):
         self.floating_icon = Gtk.Image()
         self.icons_path = icons_path
         self.monitor_name = panel_output
-
 
         self.ws_nums = []
 
@@ -59,7 +60,7 @@ class HyprlandWorkspaces(Gtk.Box):
             for ws in ws_rules:
                 if self.settings["show-workspaces-from-all-outputs"] or ws["monitor"] == self.monitor_name:
                     workspace_from_rules.append(ws)
-            self.workspace_from_rules = workspace_from_rules # storing the workspaces for the current monitor from rules
+            self.workspace_from_rules = workspace_from_rules  # storing the workspaces for the current monitor from rules
 
             if self.settings["show-inactive-workspaces"]:
                 self.ws_nums = [int(ws["workspaceString"]) for ws in workspace_from_rules]
@@ -68,12 +69,13 @@ class HyprlandWorkspaces(Gtk.Box):
             # Creating a list of workspaces from active workspaces
             for ws in workspaces[:self.settings["num-ws"]]:
                 if (
-                    (self.settings["show-workspaces-from-all-outputs"] or ws["monitor"] == self.monitor_name)
-                    and ws["id"] not in self.ws_nums
-                    ):
+                        (self.settings["show-workspaces-from-all-outputs"] or ws["monitor"] == self.monitor_name)
+                        and ws["id"] not in self.ws_nums
+                ):
                     self.ws_nums.append(ws["id"])
-            self.ws_nums.sort() # sort workspaces by id
-            self.ws_nums = self.choose_workspace_ids_around_active(self.ws_nums, self.ws_nums[0]) # choose workspaces around the first workspace
+            self.ws_nums.sort()  # sort workspaces by id
+            self.ws_nums = self.choose_workspace_ids_around_active(self.ws_nums, self.ws_nums[
+                0])  # choose workspaces around the first workspace
 
         if self.settings["show-icon"]:
             self.pack_start(self.icon, False, False, 6)
@@ -118,37 +120,40 @@ class HyprlandWorkspaces(Gtk.Box):
         box.pack_start(lbl, False, False, 6)
 
         return eb, lbl
-    
+
     def choose_workspace_ids_around_active(self, workspace_ids, active_ws_id):
         # choose workspaces around the active workspace
-        if len(workspace_ids)> self.settings["num-ws"]:
+        if len(workspace_ids) > self.settings["num-ws"]:
             active_ws_list_id = workspace_ids.index(active_ws_id)
-            if active_ws_list_id < self.settings["num-ws"]//2:
+            if active_ws_list_id < self.settings["num-ws"] // 2:
                 workspace_ids = workspace_ids[:self.settings["num-ws"]]
-            elif active_ws_list_id > len(workspace_ids) - self.settings["num-ws"]//2:
+            elif active_ws_list_id > len(workspace_ids) - self.settings["num-ws"] // 2:
                 workspace_ids = workspace_ids[-self.settings["num-ws"]:]
             else:
-                workspace_ids = workspace_ids[active_ws_list_id-self.settings["num-ws"]//2:active_ws_list_id+self.settings["num-ws"]//2]
+                workspace_ids = workspace_ids[
+                                active_ws_list_id - self.settings["num-ws"] // 2:active_ws_list_id + self.settings[
+                                    "num-ws"] // 2]
         return workspace_ids
 
     def refresh(self, monitors, workspaces, clients, activewindow, activeworkspace):
         # filter workspaces for the current monitor
         workspaces = [
-                        ws for ws in workspaces 
-                        if (self.settings["show-workspaces-from-all-outputs"] 
-                            or ws["monitor"] == self.monitor_name)
-                        ]
+            ws for ws in workspaces
+            if (self.settings["show-workspaces-from-all-outputs"]
+                or ws["monitor"] == self.monitor_name)
+        ]
         # sort workspaces
         workspaces.sort(key=lambda x: x["id"])
         current_mon = [m for m in monitors if m["name"] == self.monitor_name][0]
         # active workspace on the current monitor is what we want
-        active_ws = [ws for ws in workspaces if current_mon['activeWorkspace']["id"]==ws["id"]][0]
+        active_ws = [ws for ws in workspaces if current_mon['activeWorkspace']["id"] == ws["id"]][0]
 
         if self.settings["show-workspaces"]:
-            occupied_workspaces = [] # should not be sorted, as this should be in the same order as the workspaces in Hyprland
+            occupied_workspaces = []  # should not be sorted, as this should be in the same order as the workspaces in Hyprland
             self.ws_id2name = {}
             if self.settings["show-inactive-workspaces"]:
-                self.ws_nums = [int(ws["workspaceString"]) for ws in self.workspace_from_rules] # start with workspaces from rules
+                self.ws_nums = [int(ws["workspaceString"]) for ws in
+                                self.workspace_from_rules]  # start with workspaces from rules
             else:
                 self.ws_nums = []
             # Updating occupied workspaces
@@ -157,7 +162,7 @@ class HyprlandWorkspaces(Gtk.Box):
                 if ws["id"] not in self.ws_nums:
                     self.ws_nums.append(ws["id"])
 
-                for client in clients: # check for all occupied workspaces
+                for client in clients:  # check for all occupied workspaces
                     if client["workspace"]["id"] == ws["id"] and ws["id"] not in occupied_workspaces:
                         occupied_workspaces.append(ws["id"])
                         break
