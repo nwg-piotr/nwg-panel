@@ -2,11 +2,10 @@
 
 from gi.repository import Gtk, Gdk
 
-from nwg_panel.tools import update_image_fallback_desktop, hyprctl
-
+from nwg_panel.tools import update_image_fallback_desktop, hyprctl, h_list_workspace_rules
 
 class HyprlandWorkspaces(Gtk.Box):
-    def __init__(self, settings, monitors, workspaces, clients, activewindow, activeworkspace, icons_path):
+    def __init__(self, settings, panel_output, monitors, workspaces, clients, activewindow, activeworkspace, icons_path):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.settings = settings
         self.num_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
@@ -18,16 +17,20 @@ class HyprlandWorkspaces(Gtk.Box):
         self.icon.set_property("name", "hyprland-workspaces-icon")
         self.floating_icon = Gtk.Image()
         self.icons_path = icons_path
+        self.monitor_name = panel_output
+
 
         self.ws_nums = []
 
-        self.build_box()
+        self.build_box(workspaces)
         self.refresh(monitors, workspaces, clients, activewindow, activeworkspace)
 
-    def build_box(self):
+    def build_box(self, workspaces):
         defaults = {
             "num-ws": 10,
             "show-icon": True,
+            "show-inactive-workspaces": True,
+            "show-workspaces-from-all-outputs": True,
             "image-size": 16,
             "show-workspaces": True,
             "show-name": True,
@@ -50,8 +53,27 @@ class HyprlandWorkspaces(Gtk.Box):
         if self.settings["show-workspaces"]:
             self.pack_start(self.num_box, False, False, 0)
 
-            for i in range(1, self.settings["num-ws"] + 1):
-                self.ws_nums.append(i)
+            # read workspaces from workspace rules
+            ws_rules = h_list_workspace_rules()
+            workspace_from_rules = []
+            for ws in ws_rules:
+                if self.settings["show-workspaces-from-all-outputs"] or ws["monitor"] == self.monitor_name:
+                    workspace_from_rules.append(ws)
+            self.workspace_from_rules = workspace_from_rules # storing the workspaces for the current monitor from rules
+
+            if self.settings["show-inactive-workspaces"]:
+                self.ws_nums = [int(ws["workspaceString"]) for ws in workspace_from_rules]
+            else:
+                self.ws_nums = []
+            # Creating a list of workspaces from active workspaces
+            for ws in workspaces[:self.settings["num-ws"]]:
+                if (
+                    (self.settings["show-workspaces-from-all-outputs"] or ws["monitor"] == self.monitor_name)
+                    and ws["id"] not in self.ws_nums
+                    ):
+                    self.ws_nums.append(ws["id"])
+            self.ws_nums.sort() # sort workspaces by id
+            self.ws_nums = self.choose_workspace_ids_around_active(self.ws_nums, self.ws_nums[0]) # choose workspaces around the first workspace
 
         if self.settings["show-icon"]:
             self.pack_start(self.icon, False, False, 6)
@@ -96,25 +118,73 @@ class HyprlandWorkspaces(Gtk.Box):
         box.pack_start(lbl, False, False, 6)
 
         return eb, lbl
+    
+    def choose_workspace_ids_around_active(self, workspace_ids, active_ws_id):
+        # choose workspaces around the active workspace
+        if len(workspace_ids)> self.settings["num-ws"]:
+            active_ws_list_id = workspace_ids.index(active_ws_id)
+            if active_ws_list_id < self.settings["num-ws"]//2:
+                workspace_ids = workspace_ids[:self.settings["num-ws"]]
+            elif active_ws_list_id > len(workspace_ids) - self.settings["num-ws"]//2:
+                workspace_ids = workspace_ids[-self.settings["num-ws"]:]
+            else:
+                workspace_ids = workspace_ids[active_ws_list_id-self.settings["num-ws"]//2:active_ws_list_id+self.settings["num-ws"]//2]
+        return workspace_ids
 
     def refresh(self, monitors, workspaces, clients, activewindow, activeworkspace):
-        if self.settings["show-workspaces"]:
-            occupied_workspaces = []
-            self.ws_id2name = {}
+        # filter workspaces for the current monitor
+        workspaces = [
+                        ws for ws in workspaces 
+                        if (self.settings["show-workspaces-from-all-outputs"] 
+                            or ws["monitor"] == self.monitor_name)
+                        ]
+        # sort workspaces
+        workspaces.sort(key=lambda x: x["id"])
+        current_mon = [m for m in monitors if m["name"] == self.monitor_name][0]
+        # active workspace on the current monitor is what we want
+        active_ws = [ws for ws in workspaces if current_mon['activeWorkspace']["id"]==ws["id"]][0]
 
+        if self.settings["show-workspaces"]:
+            occupied_workspaces = [] # should not be sorted, as this should be in the same order as the workspaces in Hyprland
+            self.ws_id2name = {}
+            if self.settings["show-inactive-workspaces"]:
+                self.ws_nums = [int(ws["workspaceString"]) for ws in self.workspace_from_rules] # start with workspaces from rules
+            else:
+                self.ws_nums = []
+            # Updating occupied workspaces
             for ws in workspaces:
-                for client in clients:
+                # add workspaces to the list if not already there, important for example when monitor is unplugged
+                if ws["id"] not in self.ws_nums:
+                    self.ws_nums.append(ws["id"])
+
+                for client in clients: # check for all occupied workspaces
                     if client["workspace"]["id"] == ws["id"] and ws["id"] not in occupied_workspaces:
                         occupied_workspaces.append(ws["id"])
                         break
 
                 self.ws_id2name[ws["id"]] = ws["name"]
-            occupied_workspaces.sort()
+            # sort workspaces by id
+            self.ws_nums.sort()
+            # choose workspaces around active workspace
+            self.ws_nums = self.choose_workspace_ids_around_active(self.ws_nums, active_ws["id"])
 
             for c in self.num_box.get_children():
                 c.destroy()
 
+            for num in self.ws_nums:
+                if num in occupied_workspaces or self.settings["show-empty"]:
+                    occ = num in occupied_workspaces
+                    dot = num in occupied_workspaces and self.settings["mark-content"]
+                    eb, lbl = self.build_number(num, add_dot=dot, active_win_ws=active_ws["id"])
+                    if occ:
+                        lbl.set_property("name", "workspace-occupied")
+                    self.num_box.pack_start(eb, False, False, 0)
+                    self.num_box.show_all()
+
+        # Active window on the current workspaces is what is necessary
+        activewindow = [c for c in clients if c["address"] == active_ws["lastwindow"]]
         if activewindow:
+            activewindow = activewindow[0]
             client_class = activewindow["class"]
             client_title = activewindow["title"][:self.settings["name-length"]]
             if self.settings["mark-xwayland"] and activewindow["xwayland"]:
@@ -126,20 +196,6 @@ class HyprlandWorkspaces(Gtk.Box):
             client_title = ""
             floating = False
             pinned = False
-
-        if self.settings["show-workspaces"]:
-            # fix #310
-            active_ws = activeworkspace["id"]
-
-            for num in self.ws_nums:
-                if num in occupied_workspaces or self.settings["show-empty"]:
-                    occ = num in occupied_workspaces
-                    dot = num in occupied_workspaces and self.settings["show-empty"] and self.settings["mark-content"]
-                    eb, lbl = self.build_number(num, add_dot=dot, active_win_ws=active_ws)
-                    if occ:
-                        lbl.set_property("name", "workspace-occupied")
-                    self.num_box.pack_start(eb, False, False, 0)
-                    self.num_box.show_all()
 
         if self.settings["show-icon"]:
             self.update_icon(client_class, client_title)

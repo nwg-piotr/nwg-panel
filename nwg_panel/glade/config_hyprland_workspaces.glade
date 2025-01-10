@@ -136,8 +136,8 @@
             <property name="draw-indicator">True</property>
           </object>
           <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">6</property>
+            <property name="left-attach">0</property>
+            <property name="top-attach">7</property>
           </packing>
         </child>
         <child>
@@ -208,8 +208,8 @@
             <property name="draw-indicator">True</property>
           </object>
           <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">7</property>
+            <property name="left-attach">1</property>
+            <property name="top-attach">6</property>
           </packing>
         </child>
         <child>
@@ -241,10 +241,32 @@
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkCheckButton" id="show-inactive-workspaces">
+            <property name="label" translatable="yes">Show inactive workspaces</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">5</property>
+          </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkCheckButton" id="show-workspaces-from-all-outputs">
+            <property name="label" translatable="yes">Show inactive workspaces</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="halign">start</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">6</property>
+          </packing>
         </child>
         <child>
           <placeholder/>

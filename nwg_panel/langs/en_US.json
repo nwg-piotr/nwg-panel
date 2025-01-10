@@ -233,6 +233,8 @@
   "show-default-tooltip": "Determines if to show the module if none mode other than default selected.",
   "show-empty-ws": "Show empty workspaces",
   "show-focused-window-icon": "Show focused window icon",
+  "show-inactive-workspaces": "Show inactive workspaces",
+  "show-workspaces-from-all-outputs": "Show workspaces from all outputs",
   "show-focused-window-name": "Show focused window name",
   "show-humidity": "Show humidity",
   "show-icon": "Show icon",

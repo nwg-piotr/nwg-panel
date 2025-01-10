@@ -210,6 +210,8 @@
   "show-default-tooltip": "Determina se deve mostrar o módulo se nenhum outro mode além de padrão estiver selecionado.",
   "show-empty-ws": "Mostrar espaços de trabalho vazios",
   "show-focused-window-icon": "Mostrar ícone de janela focada",
+  "show-inactive-workspaces": "Mostrar espaços de trabalho inativos",
+  "show-workspaces-from-all-outputs": "Mostrar espaços de trabalho de todas as saídas",
   "show-focused-window-name": "Mostrar nome de janela focada",
   "show-humidity": "Mostrar umidade",
   "show-icon": "Mostrar ícone",

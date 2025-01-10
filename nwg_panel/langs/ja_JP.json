@@ -209,6 +209,8 @@
   "show-default-tooltip": "デフォルト以外のモードが選択されていない場合にモジュールを表示するかどうかを決定します。",
   "show-empty-ws": "空のワークスペースを表示",
   "show-focused-window-icon": "フォーカスされたウィンドウアイコンを表示",
+  "show-inactive-workspaces": "非アクティブワークスペースを表示",
+  "show-workspaces-from-all-outputs": "全出力からワークスペースを表示",
   "show-focused-window-name": "フォーカスされたウィンドウ名を表示",
   "show-humidity": "湿度を表示",
   "show-icon": "アイコンを表示",
