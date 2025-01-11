@@ -98,6 +98,7 @@
   "homogeneous-tooltip": "Sets equal columns width be default if 'Modules center' not empty.",
   "horizontal-padding": "Horizontal padding",
   "horizontal-window-margin": "Horizontal window margin",
+  "hovering-categories": "Hovering categories opens submenus",
   "humidity": "Humidity",
   "hyprland-taskbar": "Hyprland Taskbar",
   "hyprland-workspaces": "Hyprland Workspaces",

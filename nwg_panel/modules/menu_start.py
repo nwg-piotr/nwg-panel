@@ -15,10 +15,35 @@ class MenuStart(Gtk.Button):
         self.panel = panel
         check_key(panel, "menu-start-settings", {})
         self.settings = panel["menu-start-settings"]
-        self.set_property("name", "button-start")
 
-        check_key(self.settings, "icon-size-button", 16)
-        check_key(self.settings, "run-through-compositor", True)
+        defaults = {
+            "cmd-lock": "swaylock -f -c 000000",
+            "cmd-logout": "swaymsg exit",
+            "cmd-restart": "systemctl reboot",
+            "cmd-shutdown": "systemctl -i poweroff",
+            "autohide": False,
+            "file-manager": "thunar",
+            "menu-start": "right",
+            "icon-size-button": 16,
+            "icon-size-large": 32,
+            "icon-size-small": 16,
+            "margin-bottom": 0,
+            "margin-left": 0,
+            "margin-right": 0,
+            "margin-top": 0,
+            "output": "",
+            "padding": 2,
+            "terminal": "foot",
+            "position": "bottom",
+            "run-through-compositor": True,
+            "hover-opens-submenu": False
+        }
+
+        for key in defaults:
+            if key not in self.settings:
+                self.settings[key] = defaults[key]
+
+        self.set_property("name", "button-start")
 
         image = Gtk.Image()
         update_image(image, "nwg-shell", self.settings["icon-size-button"], icons_path)
@@ -65,6 +90,8 @@ class MenuStart(Gtk.Button):
             cmd += " -term {}".format(self.settings["terminal"])
         if self.panel["position"] != "bottom":
             cmd += " -va {}".format(self.panel["position"])
+        if self.settings["hover-opens-submenu"]:
+            cmd += " -t"
 
         if self.settings["run-through-compositor"]:
             if os.getenv("SWAYSOCK"):
