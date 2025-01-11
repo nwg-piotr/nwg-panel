@@ -30,6 +30,10 @@ class Playerctl(Gtk.EventBox):
         check_key(settings, "chars", 30)
         check_key(settings, "scroll", True)
         check_key(settings, "show-cover", True)
+        check_key(settings, "show-previous", True)
+        check_key(settings, "show-play-pause", True)
+        check_key(settings, "show-next", True)
+        check_key(settings, "show-name", True)
         check_key(settings, "cover-size", 24)
         check_key(settings, "angle", 0.0)
         check_key(settings, "button-css-name", "")
@@ -218,7 +222,8 @@ class Playerctl(Gtk.EventBox):
         if self.settings["button-css-name"]:
             btn.set_property("name", self.settings["button-css-name"])
         btn.connect("clicked", self.launch, self.PlayerOps.PREVIOUS)
-        button_box.pack_start(btn, False, False, 1)
+        if self.settings["show-previous"]:
+            button_box.pack_start(btn, False, False, 1)
 
         self.play_pause_btn = Gtk.Button()
         if self.settings["button-css-name"]:
@@ -227,7 +232,8 @@ class Playerctl(Gtk.EventBox):
         update_image(img, "media-playback-start-symbolic", self.settings["icon-size"], icons_path=self.icons_path)
         self.play_pause_btn.set_image(img)
         self.play_pause_btn.connect("clicked", self.launch, self.PlayerOps.PLAY_PAUSE)
-        button_box.pack_start(self.play_pause_btn, False, False, 1)
+        if self.settings["show-play-pause"]:
+            button_box.pack_start(self.play_pause_btn, False, False, 1)
 
         img = Gtk.Image()
         update_image(img, "media-skip-forward-symbolic", self.settings["icon-size"], icons_path=self.icons_path)
@@ -236,7 +242,8 @@ class Playerctl(Gtk.EventBox):
         if self.settings["button-css-name"]:
             btn.set_property("name", self.settings["button-css-name"])
         btn.connect("clicked", self.launch, self.PlayerOps.NEXT)
-        button_box.pack_start(btn, False, False, 1)
+        if self.settings["show-next"]:
+            button_box.pack_start(btn, False, False, 1)
 
         self.num_players_lbl = Gtk.Label.new("")
         if self.settings["label-css-name"]:
@@ -257,13 +264,15 @@ class Playerctl(Gtk.EventBox):
             self.box.pack_start(button_box, False, False, 2)
             if self.settings["show-cover"]:
                 self.box.pack_start(self.cover_img, False, False, 0)
-            self.box.pack_start(self.num_players_lbl, False, False, 0)
-            self.box.pack_start(self.label, False, False, 5)
+            if self.settings["show-name"]:
+                self.box.pack_start(self.num_players_lbl, False, False, 0)
+                self.box.pack_start(self.label, False, False, 5)
         else:
             if self.settings["show-cover"]:
                 self.box.pack_start(self.cover_img, False, False, 2)
-            self.box.pack_start(self.num_players_lbl, False, False, 0)
-            self.box.pack_start(self.label, False, False, 2)
+            if self.settings["show-name"]:
+                self.box.pack_start(self.num_players_lbl, False, False, 0)
+                self.box.pack_start(self.label, False, False, 2)
             self.box.pack_start(button_box, False, False, 10)
 
     def launch(self, button, op):
