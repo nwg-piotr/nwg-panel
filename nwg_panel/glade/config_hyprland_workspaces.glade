@@ -256,7 +256,7 @@
         </child>
         <child>
           <object class="GtkCheckButton" id="show-workspaces-from-all-outputs">
-            <property name="label" translatable="yes">Show inactive workspaces</property>
+            <property name="label" translatable="yes">Show workspaces with all outputs</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
