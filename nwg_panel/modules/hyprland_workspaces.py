@@ -67,7 +67,7 @@ class HyprlandWorkspaces(Gtk.Box):
             else:
                 self.ws_nums = []
             # Creating a list of workspaces from active workspaces
-            for ws in workspaces[:self.settings["num-ws"]]:
+            for ws in workspaces:
                 if (
                         (self.settings["show-workspaces-from-all-outputs"] or ws["monitor"] == self.monitor_name)
                         and ws["id"] not in self.ws_nums
