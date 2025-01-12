@@ -18,3 +18,8 @@ rm /usr/bin/nwg-panel-config
 rm  /usr/share/pixmaps/nwg-panel.svg
 rm  /usr/share/pixmaps/nwg-shell.svg
 rm  /usr/share/applications/nwg-panel-config.desktop
+rm /usr/bin/nwg-dwl-interface
+rm /usr/bin/nwg-processes
+rm -r /usr/share/doc/nwg-panel 
+rm -r /usr/share/licenses/nwg-panel/ 
+rm /usr/share/pixmaps/nwg-processes.svg
