@@ -55,19 +55,19 @@ class HyprlandWorkspaces(Gtk.Box):
             self.pack_start(self.num_box, False, False, 0)
 
             # read workspaces from workspace rules
-            ws_rules = h_list_workspace_rules()
-            workspace_from_rules = []
+            ws_rules = [rule for rule in h_list_workspace_rules() if self.is_workspace_rule_valid(rule)]
+            workspace_rules = []
             for ws in ws_rules:
                 if self.settings["show-workspaces-from-all-outputs"] or ws["monitor"] == self.monitor_name:
-                    workspace_from_rules.append(ws)
-            self.workspace_from_rules = workspace_from_rules  # storing the workspaces for the current monitor from rules
+                    workspace_rules.append(ws)
+            self.workspace_rules = workspace_rules  # storing the workspace rules for the current monitor from rules
 
             if self.settings["show-inactive-workspaces"]:
-                self.ws_nums = [int(ws["workspaceString"]) for ws in workspace_from_rules]
+                self.ws_nums = [int(ws["workspaceString"]) for ws in workspace_rules]
             else:
                 self.ws_nums = []
             # Creating a list of workspaces from active workspaces
-            for ws in workspaces[:self.settings["num-ws"]]:
+            for ws in workspaces:
                 if (
                         (self.settings["show-workspaces-from-all-outputs"] or ws["monitor"] == self.monitor_name)
                         and ws["id"] not in self.ws_nums
@@ -120,6 +120,18 @@ class HyprlandWorkspaces(Gtk.Box):
         box.pack_start(lbl, False, False, 6)
 
         return eb, lbl
+    
+    def is_workspace_rule_valid(self, ws_rule):
+        """Check if the workspace rule is defining a workspace and binding it to a monitor. If not, return False.
+        This is specific to identify nwg-panel workspace rules.
+        """
+        try:
+            int(ws_rule["workspaceString"]) # since we are only supporting workspace ids, and not workspaces defined by names
+            if "monitor" in ws_rule:
+                return True
+            return False
+        except:
+            return False
 
     def choose_workspace_ids_around_active(self, workspace_ids, active_ws_id):
         # choose workspaces around the active workspace
@@ -153,7 +165,7 @@ class HyprlandWorkspaces(Gtk.Box):
             self.ws_id2name = {}
             if self.settings["show-inactive-workspaces"]:
                 self.ws_nums = [int(ws["workspaceString"]) for ws in
-                                self.workspace_from_rules]  # start with workspaces from rules
+                                self.workspace_rules]  # start with workspaces from rules
             else:
                 self.ws_nums = []
             # Updating occupied workspaces
