@@ -299,18 +299,14 @@ class Clock(Gtk.EventBox):
                     eprint("Couldn't create '{}': {}. Using default path.".format(self.path, result))
 
         self.path = os.path.join(local_dir(), "calendar.json")
-        c = load_json(self.path)
-        if c is not None:
-            self.calendar = c
-        else:
+        if not os.path.isfile(self.path):
             result = save_json(self.calendar, self.path)
             if result == "ok":
                 print("Created new calendar file at '{}'".format(self.path))
-                return True
             else:
                 eprint("Couldn't create '{}': {}. No more idea...".format(self.path, result))
-
-        return True
+        c = load_json(self.path)
+        self.calendar = c
 
     def reload_calendar(self):
         if not self.popup or not self.popup.is_visible():
