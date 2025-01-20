@@ -2,7 +2,7 @@
 
 from gi.repository import Gtk, Gdk
 
-from nwg_panel.tools import hyprctl, update_image, update_image_fallback_desktop
+from nwg_panel.tools import hyprctl, update_image, update_image_fallback_desktop, is_hyprland_workspace_rule_valid, h_list_workspace_rules
 
 
 class HyprlandTaskbar(Gtk.Box):
@@ -15,6 +15,7 @@ class HyprlandTaskbar(Gtk.Box):
             "show-app-icon": True,
             "show-app-name": True,
             "show-workspace": True,
+            "show-inactive-workspaces": True,
             "all-workspaces": True,
             "show-app-name-special": False,
             "show-layout": True,
@@ -118,7 +119,7 @@ class HyprlandTaskbar(Gtk.Box):
                 for client in self.clients:
                     # if client["title"] prevents from creation of ghost client boxes
                     if client["title"] and client["workspace"]["id"] == ws_num:
-                        client_box = ClientBox(self.settings, client, self.position, self.icons_path, workspaces)
+                        client_box = ClientBox(self.settings, client, self.position, self.icons_path, workspaces, self.display_name)
                         if self.activewindow and client["address"] == self.activewindow["address"]:
                             client_box.box.set_property("name", "task-box-focused")
                         else:
@@ -142,12 +143,27 @@ def on_leave_notify_event(widget, event):
 
 
 class ClientBox(Gtk.EventBox):
-    def __init__(self, settings, client, position, icons_path, workspaces):
+    def __init__(self, settings, client, position, icons_path, workspaces, display_name):
         self.position = position
         self.settings = settings
         self.address = client["address"]
         self.workspaces = workspaces
         self.icons_path = icons_path
+        self.display_name = display_name
+        ### read workspace rules and use defined workspace
+        workspace_rules = []
+        ws_rules = [rule for rule in h_list_workspace_rules() if is_hyprland_workspace_rule_valid(rule)]
+        for ws in ws_rules:
+            if self.settings["all-outputs"] or ws["monitor"] == self.display_name:
+                workspace_rules.append(ws)
+        # start from workspace rules
+        if self.settings["show-inactive-workspaces"]:
+            workspace_ids = [int(ws["workspaceString"]) for ws in
+                            workspace_rules]  # start with workspaces from rules
+        else:
+            workspace_ids = []
+        self.workspace_ids_from_rules = workspace_ids
+
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, spacing=0)
         if settings["angle"] != 0.0:
@@ -212,7 +228,10 @@ class ClientBox(Gtk.EventBox):
     def context_menu(self, client):
         menu = Gtk.Menu()
         menu.set_reserve_toggle_size(False)
-        workspace_ids = [ws["id"] for ws in self.workspaces if ws["id"] > 0]
+        workspace_ids = self.workspace_ids_from_rules.copy()
+        
+        workspace_ids += [ws["id"] for ws in self.workspaces if ws["id"] > 0 and ws["id"] not in workspace_ids]
+        print(workspace_ids)
         workspace_ids.sort()
 
         # Move to workspace

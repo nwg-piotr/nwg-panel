@@ -29,6 +29,17 @@ try:
 except:
     pass
 
+def is_hyprland_workspace_rule_valid(ws_rule):
+    """Check if the workspace rule is defining a workspace and binding it to a monitor. If not, return False.
+    This is specific to identify nwg-panel workspace rules.
+    """
+    try:
+        int(ws_rule["workspaceString"]) # since we are only supporting workspace ids, and not workspaces defined by names
+        if "monitor" in ws_rule and int(ws_rule["workspaceString"]) > 0:
+            return True
+        return False
+    except:
+        return False
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)

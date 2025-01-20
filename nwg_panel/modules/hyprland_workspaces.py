@@ -2,7 +2,7 @@
 
 from gi.repository import Gtk, Gdk
 
-from nwg_panel.tools import update_image_fallback_desktop, hyprctl, h_list_workspace_rules
+from nwg_panel.tools import update_image_fallback_desktop, hyprctl, h_list_workspace_rules, is_hyprland_workspace_rule_valid
 
 
 class HyprlandWorkspaces(Gtk.Box):
@@ -55,7 +55,7 @@ class HyprlandWorkspaces(Gtk.Box):
             self.pack_start(self.num_box, False, False, 0)
 
             # read workspaces from workspace rules
-            ws_rules = [rule for rule in h_list_workspace_rules() if self.is_workspace_rule_valid(rule)]
+            ws_rules = [rule for rule in h_list_workspace_rules() if is_hyprland_workspace_rule_valid(rule)]
             workspace_rules = []
             for ws in ws_rules:
                 if self.settings["show-workspaces-from-all-outputs"] or ws["monitor"] == self.monitor_name:
@@ -121,18 +121,6 @@ class HyprlandWorkspaces(Gtk.Box):
         box.pack_start(lbl, False, False, 6)
 
         return eb, lbl
-    
-    def is_workspace_rule_valid(self, ws_rule):
-        """Check if the workspace rule is defining a workspace and binding it to a monitor. If not, return False.
-        This is specific to identify nwg-panel workspace rules.
-        """
-        try:
-            int(ws_rule["workspaceString"]) # since we are only supporting workspace ids, and not workspaces defined by names
-            if "monitor" in ws_rule:
-                return True
-            return False
-        except:
-            return False
 
     def choose_workspace_ids_around_active(self, workspace_ids, active_ws_id):
         # choose workspaces around the active workspace
