@@ -14,12 +14,15 @@ class HyprlandTaskbar(Gtk.Box):
             "client-padding": 0,
             "show-app-icon": True,
             "show-app-name": True,
+            "show-workspace": True,
+            "all-workspaces": True,
             "show-app-name-special": False,
             "show-layout": True,
             "all-outputs": False,
             "mark-xwayland": True,
             "angle": 0.0
         }
+        print("hyprland taskbar:", settings)
         for key in defaults:
             if key not in settings:
                 settings[key] = defaults[key]
@@ -66,8 +69,18 @@ class HyprlandTaskbar(Gtk.Box):
     #               self.clients.append(c)
 
     def refresh(self, monitors, workspaces, clients, activewindow):
+        # parsing active_ws
+        current_mon = [m for m in monitors if m["name"] == self.display_name][0]
+        # active workspace on the current monitor is what we want
+        active_ws = [ws for ws in workspaces if current_mon['activeWorkspace']["id"] == ws["id"]][0]
+        
         self.parse_monitors(monitors)
-        self.parse_workspaces(workspaces)
+        if self.settings["all-workspaces"]:
+            self.parse_workspaces(workspaces)
+        else:
+            self.ws_nums = [active_ws["id"]]
+            self.workspaces = {active_ws["id"]: active_ws}
+        
         # Turned off due to https://github.com/hyprwm/Hyprland/issues/2413
         # self.parse_clients(clients)
         self.clients = clients
@@ -75,6 +88,14 @@ class HyprlandTaskbar(Gtk.Box):
         for item in self.get_children():
             item.destroy()
         self.build_box()
+
+    def create_workspace_label(self, ws_num):
+        lbl = Gtk.Label()
+        if ws_num in self.active_workspaces:
+            lbl.set_markup("<u>{}</u>:".format(self.workspaces[ws_num]["name"]))
+        else:
+            lbl.set_text("{}:".format(self.workspaces[ws_num]["name"]))
+        return lbl
 
     def build_box(self):
         # eprint(">> buildbox")
@@ -90,13 +111,9 @@ class HyprlandTaskbar(Gtk.Box):
                 #     eb.connect('leave-notify-event', on_leave_notify_event)
                 #     eb.connect('button-press-event', self.on_ws_click, ws_num)
 
-                ws_box.pack_start(eb, False, False, 6)
-                lbl = Gtk.Label()
-                if ws_num in self.active_workspaces:
-                    lbl.set_markup("<u>{}</u>:".format(self.workspaces[ws_num]["name"]))
-                else:
-                    lbl.set_text("{}:".format(self.workspaces[ws_num]["name"]))
-                eb.add(lbl)
+                if self.settings["show-workspace"]:
+                    ws_box.pack_start(eb, False, False, 6)
+                    eb.add(self.create_workspace_label(ws_num))
                 cl_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 ws_box.pack_start(cl_box, False, False, 0)
                 for client in self.clients:
