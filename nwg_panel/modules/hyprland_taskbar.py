@@ -22,7 +22,6 @@ class HyprlandTaskbar(Gtk.Box):
             "mark-xwayland": True,
             "angle": 0.0
         }
-        print("hyprland taskbar:", settings)
         for key in defaults:
             if key not in settings:
                 settings[key] = defaults[key]
@@ -87,7 +86,7 @@ class HyprlandTaskbar(Gtk.Box):
         self.activewindow = activewindow
         for item in self.get_children():
             item.destroy()
-        self.build_box()
+        self.build_box(workspaces)
 
     def create_workspace_label(self, ws_num):
         lbl = Gtk.Label()
@@ -97,7 +96,7 @@ class HyprlandTaskbar(Gtk.Box):
             lbl.set_text("{}:".format(self.workspaces[ws_num]["name"]))
         return lbl
 
-    def build_box(self):
+    def build_box(self, workspaces):
         # eprint(">> buildbox")
         for ws_num in self.ws_nums:
             ws_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
@@ -119,7 +118,7 @@ class HyprlandTaskbar(Gtk.Box):
                 for client in self.clients:
                     # if client["title"] prevents from creation of ghost client boxes
                     if client["title"] and client["workspace"]["id"] == ws_num:
-                        client_box = ClientBox(self.settings, client, self.position, self.icons_path)
+                        client_box = ClientBox(self.settings, client, self.position, self.icons_path, workspaces)
                         if self.activewindow and client["address"] == self.activewindow["address"]:
                             client_box.box.set_property("name", "task-box-focused")
                         else:
@@ -143,10 +142,11 @@ def on_leave_notify_event(widget, event):
 
 
 class ClientBox(Gtk.EventBox):
-    def __init__(self, settings, client, position, icons_path):
+    def __init__(self, settings, client, position, icons_path, workspaces):
         self.position = position
         self.settings = settings
         self.address = client["address"]
+        self.workspaces = workspaces
         self.icons_path = icons_path
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, spacing=0)
@@ -212,19 +212,21 @@ class ClientBox(Gtk.EventBox):
     def context_menu(self, client):
         menu = Gtk.Menu()
         menu.set_reserve_toggle_size(False)
+        workspace_ids = [ws["id"] for ws in self.workspaces if ws["id"] > 0]
+        workspace_ids.sort()
 
         # Move to workspace
-        for i in range(10):
+        for ws_id in workspace_ids:
             hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 3)
             hbox.set_property("halign", Gtk.Align.START)
             img = Gtk.Image()
             update_image(img, "go-next", 16, self.icons_path)
             hbox.pack_start(img, True, True, 0)
-            lbl = Gtk.Label.new(str(i + 1))
+            lbl = Gtk.Label.new(str(ws_id))
             hbox.pack_start(lbl, False, False, 0)
             item = Gtk.MenuItem()
             item.add(hbox)
-            item.connect("activate", self.movetoworkspace, i + 1)
+            item.connect("activate", self.movetoworkspace, ws_id)
             item.set_tooltip_text("movetoworkspace")
             menu.append(item)
 
