@@ -70,6 +70,7 @@ class HyprlandWorkspaces(Gtk.Box):
             for ws in workspaces:
                 if (
                         (self.settings["show-workspaces-from-all-outputs"] or ws["monitor"] == self.monitor_name)
+                        and ws["id"] > 0 # filter special workspaces
                         and ws["id"] not in self.ws_nums
                 ):
                     self.ws_nums.append(ws["id"])
@@ -171,7 +172,8 @@ class HyprlandWorkspaces(Gtk.Box):
             # Updating occupied workspaces
             for ws in workspaces:
                 # add workspaces to the list if not already there, important for example when monitor is unplugged
-                if ws["id"] not in self.ws_nums:
+                if (ws["id"] > 0 # filter special workspaces
+                    and ws["id"] not in self.ws_nums):
                     self.ws_nums.append(ws["id"])
 
                 for client in clients:  # check for all occupied workspaces
