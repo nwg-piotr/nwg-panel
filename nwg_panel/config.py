@@ -138,7 +138,6 @@ SKELETON_PANEL: dict = {
         "show-app-name": True,
         "all-workspaces": True,
         "show-workspace": True,
-        "show-inactive-workspaces": True,
         "show-layout": True,
         "all-outputs": False,
         "mark-xwayland": True,
@@ -1500,7 +1499,6 @@ class EditorWrapper(object):
             "show-app-name": True,
             "show-app-name-special": False,
             "show-workspace": True,
-            "show-inactive-workspaces": True,
             "all-workspaces": True,
             "show-layout": True,
             "all-outputs": False,
@@ -1556,10 +1554,6 @@ class EditorWrapper(object):
         self.ckb_show_workspace.set_label(voc["show-workspaces"])
         self.ckb_show_workspace.set_active(settings["show-workspace"])
 
-        self.ckb_show_inactive_workspaces = builder.get_object("show-inactive-workspaces")
-        self.ckb_show_inactive_workspaces.set_label(voc["show-inactive-workspaces"])
-        self.ckb_show_inactive_workspaces.set_active(settings["show-inactive-workspaces"])
-
         self.ckb_all_workspaces = builder.get_object("all-workspaces")
         self.ckb_all_workspaces.set_label(voc["all-workspaces"])
         self.ckb_all_workspaces.set_active(settings["all-workspaces"])
@@ -1611,7 +1605,6 @@ class EditorWrapper(object):
         settings["show-app-name"] = self.ckb_show_app_name.get_active()
         settings["show-workspace"] = self.ckb_show_workspace.get_active()
         settings["all-workspaces"] = self.ckb_all_workspaces.get_active()
-        settings["show-inactive-workspaces"] = self.ckb_show_inactive_workspaces.get_active()
         settings["show-app-name-special"] = self.ckb_show_app_name_special.get_active()
         settings["show-layout"] = self.ckb_show_layout.get_active()
         settings["mark-xwayland"] = self.ckb_mark_xwayland.get_active()

@@ -15,7 +15,6 @@ class HyprlandTaskbar(Gtk.Box):
             "show-app-icon": True,
             "show-app-name": True,
             "show-workspace": True,
-            "show-inactive-workspaces": True,
             "all-workspaces": True,
             "show-app-name-special": False,
             "show-layout": True,
@@ -69,17 +68,24 @@ class HyprlandTaskbar(Gtk.Box):
     #               self.clients.append(c)
 
     def refresh(self, monitors, workspaces, clients, activewindow):
-        # parsing active_ws
-        current_mon = [m for m in monitors if m["name"] == self.display_name][0]
-        # active workspace on the current monitor is what we want
-        active_ws = [ws for ws in workspaces if current_mon['activeWorkspace']["id"] == ws["id"]][0]
         
         self.parse_monitors(monitors)
         if self.settings["all-workspaces"]:
             self.parse_workspaces(workspaces)
         else:
-            self.ws_nums = [active_ws["id"]]
-            self.workspaces = {active_ws["id"]: active_ws}
+            # parsing active_ws
+            if self.settings["all-outputs"]:
+                current_mons = [m for m in monitors]
+            else:
+                current_mons = [m for m in monitors if m["name"] == self.display_name]
+            # active workspace on the current monitor is what we want
+            active_workspaces = []
+            for mon in current_mons:
+                for ws in workspaces:
+                    if mon['activeWorkspace']["id"] == ws["id"]:
+                        active_workspaces.append(ws)
+            self.ws_nums = [active_ws["id"] for active_ws in active_workspaces]
+            self.workspaces = {active_ws["id"]: active_ws for active_ws in active_workspaces}
         
         # Turned off due to https://github.com/hyprwm/Hyprland/issues/2413
         # self.parse_clients(clients)
@@ -157,12 +163,8 @@ class ClientBox(Gtk.EventBox):
             if self.settings["all-outputs"] or ws["monitor"] == self.display_name:
                 workspace_rules.append(ws)
         # start from workspace rules
-        if self.settings["show-inactive-workspaces"]:
-            workspace_ids = [int(ws["workspaceString"]) for ws in
-                            workspace_rules]  # start with workspaces from rules
-        else:
-            workspace_ids = []
-        self.workspace_ids_from_rules = workspace_ids
+        self.workspace_ids_from_rules = [int(ws["workspaceString"]) for ws in
+                            workspace_rules]
 
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, spacing=0)
@@ -231,7 +233,6 @@ class ClientBox(Gtk.EventBox):
         workspace_ids = self.workspace_ids_from_rules.copy()
         
         workspace_ids += [ws["id"] for ws in self.workspaces if ws["id"] > 0 and ws["id"] not in workspace_ids]
-        print(workspace_ids)
         workspace_ids.sort()
 
         # Move to workspace
