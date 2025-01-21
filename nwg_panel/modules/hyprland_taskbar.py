@@ -2,7 +2,7 @@
 
 from gi.repository import Gtk, Gdk
 
-from nwg_panel.tools import hyprctl, update_image, update_image_fallback_desktop, is_hyprland_workspace_rule_valid, h_list_workspace_rules
+from nwg_panel.tools import hyprctl, update_image, update_image_fallback_desktop, is_hyprland_workspace_rule_valid, h_list_workspace_rules, h_list_monitors, h_list_workspaces
 
 
 class HyprlandTaskbar(Gtk.Box):
@@ -153,18 +153,11 @@ class ClientBox(Gtk.EventBox):
         self.position = position
         self.settings = settings
         self.address = client["address"]
-        self.workspaces = workspaces
         self.icons_path = icons_path
         self.display_name = display_name
-        ### read workspace rules and use defined workspace
-        workspace_rules = []
-        ws_rules = [rule for rule in h_list_workspace_rules() if is_hyprland_workspace_rule_valid(rule)]
-        for ws in ws_rules:
-            if self.settings["all-outputs"] or ws["monitor"] == self.display_name:
-                workspace_rules.append(ws)
-        # start from workspace rules
-        self.workspace_ids_from_rules = [int(ws["workspaceString"]) for ws in
-                            workspace_rules]
+        ### read workspace rules
+        self.workspace_rules = [rule for rule in h_list_workspace_rules() if is_hyprland_workspace_rule_valid(rule)]
+        self.workspace_ids_for_context_menu = self.sorted_workspace_ids()
 
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, spacing=0)
@@ -227,13 +220,35 @@ class ClientBox(Gtk.EventBox):
     def on_special(self, widget, event):
         hyprctl('dispatch togglespecialworkspace ')
 
+    def sorted_workspace_ids(self):
+        """Returns workspace ids, which are first sorted by monitors and then sorted by ids. 
+        """
+        workspaces = h_list_workspaces()
+        monitors = h_list_monitors()
+        mon_names = [mon["name"] for mon in monitors]
+        ws_ids_by_mon = {mon : [] for mon in mon_names}
+        # add workspace ids from rules
+        for ws in self.workspace_rules:
+            if ws["monitor"] in mon_names:
+                ws_ids_by_mon[ws["monitor"]].append(int(ws["workspaceString"]))
+            elif ws["monitor"][:5] == "desc:": # check to see if monitor description is used
+                for mon in monitors:
+                    if mon["description"] == ws["monitor"][5:]:
+                        ws_ids_by_mon[mon["name"]].append(int(ws["workspaceString"]))
+        # add workspace ids from workspaces
+        for ws in workspaces:
+            if ws["id"] not in ws_ids_by_mon[ws["monitor"]]:
+                ws_ids_by_mon[ws["monitor"]].append(ws["id"])
+        # sort the workspaces by id// as is done by default in Hyprland
+        for mon in ws_ids_by_mon:
+            ws_ids_by_mon[mon].sort()
+        return sum([ws_ids_by_mon[mon] for mon in ws_ids_by_mon], [])
+
+
     def context_menu(self, client):
         menu = Gtk.Menu()
         menu.set_reserve_toggle_size(False)
-        workspace_ids = self.workspace_ids_from_rules.copy()
-        
-        workspace_ids += [ws["id"] for ws in self.workspaces if ws["id"] > 0 and ws["id"] not in workspace_ids]
-        workspace_ids.sort()
+        workspace_ids = self.workspace_ids_for_context_menu
 
         # Move to workspace
         for ws_id in workspace_ids:
