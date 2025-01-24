@@ -157,15 +157,15 @@ class ClientBox(Gtk.EventBox):
             name = "X|" + name
 
         if settings["show-app-name"]:
-            if not client["workspace"]["name"] == "special" or settings["show-app-name-special"]:
+            if "special" not in client["workspace"]["name"] or settings["show-app-name-special"]:
                 lbl = Gtk.Label()
                 lbl.set_angle(self.settings["angle"])
 
                 lbl.set_text(name)
                 self.box.pack_start(lbl, False, False, 6)
-        else:
-            if name and image:
-                image.set_tooltip_text(name)
+            else:
+                if name and image:
+                    image.set_tooltip_text(name)
 
         if settings["show-layout"]:
             if client["pinned"]:
