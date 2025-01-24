@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import json
+
 from gi.repository import Gtk, Gdk
 
 from nwg_panel.tools import hyprctl, update_image, update_image_fallback_desktop
@@ -36,6 +38,17 @@ class HyprlandTaskbar(Gtk.Box):
         self.ws_nums = None
         self.workspaces = None
         self.activewindow = None
+        # default values, in case we find no workspaces defined in workspacerules
+        self.ws_strings = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+
+        # replace self.ws_strings with workspaces defined in workspacerules, if any
+        ws_strings = []
+        o = hyprctl("j/workspacerules")
+        ws_dicts = json.loads(o)
+        if len(ws_dicts) > 0:
+            for item in json.loads(o):  # list of dicts
+                ws_strings.append(item["workspaceString"])
+            self.ws_strings = ws_strings
 
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=settings["workspaces-spacing"])
         if self.settings["angle"] != 0.0:
@@ -58,13 +71,6 @@ class HyprlandTaskbar(Gtk.Box):
             self.workspaces[item["id"]] = item
         self.ws_nums.sort()
 
-    # def parse_clients(self, all_clients):
-    #     self.clients = []
-    #     for c in all_clients:
-    #         if c["monitor"] >= 0:
-    #             if (self.mon_id2name[c["monitor"]] == self.display_name) or self.settings["all-outputs"]:
-    #               self.clients.append(c)
-
     def refresh(self, monitors, workspaces, clients, activewindow):
         self.parse_monitors(monitors)
         self.parse_workspaces(workspaces)
@@ -77,7 +83,6 @@ class HyprlandTaskbar(Gtk.Box):
         self.build_box()
 
     def build_box(self):
-        # eprint(">> buildbox")
         for ws_num in self.ws_nums:
             ws_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
             if self.settings["angle"] != 0.0:
@@ -85,10 +90,6 @@ class HyprlandTaskbar(Gtk.Box):
             self.pack_start(ws_box, False, False, 0)
             if self.workspaces[ws_num]["monitor"] == self.display_name or self.settings["all-outputs"]:
                 eb = Gtk.EventBox()
-                # if self.settings["workspace-clickable"]:
-                #     eb.connect('enter-notify-event', on_enter_notify_event)
-                #     eb.connect('leave-notify-event', on_leave_notify_event)
-                #     eb.connect('button-press-event', self.on_ws_click, ws_num)
 
                 ws_box.pack_start(eb, False, False, 6)
                 lbl = Gtk.Label()
@@ -102,7 +103,7 @@ class HyprlandTaskbar(Gtk.Box):
                 for client in self.clients:
                     # if client["title"] prevents from creation of ghost client boxes
                     if client["title"] and client["workspace"]["id"] == ws_num:
-                        client_box = ClientBox(self.settings, client, self.position, self.icons_path)
+                        client_box = ClientBox(self.settings, client, self.position, self.icons_path, self.ws_strings)
                         if self.activewindow and client["address"] == self.activewindow["address"]:
                             client_box.box.set_property("name", "task-box-focused")
                         else:
@@ -126,11 +127,12 @@ def on_leave_notify_event(widget, event):
 
 
 class ClientBox(Gtk.EventBox):
-    def __init__(self, settings, client, position, icons_path):
+    def __init__(self, settings, client, position, icons_path, ws_strings):
         self.position = position
         self.settings = settings
         self.address = client["address"]
         self.icons_path = icons_path
+        self.ws_strings = ws_strings
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, spacing=0)
         if settings["angle"] != 0.0:
@@ -197,18 +199,18 @@ class ClientBox(Gtk.EventBox):
         menu.set_reserve_toggle_size(False)
 
         # Move to workspace
-        for i in range(10):
+        for _item in self.ws_strings:
             hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 3)
             hbox.set_property("halign", Gtk.Align.START)
             img = Gtk.Image()
             update_image(img, "go-next", 16, self.icons_path)
             hbox.pack_start(img, True, True, 0)
-            lbl = Gtk.Label.new(str(i + 1))
+            lbl = Gtk.Label.new(_item)
             hbox.pack_start(lbl, False, False, 0)
             item = Gtk.MenuItem()
             item.add(hbox)
-            item.connect("activate", self.movetoworkspace, i + 1)
-            item.set_tooltip_text("movetoworkspace")
+            item.connect("activate", self.movetoworkspace, _item)
+            item.set_tooltip_text(f"movetoworkspace {_item}")
             menu.append(item)
 
         # Toggle floating
