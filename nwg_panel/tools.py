@@ -29,6 +29,9 @@ try:
 except:
     pass
 
+icon_pixbuf_cache = {}
+icon_pixbuf_cache_limit = 50
+
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -647,6 +650,12 @@ def update_gtk_entry(entry, icon_pos, icon_name, icon_size, icons_path=""):
 
 
 def create_pixbuf(icon_name, icon_size, icons_path="", fallback=True):
+    # See if the icon was cached before
+    parameters = (icon_name, icon_size, icons_path)
+    cached = icon_pixbuf_cache.get(parameters, None)
+    if cached is not None:
+        return cached
+
     try:
         # In case a full path was given
         if icon_name.startswith("/"):
@@ -677,6 +686,14 @@ def create_pixbuf(icon_name, icon_size, icons_path="", fallback=True):
                 os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), icon_size, icon_size)
         else:
             raise e
+
+    # Add cache entry. Make sure the cache size does not exceed the limit.
+    icon_pixbuf_cache[parameters] = pixbuf
+    if len(icon_pixbuf_cache) > icon_pixbuf_cache_limit:
+        iterator = iter(icon_pixbuf_cache)
+        while len(icon_pixbuf_cache) > icon_pixbuf_cache_limit:
+            del icon_pixbuf_cache[next(iterator)]
+
     return pixbuf
 
 
@@ -789,7 +806,8 @@ def h_list_workspaces():
     except Exception as e:
         eprint(e)
         return {}
-    
+
+
 def h_list_workspace_rules():
     reply = hyprctl("j/workspacerules")
     try:
