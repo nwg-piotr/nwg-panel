@@ -90,6 +90,10 @@ if his:
     from nwg_panel.modules.hyprland_taskbar import HyprlandTaskbar
     from nwg_panel.modules.hyprland_workspaces import HyprlandWorkspaces
 
+niri_sock = os.getenv('NIRI_SOCKET')
+if niri_sock:
+    from nwg_panel.modules.niri_taskbar import NiriTaskbar
+
 common_settings = {}
 restart_cmd = ""
 sig_dwl = 0
@@ -208,6 +212,38 @@ def hypr_watcher():
                     GLib.timeout_add(0, item.refresh)
 
 
+def niri_watcher():
+    import socket
+
+    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    client.connect(niri_sock)
+    client.sendall(b"\"EventStream\"\n")
+
+    buffer = ""
+    while True:
+        chunk = client.recv(1024).decode('utf-8', errors='replace')
+        if not chunk:
+            break
+        buffer += chunk
+        while "\n" in buffer:
+            line, buffer = buffer.split("\n", 1)
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                message = json.loads(line)
+                event_name = next(iter(message))
+                # event_data = message[event_name]
+                print(f"[{event_name}]")
+
+                outputs, workspaces, windows, focused_window = niri_get_all()
+                # print(f"{outputs}\n{workspaces}\n{windows}\n{focused_window}")
+                for item in common.niri_taskbars_list:
+                    GLib.timeout_add(0, item.refresh, outputs, workspaces, windows, focused_window)
+
+            except json.JSONDecodeError as e:
+                print("Failed to decode JSON:", e)
+
 def on_i3ipc_event(i3conn, event):
     if common_settings["restart-on-display"]:
         num = num_active_outputs(i3conn.get_outputs())
@@ -297,11 +333,6 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
         if item == "hyprland-taskbar":
             if "hyprland-taskbar" in panel:
-                # if panel["layer"] in ["bottom", "background"]:
-                #     eprint(
-                #         "Panel '{}': On Hyprland, panels must be placed on 'top' or 'overlay' layer, but '{}' found in "
-                #         "settings. Changing to 'top'.".format(panel["name"], panel["layer"]))
-                #     panel["layer"] = "top"  # or context menu will remain invisible
                 if his:
                     check_key(panel["hyprland-taskbar"], "all-outputs", False)
                     if panel["hyprland-taskbar"]["all-outputs"] or "output" not in panel:
@@ -316,6 +347,25 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                     container.pack_start(taskbar, False, False, panel["items-padding"])
                 else:
                     eprint("'hyprland-taskbar' ignored (HIS unknown).")
+
+        if item == "niri-taskbar":
+            if niri_sock:
+                outputs, workspaces, windows, focused_window = {}, {}, {}, {}
+                if "niri-taskbar" in panel:
+                    if niri_sock:
+                        check_key(panel["niri-taskbar"], "all-outputs", False)
+                        if panel["niri-taskbar"]["all-outputs"] or "output" not in panel:
+                            taskbar = NiriTaskbar(panel["niri-taskbar"], panel["position"], outputs, workspaces,
+                                                      windows, focused_window, icons_path=icons_path)
+                        else:
+                            taskbar = NiriTaskbar(panel["niri-taskbar"], panel["position"], outputs, workspaces,
+                                                      windows, focused_window, display_name="{}".format(panel["output"]),
+                                                      icons_path=icons_path)
+
+                        common.niri_taskbars_list.append(taskbar)
+                        container.pack_start(taskbar, False, False, panel["items-padding"])
+                    else:
+                        eprint("'niri-taskbar' ignored (NIRI_SOCKET unknown).")
 
         if item == "hyprland-workspaces":
             if his:
@@ -560,7 +610,9 @@ def main():
 
     # tree = common.i3.get_tree() if sway else None
     common.outputs, common.mon_desc2output_name = list_outputs(sway=sway)
-    print(f"Outputs: {common.outputs}")
+    print("Outputs:")
+    for key in common.outputs:
+        print(key, common.outputs[key])
     print(f"Descriptions: {common.mon_desc2output_name}")
 
     panels = load_json(config_file)
@@ -903,6 +955,11 @@ def main():
             thread = threading.Thread(target=hypr_watcher, daemon=True)
             thread.daemon = True
             thread.start()
+
+    if niri_sock:
+        thread = threading.Thread(target=niri_watcher, daemon=True)
+        thread.daemon = True
+        thread.start()
 
     if tray_available and len(common.tray_list) > 0:
         sni_system_tray.init_tray(common.tray_list)

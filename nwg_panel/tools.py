@@ -218,6 +218,36 @@ def list_outputs(sway=False, silent=False):
                 outputs_dict[item["name"]]["width"] = item["height"]
                 outputs_dict[item["name"]]["height"] = item["width"]
 
+    elif os.getenv('NIRI_SOCKET'):
+        if not silent:
+            print("Running on Niri")
+        cmd = "niri msg -j outputs"
+        result = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
+        outputs = json.loads(result)
+        for item in outputs:
+            transform = ""
+            x, y, w, h = 0, 0, 0, 0
+            for mode in outputs[item]["modes"]:
+                if mode["is_preferred"]:
+                    x = outputs[item]["logical"]["x"]
+                    y = outputs[item]["logical"]["y"]
+                    w = mode["width"]
+                    h = mode["height"]
+                    transform = outputs[item]["logical"]["transform"]
+                    break
+
+            outputs_dict[outputs[item]["name"]] = {"x": x,
+                                                   "y": y,
+                                                   "width": w,
+                                                   "height": h,
+                                                   "description": f"{outputs[item]["make"]} {outputs[item]["model"]} {outputs[item]["serial"]}",
+                                                   "monitor": None}
+
+            # swap for rotated displays
+            if transform in ["90", "270", "flipped-90", "flipped-270"]:
+                outputs_dict[outputs[item]["name"]]["width"] = h
+                outputs_dict[outputs[item]["name"]]["height"] = w
+
     elif os.getenv('WAYLAND_DISPLAY') is not None:
         if not silent:
             print("Running on Wayland, but neither sway nor Hyprland")
@@ -277,14 +307,21 @@ def list_outputs(sway=False, silent=False):
     # We used to assign Gdk.Monitor to output on the basis of x and y coordinates, but it no longer works,
     # starting from gtk3-1:3.24.42: all monitors have x=0, y=0. This is most likely a bug, but from now on
     # we must rely on gdk monitors order. Hope it's going to work.
-    monitors = []
+    # monitors = []
+
     display = Gdk.Display.get_default()
     for i in range(display.get_n_monitors()):
         monitor = display.get_monitor(i)
-        monitors.append(monitor)
+        geometry = monitor.get_geometry()
+        # monitors.append(monitor)
+        for key in outputs_dict:
+            if outputs_dict[key]["x"] == geometry.x and outputs_dict[key]["y"] == geometry.y and outputs_dict[key][
+                "width"] == geometry.width and outputs_dict[key]["height"] == geometry.height:
+                outputs_dict[key]["monitor"] = monitor
+                break
 
-    for key, monitor in zip(outputs_dict.keys(), monitors):
-        outputs_dict[key]["monitor"] = monitor
+    # for key, monitor in zip(outputs_dict.keys(), monitors):
+    #     outputs_dict[key]["monitor"] = monitor
 
     # map monitor descriptions to output names
     mon_desc2output_name = {}
@@ -748,6 +785,56 @@ def load_shell_data():
     return shell_data
 
 
+def niri_ipc(cmd, is_json=False):
+    niri_sock = os.getenv("NIRI_SOCKET")
+    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    client.connect(niri_sock)
+    if not is_json:
+        client.send(f'"{cmd}"\n'.encode("utf-8"))
+    else:
+        client.send(f'{cmd}\n'.encode("utf-8"))
+
+    buffer = ""
+    while True:
+        chunk = client.recv(1024).decode('utf-8', errors='replace')
+        if not chunk:
+            break
+        buffer += chunk
+    try:
+        reply = json.loads(buffer)
+        key = next(iter(reply))
+        return reply[key]
+
+    except json.JSONDecodeError as e:
+        print("Failed to decode JSON:", e)
+        print("Buffer:", buffer)
+        return None
+
+
+def niri_outputs():
+    reply = niri_ipc("Outputs")
+    return reply[next(iter(reply))]
+
+
+def niri_workspaces():
+    reply = niri_ipc("Workspaces")
+    return reply[next(iter(reply))]
+
+
+def niri_windows():
+    reply = niri_ipc("Windows")
+    return reply[next(iter(reply))]
+
+
+def niri_focused_window():
+    reply = niri_ipc("FocusedWindow")
+    return reply[next(iter(reply))]
+
+
+def niri_get_all():
+    return niri_outputs(), niri_workspaces(), niri_windows(), niri_focused_window()
+
+
 def hyprctl(cmd, buf_size=2048):
     # /tmp/hypr moved to $XDG_RUNTIME_DIR/hypr in #5788
     xdg_runtime_dir = os.getenv("XDG_RUNTIME_DIR")
@@ -789,7 +876,8 @@ def h_list_workspaces():
     except Exception as e:
         eprint(e)
         return {}
-    
+
+
 def h_list_workspace_rules():
     reply = hyprctl("j/workspacerules")
     try:
