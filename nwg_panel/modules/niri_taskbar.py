@@ -16,10 +16,8 @@ class NiriTaskbar(Gtk.Box):
             "client-padding": 0,
             "show-app-icon": True,
             "show-app-name": True,
-            "show-app-name-special": False,
             "show-layout": True,
             "all-outputs": False,
-            "mark-xwayland": True,
             "angle": 0.0
         }
         for key in defaults:
@@ -197,18 +195,6 @@ class ClientBox(Gtk.EventBox):
         item.set_tooltip_text("fullscreen")
         menu.append(item)
 
-        # Pin
-        if client["is_floating"]:
-            hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-            img = Gtk.Image()
-            update_image(img, "pin", 16, self.icons_path)
-            hbox.pack_start(img, True, True, 0)
-            item = Gtk.MenuItem()
-            item.add(hbox)
-            item.connect("activate", self.pin)
-            item.set_tooltip_text("pin")
-            menu.append(item)
-
         # Close
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         img = Gtk.Image()
@@ -216,7 +202,7 @@ class ClientBox(Gtk.EventBox):
         hbox.pack_start(img, True, True, 0)
         item = Gtk.MenuItem()
         item.add(hbox)
-        item.connect("activate", self.close, self.pid)
+        item.connect("activate", self.close)
         item.set_tooltip_text("closewindow")
         menu.append(item)
 
@@ -233,12 +219,6 @@ class ClientBox(Gtk.EventBox):
     def fullscreen(self, *args):
         command = {"Action": {"FullscreenWindow": {"id": self.id}}}
         niri_ipc(json.dumps(command), is_json=True)
-
-    def pin(self, *args):
-        hyprctl("dispatch pin address:{}".format(self.address))
-        # The above doesn't trigger any event. We need a workaround:
-        hyprctl("dispatch focuswindow title:''")
-        hyprctl("dispatch focuswindow address:{}".format(self.address))
 
     def movetoworkspace(self, menuitem, ws_num):
         hyprctl("dispatch movetoworkspace {},address:{}".format(ws_num, self.address))

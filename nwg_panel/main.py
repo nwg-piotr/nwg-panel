@@ -353,6 +353,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 outputs, workspaces, windows, focused_window = {}, {}, {}, {}
                 if "niri-taskbar" in panel:
                     if niri_sock:
+                        check_key(panel, "niri-taskbar", {})
                         check_key(panel["niri-taskbar"], "all-outputs", False)
                         if panel["niri-taskbar"]["all-outputs"] or "output" not in panel:
                             taskbar = NiriTaskbar(panel["niri-taskbar"], panel["position"], outputs, workspaces,
