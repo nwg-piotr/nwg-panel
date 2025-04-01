@@ -11,7 +11,7 @@ class NiriTaskbar(Gtk.Box):
     def __init__(self, settings, position, outputs, workspaces, windows, focused_window, display_name="", icons_path=""):
         defaults = {
             "name-max-len": 24,
-            "image-size": 16,
+            "icon-size": 16,
             "workspaces-spacing": 0,
             "client-padding": 0,
             "show-app-icon": True,
