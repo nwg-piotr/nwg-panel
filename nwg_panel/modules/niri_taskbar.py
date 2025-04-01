@@ -87,7 +87,7 @@ class NiriTaskbar(Gtk.Box):
                     # if client["title"] prevents from creation of ghost client boxes
                     if window["title"] and window["workspace_id"] == ws_num:
                         client_box = ClientBox(self.settings, window, self.position, self.icons_path)
-                        if self.focused_window and window["pid"] == self.focused_window["pid"]:
+                        if self.focused_window and window["id"] == self.focused_window["id"]:
                             client_box.box.set_property("name", "task-box-focused")
                         else:
                             client_box.box.set_property("name", "task-box")
