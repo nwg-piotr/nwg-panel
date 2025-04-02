@@ -181,7 +181,7 @@ class ClientBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.toggle_floating)
-        item.set_tooltip_text("ToggleWindowFloating")
+        item.set_tooltip_text("toggle-window-floating")
         menu.append(item)
 
         # Fullscreen
