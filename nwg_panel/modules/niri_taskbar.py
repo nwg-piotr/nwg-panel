@@ -181,7 +181,7 @@ class ClientBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.toggle_floating)
-        item.set_tooltip_text("togglefloating")
+        item.set_tooltip_text("ToggleWindowFloating")
         menu.append(item)
 
         # Fullscreen
@@ -192,7 +192,51 @@ class ClientBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.fullscreen)
-        item.set_tooltip_text("fullscreen")
+        item.set_tooltip_text("fullscreen-window")
+        menu.append(item)
+
+        # Up
+        hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        img = Gtk.Image()
+        update_image(img, "arrow-up", 16, self.icons_path)
+        hbox.pack_start(img, True, True, 0)
+        item = Gtk.MenuItem()
+        item.add(hbox)
+        item.connect("activate", self.up_ws_up)
+        item.set_tooltip_text("move-window-up-or-to-workspace-up")
+        menu.append(item)
+
+        # Left
+        hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        img = Gtk.Image()
+        update_image(img, "arrow-left", 16, self.icons_path)
+        hbox.pack_start(img, True, True, 0)
+        item = Gtk.MenuItem()
+        item.add(hbox)
+        item.connect("activate", self.left)
+        item.set_tooltip_text("move-column-left-or-to-monitor-left")
+        menu.append(item)
+
+        # Right
+        hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        img = Gtk.Image()
+        update_image(img, "arrow-right", 16, self.icons_path)
+        hbox.pack_start(img, True, True, 0)
+        item = Gtk.MenuItem()
+        item.add(hbox)
+        item.connect("activate", self.right)
+        item.set_tooltip_text("move-column-right-or-to-monitor-right")
+        menu.append(item)
+
+        # Down
+        hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        img = Gtk.Image()
+        update_image(img, "arrow-down", 16, self.icons_path)
+        hbox.pack_start(img, True, True, 0)
+        item = Gtk.MenuItem()
+        item.add(hbox)
+        item.connect("activate", self.down_ws_down)
+        item.set_tooltip_text("move-window-down-or-to-workspace-down")
         menu.append(item)
 
         # Close
@@ -203,7 +247,7 @@ class ClientBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.close)
-        item.set_tooltip_text("closewindow")
+        item.set_tooltip_text("close-window")
         menu.append(item)
 
         return menu
@@ -220,5 +264,18 @@ class ClientBox(Gtk.EventBox):
         command = {"Action": {"FullscreenWindow": {"id": self.id}}}
         niri_ipc(json.dumps(command), is_json=True)
 
-    def movetoworkspace(self, menuitem, ws_num):
-        hyprctl("dispatch movetoworkspace {},address:{}".format(ws_num, self.address))
+    def up_ws_up(self, args):
+        command = {"Action": {"MoveWindowUpOrToWorkspaceUp": {"id": self.id}}}
+        niri_ipc(json.dumps(command), is_json=True)
+
+    def left(self, args):
+        command = {"Action":{"MoveColumnLeftOrToMonitorLeft":{}}}
+        niri_ipc(json.dumps(command), is_json=True)
+
+    def right(self, args):
+        command = {"Action":{"MoveColumnRightOrToMonitorRight":{}}}
+        niri_ipc(json.dumps(command), is_json=True)
+
+    def down_ws_down(self, args):
+        command = {"Action": {"MoveWindowDownOrToWorkspaceDown": {"id": self.id}}}
+        niri_ipc(json.dumps(command), is_json=True)
