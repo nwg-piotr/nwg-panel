@@ -930,6 +930,13 @@ def cmd_through_compositor(cmd):
                 cmd = f'swaymsg exec "{cmd}"'
         elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
             cmd = f'hyprctl dispatch exec "{cmd}"'
+        elif os.getenv("NIRI_SOCKET"):
+            parts = cmd.split()
+            quoted = []
+            for part in parts:
+                quoted.append(f'"{part}"')
+            _string = " ".join(quoted)
+            cmd = f'niri msg action spawn -- {_string}'
     return cmd
 
 
