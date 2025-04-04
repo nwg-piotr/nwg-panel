@@ -26,6 +26,7 @@ from nwg_panel.tools import get_config_dir, load_json, save_json, check_key, epr
 
 swaysock = os.getenv('SWAYSOCK')
 his = os.getenv("HYPRLAND_INSTANCE_SIGNATURE")
+niri_sock = os.getenv("NIRI_SOCKET")
 
 
 class SortOrder(Enum):
@@ -60,7 +61,33 @@ def hyprctl(cmd):
     return output
 
 
-if not swaysock and not his:
+def niri_ipc(cmd, is_json=False):
+    niri_sock = os.getenv("NIRI_SOCKET")
+    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    client.connect(niri_sock)
+    if not is_json:
+        client.send(f'"{cmd}"\n'.encode("utf-8"))
+    else:
+        client.send(f'{cmd}\n'.encode("utf-8"))
+
+    buffer = ""
+    while True:
+        chunk = client.recv(1024).decode('utf-8', errors='replace')
+        if not chunk:
+            break
+        buffer += chunk
+    try:
+        reply = json.loads(buffer)
+        key = next(iter(reply))
+        return reply[key]
+
+    except json.JSONDecodeError as e:
+        print("Failed to decode JSON:", e)
+        print("Buffer:", buffer)
+        return None
+
+
+if not swaysock and not his and not niri_sock:
     eprint("Neither sway nor hyprland socket detected, terminating.")
     sys.exit(1)
 
@@ -98,11 +125,16 @@ def terminate(btn, pid):
 
 def list_processes(once=False):
     tree = None
+    clients = {}
+    windows = {}
     if swaysock:
         tree = Connection().get_tree()
     elif his:
         output = hyprctl("j/clients")
         clients = json.loads(output)
+    elif niri_sock:
+        command = "Windows"
+        windows = niri_ipc(json.dumps(command), is_json=True)["Windows"]
 
     processes = {}
 
@@ -168,6 +200,11 @@ def list_processes(once=False):
             for client in clients:
                 if client["pid"] == pid and client["mapped"]:
                     mapped["pid"] = client["class"]
+                    break
+        elif niri_sock:
+            for window in windows:
+                if window["pid"] == pid:
+                    mapped["pid"] = window["app_id"]
                     break
 
         if not cons or not settings["processes-background-only"]:

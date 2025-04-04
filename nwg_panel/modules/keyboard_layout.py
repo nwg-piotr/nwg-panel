@@ -4,7 +4,8 @@ import os
 
 import gi
 
-from nwg_panel.tools import check_key, update_image, create_background_task, eprint, hyprctl
+from nwg_panel.tools import check_key, update_image, create_background_task, eprint, hyprctl, niri_keyboard_layouts, \
+    niri_ipc
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -17,7 +18,12 @@ def on_enter_notify_event(widget, event):
     widget.set_state_flags(Gtk.StateFlags.SELECTED, clear=False)
 
 
-def on_leave_notify_event(widget, event):
+def on_leave_notify_event(widget, event, *args):
+    widget.unset_state_flags(Gtk.StateFlags.DROP_ACTIVE)
+    widget.unset_state_flags(Gtk.StateFlags.SELECTED)
+
+
+def on_menu_popped_up(arg0, arg1, arg2, arg3, arg4, widget):
     widget.unset_state_flags(Gtk.StateFlags.DROP_ACTIVE)
     widget.unset_state_flags(Gtk.StateFlags.SELECTED)
 
@@ -39,13 +45,15 @@ class KeyboardLayout(Gtk.EventBox):
             self.compositor = "sway"
         elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
             self.compositor = "Hyprland"
+        elif os.getenv("NIRI_SOCKET"):
+            self.compositor = "niri"
         else:
             self.compositor = ""
-            eprint("Neither sway nor Hyprland detected, this won't work")
+            eprint("KeyboardLayout module only supports sway, Hyprland or Niri")
 
         if self.compositor:
             self.keyboards = self.list_keyboards()
-            if self.keyboards:
+            if self.keyboards or self.compositor == "niri":
                 self.keyboard_names = []
                 for k in self.keyboards:
                     if self.compositor == "Hyprland":
@@ -105,12 +113,14 @@ class KeyboardLayout(Gtk.EventBox):
             o = hyprctl("j/devices")
             devices = json.loads(o)
             keyboards = devices["keyboards"] if "keyboards" in devices else []
-        else:
+        elif self.compositor == "sway":
             inputs = self.i3.get_inputs()
             keyboards = []
             for i in inputs:
                 if i.type == "keyboard":
                     keyboards.append(i)
+        else:
+            keyboards = []
 
         return keyboards
 
@@ -129,6 +139,8 @@ class KeyboardLayout(Gtk.EventBox):
                         if name not in layout_names:
                             layout_names.append(name)
             return layout_names
+        elif self.compositor == "niri":
+            return niri_keyboard_layouts()["names"]
 
     def get_current_layout(self):
         if self.compositor == "Hyprland":
@@ -148,6 +160,9 @@ class KeyboardLayout(Gtk.EventBox):
                     return k.xkb_active_layout_name
                 return self.keyboards[0].xkb_active_layout_name
             return "unknown"
+        elif self.compositor == "niri":
+            nkl = niri_keyboard_layouts()
+            return nkl["names"][nkl["current_idx"]]
 
     def update_label(self):
         self.keyboards = self.list_keyboards()
@@ -178,6 +193,9 @@ class KeyboardLayout(Gtk.EventBox):
         elif self.compositor == "sway":
             # apply to all devices of type:keyboard
             self.i3.command(f'input type:keyboard xkb_switch_layout next')
+        elif self.compositor == "niri":
+            command = {"Action":{"SwitchLayout":{"layout":"Next"}}}
+            niri_ipc(json.dumps(command), is_json=True)
 
         self.update_label()
 
@@ -193,11 +211,15 @@ class KeyboardLayout(Gtk.EventBox):
         elif self.compositor == "sway":
             # apply to all devices of type:keyboard
             self.i3.command(f'input type:keyboard xkb_switch_layout {idx}')
+        elif self.compositor == "niri":
+            command = {"Action":{"SwitchLayout":{"layout":{"Index":idx}}}}
+            niri_ipc(json.dumps(command), is_json=True)
 
         self.update_label()
 
     def on_right_click(self):
         menu = Gtk.Menu()
+        menu.connect("popped-up", on_menu_popped_up, self)
         for i in range(len(self.kb_layouts)):
             item = Gtk.MenuItem.new_with_label(self.kb_layouts[i])
             item.connect("activate", self.on_menu_item, i)
@@ -205,6 +227,7 @@ class KeyboardLayout(Gtk.EventBox):
         menu.set_reserve_toggle_size(False)
         menu.show_all()
         menu.popup_at_widget(self.label, Gdk.Gravity.STATIC, Gdk.Gravity.STATIC, None)
+
 
     def on_button_release(self, widget, event):
         if event.button == 1:

@@ -473,6 +473,7 @@
                           <object class="GtkListBoxRow">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
                             <child>
                               <object class="GtkEventBox" id="eb-hyprland-submap">
                                 <property name="visible">True</property>
@@ -508,6 +509,29 @@
                                     <property name="margin-left">6</property>
                                     <property name="margin-start">6</property>
                                     <property name="label" translatable="yes">Keyboard layout</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkListBoxRow">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="selectable">False</property>
+                            <child>
+                              <object class="GtkEventBox" id="eb-niri-taskbar">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkLabel" id="niri-taskbar">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="label" translatable="yes">Niri Taskbar</property>
                                   </object>
                                 </child>
                               </object>

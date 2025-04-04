@@ -769,6 +769,7 @@ class EditorWrapper(object):
         builder.get_object("hyprland-submap").set_text(voc["hyprland-submap"])
         builder.get_object("brightness-slider").set_text(voc["brightness-slider"])
         builder.get_object("keyboard-layout").set_text(voc["keyboard-layout"])
+        builder.get_object("niri-taskbar").set_text(voc["niri-taskbar"])
         builder.get_object("executors").set_text(voc["executors"])
         builder.get_object("buttons").set_text(voc["buttons"])
         builder.get_object("menu-start").set_text(voc["menu-start"])
@@ -798,6 +799,7 @@ class EditorWrapper(object):
             "hyprland-workspaces",
             "hyprland-submap",
             "keyboard-layout",
+            "niri-taskbar",
             "tray",
             "random-wallpaper"
         ]
@@ -839,7 +841,7 @@ class EditorWrapper(object):
         builder.get_object("eb-hyprland-workspaces").connect("button-press-event", self.edit_hyprland_workspaces)
         builder.get_object("eb-hyprland-submap").connect("button-press-event", self.edit_hyprland_submap)
         builder.get_object("eb-keyboard-layout").connect("button-press-event", self.edit_keyboard_layout)
-
+        builder.get_object("eb-niri-taskbar").connect("button-press-event", self.edit_niri_taskbar)
         builder.get_object("eb-executors").connect("button-press-event", self.select_executor)
         builder.get_object("eb-buttons").connect("button-press-event", self.select_button)
 
@@ -1307,6 +1309,8 @@ class EditorWrapper(object):
             self.update_hyprland_submap()
         elif self.edited == "keyboard-layout":
             self.update_keyboard_layout()
+        elif self.edited == "niri-taskbar":
+            self.update_niri_taskbar()
         elif self.edited == "openweather":
             self.update_openweather()
         elif self.edited == "brightness-slider":
@@ -1602,6 +1606,115 @@ class EditorWrapper(object):
             settings["angle"] = 0.0
 
         save_json(self.config, self.file)
+
+    def edit_niri_taskbar(self, *args):
+        self.load_panel()
+        self.edited = "niri-taskbar"
+        check_key(self.panel, "niri-taskbar", {})
+        settings = self.panel["niri-taskbar"]
+        defaults = {
+            "name-max-len": 24,
+            "icon-size": 16,
+            "workspaces-spacing": 0,
+            "client-padding": 0,
+            "show-app-icon": True,
+            "show-app-name": True,
+            "show-layout": True,
+            "all-outputs": False,
+            "angle": 0.0
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_niri_taskbar.glade"))
+        frame = builder.get_object("frame")
+        frame.set_label("  {}: NiriTaskbar  ".format(voc["module"]))
+
+        builder.get_object("lbl-name-max-length").set_text("{}:".format(voc["name-max-length"]))
+        builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
+        builder.get_object("lbl-workspace-spacing").set_text("{}:".format(voc["workspace-spacing"]))
+        builder.get_object("lbl-task-padding").set_text("{}:".format(voc["task-padding"]))
+        builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
+
+        self.sb_name_max_len = builder.get_object("name-max-len")
+        self.sb_name_max_len.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=1, upper=257, step_increment=1, page_increment=10, page_size=1)
+        self.sb_name_max_len.configure(adj, 1, 0)
+        self.sb_name_max_len.set_value(settings["name-max-len"])
+
+        self.sb_image_size = builder.get_object("icon-size")
+        self.sb_image_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
+        self.sb_image_size.configure(adj, 1, 0)
+        self.sb_image_size.set_value(settings["icon-size"])
+
+        self.sb_workspace_spacing = builder.get_object("workspaces-spacing")
+        self.sb_workspace_spacing.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=1000, step_increment=1, page_increment=10, page_size=1)
+        self.sb_workspace_spacing.configure(adj, 1, 0)
+        self.sb_workspace_spacing.set_value(settings["workspaces-spacing"])
+
+        self.sb_task_padding = builder.get_object("task-padding")
+        self.sb_task_padding.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=257, step_increment=1, page_increment=10, page_size=1)
+        self.sb_task_padding.configure(adj, 1, 0)
+        self.sb_task_padding.set_value(settings["client-padding"])
+
+        self.ckb_show_app_icon = builder.get_object("show-app-icon")
+        self.ckb_show_app_icon.set_label(voc["show-icon"])
+        self.ckb_show_app_icon.set_active(settings["show-app-icon"])
+
+        self.ckb_show_app_name = builder.get_object("show-app-name")
+        self.ckb_show_app_name.set_label(voc["show-name"])
+        self.ckb_show_app_name.set_active(settings["show-app-name"])
+
+        self.ckb_show_layout = builder.get_object("show-layout")
+        self.ckb_show_layout.set_label(voc["mark-floating-win"])
+        self.ckb_show_layout.set_active(settings["show-layout"])
+
+        self.ckb_all_outputs = builder.get_object("all-outputs")
+        self.ckb_all_outputs.set_label(voc["all-outputs"])
+        self.ckb_all_outputs.set_active(settings["all-outputs"])
+
+        self.sb_angle = builder.get_object("angle")
+        self.sb_angle.set_tooltip_text(voc["angle-tooltip"])
+        self.sb_angle.set_active_id(str(settings["angle"]))
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(frame)
+
+    def update_niri_taskbar(self):
+        settings = self.panel["niri-taskbar"]
+
+        val = self.sb_name_max_len.get_value()
+        if val is not None:
+            settings["name-max-len"] = int(val)
+
+        val = self.sb_image_size.get_value()
+        if val is not None:
+            settings["image-size"] = int(val)
+
+        val = self.sb_workspace_spacing.get_value()
+        if val is not None:
+            settings["workspaces-spacing"] = int(val)
+
+        val = self.sb_task_padding.get_value()
+        if val is not None:
+            settings["task-padding"] = int(val)
+
+        settings["show-app-icon"] = self.ckb_show_app_icon.get_active()
+        settings["show-app-name"] = self.ckb_show_app_name.get_active()
+        settings["show-layout"] = self.ckb_show_layout.get_active()
+        settings["all-outputs"] = self.ckb_all_outputs.get_active()
+
+        try:
+            settings["angle"] = float(self.sb_angle.get_active_id())
+        except Exception as e:
+            settings["angle"] = 0.0
+
+        save_json(self.config, self.file)
+
 
     def edit_clock(self, *args):
         self.load_panel()
