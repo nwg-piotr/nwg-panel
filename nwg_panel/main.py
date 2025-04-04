@@ -392,13 +392,13 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 eprint("HyprlandSubmap module only works on Hyprland, ignoring")
 
         if item == "keyboard-layout":
-            if his or sway:
+            if his or sway or niri_sock:
                 if "keyboard-layout" not in panel:
                     panel["keyboard-layout"] = {}
                 kb_layout = KeyboardLayout(panel["keyboard-layout"], icons_path)
                 container.pack_start(kb_layout, False, False, panel["items-padding"])
             else:
-                eprint("KeyboardLayout module does not yet support sway")
+                eprint("KeyboardLayout module does not yet support your compositor")
 
         if "button-" in item:
             if item in panel:

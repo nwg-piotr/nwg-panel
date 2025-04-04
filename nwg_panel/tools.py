@@ -831,6 +831,11 @@ def niri_focused_window():
     return reply[next(iter(reply))]
 
 
+def niri_keyboard_layouts():
+    reply = niri_ipc("KeyboardLayouts")
+    return reply[next(iter(reply))]
+
+
 def niri_get_all():
     return niri_outputs(), niri_workspaces(), niri_windows(), niri_focused_window()
 
