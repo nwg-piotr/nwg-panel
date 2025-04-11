@@ -232,9 +232,9 @@ def niri_watcher():
                 continue
             try:
                 message = json.loads(line)
-                event_name = next(iter(message))
+                # event_name = next(iter(message))
                 # event_data = message[event_name]
-                print(f"[{event_name}]")
+                # print(f"[{event_name}]")
 
                 outputs, workspaces, windows, focused_window = niri_get_all()
                 # print(f"{outputs}\n{workspaces}\n{windows}\n{focused_window}")
