@@ -214,9 +214,9 @@ class OpenWeather(Gtk.EventBox):
 
     def refresh(self):
         if self.settings["interval"] > 0:
-            # We can't use `self.settings["interval"]` here, as the timer resets on restart. Let's check once a minute.
+            # We can't use `self.settings["interval"]` here, as the timer resets on restart. Let's check once 10 minutes.
             # This will do nothing if files exist and self.weather & self.forecast are not None.
-            interval = 60
+            interval = 600
         else:
             interval = 0
 
