@@ -95,9 +95,6 @@ class NiriTaskbar(Gtk.Box):
 
         self.show_all()
 
-    def on_ws_click(self, widget, event, ws_num):
-        hyprctl("dispatch workspace name:{}".format(ws_num))
-
 
 def on_enter_notify_event(widget, event):
     widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
