@@ -77,9 +77,15 @@ class NiriTaskbar(Gtk.Box):
                 ws_box.pack_start(eb, False, False, 6)
                 lbl = Gtk.Label()
                 if ws_num in self.active_workspaces:
-                    lbl.set_markup("<u>{}</u>:".format(self.workspaces[ws_num]["id"]))
+                    if self.workspaces[ws_num]["name"]:
+                        lbl.set_markup("<u>{}</u>:".format(self.workspaces[ws_num]["name"]))
+                    else:
+                        lbl.set_markup("<u>{}</u>:".format(self.workspaces[ws_num]["id"]))
                 else:
-                    lbl.set_text("{}:".format(self.workspaces[ws_num]["id"]))
+                    if self.workspaces[ws_num]["name"]:
+                        lbl.set_markup("{}:".format(self.workspaces[ws_num]["name"]))
+                    else:
+                        lbl.set_text("{}:".format(self.workspaces[ws_num]["id"]))
                 eb.add(lbl)
                 win_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 ws_box.pack_start(win_box, False, False, 0)
