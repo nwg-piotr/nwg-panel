@@ -91,8 +91,7 @@ class NiriTaskbar(Gtk.Box):
                 win_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 ws_box.pack_start(win_box, False, False, 0)
                 for window in self.windows:
-                    # if client["title"] prevents from creation of ghost client boxes
-                    if window["title"] and window["workspace_id"] == ws_num:
+                    if window["workspace_id"] == ws_num:
                         client_box = ClientBox(self.settings, window, self.position, self.icons_path)
                         if self.focused_window and window["id"] == self.focused_window["id"]:
                             client_box.box.set_property("name", "task-box-focused")
