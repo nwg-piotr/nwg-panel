@@ -8,7 +8,8 @@ from nwg_panel.tools import niri_ipc, update_image, update_image_fallback_deskto
 
 
 class NiriTaskbar(Gtk.Box):
-    def __init__(self, settings, position, outputs, workspaces, windows, focused_window, display_name="", icons_path=""):
+    def __init__(self, settings, position, outputs, workspaces, windows, focused_window, display_name="",
+                 icons_path=""):
         defaults = {
             "name-max-len": 24,
             "icon-size": 16,
@@ -80,12 +81,12 @@ class NiriTaskbar(Gtk.Box):
                     if self.workspaces[ws_num]["name"]:
                         lbl.set_markup("<u>{}</u>:".format(self.workspaces[ws_num]["name"]))
                     else:
-                        lbl.set_markup("<u>{}</u>:".format(self.workspaces[ws_num]["id"]))
+                        lbl.set_markup("<u>{}</u>:".format(self.workspaces[ws_num]["idx"]))
                 else:
                     if self.workspaces[ws_num]["name"]:
                         lbl.set_markup("{}:".format(self.workspaces[ws_num]["name"]))
                     else:
-                        lbl.set_text("{}:".format(self.workspaces[ws_num]["id"]))
+                        lbl.set_text("{}:".format(self.workspaces[ws_num]["idx"]))
                 eb.add(lbl)
                 win_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 ws_box.pack_start(win_box, False, False, 0)
@@ -149,7 +150,6 @@ class ClientBox(Gtk.EventBox):
             if name and image:
                 image.set_tooltip_text(name)
 
-
         if settings["show-layout"]:
             if window["is_floating"]:
                 img = Gtk.Image()
@@ -158,7 +158,7 @@ class ClientBox(Gtk.EventBox):
 
     def on_click(self, widget, event, client, popup_at_widget):
         if event.button == 1:
-            command = {"Action":{"FocusWindow":{"id":client["id"]}}}
+            command = {"Action": {"FocusWindow": {"id": client["id"]}}}
             niri_ipc(json.dumps(command), is_json=True)
 
         if event.button == 3:
@@ -260,7 +260,7 @@ class ClientBox(Gtk.EventBox):
         niri_ipc(json.dumps(command), is_json=True)
 
     def toggle_floating(self, *args):
-        command = {"Action":{"ToggleWindowFloating":{"id":self.id}}}
+        command = {"Action": {"ToggleWindowFloating": {"id": self.id}}}
         niri_ipc(json.dumps(command), is_json=True)
 
     def fullscreen(self, *args):
@@ -272,11 +272,11 @@ class ClientBox(Gtk.EventBox):
         niri_ipc(json.dumps(command), is_json=True)
 
     def left(self, args):
-        command = {"Action":{"MoveColumnLeftOrToMonitorLeft":{}}}
+        command = {"Action": {"MoveColumnLeftOrToMonitorLeft": {}}}
         niri_ipc(json.dumps(command), is_json=True)
 
     def right(self, args):
-        command = {"Action":{"MoveColumnRightOrToMonitorRight":{}}}
+        command = {"Action": {"MoveColumnRightOrToMonitorRight": {}}}
         niri_ipc(json.dumps(command), is_json=True)
 
     def down_ws_down(self, args):
