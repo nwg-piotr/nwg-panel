@@ -15,6 +15,7 @@ class NiriTaskbar(Gtk.Box):
             "icon-size": 16,
             "workspaces-spacing": 0,
             "client-padding": 0,
+            "workspace-label": "idx",
             "show-app-icon": True,
             "show-app-name": True,
             "show-layout": True,
@@ -81,12 +82,12 @@ class NiriTaskbar(Gtk.Box):
                     if self.workspaces[ws_num]["name"]:
                         lbl.set_markup("<u>{}</u>:".format(self.workspaces[ws_num]["name"]))
                     else:
-                        lbl.set_markup("<u>{}</u>:".format(self.workspaces[ws_num]["idx"]))
+                        lbl.set_markup("<u>{}</u>:".format(self.workspaces[ws_num][self.settings["workspace-label"]]))
                 else:
                     if self.workspaces[ws_num]["name"]:
                         lbl.set_markup("{}:".format(self.workspaces[ws_num]["name"]))
                     else:
-                        lbl.set_text("{}:".format(self.workspaces[ws_num]["idx"]))
+                        lbl.set_text("{}:".format(self.workspaces[ws_num][self.settings["workspace-label"]]))
                 eb.add(lbl)
                 win_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 ws_box.pack_start(win_box, False, False, 0)

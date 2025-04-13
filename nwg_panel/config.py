@@ -1617,6 +1617,7 @@ class EditorWrapper(object):
             "icon-size": 16,
             "workspaces-spacing": 0,
             "client-padding": 0,
+            "workspace-label": "idx",
             "show-app-icon": True,
             "show-app-name": True,
             "show-layout": True,
@@ -1633,6 +1634,7 @@ class EditorWrapper(object):
         builder.get_object("lbl-name-max-length").set_text("{}:".format(voc["name-max-length"]))
         builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
         builder.get_object("lbl-workspace-spacing").set_text("{}:".format(voc["workspace-spacing"]))
+        builder.get_object("lbl-workspace-label").set_text("{}:".format(voc["workspace-label"]))
         builder.get_object("lbl-task-padding").set_text("{}:".format(voc["task-padding"]))
         builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
 
@@ -1659,6 +1661,9 @@ class EditorWrapper(object):
         adj = Gtk.Adjustment(value=0, lower=0, upper=257, step_increment=1, page_increment=10, page_size=1)
         self.sb_task_padding.configure(adj, 1, 0)
         self.sb_task_padding.set_value(settings["client-padding"])
+
+        self.combo_ws_label = builder.get_object("workspace-label")
+        self.combo_ws_label.set_active_id(settings["workspace-label"])
 
         self.ckb_show_app_icon = builder.get_object("show-app-icon")
         self.ckb_show_app_icon.set_label(voc["show-icon"])
@@ -1702,6 +1707,8 @@ class EditorWrapper(object):
         val = self.sb_task_padding.get_value()
         if val is not None:
             settings["task-padding"] = int(val)
+
+        settings["workspace-label"] = self.combo_ws_label.get_active_id()
 
         settings["show-app-icon"] = self.ckb_show_app_icon.get_active()
         settings["show-app-name"] = self.ckb_show_app_name.get_active()
