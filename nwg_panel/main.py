@@ -677,7 +677,7 @@ def main():
             pass
 
         if panel["output"] and not monitor:
-            print("Couldn't assign a Gdk.Monitor to output '{}'".format(panel["output"]))
+            eprint("Couldn't assign a Gdk.Monitor to output '{}'".format(panel["output"]))
             continue
 
         check_key(panel, "icons", "")
