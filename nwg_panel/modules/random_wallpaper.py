@@ -9,7 +9,8 @@ import requests
 import threading
 
 from shutil import copyfile
-from nwg_panel.tools import update_image, local_dir, cmd_through_compositor, create_background_task, eprint
+from nwg_panel.tools import update_image, local_dir, cmd_through_compositor, create_background_task, eprint, save_json, \
+    load_json
 
 
 def on_enter_notify_event(widget, event):
@@ -43,6 +44,7 @@ class RandomWallpaper(Gtk.Button):
         self.settings = settings
         self.icons_path = icons_path
         self.wallpaper_path = os.path.join(local_dir(), "wallpaper.jpg")
+        self.wallpaper_info_path = os.path.join(local_dir(), "wallpaper.json")
 
         self.voc = voc
         self.src_tag = 0
@@ -118,6 +120,8 @@ class RandomWallpaper(Gtk.Button):
                 with open(self.wallpaper_path, "wb") as file:
                     file.write(image_response.content)
                 print(f"Wallhaven image saved as {self.wallpaper_path}")
+                save_json(self.image_info, self.wallpaper_info_path)
+                print(f"Wallhaven image info saved as {self.wallpaper_info_path}")
             else:
                 eprint("Failed to download Wallhaven image")
         else:
@@ -234,7 +238,8 @@ class RandomWallpaper(Gtk.Button):
         w = ImageInfoWindow(self.image_info, self.voc)
 
     def save_wallpaper(self, item):
-        output_file_name = f"wallhaven-{self.image_info['id']}.jpg"
+        info = load_json(self.wallpaper_info_path)
+        output_file_name = f"wallhaven-{info['id']}.jpg"
         save_path = self.settings["save-path"] if self.settings["save-path"] else os.getenv("HOME")
         try:
             msg = f"{self.voc['saved-to']} {save_path}"
