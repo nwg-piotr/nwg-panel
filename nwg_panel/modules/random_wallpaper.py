@@ -134,18 +134,18 @@ class RandomWallpaper(Gtk.Button):
         idx = random.randint(0, len(paths) - 1)
         image_path = os.path.join(self.settings["local-path"], paths[idx])
         ext = image_path.split(".")[-1]
-        if ext.upper() in ["PNG", "JPG", "JPEG", "TIF", "TIFF", "SVG"]:
+        if ext.upper() in ["PNG", "JPG", "JPEG", "TIF", "TIFF", "SVG", 'WEBP', 'HEIC', 'AVIF']:
             print(f"Setting '{image_path}' as wallpaper")
             cmd = "pkill swaybg"
             subprocess.Popen('{}'.format(cmd), shell=True)
             print(f"Executing: {cmd}")
             subprocess.Popen('{}'.format(cmd), shell=True)
 
-            cmd = "swaybg -i {} -m fill".format(image_path)
+            cmd = f"swaybg -i '{image_path}' -m fill"
 
             cmd = cmd_through_compositor(cmd)
             print(f"Executing: {cmd}")
-            subprocess.Popen('{}'.format(cmd), shell=True)
+            subprocess.Popen(f"{cmd}", shell=True, preexec_fn=os.setpgrp)
         else:
             eprint(f"'{image_path}' is not a valid image file")
 
