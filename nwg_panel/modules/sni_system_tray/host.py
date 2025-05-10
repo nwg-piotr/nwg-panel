@@ -54,7 +54,14 @@ class StatusNotifierHostInterface(object):
     def watcher_available_handler(self, _observer):
         # print("StatusNotifierHostInterface -> watcher_available_handler")
         self.watcher_proxy = self.session_bus.get_proxy(WATCHER_SERVICE_NAME, WATCHER_OBJECT_PATH)
-        self.watcher_proxy.StatusNotifierItemRegistered.connect(self.item_registered_handler)
+
+        # fix 396
+        # self.watcher_proxy.StatusNotifierItemRegistered.connect(self.item_registered_handler)
+        try:
+            self.watcher_proxy.StatusNotifierItemRegistered.connect(self.item_registered_handler)
+        except AttributeError:
+            print("Warning: StatusNotifierWatcher interface not available (yet). Skipping signal connection.")
+
         self.watcher_proxy.StatusNotifierItemUnregistered.connect(self.item_unregistered_handler)
         self.watcher_proxy.RegisterStatusNotifierHost(self.host_object_path, callback=lambda _: None)
 

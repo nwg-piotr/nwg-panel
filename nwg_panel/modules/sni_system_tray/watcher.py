@@ -1,3 +1,4 @@
+import time
 import typing
 
 from dasbus.connection import SessionMessageBus
@@ -213,8 +214,22 @@ class StatusNotifierWatcherInterface(object):
 def init():
     session_bus = SessionMessageBus()
     session_bus.publish_object(WATCHER_OBJECT_PATH, StatusNotifierWatcherInterface())
-    session_bus.register_service(WATCHER_SERVICE_NAME)
-    # print("watcher.init(): published {}{} on dbus.".format(WATCHER_SERVICE_NAME, WATCHER_OBJECT_PATH))
+
+    # fix #396
+    # session_bus.register_service(WATCHER_SERVICE_NAME)
+    for i in range(10):
+        try:
+            session_bus.register_service(WATCHER_SERVICE_NAME)
+            break
+        except Exception as e:
+            if "Name request has failed" in str(e):
+                time.sleep(0.2)
+            else:
+                raise
+    else:
+        raise RuntimeError("Failed to register DBus service after multiple attempts.")
+
+    #print("watcher.init(): published {}{} on dbus.".format(WATCHER_SERVICE_NAME, WATCHER_OBJECT_PATH))
 
     global dasbus_event_loop
     if dasbus_event_loop is None:
