@@ -49,4 +49,15 @@ Use commas to separate values, e.g. `pl,us,de`.
 If nwg-panel has not yet been packaged for your Linux distribution, you may install it by cloning this repository
 and running the `install.sh` script.
 
+## Known issues:
+
+If `kded6` is running (e.g., started by launching Dolphin), it may register `org.kde.StatusNotifierWatcher` and 
+prevent nwg-panel from owning the system tray. You can stop it using:
+
+```
+pkill kded6
+```
+
+See: https://github.com/nwg-piotr/nwg-panel/issues/396
+
 See [Wiki](https://github.com/nwg-piotr/nwg-panel/wiki) for more information. You'll also find some useful executor examples there.
