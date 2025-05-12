@@ -65,14 +65,14 @@ def __process_desktop_file(file_path):
     if startup_wm_class:
         if not class_to_icon_cache.get(startup_wm_class):
             class_to_icon_cache[startup_wm_class] = icon_name
-        elif class_to_icon_cache.get(startup_wm_class) != icon_name:
-            eprint(f"Warning: Duplicate class name '{startup_wm_class}' found in cache.")
+        # elif class_to_icon_cache.get(startup_wm_class) != icon_name:
+        #     eprint(f"Warning: Duplicate class name '{startup_wm_class}' found in cache.")
 
     for app_name in app_names:
         if not name_to_icon_cache.get(app_name):
             name_to_icon_cache[app_name] = icon_name
-        elif name_to_icon_cache.get(app_name) != icon_name:
-            eprint(f"Warning: Duplicate app name '{app_name}' found in cache.")
+        # elif name_to_icon_cache.get(app_name) != icon_name:
+        #     eprint(f"Warning: Duplicate app name '{app_name}' found in cache.")
 
     base_filename = os.path.basename(file_path).upper()
     if not filename_to_icon_cache.get(base_filename):
