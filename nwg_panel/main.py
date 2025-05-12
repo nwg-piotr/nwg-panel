@@ -558,8 +558,8 @@ def main():
 
     # Warn if KDE's background daemon is running
     for proc in psutil.process_iter(['name']):
-        if proc.info['name'] == 'kded6':
-            eprint("Warning: 'kded6' is running and may block the system tray.")
+        if proc.info['name'] in ('kded5', 'kded6'):
+            eprint(f"Warning: '{proc.info['name']}' is running and may block the system tray.")
             eprint("> See https://github.com/Alexays/Waybar/issues/3468 for details.")
             break
 
