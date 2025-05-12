@@ -510,39 +510,58 @@ def main():
 
     # Kill running instances, if any
     own_pid = os.getpid()
-    # We should never have more that 1, but just in case
     running_instances = []
 
-    for proc in psutil.process_iter():
-        # kill 'nwg-panel', don't kill 'nwg-panel-config'
-        if "nwg-panel" in proc.name() and "-con" not in proc.name():
-            pid = proc.pid
+    for proc in psutil.process_iter(['pid', 'name']):
+        name = proc.info['name']
+        if name and "nwg-panel" in name and "-con" not in name:
+            pid = proc.info['pid']
             if pid != own_pid:
                 running_instances.append(pid)
-                # The easy way: try SIGINT, which we handle gentle
-                print("Running instance found, PID {}, sending SIGINT".format(pid))
-                os.kill(pid, signal.SIGINT)
+                print(f"Running instance found, PID {pid}, sending SIGINT")
+                try:
+                    os.kill(pid, signal.SIGINT)
+                except ProcessLookupError:
+                    continue  # Process already dead
 
-    # Give it half a second to die
-    time.sleep(0.5)
+    # Wait for clean shutdown (max 3 seconds)
+    max_wait = 3.0
+    interval = 0.2
+    elapsed = 0.0
 
-    # The hard way, if something's still alive ;)
-    pids = psutil.pids()
-    for p in running_instances:
-        if p in pids:
-            print("PID {} still alive, sending SIGKILL".format(p))
-            os.kill(p, signal.SIGKILL)
+    while elapsed < max_wait:
+        alive = [p for p in running_instances if psutil.pid_exists(p)]
+        if not alive:
+            break
+        time.sleep(interval)
+        elapsed += interval
 
-    # If started e.g. with 'python <path>/main.py', the process won't be found by name.
-    # Let's use saved PID and kill mercilessly. This should never happen in normal use.
+    # SIGKILL if still alive
+    for pid in running_instances:
+        if psutil.pid_exists(pid):
+            print(f"PID {pid} still alive after {elapsed:.1f}s, sending SIGKILL")
+            try:
+                os.kill(pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+
+    # Fallback: kill by PID file (should never happen)
     pid_file = os.path.join(temp_dir(), "nwg-panel.pid")
     if os.path.isfile(pid_file):
         try:
             pid = int(load_text_file(pid_file))
-            os.kill(pid, signal.SIGKILL)
-            print("Running no name instance killed, PID {}".format(pid))
+            if psutil.pid_exists(pid):
+                print(f"Unnamed instance found via PID file, killing PID {pid}")
+                os.kill(pid, signal.SIGKILL)
         except:
             pass
+
+    # Warn if KDE's background daemon is running
+    for proc in psutil.process_iter(['name']):
+        if proc.info['name'] == 'kded6':
+            eprint("Warning: 'kded6' is running and may block the system tray.")
+            eprint("> See https://github.com/Alexays/Waybar/issues/3468 for details.")
+            break
 
     save_string(str(own_pid), pid_file)
 

@@ -159,9 +159,9 @@ class OpenWeather(Gtk.EventBox):
         self.weather_file = "{}-{}".format(os.path.join(tmp_dir, "nwg-openweather-weather"), settings["module-id"])
         self.forecast_file = "{}-{}".format(os.path.join(tmp_dir, "nwg-openweather-forecast"), settings["module-id"])
         self.alerts_file = "{}-{}".format(os.path.join(tmp_dir, "nwg-weatherbit-alerts"), settings["module-id"])
-        eprint("Weather file: {}".format(self.weather_file))
-        eprint("Forecast file: {}".format(self.forecast_file))
-        eprint("Alerts file: {}".format(self.alerts_file))
+        # eprint("Weather file: {}".format(self.weather_file))
+        # eprint("Forecast file: {}".format(self.forecast_file))
+        # eprint("Alerts file: {}".format(self.alerts_file))
 
         # Try to obtain geolocation if unset
         if not settings["lat"] or not settings["long"]:
@@ -247,7 +247,7 @@ class OpenWeather(Gtk.EventBox):
 
     def get_weather(self):
         if not os.path.isfile(self.weather_file) or int(file_age(self.weather_file) > self.settings["interval"] - 1):
-            eprint(hms(), "Requesting weather data")
+            print(hms(), "Requesting weather data")
             try:
                 r = requests.get(self.weather_request)
                 self.weather = json.loads(r.text)
@@ -257,12 +257,12 @@ class OpenWeather(Gtk.EventBox):
                 self.weather = None
                 eprint(e)
         elif not self.weather:
-            eprint(hms(), "Loading weather data from file")
+            print(hms(), "Loading weather data from file")
             self.weather = load_json(self.weather_file)
 
     def get_forecast(self):
         if not os.path.isfile(self.forecast_file) or int(file_age(self.forecast_file) > self.settings["interval"] - 1):
-            eprint(hms(), "Requesting forecast data")
+            print(hms(), "Requesting forecast data")
             try:
                 r = requests.get(self.forecast_request)
                 self.forecast = json.loads(r.text)
@@ -272,12 +272,12 @@ class OpenWeather(Gtk.EventBox):
                 self.forecast = None
                 eprint(e)
         elif not self.forecast:
-            eprint(hms(), "Loading forecast data from file")
+            print(hms(), "Loading forecast data from file")
             self.forecast = load_json(self.forecast_file)
 
     def get_alerts(self):
         if not os.path.isfile(self.alerts_file) or int(file_age(self.alerts_file) > self.settings["interval"] - 1):
-            eprint(hms(), "Requesting alerts data")
+            print(hms(), "Requesting alerts data")
             try:
                 r = requests.get(self.alerts_request)
                 self.alerts_json = json.loads(r.text)
@@ -287,7 +287,7 @@ class OpenWeather(Gtk.EventBox):
                 self.alerts_json = None
                 eprint(e)
         elif not self.alerts_json and os.path.isfile(self.alerts_file):
-            eprint(hms(), "Loading alerts data from file")
+            print(hms(), "Loading alerts data from file")
             self.alerts_json = load_json(self.alerts_file)
 
     def update_widget(self):

@@ -1,9 +1,13 @@
 import os
+import sys
 
 class_to_icon_cache = {}
 name_to_icon_cache = {}
 filename_to_icon_cache = {}
 
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 def __get_app_dirs():
     desktop_dirs = []
@@ -36,10 +40,10 @@ def __process_desktop_file(file_path):
         with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
     except UnicodeDecodeError:
-        print(f"Warning: Invalid .desktop file '{file_path}'")
+        eprint(f"Warning: Invalid .desktop file '{file_path}'")
         return
     except OSError as e:
-        print(f"Warning: Unable to read .desktop file '{file_path}': {e}")
+        eprint(f"Warning: Unable to read .desktop file '{file_path}': {e}")
         return
 
     icon_name = None
@@ -62,19 +66,19 @@ def __process_desktop_file(file_path):
         if not class_to_icon_cache.get(startup_wm_class):
             class_to_icon_cache[startup_wm_class] = icon_name
         elif class_to_icon_cache.get(startup_wm_class) != icon_name:
-            print(f"Warning: Duplicate class name '{startup_wm_class}' found in cache.")
+            eprint(f"Warning: Duplicate class name '{startup_wm_class}' found in cache.")
 
     for app_name in app_names:
         if not name_to_icon_cache.get(app_name):
             name_to_icon_cache[app_name] = icon_name
         elif name_to_icon_cache.get(app_name) != icon_name:
-            print(f"Warning: Duplicate app name '{app_name}' found in cache.")
+            eprint(f"Warning: Duplicate app name '{app_name}' found in cache.")
 
     base_filename = os.path.basename(file_path).upper()
     if not filename_to_icon_cache.get(base_filename):
         filename_to_icon_cache[base_filename] = icon_name
     elif filename_to_icon_cache.get(base_filename) != icon_name:
-        print(f"Warning: Duplicate .desktop file name '{base_filename}' found in cache.")
+        eprint(f"Warning: Duplicate .desktop file name '{base_filename}' found in cache.")
 
 
 def __populate_caches():
@@ -89,7 +93,7 @@ def __populate_caches():
             try:
                 files = os.listdir(d)
             except OSError as e:
-                print(f"Warning: Can't list files in directory '{d}': {e}")
+                eprint(f"Warning: Can't list files in directory '{d}': {e}")
                 continue
 
             for file_name in files:
