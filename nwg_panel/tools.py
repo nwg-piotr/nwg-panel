@@ -777,30 +777,30 @@ def load_shell_data():
 
 def niri_ipc(cmd, is_json=False):
     niri_sock = os.getenv("NIRI_SOCKET")
-    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    client.connect(niri_sock)
-    if not is_json:
-        client.send(f'"{cmd}"\n'.encode("utf-8"))
-    else:
-        client.send(f'{cmd}\n'.encode("utf-8"))
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+        client.connect(niri_sock)
+        if not is_json:
+            client.send(f'"{cmd}"\n'.encode("utf-8"))
+        else:
+            client.send(f'{cmd}\n'.encode("utf-8"))
 
-    buffer = ""
-    while True:
-        chunk = client.recv(1024).decode('utf-8', errors='replace')
-        if not chunk:
-            break
-        buffer += chunk
-        if buffer.endswith('\n'):  # Exit when the newline-terminated response is complete
-            break
-    try:
-        reply = json.loads(buffer)
-        key = next(iter(reply))
-        return reply[key]
+        buffer = ""
+        while True:
+            chunk = client.recv(1024).decode('utf-8', errors='replace')
+            if not chunk:
+                break
+            buffer += chunk
+            if buffer.endswith('\n'):  # Exit when the newline-terminated response is complete
+                break
+        try:
+            reply = json.loads(buffer)
+            key = next(iter(reply))
+            return reply[key]
 
-    except json.JSONDecodeError as e:
-        print("Failed to decode JSON:", e)
-        print("Buffer:", buffer)
-        return None
+        except json.JSONDecodeError as e:
+            print("Failed to decode JSON:", e)
+            print("Buffer:", buffer)
+            return None
 
 
 def niri_outputs():
