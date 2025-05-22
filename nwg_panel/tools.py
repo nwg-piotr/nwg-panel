@@ -777,30 +777,42 @@ def load_shell_data():
 
 def niri_ipc(cmd, is_json=False):
     niri_sock = os.getenv("NIRI_SOCKET")
-    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
-        client.connect(niri_sock)
-        if not is_json:
-            client.send(f'"{cmd}"\n'.encode("utf-8"))
-        else:
-            client.send(f'{cmd}\n'.encode("utf-8"))
+    if not niri_sock:
+        print("NIRI_SOCKET environment variable not set.")
+        return None
 
-        buffer = ""
-        while True:
-            chunk = client.recv(1024).decode('utf-8', errors='replace')
-            if not chunk:
-                break
-            buffer += chunk
-            if buffer.endswith('\n'):  # Exit when the newline-terminated response is complete
-                break
-        try:
-            reply = json.loads(buffer)
-            key = next(iter(reply))
-            return reply[key]
+    try:
+        # Automatically closes the socket at the end of the with block
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+            client.connect(niri_sock)
 
-        except json.JSONDecodeError as e:
-            print("Failed to decode JSON:", e)
-            print("Buffer:", buffer)
-            return None
+            # Send command as stringified JSON or raw JSON
+            if not is_json:
+                client.send(f'"{cmd}"\n'.encode("utf-8"))
+            else:
+                client.send(f'{cmd}\n'.encode("utf-8"))
+
+            buffer = ""
+            while True:
+                chunk = client.recv(1024).decode('utf-8', errors='replace')
+                if not chunk:
+                    break
+                buffer += chunk
+                if buffer.endswith('\n'):  # Detect end of message
+                    break
+
+    except (socket.error, OSError) as e:
+        print("Socket error:", e)
+        return None
+
+    try:
+        reply = json.loads(buffer)
+        key = next(iter(reply))
+        return reply[key]
+    except json.JSONDecodeError as e:
+        print("Failed to decode JSON:", e)
+        print("Buffer:", buffer)
+        return None
 
 
 def niri_outputs():
