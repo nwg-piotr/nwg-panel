@@ -141,6 +141,8 @@ class KeyboardLayout(Gtk.EventBox):
             return layout_names
         elif self.compositor == "niri":
             return niri_keyboard_layouts()["names"]
+        else:
+            return []
 
     def get_current_layout(self):
         if self.compositor == "Hyprland":
@@ -163,6 +165,8 @@ class KeyboardLayout(Gtk.EventBox):
         elif self.compositor == "niri":
             nkl = niri_keyboard_layouts()
             return nkl["names"][nkl["current_idx"]]
+        else:
+            return "unknown"
 
     def update_label(self):
         self.keyboards = self.list_keyboards()

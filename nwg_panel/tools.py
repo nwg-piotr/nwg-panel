@@ -790,6 +790,8 @@ def niri_ipc(cmd, is_json=False):
         if not chunk:
             break
         buffer += chunk
+        if buffer.endswith('\n'):  # Exit when the newline-terminated response is complete
+            break
     try:
         reply = json.loads(buffer)
         key = next(iter(reply))
