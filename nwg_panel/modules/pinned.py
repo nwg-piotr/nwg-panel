@@ -83,12 +83,10 @@ class Pinned(Gtk.EventBox):
 
         check_key(settings, "limit", 0)
         check_key(settings, "icon-size", 16)
-        check_key(settings, "root-css-name", "root-pinned")
-        check_key(settings, "css-name", "pinned-button")
         check_key(settings, "angle", 0.0)
         self.settings = settings
 
-        self.set_property("name", settings["root-css-name"])
+        self.set_property("name", "root-pinned")
 
         lang = os.environ.get('LANG', 'en_US.UTF-8')  # fallback to default if not set
         self.lang = lang.split('.')[0].split('_')[0]
@@ -132,7 +130,7 @@ class Pinned(Gtk.EventBox):
 
                         btn = Gtk.Button()
                         btn.set_image(image)
-                        btn.set_property("name", self.settings["css-name"])
+                        btn.set_property("name", "pinned-button")
                         btn.set_tooltip_text(name)
 
                         btn.connect("clicked", launch, exec)
