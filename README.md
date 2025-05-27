@@ -40,7 +40,8 @@ You can also see the remote image info, and save the image to a local folder of 
 - **HyprlandSubmap**: a simple indicator of a Hyprland bindings submap other than "default";
 - **Tray**: SNI system tray module;
 - **KeyboardLayout**: keyboard layout switcher, between values defined as `xkb_layout` (sway) or `kb_layout` (Hyprland).
-Use commas to separate values, e.g. `pl,us,de`.
+Use commas to separate values, e.g. `pl,us,de`;
+- **Pinned**: displays buttons corresponding to pinned items from nwg-drawer/nwg-menu
 
 ## Installation
 
