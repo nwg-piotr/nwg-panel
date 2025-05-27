@@ -773,6 +773,7 @@ class EditorWrapper(object):
         builder.get_object("executors").set_text(voc["executors"])
         builder.get_object("buttons").set_text(voc["buttons"])
         builder.get_object("menu-start").set_text(voc["menu-start"])
+        builder.get_object("pinned-icons").set_text(voc["pinned-icons"])
 
         self.window = builder.get_object("main-window")
         self.window.set_keep_above(True)
@@ -801,7 +802,8 @@ class EditorWrapper(object):
             "keyboard-layout",
             "niri-taskbar",
             "tray",
-            "random-wallpaper"
+            "random-wallpaper",
+            "pinned"
         ]
 
         self.scrolled_window = builder.get_object("scrolled-window")
@@ -842,6 +844,7 @@ class EditorWrapper(object):
         builder.get_object("eb-hyprland-submap").connect("button-press-event", self.edit_hyprland_submap)
         builder.get_object("eb-keyboard-layout").connect("button-press-event", self.edit_keyboard_layout)
         builder.get_object("eb-niri-taskbar").connect("button-press-event", self.edit_niri_taskbar)
+        builder.get_object("eb-pinned").connect("button-press-event", self.edit_pinned)
         builder.get_object("eb-executors").connect("button-press-event", self.select_executor)
         builder.get_object("eb-buttons").connect("button-press-event", self.select_button)
 
@@ -1311,6 +1314,8 @@ class EditorWrapper(object):
             self.update_keyboard_layout()
         elif self.edited == "niri-taskbar":
             self.update_niri_taskbar()
+        elif self.edited == "pinned":
+            self.update_pinned()
         elif self.edited == "openweather":
             self.update_openweather()
         elif self.edited == "brightness-slider":
@@ -1714,6 +1719,66 @@ class EditorWrapper(object):
         settings["show-app-name"] = self.ckb_show_app_name.get_active()
         settings["show-layout"] = self.ckb_show_layout.get_active()
         settings["all-outputs"] = self.ckb_all_outputs.get_active()
+
+        try:
+            settings["angle"] = float(self.sb_angle.get_active_id())
+        except Exception as e:
+            settings["angle"] = 0.0
+
+        save_json(self.config, self.file)
+
+    def edit_pinned(self, *args):
+        self.load_panel()
+        self.edited = "pinned"
+        check_key(self.panel, "pinned", {})
+        settings = self.panel["pinned"]
+        defaults = {
+            "limit": 0,
+            "icon-size": 16,
+            "angle": 0.0
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_pinned.glade"))
+        frame = builder.get_object("frame")
+        frame.set_label("  {}: Pinned  ".format(voc["module"]))
+
+        builder.get_object("lbl-icon-number-limit").set_text("{}:".format(voc["icon-number-limit"]))
+        builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
+        builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
+
+        self.sb_limit = builder.get_object("icon-number-limit")
+        self.sb_limit.set_tooltip_text(voc["icon-number-limit-tooltip"])
+        self.sb_limit.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=0, upper=129, step_increment=1, page_increment=10, page_size=1)
+        self.sb_limit.configure(adj, 1, 0)
+        self.sb_limit.set_value(settings["limit"])
+
+        self.sb_icon_size = builder.get_object("icon-size")
+        self.sb_icon_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
+        self.sb_icon_size.configure(adj, 1, 0)
+        self.sb_icon_size.set_value(settings["icon-size"])
+
+        self.sb_angle = builder.get_object("angle")
+        self.sb_angle.set_tooltip_text(voc["angle-tooltip"])
+        self.sb_angle.set_active_id(str(settings["angle"]))
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(frame)
+
+    def update_pinned(self):
+        settings = self.panel["pinned"]
+
+        val = self.sb_limit.get_value()
+        if val is not None:
+            settings["limit"] = int(val)
+
+        val = self.sb_icon_size.get_value()
+        if val is not None:
+            settings["icon-size"] = int(val)
 
         try:
             settings["angle"] = float(self.sb_angle.get_active_id())
