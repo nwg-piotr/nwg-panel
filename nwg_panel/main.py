@@ -16,6 +16,7 @@ import threading
 import gi
 
 from nwg_panel.__about__ import __version__
+from nwg_panel.modules.pinned import Pinned
 
 gi.require_version('Gtk', '3.0')
 try:
@@ -399,6 +400,12 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 container.pack_start(kb_layout, False, False, panel["items-padding"])
             else:
                 eprint("KeyboardLayout module does not yet support your compositor")
+
+        if item == "pinned":
+            if "pinned" not in panel:
+                panel["pinned"] = {}
+            pinned = Pinned(panel["pinned"], icons_path)
+            container.pack_start(pinned, False, False, panel["items-padding"])
 
         if "button-" in item:
             if item in panel:
