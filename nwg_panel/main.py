@@ -152,7 +152,7 @@ def rt_sig_handler(sig, frame):
             if win.is_visible():
                 win.hide()
             else:
-                win.show_all()
+                win.show()
 
 
 def restart():
