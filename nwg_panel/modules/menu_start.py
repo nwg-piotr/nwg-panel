@@ -36,7 +36,8 @@ class MenuStart(Gtk.Button):
             "terminal": "foot",
             "position": "bottom",
             "run-through-compositor": True,
-            "hover-opens-submenu": False
+            "hover-opens-submenu": False,
+            "click-outside-closes": False
         }
 
         for key in defaults:
@@ -56,6 +57,7 @@ class MenuStart(Gtk.Button):
     def on_click(self, button):
         cmd = "nwg-menu"
 
+        print(self.settings)
         if self.settings["cmd-lock"] != "swaylock -f -c 000000":
             cmd += " -cmd-lock '{}'".format(self.settings["cmd-lock"])
         if self.settings["cmd-logout"] != "swaymsg exit":
@@ -92,6 +94,8 @@ class MenuStart(Gtk.Button):
             cmd += " -va {}".format(self.panel["position"])
         if self.settings["hover-opens-submenu"]:
             cmd += " -t"
+        if self.settings["click-outside-closes"]:
+            cmd += " -k"
 
         if self.settings["run-through-compositor"]:
             if os.getenv("SWAYSOCK"):

@@ -2746,7 +2746,8 @@ class EditorWrapper(object):
             "padding": 2,
             "terminal": "foot",
             "run-through-compositor": True,
-            "hover-opens-submenu": False
+            "hover-opens-submenu": False,
+            "click-outside-closes": False
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -2845,6 +2846,10 @@ class EditorWrapper(object):
         self.ms_compositor.set_tooltip_text(voc["run-through-compositor-tooltip"])
         self.ms_compositor.set_active(settings["run-through-compositor"])
 
+        self.ms_click_outside = builder.get_object("click-outside")
+        self.ms_click_outside.set_label(voc["click-outside-closes"])
+        self.ms_click_outside.set_active(settings["click-outside-closes"])
+
         self.ms_hover = builder.get_object("hover")
         self.ms_hover.set_label(voc["hovering-categories"])
         self.ms_hover.set_active(settings["hover-opens-submenu"])
@@ -2896,6 +2901,10 @@ class EditorWrapper(object):
         val = self.ms_compositor.get_active()
         if val is not None:
             settings["run-through-compositor"] = val
+
+        val = self.ms_click_outside.get_active()
+        if val is not None:
+            settings["click-outside-closes"] = val
 
         val = self.ms_hover.get_active()
         if val is not None:
