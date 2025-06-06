@@ -138,6 +138,8 @@ SKELETON_PANEL: dict = {
         "show-app-name": True,
         "show-layout": True,
         "all-outputs": False,
+        "all-workspaces": True,
+        "show-ws-names": True,
         "mark-xwayland": True,
         "angle": 0.0
     },
@@ -1507,6 +1509,8 @@ class EditorWrapper(object):
             "show-app-name-special": False,
             "show-layout": True,
             "all-outputs": False,
+            "all-workspaces": True,
+            "show-ws-names": True,
             "mark-xwayland": True,
             "angle": 0.0
         }
@@ -1571,6 +1575,14 @@ class EditorWrapper(object):
         self.ckb_all_outputs.set_label(voc["all-outputs"])
         self.ckb_all_outputs.set_active(settings["all-outputs"])
 
+        self.ckb_all_workspaces = builder.get_object("all-workspaces")
+        self.ckb_all_workspaces.set_label(voc["all-workspaces"])
+        self.ckb_all_workspaces.set_active(settings["all-workspaces"])
+
+        self.ckb_show_ws_names = builder.get_object("show-ws-names")
+        self.ckb_show_ws_names.set_label(voc["show-ws-names"])
+        self.ckb_show_ws_names.set_active(settings["show-ws-names"])
+
         self.sb_angle = builder.get_object("angle")
         self.sb_angle.set_tooltip_text(voc["angle-tooltip"])
         self.sb_angle.set_active_id(str(settings["angle"]))
@@ -1604,6 +1616,8 @@ class EditorWrapper(object):
         settings["show-layout"] = self.ckb_show_layout.get_active()
         settings["mark-xwayland"] = self.ckb_mark_xwayland.get_active()
         settings["all-outputs"] = self.ckb_all_outputs.get_active()
+        settings["all-workspaces"] = self.ckb_all_workspaces.get_active()
+        settings["show-ws-names"] = self.ckb_show_ws_names.get_active()
 
         try:
             settings["angle"] = float(self.sb_angle.get_active_id())
