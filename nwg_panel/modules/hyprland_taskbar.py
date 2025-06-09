@@ -93,11 +93,11 @@ class HyprlandTaskbar(Gtk.Box):
             if self.workspaces[ws_num]["monitor"] == self.display_name or self.settings["all-outputs"]:
                 eb = Gtk.EventBox()
 
-                ws_box.pack_start(eb, False, False, 6)
-                lbl = Gtk.Label()
                 if not self.settings["all-workspaces"] and ws_num not in self.active_workspaces:
                     continue
                 if self.settings["show-ws-names"]:
+                    ws_box.pack_start(eb, False, False, 6)
+                    lbl = Gtk.Label()
                     if ws_num in self.active_workspaces:
                         lbl.set_markup("<u>{}</u>:".format(self.workspaces[ws_num]["name"]))
                     else:
