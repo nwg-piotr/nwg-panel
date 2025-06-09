@@ -19,6 +19,8 @@ class HyprlandTaskbar(Gtk.Box):
             "show-app-name-special": False,
             "show-layout": True,
             "all-outputs": False,
+            "all-workspaces": True,
+            "show-ws-names": True,
             "mark-xwayland": True,
             "angle": 0.0
         }
@@ -91,13 +93,16 @@ class HyprlandTaskbar(Gtk.Box):
             if self.workspaces[ws_num]["monitor"] == self.display_name or self.settings["all-outputs"]:
                 eb = Gtk.EventBox()
 
-                ws_box.pack_start(eb, False, False, 6)
-                lbl = Gtk.Label()
-                if ws_num in self.active_workspaces:
-                    lbl.set_markup("<u>{}</u>:".format(self.workspaces[ws_num]["name"]))
-                else:
-                    lbl.set_text("{}:".format(self.workspaces[ws_num]["name"]))
-                eb.add(lbl)
+                if not self.settings["all-workspaces"] and ws_num not in self.active_workspaces:
+                    continue
+                if self.settings["show-ws-names"]:
+                    ws_box.pack_start(eb, False, False, 6)
+                    lbl = Gtk.Label()
+                    if ws_num in self.active_workspaces:
+                        lbl.set_markup("<u>{}</u>:".format(self.workspaces[ws_num]["name"]))
+                    else:
+                        lbl.set_text("{}:".format(self.workspaces[ws_num]["name"]))
+                    eb.add(lbl)
                 cl_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                 ws_box.pack_start(cl_box, False, False, 0)
                 for client in self.clients:
