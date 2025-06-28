@@ -931,6 +931,11 @@ def cmd_through_compositor(cmd):
     cmd = cmd.replace("\"", "'")
     cs_file = os.path.join(get_config_dir(), "common-settings.json")
     common_settings = load_json(cs_file)
+
+    if "run-through-uwsm" in common_settings and common_settings["run-through-uwsm"]:
+        cmd = f'uwsm app -- {cmd}'
+        return cmd
+
     if "run-through-compositor" not in common_settings or common_settings["run-through-compositor"]:
         if os.getenv("SWAYSOCK"):
             if os.getenv("XDG_SESSION_DESKTOP") and "miracle-wm" in os.getenv("XDG_SESSION_DESKTOP"):
@@ -941,6 +946,7 @@ def cmd_through_compositor(cmd):
             cmd = f'hyprctl dispatch exec "{cmd}"'
         elif os.getenv("NIRI_SOCKET"):
             cmd = f'niri msg action spawn -- {cmd}'
+
     return cmd
 
 
