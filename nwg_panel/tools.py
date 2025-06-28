@@ -21,7 +21,7 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk, Gdk, GdkPixbuf
-from shutil import copyfile
+from shutil import copyfile, which
 from datetime import datetime
 
 try:
@@ -339,18 +339,22 @@ def cmd2string(cmd):
         return ""
 
 
+# def is_command(cmd):
+#     cmd = cmd.split()[0]  # strip arguments
+#     cmd = "command -v {}".format(cmd)
+#     try:
+#         is_cmd = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
+#         if is_cmd:
+#             return True
+#
+#     except subprocess.CalledProcessError:
+#         pass
+#
+#     return False
+
+
 def is_command(cmd):
-    cmd = cmd.split()[0]  # strip arguments
-    cmd = "command -v {}".format(cmd)
-    try:
-        is_cmd = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
-        if is_cmd:
-            return True
-
-    except subprocess.CalledProcessError:
-        pass
-
-    return False
+    return which(cmd) is not None
 
 
 def check_commands():
@@ -932,7 +936,7 @@ def cmd_through_compositor(cmd):
     cs_file = os.path.join(get_config_dir(), "common-settings.json")
     common_settings = load_json(cs_file)
 
-    if "run-through-uwsm" in common_settings and common_settings["run-through-uwsm"]:
+    if "run-through-uwsm" in common_settings and common_settings["run-through-uwsm"] and is_command("uwsm"):
         cmd = f'uwsm app -- {cmd}'
         return cmd
 
