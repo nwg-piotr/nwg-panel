@@ -330,6 +330,7 @@ def build_common_settings_window():
     check_key(common_settings, "restart-delay", 500)
     check_key(common_settings, "processes-interval-ms", 2000)
     check_key(common_settings, "run-through-compositor", True)
+    check_key(common_settings, "run-through-uwsm", False)
 
     win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
     win.set_modal(True)
@@ -374,11 +375,20 @@ def build_common_settings_window():
     sb.set_tooltip_text(voc["processes-polling-rate-tooltip"])
     grid.attach(sb, 1, 2, 1, 1)
 
-    cb = Gtk.CheckButton.new_with_label(voc["run-through-compositor"])
-    cb.set_tooltip_text(voc["run-through-compositor-tooltip"])
-    cb.set_active(common_settings["run-through-compositor"])
-    cb.connect("toggled", on_compositor_check_button)
-    grid.attach(cb, 0, 3, 3, 1)
+    cb_run_through_compositor = Gtk.CheckButton.new_with_label(voc["run-through-compositor"])
+    cb_run_through_compositor.set_tooltip_text(voc["run-through-compositor-tooltip"])
+    cb_run_through_compositor.set_active(common_settings["run-through-compositor"])
+
+    grid.attach(cb_run_through_compositor, 0, 3, 3, 1)
+
+    cb_run_through_uwsm = Gtk.CheckButton.new_with_label(voc["run-through-uwsm"])
+    cb_run_through_uwsm.set_tooltip_text(voc["run-through-uwsm-tooltip"])
+    cb_run_through_uwsm.set_active(common_settings["run-through-uwsm"])
+
+    grid.attach(cb_run_through_uwsm, 0, 4, 3, 1)
+
+    cb_run_through_compositor.connect("toggled", on_compositor_check_button, cb_run_through_uwsm)
+    cb_run_through_uwsm.connect("toggled", on_uwsm_check_button, cb_run_through_compositor)
 
     hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
     vbox.pack_start(hbox, False, False, 6)
@@ -408,9 +418,18 @@ def on_restart_check_button(cb):
     common_settings["restart-on-display"] = cb.get_active()
 
 
-def on_compositor_check_button(cb):
+def on_compositor_check_button(cb, cb_run_through_uwsm):
     global common_settings
     common_settings["run-through-compositor"] = cb.get_active()
+    if common_settings["run-through-compositor"]:
+        cb_run_through_uwsm.set_active(False)
+
+
+def on_uwsm_check_button(cb, cb_run_through_compositor):
+    global common_settings
+    common_settings["run-through-uwsm"] = cb.get_active()
+    if common_settings["run-through-uwsm"]:
+        cb_run_through_compositor.set_active(False)
 
 
 def close_common_settings(btn, window):
