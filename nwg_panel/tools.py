@@ -240,7 +240,7 @@ def list_outputs(sway=False, silent=False):
                                                    "y": y,
                                                    "width": w,
                                                    "height": h,
-                                                   "description": f"{outputs[item]["make"]} {outputs[item]["model"]} {outputs[item]["serial"]}",
+                                                   "description": f'{outputs[item]["make"]} {outputs[item]["model"]} {outputs[item]["serial"]}',
                                                    "monitor": None}
 
             # swap for rotated displays
