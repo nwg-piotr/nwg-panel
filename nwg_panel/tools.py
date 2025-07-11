@@ -383,12 +383,14 @@ def create_background_task(target, interval, args=(), kwargs=None):
     thread = threading.Thread(target=loop_wrapper, daemon=True)
     return thread
 
+def get_balance(sink_name="@DEFAULT_SINK@"):
+    if not nwg_panel.common.commands["pactl"]:
+        return 0
 
-def get_sink_channel_volumes(sink_name="@DEFAULT_SINK@"):
     try:
         output = subprocess.check_output(["pactl", "list", "sinks"], text=True)
     except subprocess.CalledProcessError:
-        return None
+        return 0
 
     current_sink = None
     for block in output.split("\n\n"):
@@ -397,18 +399,18 @@ def get_sink_channel_volumes(sink_name="@DEFAULT_SINK@"):
             break
 
     if not current_sink:
-        return None
+        return 0
 
     match = re.search(
         r"Volume:.*?front-left:.*?(\d+)%.*?front-right:.*?(\d+)%",
         current_sink
     )
     if not match:
-        return None
+        return 0
 
     left = int(match.group(1))
     right = int(match.group(2))
-    return left, right
+    return right - left
 
 def get_volume():
     vol = 0
@@ -419,7 +421,7 @@ def get_volume():
             volumes = re.findall(r"/\s+(?P<volume>\d+)%\s+/", output)
             if volumes:
                 volumes = [int(x) for x in volumes]
-                vol = volumes[0]
+                vol = max(volumes)
         except Exception as e:
             eprint(e)
 
@@ -559,29 +561,28 @@ def toggle_mute(*args):
         eprint("Couldn't toggle mute, no 'pamixer' or 'pactl' found")
 
 
-def set_volume(percent):
-    balance = get_sink_channel_volumes()
-    if balance:
-        left, right = get_sink_channel_volumes()
-        print(left, right)
-        if left > right:
-            diff = left - right
-            print(diff)
-            left = percent
-            right = left - diff
-        elif left < right:
-            diff = right - left
-            print(diff)
-            right = percent
-            left = right - diff
-        else:
-            left = right = percent
+def set_volume(percent, balance=0):
+    if balance < 0:
+        left = percent
+        right = percent - abs(balance)
+    elif balance > 0:
+        right = percent
+        left = percent - abs(balance)
     else:
         left = right = percent
+
     if left < 0:
         left = 0
+    if left > 100:
+        left = 100
+
     if right < 0:
         right = 0
+    if right > 100:
+        right = 100
+
+    print(percent, balance, left, right)
+
     if nwg_panel.common.commands["pamixer"]:
         subprocess.call("pamixer --set-volume {}".format(percent).split())
     elif nwg_panel.common.commands["pactl"]:
