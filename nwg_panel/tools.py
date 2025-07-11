@@ -384,6 +384,32 @@ def create_background_task(target, interval, args=(), kwargs=None):
     return thread
 
 
+def get_sink_channel_volumes(sink_name="@DEFAULT_SINK@"):
+    try:
+        output = subprocess.check_output(["pactl", "list", "sinks"], text=True)
+    except subprocess.CalledProcessError:
+        return None
+
+    current_sink = None
+    for block in output.split("\n\n"):
+        if f"Name: {sink_name}" in block or (sink_name == "@DEFAULT_SINK@" and "State:" in block and "RUNNING" in block):
+            current_sink = block
+            break
+
+    if not current_sink:
+        return None
+
+    match = re.search(
+        r"Volume:.*?front-left:.*?(\d+)%.*?front-right:.*?(\d+)%",
+        current_sink
+    )
+    if not match:
+        return None
+
+    left = int(match.group(1))
+    right = int(match.group(2))
+    return left, right
+
 def get_volume():
     vol = 0
     muted = False
@@ -534,10 +560,32 @@ def toggle_mute(*args):
 
 
 def set_volume(percent):
+    balance = get_sink_channel_volumes()
+    if balance:
+        left, right = get_sink_channel_volumes()
+        print(left, right)
+        if left > right:
+            diff = left - right
+            print(diff)
+            left = percent
+            right = left - diff
+        elif left < right:
+            diff = right - left
+            print(diff)
+            right = percent
+            left = right - diff
+        else:
+            left = right = percent
+    else:
+        left = right = percent
+    if left < 0:
+        left = 0
+    if right < 0:
+        right = 0
     if nwg_panel.common.commands["pamixer"]:
         subprocess.call("pamixer --set-volume {}".format(percent).split())
     elif nwg_panel.common.commands["pactl"]:
-        subprocess.call("pactl set-sink-volume @DEFAULT_SINK@ {}%".format(percent).split())
+        subprocess.call(f"pactl set-sink-volume @DEFAULT_SINK@ {left}% {right}%".split())
     else:
         eprint("Couldn't set volume, no 'pamixer' or 'pactl' found")
 
