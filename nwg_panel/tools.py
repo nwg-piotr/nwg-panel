@@ -383,7 +383,7 @@ def create_background_task(target, interval, args=(), kwargs=None):
     thread = threading.Thread(target=loop_wrapper, daemon=True)
     return thread
 
-def get_balance(sink_name="@DEFAULT_SINK@"):
+def get_balance_old(sink_name="@DEFAULT_SINK@"):
     if not nwg_panel.common.commands["pactl"]:
         return 0
 
@@ -411,6 +411,29 @@ def get_balance(sink_name="@DEFAULT_SINK@"):
     left = int(match.group(1))
     right = int(match.group(2))
     return right - left
+
+
+def get_balance(sink_name="@DEFAULT_SINK@"):
+    if not nwg_panel.common.commands["pactl"]:
+        return 0.0
+
+    try:
+        output = subprocess.check_output(
+            ["pactl", "get-sink-volume", sink_name], text=True
+        )
+    except subprocess.CalledProcessError:
+        return 0.0
+
+    match = re.search(r"balance\s+(-?\d+[.,]\d+)", output)
+    if not match:
+        return 0.0
+
+    balance_str = match.group(1).replace(",", ".")
+    try:
+        return float(balance_str)
+    except ValueError:
+        return 0.0
+
 
 def get_volume():
     vol = 0
@@ -564,10 +587,10 @@ def toggle_mute(*args):
 def set_volume(percent, balance=0):
     if balance < 0:
         left = percent
-        right = percent - abs(balance)
+        right = percent - int(percent * abs(balance))
     elif balance > 0:
         right = percent
-        left = percent - abs(balance)
+        left = percent - int(percent * abs(balance))
     else:
         left = right = percent
 
