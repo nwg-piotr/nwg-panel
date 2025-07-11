@@ -383,34 +383,34 @@ def create_background_task(target, interval, args=(), kwargs=None):
     thread = threading.Thread(target=loop_wrapper, daemon=True)
     return thread
 
-def get_balance_old(sink_name="@DEFAULT_SINK@"):
-    if not nwg_panel.common.commands["pactl"]:
-        return 0
-
-    try:
-        output = subprocess.check_output(["pactl", "list", "sinks"], text=True)
-    except subprocess.CalledProcessError:
-        return 0
-
-    current_sink = None
-    for block in output.split("\n\n"):
-        if f"Name: {sink_name}" in block or (sink_name == "@DEFAULT_SINK@" and "State:" in block and "RUNNING" in block):
-            current_sink = block
-            break
-
-    if not current_sink:
-        return 0
-
-    match = re.search(
-        r"Volume:.*?front-left:.*?(\d+)%.*?front-right:.*?(\d+)%",
-        current_sink
-    )
-    if not match:
-        return 0
-
-    left = int(match.group(1))
-    right = int(match.group(2))
-    return right - left
+# def get_balance_old(sink_name="@DEFAULT_SINK@"):
+#     if not nwg_panel.common.commands["pactl"]:
+#         return 0
+#
+#     try:
+#         output = subprocess.check_output(["pactl", "list", "sinks"], text=True)
+#     except subprocess.CalledProcessError:
+#         return 0
+#
+#     current_sink = None
+#     for block in output.split("\n\n"):
+#         if f"Name: {sink_name}" in block or (sink_name == "@DEFAULT_SINK@" and "State:" in block and "RUNNING" in block):
+#             current_sink = block
+#             break
+#
+#     if not current_sink:
+#         return 0
+#
+#     match = re.search(
+#         r"Volume:.*?front-left:.*?(\d+)%.*?front-right:.*?(\d+)%",
+#         current_sink
+#     )
+#     if not match:
+#         return 0
+#
+#     left = int(match.group(1))
+#     right = int(match.group(2))
+#     return right - left
 
 
 def get_balance(sink_name="@DEFAULT_SINK@"):
@@ -603,8 +603,6 @@ def set_volume(percent, balance=0):
         right = 0
     if right > 100:
         right = 100
-
-    print(percent, balance, left, right)
 
     if nwg_panel.common.commands["pactl"]:
         subprocess.call(f"pactl set-sink-volume @DEFAULT_SINK@ {left}% {right}%".split())
