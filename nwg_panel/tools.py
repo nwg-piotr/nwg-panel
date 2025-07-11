@@ -606,10 +606,10 @@ def set_volume(percent, balance=0):
 
     print(percent, balance, left, right)
 
-    if nwg_panel.common.commands["pamixer"]:
-        subprocess.call("pamixer --set-volume {}".format(percent).split())
-    elif nwg_panel.common.commands["pactl"]:
+    if nwg_panel.common.commands["pactl"]:
         subprocess.call(f"pactl set-sink-volume @DEFAULT_SINK@ {left}% {right}%".split())
+    elif nwg_panel.common.commands["pamixer"]:
+        subprocess.call("pamixer --set-volume {}".format(percent).split())
     else:
         eprint("Couldn't set volume, no 'pamixer' or 'pactl' found")
 
