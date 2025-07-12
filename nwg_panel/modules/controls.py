@@ -559,7 +559,7 @@ class PopupWindow(Gtk.Window):
 
     def get_balance(self):
         self.balance = get_balance()
-        print(">>> self.balance", self.balance)
+        print("Audio balance", self.balance)
 
     def schedule_refresh(self):
         Gdk.threads_add_timeout(GLib.PRIORITY_LOW, 500, self.refresh, (True,))
