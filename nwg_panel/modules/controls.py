@@ -11,7 +11,7 @@ gi.require_version('Gdk', '3.0')
 gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
-from nwg_panel.tools import (check_key, get_brightness, set_brightness, get_volume, set_volume, get_battery,
+from nwg_panel.tools import (check_key, get_brightness, set_brightness, get_volume, get_balance, set_volume, get_battery,
                              update_image, eprint, list_sinks, toggle_mute, create_background_task, list_sink_inputs,
                              is_command, cmd_through_compositor)
 
@@ -239,6 +239,7 @@ class Controls(Gtk.EventBox):
 class PopupWindow(Gtk.Window):
     def __init__(self, parent, position, alignment, settings, width, monitor=None, icons_path=""):
         Gtk.Window.__init__(self, type_hint=Gdk.WindowTypeHint.NORMAL)
+        self.balance = None
         self.bcg_window = None
         GtkLayerShell.init_for_window(self)
         if monitor:
@@ -556,6 +557,10 @@ class PopupWindow(Gtk.Window):
 
         self.refresh(True)
 
+    def get_balance(self):
+        self.balance = get_balance()
+        print("Audio balance", self.balance)
+
     def schedule_refresh(self):
         Gdk.threads_add_timeout(GLib.PRIORITY_LOW, 500, self.refresh, (True,))
 
@@ -592,6 +597,7 @@ class PopupWindow(Gtk.Window):
         self.src_tag = 0
         if "per-app-volume" in self.settings["components"] and commands["pactl"]:
             self.create_per_app_sliders()
+        self.get_balance()
         self.refresh()
 
     def create_per_app_sliders(self):
@@ -781,8 +787,8 @@ class PopupWindow(Gtk.Window):
 
     def set_vol(self, slider):
         self.parent.vol_value = int(slider.get_value())
-        set_volume(self.parent.vol_value)
-        self.parent.update_volume()
+        set_volume(self.parent.vol_value, balance=self.balance)
+        # self.parent.update_volume()
 
     def close_win(self, w, e):
         self.hide()

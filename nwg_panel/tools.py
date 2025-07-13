@@ -384,6 +384,28 @@ def create_background_task(target, interval, args=(), kwargs=None):
     return thread
 
 
+def get_balance(sink_name="@DEFAULT_SINK@"):
+    if not nwg_panel.common.commands["pactl"]:
+        return 0.0
+
+    try:
+        output = subprocess.check_output(
+            ["pactl", "get-sink-volume", sink_name], text=True
+        )
+    except subprocess.CalledProcessError:
+        return 0.0
+
+    match = re.search(r"balance\s+(-?\d+[.,]\d+)", output)
+    if not match:
+        return 0.0
+
+    balance_str = match.group(1).replace(",", ".")
+    try:
+        return float(balance_str)
+    except ValueError:
+        return 0.0
+
+
 def get_volume():
     vol = 0
     muted = False
@@ -393,7 +415,7 @@ def get_volume():
             volumes = re.findall(r"/\s+(?P<volume>\d+)%\s+/", output)
             if volumes:
                 volumes = [int(x) for x in volumes]
-                vol = volumes[0]
+                vol = max(volumes)
         except Exception as e:
             eprint(e)
 
@@ -533,11 +555,30 @@ def toggle_mute(*args):
         eprint("Couldn't toggle mute, no 'pamixer' or 'pactl' found")
 
 
-def set_volume(percent):
-    if nwg_panel.common.commands["pamixer"]:
+def set_volume(percent, balance=0):
+    if balance < 0:
+        left = percent
+        right = percent - int(percent * abs(balance))
+    elif balance > 0:
+        right = percent
+        left = percent - int(percent * abs(balance))
+    else:
+        left = right = percent
+
+    if left < 0:
+        left = 0
+    if left > 100:
+        left = 100
+
+    if right < 0:
+        right = 0
+    if right > 100:
+        right = 100
+
+    if nwg_panel.common.commands["pactl"]:
+        subprocess.call(f"pactl set-sink-volume @DEFAULT_SINK@ {left}% {right}%".split())
+    elif nwg_panel.common.commands["pamixer"]:
         subprocess.call("pamixer --set-volume {}".format(percent).split())
-    elif nwg_panel.common.commands["pactl"]:
-        subprocess.call("pactl set-sink-volume @DEFAULT_SINK@ {}%".format(percent).split())
     else:
         eprint("Couldn't set volume, no 'pamixer' or 'pactl' found")
 
