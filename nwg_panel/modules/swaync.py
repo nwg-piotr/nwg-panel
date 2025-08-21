@@ -125,8 +125,8 @@ class SwayNC(Gtk.EventBox):
     def on_scroll(self, widget, event):
         if event.direction == Gdk.ScrollDirection.UP and self.settings["on-scroll-up"]:
             self.launch(self.settings["on-scroll-up"])
-        elif event.direction == Gdk.ScrollDirection.DOWN and self.settings["on-scroll-up"]:
-            self.launch(self.settings["on-scroll-up"])
+        elif event.direction == Gdk.ScrollDirection.DOWN and self.settings["on-scroll-down"]:
+            self.launch(self.settings["on-scroll-down"])
         else:
             print("No command assigned")
 
