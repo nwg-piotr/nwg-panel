@@ -163,16 +163,20 @@ class WindowBox(Gtk.EventBox):
         if con.name:
             check_key(settings, "show-app-name", True)
             check_key(settings, "name-max-len", 20)
-            name = con.name[:settings["name-max-len"]] if len(con.name) > settings["name-max-len"] else con.name
-            if settings["mark-xwayland"] and not con.app_id:
-                name = "X|" + name
+            _name = con.name[:settings["name-max-len"]] if len(con.name) > settings["name-max-len"] else con.name
+            name = ""
             if settings["show-app-name"]:
                 check_key(settings, "name-max-len", 10)
+                name += _name
+            if settings["mark-xwayland"] and not con.app_id:
+                name = "X" + ("|" + name if len(name) > 0 else "")
+                _name = "X|" + _name
+            if settings["show-app-name"]:
                 label = Gtk.Label(name)
                 label.set_angle(settings["angle"])
                 self.box.pack_start(label, False, False, 0)
             else:
-                self.set_tooltip_text(name)
+                self.set_tooltip_text(_name)
 
         check_key(settings, "show-layout", True)
 
