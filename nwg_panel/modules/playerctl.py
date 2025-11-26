@@ -298,7 +298,7 @@ class Playerctl(Gtk.EventBox):
 
 class AutoScrollLabel(Gtk.Label):
     def __init__(self, scroll, chars, interval):
-        super().__init__(self)
+        super().__init__()
         self.chars = chars
         self.interval = interval if scroll else 0
 
