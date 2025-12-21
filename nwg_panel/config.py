@@ -1505,6 +1505,7 @@ class EditorWrapper(object):
         settings["workspace-buttons"] = self.workspace_buttons.get_active()
         settings["mark-xwayland"] = self.ckb_mark_xwayland.get_active()
         settings["all-outputs"] = self.ckb_all_outputs.get_active()
+        settings["all-workspaces"] = self.ckb_all_workspaces.get_active()
 
         try:
             settings["angle"] = float(self.sb_angle.get_active_id())
