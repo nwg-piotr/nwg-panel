@@ -77,14 +77,22 @@ class SwayTaskbar(Gtk.Box):
         for display in self.displays_tree:
             for desc in display.descendants():
                 if desc.type == "workspace":
-                    self.ws_box = WorkspaceBox(desc, self.settings, self.autotiling)
+                    # hide the workspace labels (WorkspaceBox) when all_workspaces is set to False
+                    if all_workspaces:
+                        self.ws_box = WorkspaceBox(desc, self.settings, self.autotiling)
                     if all_workspaces or desc.find_focused() is not None:
                         for con in desc.descendants():
                             if con.name or con.app_id:
                                 win_box = WindowBox(self.tree, con, self.settings, self.position, self.icons_path,
                                                     self.cache_file, floating=con in desc.floating_nodes)
-                                self.ws_box.pack_start(win_box, False, False, self.settings["task-padding"])
-                    self.pack_start(self.ws_box, False, False, 0)
+                                if all_workspaces:
+                                    self.ws_box.pack_start(win_box, False, False, self.settings["task-padding"])
+                                else:
+                                    # bypass WorkspaceBox to hide the labels
+                                    self.pack_start(win_box, False, False, self.settings["task-padding"])
+                    if all_workspaces:
+                        # again, omit WorkspaceBox
+                        self.pack_start(self.ws_box, False, False, 0)
         self.show_all()
 
     def on_i3ipc_event(self, i3conn, event):
