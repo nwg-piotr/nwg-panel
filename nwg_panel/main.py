@@ -47,7 +47,7 @@ from nwg_panel.modules.playerctl import Playerctl
 from nwg_panel.modules.cpu_avg import CpuAvg
 from nwg_panel.modules.scratchpad import Scratchpad
 from nwg_panel.modules.dwl_tags import DwlTags
-from nwg_panel.modules.swaync import SwayNC
+from nwg_panel.modules.notifications import Notifications
 from nwg_panel.modules.sway_mode import SwayMode
 from nwg_panel.modules.hyprland_submap import HyprlandSubmap
 from nwg_panel.modules.keyboard_layout import KeyboardLayout
@@ -839,11 +839,11 @@ def main():
                 common.controls_list.append(cc)
                 left_box.pack_start(cc, False, False, 0)
 
-                if common.commands["swaync"]:
-                    if "swaync" not in panel:
-                        panel["swaync"] = {}
-                    sway_nc = SwayNC(panel["swaync"], icons_path, panel["position"])
-                    left_box.pack_start(sway_nc, False, False, 0)
+                if common.commands["swaync"] or common.commands["nwg-notifications"]:
+                    if "notifications" not in panel:
+                        panel["notifications"] = {}
+                    notifications = Notifications(panel["notifications"], icons_path, panel["position"])
+                    left_box.pack_start(notifications, False, False, 0)
 
             if panel["menu-start"] == "left":
                 ms = MenuStart(panel, icons_path=icons_path)
@@ -890,12 +890,12 @@ def main():
                 common.controls_list.append(cc)
                 right_box.pack_end(cc, False, False, 0)
 
-                if common.commands["swaync"]:
-                    if "swaync" not in panel:
-                        panel["swaync"] = {}
+                if common.commands["swaync"] or common.commands["nwg-notifications"]:
+                    if "notifications" not in panel:
+                        panel["notifications"] = {}
 
-                    sway_nc = SwayNC(panel["swaync"], icons_path, panel["position"])
-                    right_box.pack_end(sway_nc, False, False, 0)
+                    notifications = Notifications(panel["notifications"], icons_path, panel["position"])
+                    right_box.pack_end(notifications, False, False, 0)
 
             window.add(vbox)
 

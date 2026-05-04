@@ -31,7 +31,8 @@ commands = {
     "wlr-randr": False,
     "hyprctl": False,
     "upower": False,
-    "swaync": False
+    "swaync": False,
+    "nwg-notifications": False
 }
 
 icons_path = ""  # "icons_light", "icons_dark" or "" (GTK icons)
