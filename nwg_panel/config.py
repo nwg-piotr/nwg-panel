@@ -836,8 +836,8 @@ class EditorWrapper(object):
         builder.get_object("eb-controls").connect("button-press-event", self.controls_menu)
 
         eb = builder.get_object("eb-swaync")
-        if is_command("swaync"):
-            eb.connect("button-press-event", self.edit_swaync)
+        if is_command("swaync") or (is_command("nwg-notifications")):
+            eb.connect("button-press-event", self.edit_notifications)
         else:
             eb.set_sensitive(False)
             eb.set_tooltip_text("'swaync' package required")
@@ -1989,7 +1989,7 @@ class EditorWrapper(object):
 
         save_json(self.config, self.file)
 
-    def edit_swaync(self, *args):
+    def edit_notifications(self, *args):
         self.load_panel()
         self.edited = "swaync"
         check_key(self.panel, "swaync", {})
@@ -2012,6 +2012,9 @@ class EditorWrapper(object):
         for key in defaults:
             check_key(settings, key, defaults[key])
 
+        if is_command("nwg-notifications"):
+            settings["on-left-click"] = "pkill -f -38 nwg-notifications"
+
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_swaync.glade"))
         frame = builder.get_object("frame")
         frame.set_label("  {}: {}  ".format(voc["module"], voc["swaync"]))
@@ -2030,6 +2033,9 @@ class EditorWrapper(object):
 
         self.nc_tooltip_text = builder.get_object("tooltip-text")
         self.nc_tooltip_text.set_text(settings["tooltip-text"])
+
+        self.nc_on_left_click = builder.get_object("on-left-click")
+        self.nc_on_left_click.set_text(settings["on-left-click"])
 
         self.nc_on_middle_click = builder.get_object("on-middle-click")
         self.nc_on_middle_click.set_text(settings["on-middle-click"])

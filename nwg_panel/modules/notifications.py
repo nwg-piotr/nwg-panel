@@ -4,6 +4,8 @@ from gi.repository import GLib
 
 import subprocess
 
+from nwg_panel import common
+
 from nwg_panel.tools import check_key, update_image, create_background_task, cmd_through_compositor
 
 import gi
@@ -14,7 +16,7 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk, Gdk
 
 
-class SwayNC(Gtk.EventBox):
+class Notifications(Gtk.EventBox):
     def __init__(self, settings, icons_path, panel_position):
         self.settings = settings
         self.icons_path = icons_path
@@ -51,6 +53,10 @@ class SwayNC(Gtk.EventBox):
 
         if settings["tooltip-text"]:
             self.set_tooltip_text(settings["tooltip-text"])
+
+        # replace default toggle notification panel command for it to work w/ nwg-notifications
+        if common.commands["nwg-notifications"]:
+            settings["on-left-click"] = "pkill -f -38 nwg-notifications"
 
         if settings["on-left-click"] or settings["on-right-click"] or settings["on-middle-click"] or settings[
             "on-scroll-up"] or settings["on-scroll-down"]:
@@ -90,7 +96,10 @@ class SwayNC(Gtk.EventBox):
 
     def get_output(self):
         try:
-            output = subprocess.check_output("swaync-client -c".split()).decode("utf-8")
+            if common.commands["swaync"]:
+                output = subprocess.check_output("swaync-client -c".split()).decode("utf-8")
+            elif common.commands["nwg-notifications"]:
+                output = subprocess.check_output("nwg-notifications --count".split()).decode("utf-8")
             GLib.idle_add(self.update_widget, output)
         except Exception as e:
             print(e)
