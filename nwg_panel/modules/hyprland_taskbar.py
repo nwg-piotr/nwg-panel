@@ -4,7 +4,7 @@ import json
 
 from gi.repository import Gtk, Gdk
 
-from nwg_panel.tools import hyprctl, update_image, update_image_fallback_desktop
+from nwg_panel.tools import hyprctl, update_image, update_image_fallback_desktop, eprint
 
 
 class HyprlandTaskbar(Gtk.Box):
@@ -118,7 +118,9 @@ class HyprlandTaskbar(Gtk.Box):
         self.show_all()
 
     def on_ws_click(self, widget, event, ws_num):
-        hyprctl("dispatch workspace name:{}".format(ws_num))
+        res = hyprctl("dispatch workspace name:{}".format(ws_num))
+        if res != "ok":
+            hyprctl(f'dispatch hl.dsp.focus({{ workspace = "{ws_num}"}})')
 
 
 def on_enter_notify_event(widget, event):
@@ -136,6 +138,7 @@ class ClientBox(Gtk.EventBox):
         self.position = position
         self.settings = settings
         self.address = client["address"]
+        self.floating = client["floating"]
         self.icons_path = icons_path
         self.ws_strings = ws_strings
         Gtk.EventBox.__init__(self)
@@ -187,7 +190,10 @@ class ClientBox(Gtk.EventBox):
 
     def on_click(self, widget, event, client, popup_at_widget):
         if event.button == 1:
-            hyprctl("dispatch focuswindow address:{}".format(self.address))
+            res = hyprctl(f"dispatch focuswindow address:{self.address}")
+            # handle new Lua dispatcher on Hyprland >= v0.55.0
+            if res != "ok":
+                hyprctl(f'dispatch hl.dsp.focus({{ window = "address:{self.address}" }})')
         if event.button == 3:
             menu = self.context_menu(client)
             menu.show_all()
@@ -197,7 +203,10 @@ class ClientBox(Gtk.EventBox):
                 menu.popup_at_widget(popup_at_widget, Gdk.Gravity.NORTH, Gdk.Gravity.SOUTH, None)
 
     def on_special(self, widget, event):
-        hyprctl('dispatch togglespecialworkspace ')
+        res = hyprctl('dispatch togglespecialworkspace ')
+        if res != "ok":
+            hyprctl('dispatch hl.dsp.workspace.toggle_special')
+
 
     def context_menu(self, client):
         menu = Gtk.Menu()
@@ -269,19 +278,30 @@ class ClientBox(Gtk.EventBox):
         return menu
 
     def close(self, *args):
-        hyprctl("dispatch closewindow address:{}".format(self.address))
+        res = hyprctl(f"dispatch closewindow address:{self.address}")
+        if res != "ok":
+            hyprctl(f'dispatch hl.dsp.window.close({{ window = "address:{self.address}" }})')
 
     def toggle_floating(self, *args):
-        hyprctl("dispatch togglefloating address:{}".format(self.address))
+        res = hyprctl("dispatch togglefloating address:{}".format(self.address))
+        if res != "ok":
+            hyprctl(f'dispatch hl.dsp.window.float({{ action = "toggle", window = "address:{self.address}"}})')
 
     def fullscreen(self, *args):
-        hyprctl("dispatch fullscreen address:{}".format(self.address))
+        res = hyprctl("dispatch fullscreen address:{}".format(self.address))
+        if res != "ok":
+            hyprctl(f'dispatch hl.dsp.window.fullscreen({{ action = "toggle", window = "address:{self.address}"}})')
 
     def pin(self, *args):
-        hyprctl("dispatch pin address:{}".format(self.address))
-        # The above doesn't trigger any event. We need a workaround:
-        hyprctl("dispatch focuswindow title:''")
-        hyprctl("dispatch focuswindow address:{}".format(self.address))
+        res = hyprctl("dispatch pin address:{}".format(self.address))
+        if res == "ok":
+            # The above doesn't trigger any event. We need a workaround:
+            hyprctl("dispatch focuswindow title:''")
+            hyprctl("dispatch focuswindow address:{}".format(self.address))
+        else:
+            hyprctl(f'dispatch hl.dsp.window.pin({{ window = "address:{self.address}" }})')
 
     def movetoworkspace(self, menuitem, ws_num):
-        hyprctl("dispatch movetoworkspace {},address:{}".format(ws_num, self.address))
+        res = hyprctl("dispatch movetoworkspace {},address:{}".format(ws_num, self.address))
+        if res != "ok":
+            hyprctl(f'dispatch hl.dsp.window.move({{ workspace = "{ws_num}", window = "address:{self.address}"}})')
