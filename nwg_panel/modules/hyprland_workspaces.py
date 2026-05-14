@@ -257,13 +257,19 @@ class HyprlandWorkspaces(Gtk.Box):
             self.icon.hide()
 
     def on_click(self, event_box, event_button, num):
-        hyprctl("dispatch workspace {}".format(num))
+        res = hyprctl("dispatch workspace {}".format(num))
+        if res != "ok":
+            hyprctl(f'dispatch hl.dsp.focus({{ workspace = "{num}" }})')
 
     def on_scroll(self, event_box, event):
         if event.direction == Gdk.ScrollDirection.UP:
-            hyprctl("dispatch workspace e-1")
+            res = hyprctl("dispatch workspace e+1")
+            if res != "ok":
+                hyprctl(f'dispatch hl.dsp.focus({{ workspace = "e+1" }})')
         elif event.direction == Gdk.ScrollDirection.DOWN:
-            hyprctl("dispatch workspace e+1")
+            res = hyprctl("dispatch workspace e-1")
+            if res != "ok":
+                hyprctl(f'dispatch hl.dsp.focus({{ workspace = "e-1" }})')
 
     def on_enter_notify_event(self, widget, event):
         widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
