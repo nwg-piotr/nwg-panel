@@ -388,7 +388,13 @@ def build_common_settings_window():
     grid.attach(cb_run_through_uwsm, 0, 4, 3, 1)
 
     cb_run_through_compositor.connect("toggled", on_compositor_check_button, cb_run_through_uwsm)
-    cb_run_through_uwsm.connect("toggled", on_uwsm_check_button, cb_run_through_compositor)
+    if is_command("uwsm"):
+        cb_run_through_uwsm.connect("toggled", on_uwsm_check_button, cb_run_through_compositor)
+    else:
+        cb_run_through_uwsm.set_active(False)
+        cb_run_through_uwsm.set_sensitive(False)
+        common_settings["run-through-uwsm"] = False
+
 
     hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
     vbox.pack_start(hbox, False, False, 6)
