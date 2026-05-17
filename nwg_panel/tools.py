@@ -972,6 +972,10 @@ def h_modules_get_all():
     return h_list_monitors(), h_list_workspaces(), h_list_clients(), h_get_activewindow(), h_get_active_workspace()
 
 
+def parse_version(v_string):
+    return tuple(map(int, v_string.split('.')))
+
+
 def cmd_through_compositor(cmd):
     cmd = cmd.replace("\"", "'")
     cs_file = os.path.join(get_config_dir(), "common-settings.json")
@@ -988,7 +992,11 @@ def cmd_through_compositor(cmd):
             else:
                 cmd = f'swaymsg exec "{cmd}"'
         elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
-            cmd = f'hyprctl dispatch exec "{cmd}"'
+            res = hyprctl("version").splitlines()[0].split()[1]
+            if parse_version(res) >= parse_version("0.55.0"):
+                cmd = f'hyprctl dispatch hl.dsp.exec_cmd \'("{cmd}")\''
+            else:
+                cmd = f'hyprctl dispatch exec "{cmd}"'
         elif os.getenv("NIRI_SOCKET"):
             cmd = f'niri msg action spawn -- {cmd}'
 
