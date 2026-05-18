@@ -977,7 +977,7 @@ def parse_version(v_string):
 
 
 def cmd_through_compositor(cmd):
-    cmd = cmd.replace("\"", "'")
+    cmd = cmd.replace("\"", "\\\"")
     cs_file = os.path.join(get_config_dir(), "common-settings.json")
     common_settings = load_json(cs_file)
 
@@ -994,7 +994,7 @@ def cmd_through_compositor(cmd):
         elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
             res = hyprctl("version").splitlines()[0].split()[1]
             if parse_version(res) >= parse_version("0.55.0"):
-                cmd = f'hyprctl dispatch hl.dsp.exec_cmd \'("{cmd}")\''
+                cmd = f"hyprctl dispatch 'hl.dsp.exec_cmd(\"{cmd}\")'"
             else:
                 cmd = f'hyprctl dispatch exec "{cmd}"'
         elif os.getenv("NIRI_SOCKET"):
