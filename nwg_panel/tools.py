@@ -972,12 +972,7 @@ def h_modules_get_all():
     return h_list_monitors(), h_list_workspaces(), h_list_clients(), h_get_activewindow(), h_get_active_workspace()
 
 
-def parse_version(v_string):
-    return tuple(map(int, v_string.split('.')))
-
-
 def cmd_through_compositor(cmd):
-    cmd = cmd.replace("\"", "\\\"")
     cs_file = os.path.join(get_config_dir(), "common-settings.json")
     common_settings = load_json(cs_file)
 
@@ -986,14 +981,16 @@ def cmd_through_compositor(cmd):
         return cmd
 
     if "run-through-compositor" not in common_settings or common_settings["run-through-compositor"]:
+        cmd = cmd.replace("\"", "\\\"")
         if os.getenv("SWAYSOCK"):
             if os.getenv("XDG_SESSION_DESKTOP") and "miracle-wm" in os.getenv("XDG_SESSION_DESKTOP"):
                 cmd = f'miraclemsg exec "{cmd}"'
             else:
                 cmd = f'swaymsg exec "{cmd}"'
         elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
-            res = hyprctl("version").splitlines()[0].split()[1]
-            if parse_version(res) >= parse_version("0.55.0"):
+            # check if we are on lua dispatchers (Hyprland >= v0.55.0 with lua config)
+            res = hyprctl("dispatch hl.dsp.no_op")  # do nothing
+            if res == "ok":
                 cmd = f"hyprctl dispatch 'hl.dsp.exec_cmd(\"{cmd}\")'"
             else:
                 cmd = f'hyprctl dispatch exec "{cmd}"'
