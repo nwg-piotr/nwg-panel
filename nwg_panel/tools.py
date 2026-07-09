@@ -495,26 +495,31 @@ def list_sink_inputs():
     # eprint(json.dumps(sinks, indent=2))
     return sinks
 
-
 def list_sinks():
     sinks = []
     if nwg_panel.common.commands["pamixer"]:
         try:
-            output = cmd2string("pamixer --list-sinks")
+            output = cmd2string("pamixer --get-default-sink")
             if output:
-                lines = output.splitlines()[1:]
-                for line in lines:
-                    details = line.split()
-                    name = details[1][1:-1]
-                    desc = " ".join(details[3:])[1:-1]
-                    sink = {"name": name, "desc": desc, "running": True if "Running" in line else False}
-                    sinks.append(sink)
+                details = output.splitlines()[1].split()
+                default_sink = details[1][1:-1]
+
+                output = cmd2string("pamixer --list-sinks")
+                if output:
+                    lines = output.splitlines()[1:]
+                    for line in lines:
+                        details = line.split()
+                        name = details[1][1:-1]
+                        desc = " ".join(details[3:])[1:-1]
+                        sink = {"name": name, "desc": desc, "running": True if name == default_sink else False}
+                        sinks.append(sink)
 
         except Exception as e:
             eprint(e)
 
     elif nwg_panel.common.commands["pactl"]:
         try:
+            default_sink = cmd2string("pactl get-default-sink")
             output = cmd2string("pactl list sinks")
             if output:
                 lines = output.splitlines()
@@ -527,11 +532,11 @@ def list_sinks():
                         sink = {}
                     elif indent == 1:
                         if line.lower().startswith("name"):
-                            sink.update({"name": line.split(": ")[1]})
+                            name = line.split(": ")[1]
+                            sink.update({"name": name})
+                            sink.update({"running": True if name == default_sink else False})
                         elif line.lower().startswith("description"):
                             sink.update({"desc": line.split(": ")[1]})
-                        elif line.lower().startswith("state"):
-                            sink.update({"running": True if "RUNNING" in line else False})
                 if sink:
                     sinks.append(sink)
         except Exception as e:
