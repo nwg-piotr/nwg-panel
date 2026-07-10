@@ -162,8 +162,9 @@ class HyprlandWorkspaces(Gtk.Box):
             focused_mon = next((m for m in monitors if m["focused"]), {"activeWorkspace": {"id": 0}})
         else:
             focused_mon = next((m for m in monitors if m["name"] == self.monitor_name), {"activeWorkspace": {"id": 0}})
-        # active workspace on the focused monitor is what we want
-        active_ws = [ws for ws in workspaces if focused_mon['activeWorkspace']["id"] == ws["id"]][0]
+        # active workspace on the focused monitor is what we want, fall back to a safe dict if nothing matches
+        active_ws = next((ws for ws in workspaces if focused_mon['activeWorkspace']["id"] == ws["id"]),
+                         {"id": 0, "lastwindow": ""})
 
         if self.settings["show-workspaces"]:
             occupied_workspaces = []  # should not be sorted, as this should be in the same order as the workspaces in Hyprland
