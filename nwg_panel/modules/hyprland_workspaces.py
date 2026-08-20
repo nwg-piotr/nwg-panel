@@ -63,7 +63,7 @@ class HyprlandWorkspaces(Gtk.Box):
             self.workspace_rules = workspace_rules  # storing the workspace rules for the current monitor from rules
 
             if self.settings["show-inactive-workspaces"]:
-                self.ws_nums = [int(ws["workspaceString"]) for ws in workspace_rules]
+                self.ws_nums = self.workspace_rule_ids(workspaces)
             else:
                 self.ws_nums = []
             # Creating a list of workspaces from active workspaces
@@ -148,7 +148,27 @@ class HyprlandWorkspaces(Gtk.Box):
                                     "num-ws"] // 2]
         return workspace_ids
 
+    def workspace_rule_ids(self, workspaces):
+        """Return rule-defined IDs that belong on this panel.
+
+        A workspace rule describes the workspace's default monitor, but Hyprland
+        may move the workspace at runtime. In that case the live workspace data
+        must take precedence over the rule, or the ID remains visible on its old
+        monitor as a stale, unnamed button.
+        """
+        if self.settings["show-workspaces-from-all-outputs"]:
+            return [int(ws["workspaceString"]) for ws in self.workspace_rules]
+
+        live_monitors = {ws["id"]: ws["monitor"] for ws in workspaces}
+        return [
+            int(rule["workspaceString"])
+            for rule in self.workspace_rules
+            if (int(rule["workspaceString"]) not in live_monitors
+                or live_monitors[int(rule["workspaceString"])] == self.monitor_name)
+        ]
+
     def refresh(self, monitors, workspaces, clients, activewindow, activeworkspace):
+        all_workspaces = workspaces
         # filter workspaces for the current monitor
         workspaces = [
             ws for ws in workspaces
@@ -169,8 +189,9 @@ class HyprlandWorkspaces(Gtk.Box):
             occupied_workspaces = []  # should not be sorted, as this should be in the same order as the workspaces in Hyprland
             self.ws_id2name = {}
             if self.settings["show-inactive-workspaces"]:
-                self.ws_nums = [int(ws["workspaceString"]) for ws in
-                                self.workspace_rules]  # start with workspaces from rules
+                # Start with persistent rules, except where Hyprland's live state
+                # says that a workspace has moved to another monitor.
+                self.ws_nums = self.workspace_rule_ids(all_workspaces)
             else:
                 self.ws_nums = []
             # Updating occupied workspaces
