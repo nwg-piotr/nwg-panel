@@ -153,7 +153,7 @@ class ClientBox(Gtk.EventBox):
         if settings["show-layout"]:
             if window["is_floating"]:
                 img = Gtk.Image()
-                update_image(img, "focus-windows", self.settings["image-size"], self.icons_path)
+                update_image(img, "focus-windows", self.settings["icon-size"], self.icons_path)
                 self.box.pack_start(img, False, False, 0)
 
     def on_click(self, widget, event, client, popup_at_widget):
