@@ -135,7 +135,7 @@ class ClientBox(Gtk.EventBox):
             name = window["app_id"]
             image = Gtk.Image()
             image.set_property("name", "task-box-icon")
-            update_image_fallback_desktop(image, name, settings["image-size"], icons_path)
+            update_image_fallback_desktop(image, name, settings["icon-size"], icons_path)
             self.box.pack_start(image, False, False, 4)
 
         name = window["title"][:settings["name-max-len"]]
