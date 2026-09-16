@@ -828,6 +828,7 @@ class EditorWrapper(object):
             "hyprland-submap",
             "keyboard-layout",
             "niri-taskbar",
+            "niri-workspaces",
             "tray",
             "random-wallpaper",
             "pinned"
