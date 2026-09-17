@@ -245,15 +245,13 @@ def niri_watcher():
                                   "WorkspaceActivated"]:
 
                     for item in common.niri_taskbars_list:
-                        print("Refresh niri_taskbar")
                         GLib.timeout_add(0, item.refresh)
 
                     for item in common.niri_workspaces_list:
-                        print("Refresh niri_workspaces")
                         GLib.timeout_add(0, item.refresh)
 
             except json.JSONDecodeError as e:
-                print("Failed to decode JSON:", e)
+                print("niri_watcher: failed to decode JSON:", e)
 
 def on_i3ipc_event(i3conn, event):
     if common_settings["restart-on-display"]:
