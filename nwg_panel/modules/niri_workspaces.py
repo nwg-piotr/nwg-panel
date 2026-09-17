@@ -4,19 +4,19 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
 
-from nwg_panel.tools import eprint,update_image_fallback_desktop, niri_outputs, niri_workspaces, niri_focused_window, niri_ipc
+from nwg_panel.tools import eprint, update_image_fallback_desktop, niri_outputs, niri_workspaces, niri_focused_window, niri_ipc
 
 import json
-
-
-def on_leave_notify_event(widget, event):
-    widget.unset_state_flags(Gtk.StateFlags.DROP_ACTIVE)
-    widget.unset_state_flags(Gtk.StateFlags.SELECTED)
 
 
 def on_enter_notify_event(widget, event):
     widget.set_state_flags(Gtk.StateFlags.DROP_ACTIVE, clear=False)
     widget.set_state_flags(Gtk.StateFlags.SELECTED, clear=False)
+
+
+def on_leave_notify_event(widget, event):
+    widget.unset_state_flags(Gtk.StateFlags.DROP_ACTIVE)
+    widget.unset_state_flags(Gtk.StateFlags.SELECTED)
 
 
 def on_click(event_box, event_button, id):
@@ -35,9 +35,9 @@ class NiriWorkspaces(Gtk.Box):
         self.output_name = panel_output
 
         # obtained in refresh()
-        self.outputs_to_show = None
-        self.workspaces = None
-        self.focused_window = None
+        self.outputs_to_show = None # list of names of outputs to show workspaces for, ordered by x coordinate or alphabetically
+        self.workspaces = None      # list of dicts with workspaces data, internally sorted by workspace index
+        self.focused_window = None  # dictionary with focused window data
 
         # default settings
         defaults = {
@@ -82,9 +82,6 @@ class NiriWorkspaces(Gtk.Box):
         # clear old widgets
         for child in self.get_children():
             self.remove(child)
-
-        if self.settings["angle"] != 0.0:
-            self.set_orientation(Gtk.Orientation.VERTICAL)
 
         for o in self.outputs_to_show:
             # output name label (only if we show workspaces from all outputs)
