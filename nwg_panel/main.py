@@ -239,11 +239,12 @@ def niri_watcher():
                 # print(f"[{event_name}]")
 
                 # Filter meaningless events
-                if event_name in ["WorkspaceActiveWindowChanged",
-                                  "WindowFocusChanged",
-                                  "WorkspaceActivated",
+                if event_name in ["WindowFocusChanged",
                                   "WindowOpenedOrChanged",
-                                  "WindowClosed"]:
+                                  "WindowClosed",
+                                  "WorkspaceActiveWindowChanged",
+                                  "WorkspaceActivated",
+                                  "WorkspacesChanged"]:
 
                     for item in common.niri_taskbars_list:
                         GLib.timeout_add(0, item.refresh)
