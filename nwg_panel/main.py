@@ -236,7 +236,7 @@ def niri_watcher():
                 message = json.loads(line)
                 event_name = next(iter(message))
                 # event_data = message[event_name]
-                print(f"[{event_name}]")
+                # print(f"[{event_name}]")
 
                 # Filter meaningless events
                 if event_name in ["WorkspaceActiveWindowChanged",
