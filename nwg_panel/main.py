@@ -234,17 +234,23 @@ def niri_watcher():
                 continue
             try:
                 message = json.loads(line)
-                # event_name = next(iter(message))
+                event_name = next(iter(message))
                 # event_data = message[event_name]
                 # print(f"[{event_name}]")
 
-                outputs, workspaces, windows, focused_window = niri_get_all()
-                # print(f"{outputs}\n{workspaces}\n{windows}\n{focused_window}")
-                for item in common.niri_taskbars_list:
-                    GLib.timeout_add(0, item.refresh, outputs, workspaces, windows, focused_window)
+                # Filter meaningless events
+                if event_name in ["WorkspaceActiveWindowChanged",
+                                  "WindowFocusChanged",
+                                  "WorkspaceActiveWindowChanged",
+                                  "WorkspaceActivated"]:
 
-                for item in common.niri_workspaces_list:
-                    GLib.timeout_add(0, item.refresh)
+                    for item in common.niri_taskbars_list:
+                        print("Refresh niri_taskbar")
+                        GLib.timeout_add(0, item.refresh)
+
+                    for item in common.niri_workspaces_list:
+                        print("Refresh niri_workspaces")
+                        GLib.timeout_add(0, item.refresh)
 
             except json.JSONDecodeError as e:
                 print("Failed to decode JSON:", e)
