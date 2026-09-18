@@ -29,6 +29,8 @@ class NiriWorkspaces(Gtk.Box):
     def __init__(self, settings, panel_output, icons_path):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
 
+        self.set_property("name", "niri-workspaces")
+
         # passed values
         self.settings = settings
         self.icons_path = icons_path
