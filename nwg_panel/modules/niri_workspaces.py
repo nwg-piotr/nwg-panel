@@ -91,7 +91,7 @@ class NiriWorkspaces(Gtk.Box):
                 lbl = Gtk.Label.new(f"{o}:")
                 if self.settings["angle"] != 0.0:
                     lbl.set_angle(self.settings["angle"])
-                lbl.set_property("name", "niri-output-name")
+                lbl.set_property("name", "niri-ws-output-name")
                 self.pack_start(lbl, False, False, 6)
 
             for item in self.workspaces:
@@ -125,7 +125,7 @@ class NiriWorkspaces(Gtk.Box):
 
         if self.settings["show-icon"] and app_id:
             icon = Gtk.Image()
-            icon.set_property("name", "niri-workspaces-icon")
+            icon.set_property("name", "niri-ws-icon")
 
             try:
                 update_image_fallback_desktop(icon, app_id, self.settings["icon-size"], self.icons_path, fallback=False)
@@ -137,7 +137,7 @@ class NiriWorkspaces(Gtk.Box):
             max_len = self.settings["name-length"]
             display_title = title if len(title) <= max_len else f"{title[:max_len]}…"
             lbl = Gtk.Label.new(display_title)
-            lbl.set_property("name", "niri-window-title")
+            lbl.set_property("name", "niri-ws-window-title")
             if self.settings["angle"] != 0.0:
                 lbl.set_angle(self.settings["angle"])
             self.pack_start(lbl, False, False, 6)
