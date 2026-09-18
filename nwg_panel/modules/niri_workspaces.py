@@ -89,7 +89,7 @@ class NiriWorkspaces(Gtk.Box):
                 lbl = Gtk.Label.new(f"{o}:")
                 if self.settings["angle"] != 0.0:
                     lbl.set_angle(self.settings["angle"])
-                lbl.set_property("name", "niri-ws-output-name")
+                lbl.set_property("name", "niri-output-name")
                 self.pack_start(lbl, False, False, 6)
 
             for item in self.workspaces:
@@ -111,6 +111,7 @@ class NiriWorkspaces(Gtk.Box):
                         ws_name = f"{ws_name}."
 
                     lbl = Gtk.Label.new(f"{ws_name}")
+                    lbl.set_property("name", "niri-ws-name")
                     if self.settings["angle"] != 0.0:
                         lbl.set_angle(self.settings["angle"])
                     eb.add(lbl)
@@ -134,6 +135,7 @@ class NiriWorkspaces(Gtk.Box):
             max_len = self.settings["name-length"]
             display_title = title if len(title) <= max_len else f"{title[:max_len]}…"
             lbl = Gtk.Label.new(display_title)
+            lbl.set_property("name", "niri-window-title")
             if self.settings["angle"] != 0.0:
                 lbl.set_angle(self.settings["angle"])
             self.pack_start(lbl, False, False, 6)
