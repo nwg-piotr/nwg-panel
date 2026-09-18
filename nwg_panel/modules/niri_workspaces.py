@@ -55,6 +55,8 @@ class NiriWorkspaces(Gtk.Box):
             if key not in self.settings:
                 self.settings[key] = defaults[key]
 
+        print(settings)
+
         if self.settings["angle"] != 0.0:
             self.set_orientation(Gtk.Orientation.VERTICAL)
 

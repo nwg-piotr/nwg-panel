@@ -47,7 +47,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkSpinButton" id="image-size">
+          <object class="GtkSpinButton" id="icon-size">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
           </object>

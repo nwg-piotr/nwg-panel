@@ -167,6 +167,15 @@ SKELETON_PANEL: dict = {
         "mark-xwayland": True,
         "angle": 0.0
     },
+    "niri-workspaces": {
+            "show-workspaces-from-all-outputs": True,
+            "sort-outputs-by-x": True,
+            "show-icon": True,
+            "icon-size": 16,
+            "show-name": True,
+            "name-length": 40,
+            "angle": 0.0
+    },
     "clock": {
         "format": "%a, %d. %b  %H:%M:%S",
         "tooltip-text": "",
@@ -797,6 +806,7 @@ class EditorWrapper(object):
         builder.get_object("brightness-slider").set_text(voc["brightness-slider"])
         builder.get_object("keyboard-layout").set_text(voc["keyboard-layout"])
         builder.get_object("niri-taskbar").set_text(voc["niri-taskbar"])
+        builder.get_object("niri-workspaces").set_text(voc["niri-workspaces"])
         builder.get_object("executors").set_text(voc["executors"])
         builder.get_object("buttons").set_text(voc["buttons"])
         builder.get_object("menu-start").set_text(voc["menu-start"])
@@ -869,6 +879,7 @@ class EditorWrapper(object):
         builder.get_object("eb-dwl-tags").connect("button-press-event", self.edit_dwl_tags)
         builder.get_object("eb-hyprland-taskbar").connect("button-press-event", self.edit_hyprland_taskbar)
         builder.get_object("eb-hyprland-workspaces").connect("button-press-event", self.edit_hyprland_workspaces)
+        builder.get_object("eb-niri-workspaces").connect("button-press-event", self.edit_niri_workspaces)
         builder.get_object("eb-hyprland-submap").connect("button-press-event", self.edit_hyprland_submap)
         builder.get_object("eb-keyboard-layout").connect("button-press-event", self.edit_keyboard_layout)
         builder.get_object("eb-niri-taskbar").connect("button-press-event", self.edit_niri_taskbar)
@@ -1342,6 +1353,8 @@ class EditorWrapper(object):
             self.update_keyboard_layout()
         elif self.edited == "niri-taskbar":
             self.update_niri_taskbar()
+        elif self.edited == "niri-workspaces":
+            self.update_niri_workspaces()
         elif self.edited == "pinned":
             self.update_pinned()
         elif self.edited == "openweather":
@@ -1764,6 +1777,86 @@ class EditorWrapper(object):
         try:
             settings["angle"] = float(self.sb_angle.get_active_id())
         except Exception as e:
+            settings["angle"] = 0.0
+
+        save_json(self.config, self.file)
+
+    def edit_niri_workspaces(self, *args):
+        self.load_panel()
+        self.edited = "niri-workspaces"
+        check_key(self.panel, "niri-workspaces", {})
+        settings = self.panel["niri-workspaces"]
+        defaults = {
+            "show-workspaces-from-all-outputs": True,
+            "sort-outputs-by-x": True,
+            "show-icon": True,
+            "icon-size": 16,
+            "show-name": True,
+            "name-length": 40,
+            "angle": 0.0
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_niri_workspaces.glade"))
+        frame = builder.get_object("frame")
+        frame.set_label(f"  {voc["module"]}: NiriWorkspaces  ")
+
+        builder.get_object("show-workspaces-from-all-outputs").set_label(f"{voc["show-workspaces-from-all-outputs"]}:")
+        builder.get_object("show-icon").set_label(f"{voc["show-focused-window-icon"]}:")
+        builder.get_object("lbl-icon-size").set_text(f"{voc["icon-size"]}:")
+        builder.get_object("show-name").set_label(f"{voc["show-focused-window-name"]}:")
+        builder.get_object("lbl-window-name-length-limit").set_text(f"{voc["window-name-length-limit"]}:")
+        builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
+
+        self.ws_show_all_outputs = builder.get_object("show-workspaces-from-all-outputs")
+        self.ws_show_all_outputs.set_label(voc["show-workspaces-from-all-outputs"])
+        self.ws_show_all_outputs.set_active(settings["show-workspaces-from-all-outputs"])
+
+        self.ws_sort_outputs_by_x = builder.get_object("sort-outputs-by-x")
+        self.ws_sort_outputs_by_x.set_label(voc["sort-outputs-by-x"])
+        self.ws_sort_outputs_by_x.set_active(settings["sort-outputs-by-x"])
+
+        self.ws_show_icon = builder.get_object("show-icon")
+        self.ws_show_icon.set_label(voc["show-focused-window-icon"])
+        self.ws_show_icon.set_active(settings["show-icon"])
+
+        self.ws_image_size = builder.get_object("icon-size")
+        self.ws_image_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
+        self.ws_image_size.configure(adj, 1, 0)
+        self.ws_image_size.set_value(settings["icon-size"])
+
+        self.ws_show_name = builder.get_object("show-name")
+        self.ws_show_name.set_label(voc["show-window-name"])
+        self.ws_show_name.set_active(settings["show-name"])
+
+        self.ws_name_length = builder.get_object("name-length")
+        self.ws_name_length.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=1, upper=256, step_increment=1, page_increment=10, page_size=1)
+        self.ws_name_length.configure(adj, 1, 0)
+        self.ws_name_length.set_value(settings["name-length"])
+
+        self.ws_angle = builder.get_object("angle")
+        self.ws_angle.set_tooltip_text(voc["angle-tooltip"])
+        self.ws_angle.set_active_id(str(settings["angle"]))
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(frame)
+
+    def update_niri_workspaces(self):
+        settings = self.panel["niri-workspaces"]
+
+        settings["show-workspaces-from-all-outputs"] = self.ws_show_all_outputs.get_active()
+        settings["sort-outputs-by-x"] = self.ws_sort_outputs_by_x.get_active()
+        settings["show-icon"] = self.ws_show_icon.get_active()
+        settings["icon-size"] = int(self.ws_image_size.get_value())
+        settings["show-name"] = self.ws_show_name.get_active()
+        settings["name-length"] = int(self.ws_name_length.get_value())
+        try:
+            settings["angle"] = float(self.ws_angle.get_active_id())
+        except:
             settings["angle"] = 0.0
 
         save_json(self.config, self.file)
