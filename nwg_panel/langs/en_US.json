@@ -256,6 +256,7 @@
   "show-visibility": "Show visibility",
   "show-wind": "Show wind",
   "show-window-name": "Show window name",
+  "show-window-icons-in-workspace": "Show window icons in workspace",
   "show-workspaces": "Show workspaces",
   "show-ws-names": "Show workspace names",
   "shutdown-cmd": "Shutdown command",

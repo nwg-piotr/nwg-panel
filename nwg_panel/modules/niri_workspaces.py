@@ -4,7 +4,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
 
-from nwg_panel.tools import eprint, update_image_fallback_desktop, niri_outputs, niri_workspaces, niri_focused_window, niri_ipc
+from nwg_panel.tools import eprint, update_image_fallback_desktop, niri_outputs, niri_workspaces, niri_focused_window, niri_windows, niri_ipc
 
 import json
 
@@ -19,9 +19,16 @@ def on_leave_notify_event(widget, event):
     widget.unset_state_flags(Gtk.StateFlags.SELECTED)
 
 
-def on_click(event_box, event_button, id):
+def on_workspace_clicked(event_box, event_button, id):
     # focus required workspace
     command = {"Action": {"FocusWorkspace": {"reference": {"Id": id}}}}
+    niri_ipc(json.dumps(command), is_json=True)
+
+
+def on_app_icon_clicked(event_box, event_button, id):
+    # focus required window
+    print("focus window", id)
+    command = {"Action": {"FocusWindow": {"id": id}}}
     niri_ipc(json.dumps(command), is_json=True)
 
 
@@ -40,11 +47,13 @@ class NiriWorkspaces(Gtk.Box):
         self.outputs_to_show = None # list of names of outputs to show workspaces for, ordered by x coordinate or alphabetically
         self.workspaces = None      # list of dicts with workspaces data, internally sorted by workspace index
         self.focused_window = None  # dictionary with focused window data
+        self.windows = None
 
         # default settings
         defaults = {
             "show-workspaces-from-all-outputs": True,
             "sort-outputs-by-x": True,
+            "show-per-ws-app-icons": False,
             "show-icon": True,
             "icon-size": 16,
             "show-name": True,
@@ -79,6 +88,13 @@ class NiriWorkspaces(Gtk.Box):
         self.outputs_to_show = output_names if self.settings["show-workspaces-from-all-outputs"] else [self.output_name]
         self.workspaces = sorted(niri_workspaces(), key=lambda item: item["idx"])
         self.focused_window = niri_focused_window()
+        # per-workspace window icons
+        if self.settings["show-per-ws-app-icons"]:
+            self.windows = niri_windows()
+            # sort windows by placement
+            self.windows.sort(
+                key=lambda w: (w.get("layout", {}).get("pos_in_scrolling_layout") or [0, 0])
+            )
 
         self.build_box()
 
@@ -102,7 +118,7 @@ class NiriWorkspaces(Gtk.Box):
                     eb = Gtk.EventBox()
                     eb.connect("enter_notify_event", on_enter_notify_event)
                     eb.connect("leave_notify_event", on_leave_notify_event)
-                    eb.connect("button-release-event", on_click, item["id"])
+                    eb.connect("button-release-event", on_workspace_clicked, item["id"])
 
                     if item['is_focused']:
                         eb.set_property("name", "task-box-focused")
@@ -119,6 +135,32 @@ class NiriWorkspaces(Gtk.Box):
                     if self.settings["angle"] != 0.0:
                         lbl.set_angle(self.settings["angle"])
                     eb.add(lbl)
+
+                    # show per-workspace window icons
+                    if self.settings["show-per-ws-app-icons"] and self.windows:
+                        for i in self.windows:
+                            if i.get("workspace_id") == item["id"]:
+                                app_id = i.get("app_id") or ""
+                                win_id = i.get("id")
+                                win_title = i.get("title") or app_id or "Window"
+
+                                eb_icon = Gtk.EventBox()
+                                eb_icon.set_tooltip_text(win_title)
+                                eb_icon.connect("button-release-event", on_app_icon_clicked, win_id)
+
+                                icon = Gtk.Image()
+                                icon.set_property("name", "niri-app-icon")
+
+                                try:
+                                    update_image_fallback_desktop(
+                                        icon, app_id, self.settings["icon-size"], self.icons_path, fallback=False
+                                    )
+                                    eb_icon.add(icon)
+                                    self.pack_start(eb_icon, False, False, 3)
+                                except Exception:
+                                    eprint(f"NiriWorkspaces: could not update per-ws icon for app_id '{app_id}'")
+
+
 
         # Safety check if no window is currently focused
         focused = self.focused_window or {}

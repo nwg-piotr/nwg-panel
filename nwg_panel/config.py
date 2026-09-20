@@ -1789,6 +1789,7 @@ class EditorWrapper(object):
         defaults = {
             "show-workspaces-from-all-outputs": True,
             "sort-outputs-by-x": True,
+            "show-per-ws-app-icons": False,
             "show-icon": True,
             "icon-size": 16,
             "show-name": True,
@@ -1807,6 +1808,7 @@ class EditorWrapper(object):
         builder.get_object("lbl-icon-size").set_text(f"{voc["icon-size"]}:")
         builder.get_object("show-name").set_label(f"{voc["show-focused-window-name"]}:")
         builder.get_object("lbl-window-name-length-limit").set_text(f"{voc["window-name-length-limit"]}:")
+        builder.get_object("show-per-workspace-window-icons").set_label(f"{voc["show-window-icons-in-workspace"]}")
         builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
 
         self.ws_show_all_outputs = builder.get_object("show-workspaces-from-all-outputs")
@@ -1828,7 +1830,6 @@ class EditorWrapper(object):
         self.ws_image_size.set_value(settings["icon-size"])
 
         self.ws_show_name = builder.get_object("show-name")
-        self.ws_show_name.set_label(voc["show-window-name"])
         self.ws_show_name.set_active(settings["show-name"])
 
         self.ws_name_length = builder.get_object("name-length")
@@ -1836,6 +1837,9 @@ class EditorWrapper(object):
         adj = Gtk.Adjustment(value=0, lower=1, upper=256, step_increment=1, page_increment=10, page_size=1)
         self.ws_name_length.configure(adj, 1, 0)
         self.ws_name_length.set_value(settings["name-length"])
+
+        self.ws_per_workspace_window_icons = builder.get_object("show-per-workspace-window-icons")
+        self.ws_per_workspace_window_icons.set_active(settings["show-per-ws-app-icons"])
 
         self.ws_angle = builder.get_object("angle")
         self.ws_angle.set_tooltip_text(voc["angle-tooltip"])
@@ -1853,6 +1857,7 @@ class EditorWrapper(object):
         settings["show-icon"] = self.ws_show_icon.get_active()
         settings["icon-size"] = int(self.ws_image_size.get_value())
         settings["show-name"] = self.ws_show_name.get_active()
+        settings["show-per-ws-app-icons"] = self.ws_per_workspace_window_icons.get_active()
         settings["name-length"] = int(self.ws_name_length.get_value())
         try:
             settings["angle"] = float(self.ws_angle.get_active_id())
