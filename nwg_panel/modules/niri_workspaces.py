@@ -47,25 +47,23 @@ class NiriWorkspaces(Gtk.Box):
         # obtained in refresh()
         self.outputs_to_show = None # list of names of outputs to show workspaces for, ordered by x coordinate or alphabetically
         self.workspaces = None      # list of dicts with workspaces data, internally sorted by workspace index
-        self.focused_window = None  # dictionary with focused window data
-        self.windows = None
+        self.focused_window = None  # dictionary with Niri focused window data
+        self.windows = None         # dictionary with Niri windows data
 
         # default settings
         defaults = {
-            "show-workspaces-from-all-outputs": True,
-            "sort-outputs-by-x": True,
-            "show-per-ws-app-icons": False,
-            "show-icon": True,
-            "icon-size": 16,
-            "show-name": True,
-            "name-length": 40,
-            "angle": 0.0
+            "show-workspaces-from-all-outputs": True,   # determines if to show all displays->workspaces, or just the current display
+            "sort-outputs-by-x": True,                  # outputs may be sorted by their x coordinate or alphabetically
+            "show-per-ws-app-icons": False,             # determines if to show window icons for each workspace
+            "show-icon": True,                          # determines if to show active window icon
+            "icon-size": 16,                            # active window icon size in px
+            "show-name": True,                          # determines if to show active window title
+            "name-length": 40,                          # limits active window title length
+            "angle": 0.0                                # use 90 or 270 for vertical panels
         }
         for key in defaults:
             if key not in self.settings:
                 self.settings[key] = defaults[key]
-
-        print(settings)
 
         if self.settings["angle"] != 0.0:
             self.set_orientation(Gtk.Orientation.VERTICAL)
