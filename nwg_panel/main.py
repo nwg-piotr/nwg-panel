@@ -16,6 +16,7 @@ import threading
 import gi
 
 from nwg_panel.__about__ import __version__
+from nwg_panel.modules.niri_workspaces import NiriWorkspaces
 from nwg_panel.modules.pinned import Pinned
 
 gi.require_version('Gtk', '3.0')
@@ -233,17 +234,26 @@ def niri_watcher():
                 continue
             try:
                 message = json.loads(line)
-                # event_name = next(iter(message))
+                event_name = next(iter(message))
                 # event_data = message[event_name]
                 # print(f"[{event_name}]")
 
-                outputs, workspaces, windows, focused_window = niri_get_all()
-                # print(f"{outputs}\n{workspaces}\n{windows}\n{focused_window}")
-                for item in common.niri_taskbars_list:
-                    GLib.timeout_add(0, item.refresh, outputs, workspaces, windows, focused_window)
+                # Filter meaningless events
+                if event_name in ["WindowFocusChanged",
+                                  "WindowOpenedOrChanged",
+                                  "WindowClosed",
+                                  "WorkspaceActiveWindowChanged",
+                                  "WorkspaceActivated",
+                                  "WorkspacesChanged"]:
+
+                    for item in common.niri_taskbars_list:
+                        GLib.timeout_add(0, item.refresh)
+
+                    for item in common.niri_workspaces_list:
+                        GLib.timeout_add(0, item.refresh)
 
             except json.JSONDecodeError as e:
-                print("Failed to decode JSON:", e)
+                print("niri_watcher: failed to decode JSON:", e)
 
 def on_i3ipc_event(i3conn, event):
     if common_settings["restart-on-display"]:
@@ -350,6 +360,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                     eprint("'hyprland-taskbar' ignored (HIS unknown).")
 
         if item == "niri-taskbar":
+            #  TODO fix double niri-sock check
             if niri_sock:
                 outputs, workspaces, windows, focused_window = {}, {}, {}, {}
                 if "niri-taskbar" in panel:
@@ -358,16 +369,25 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                         check_key(panel["niri-taskbar"], "all-outputs", False)
                         if panel["niri-taskbar"]["all-outputs"] or "output" not in panel:
                             taskbar = NiriTaskbar(panel["niri-taskbar"], panel["position"], outputs, workspaces,
-                                                      windows, focused_window, icons_path=icons_path)
+                                                  windows, focused_window, icons_path=icons_path)
                         else:
                             taskbar = NiriTaskbar(panel["niri-taskbar"], panel["position"], outputs, workspaces,
-                                                      windows, focused_window, display_name="{}".format(panel["output"]),
-                                                      icons_path=icons_path)
+                                                  windows, focused_window, display_name="{}".format(panel["output"]),
+                                                  icons_path=icons_path)
 
                         common.niri_taskbars_list.append(taskbar)
                         container.pack_start(taskbar, False, False, panel["items-padding"])
                     else:
                         eprint("'niri-taskbar' ignored (NIRI_SOCKET unknown).")
+
+        if item == "niri-workspaces":
+            if niri_sock:
+                check_key(panel, "niri-workspaces", {})
+                workspaces = NiriWorkspaces(panel["niri-workspaces"], panel["output"], icons_path=icons_path)
+                container.pack_start(workspaces, False, False, panel["items-padding"])
+                common.niri_workspaces_list.append(workspaces)
+            else:
+                eprint("'niri-workspaces' ignored (NIRI_SOCKET unknown).")
 
         if item == "hyprland-workspaces":
             if his:
