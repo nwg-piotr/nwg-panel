@@ -4,7 +4,8 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
 
-from nwg_panel.tools import eprint, update_image_fallback_desktop, niri_outputs, niri_workspaces, niri_focused_window, niri_windows, niri_ipc
+from nwg_panel.tools import (eprint, update_image_fallback_desktop, niri_outputs, niri_workspaces, niri_focused_window,
+                             niri_windows, niri_ipc)
 
 import json
 
@@ -114,7 +115,7 @@ class NiriWorkspaces(Gtk.Box):
 
             for item in self.workspaces:
                 if item["output"] == o:
-                    # build event box with workspace ixd (or name if given) inside, for each workspace
+                    # build event box with workspace idx (or name if given) inside, for each workspace
                     eb = Gtk.EventBox()
                     eb.connect("enter_notify_event", on_enter_notify_event)
                     eb.connect("leave_notify_event", on_leave_notify_event)
@@ -157,7 +158,7 @@ class NiriWorkspaces(Gtk.Box):
                                     )
                                     eb_icon.add(icon)
                                     self.pack_start(eb_icon, False, False, 3)
-                                except Exception:
+                                except:
                                     eprint(f"NiriWorkspaces: could not update per-ws icon for app_id '{app_id}'")
 
 
