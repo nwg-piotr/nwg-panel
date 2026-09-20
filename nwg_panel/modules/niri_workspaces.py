@@ -56,7 +56,7 @@ class NiriWorkspaces(Gtk.Box):
             "sort-outputs-by-x": True,                  # outputs may be sorted by their x coordinate or alphabetically
             "show-per-ws-app-icons": False,             # determines if to show window icons for each workspace
             "show-icon": True,                          # determines if to show active window icon
-            "icon-size": 16,                            # active window icon size in px
+            "icon-size": 16,                            # active window icon size
             "show-name": True,                          # determines if to show active window title
             "name-length": 40,                          # limits active window title length
             "angle": 0.0                                # use 90 or 270 for vertical panels
