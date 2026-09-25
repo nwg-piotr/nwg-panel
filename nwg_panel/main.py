@@ -16,7 +16,7 @@ import threading
 import gi
 
 from nwg_panel.__about__ import __version__
-from nwg_panel.modules.niri_workspaces import NiriWorkspaces
+from nwg_panel.modules.mango_tags import MangoTags
 from nwg_panel.modules.pinned import Pinned
 
 gi.require_version('Gtk', '3.0')
@@ -95,6 +95,12 @@ if his:
 niri_sock = os.getenv('NIRI_SOCKET')
 if niri_sock:
     from nwg_panel.modules.niri_taskbar import NiriTaskbar
+    from nwg_panel.modules.niri_workspaces import NiriWorkspaces
+
+mis = get_mango_socket_path()
+if mis:
+    print(f"MANGO_INSTANCE_SIGNATURE={mis}")
+    from nwg_panel.mango_ipc import MangoWatcher
 
 common_settings = {}
 restart_cmd = ""
@@ -388,6 +394,15 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 common.niri_workspaces_list.append(workspaces)
             else:
                 eprint("'niri-workspaces' ignored (NIRI_SOCKET unknown).")
+
+        if item == "mango-tags":
+            if mis:
+                check_key(panel, "mango-tags", {})
+                tags = MangoTags(panel["mango-tags"], panel["output"], icons_path=icons_path)
+                container.pack_start(tags, False, False, panel["items-padding"])
+                common.mango_tags_list.append(tags)
+            else:
+                eprint("'mango-tags' ignored (MANGO_INSTANCE_SIGNATURE unknown).")
 
         if item == "hyprland-workspaces":
             if his:
@@ -1007,6 +1022,10 @@ def main():
         thread = threading.Thread(target=niri_watcher, daemon=True)
         thread.daemon = True
         thread.start()
+
+    if mis:
+        print("Instantiating MangoWatcher class")
+        mango_watcher = MangoWatcher(mis)
 
     if tray_available and len(common.tray_list) > 0:
         sni_system_tray.init_tray(common.tray_list)

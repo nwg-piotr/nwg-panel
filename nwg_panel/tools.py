@@ -919,6 +919,21 @@ def hyprctl(cmd, buf_size=2048):
         return ""
 
 
+def get_mango_socket_path():
+    """Resolves the socket path once during module import."""
+    sock_path = os.environ.get("MANGO_INSTANCE_SIGNATURE")
+    if sock_path and os.path.exists(sock_path):
+        return sock_path
+
+    # Fallback in case environment variables are lost
+    runtime_dir = os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
+    sockets = glob.glob(f"{runtime_dir}/mango-*.sock")
+    if sockets:
+        return sockets[0]
+
+    return None
+
+
 def h_list_monitors():
     reply = hyprctl("j/monitors")
     try:
