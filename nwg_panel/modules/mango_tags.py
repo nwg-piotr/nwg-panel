@@ -20,6 +20,34 @@ def on_leave_notify_event(widget, event):
     widget.unset_state_flags(Gtk.StateFlags.SELECTED)
 
 
+def on_monitor_clicked(widget, event, monitor_name):
+    if event.button == 1:
+        cmd = f"dispatch focusmon,{monitor_name}"
+        get_mango_ipc(cmd)
+
+def on_tag_clicked(widget, event, tag_index, monitor_name):
+    if event.button == 1:
+        cmd = f"dispatch viewcrossmon,{tag_index},{monitor_name}"
+        get_mango_ipc(cmd)
+
+
+def on_client_clicked(widget, event, client_id):
+    if event.button == 1:
+        cmd = f"dispatch focusid client,{client_id}"
+        get_mango_ipc(cmd)
+
+
+def on_scratchpad_client_clicked(widget, event, client_id):
+    if event.button == 1:
+        cmd = f"dispatch toggle_scratchpad"
+    elif event.button == 3:
+        cmd = f"dispatch focusid client,{client_id}"
+    else:
+        cmd = ""
+
+    get_mango_ipc(cmd)
+
+
 class MangoTags(Gtk.Box):
     def __init__(self, settings, panel_output, icons_path):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
@@ -39,15 +67,16 @@ class MangoTags(Gtk.Box):
 
         # default settings
         defaults = {
-            "show-tags-from-all-monitors": False,   # determines if to show all displays->workspaces, or just the current display
+            "show-tags-from-all-monitors": True,   # determines if to show all displays->workspaces, or just the current display
             "sort-monitors-by-x": True,                  # outputs may be sorted by their x coordinate or alphabetically
             "show-per-tag-app-icons": False,             # determines if to show window icons for each workspace
-            "show-empty-tags": False,
+            "show-empty-tags": True,
             "show-layout": True,
-            "show-icon": True,                          # determines if to show active window icon
-            "icon-size": 16,                            # active window icon size
+            "show-icon": True,                          # determines if to show per-tag window client icons
+            "icon-size": 16,                            # client window icon size
             "show-name": True,                          # determines if to show active window title
             "name-length": 20,                          # limits active window title length
+            "scratchpad-label": "Scr:",
             "angle": 0.0                                # use 90 or 270 for vertical panels
         }
         for key in defaults:
@@ -87,14 +116,21 @@ class MangoTags(Gtk.Box):
             self.sorted_monitor_names = [self.output_name]
 
         for m_name in self.sorted_monitor_names:
-            print(f"{m_name}:", end=" ")
             # monitor name label
             if self.settings["show-tags-from-all-monitors"]:
-                lbl = Gtk.Label.new(f"{m_name}:")
+                eb_mon = Gtk.EventBox()
+                eb_mon.connect("button-release-event", on_monitor_clicked, m_name)
+                eb_mon.connect("enter_notify_event", on_enter_notify_event)
+                eb_mon.connect("leave_notify_event", on_leave_notify_event)
+                eb_mon.set_property("name", "mango-tags-output-box")
+                self.pack_start(eb_mon, False, False, 6)
+
+                lbl = Gtk.Label.new()
+                lbl.set_markup(f"<b>{m_name}:</b>")
                 if self.settings["angle"] != 0.0:
                     lbl.set_angle(self.settings["angle"])
                 lbl.set_property("name", "mango-tags-output-name")
-                self.pack_start(lbl, False, False, 6)
+                eb_mon.add(lbl)
 
             if self.settings["show-layout"]:
                 for _i in self.all_monitors:
@@ -110,35 +146,37 @@ class MangoTags(Gtk.Box):
                     for i in item["tags"]:
                         # show if "show-empty-tags" demanded or is_active or has some clients
                         if self.settings["show-empty-tags"] or i["is_active"] or i.get("client_count", 0) > 0:
-                            print(i["index"], end=" ")
                             # build event box with tag index inside
                             eb = Gtk.EventBox()
                             eb.connect("enter_notify_event", on_enter_notify_event)
                             eb.connect("leave_notify_event", on_leave_notify_event)
-                            # eb.connect("button-release-event", on_workspace_clicked, item["id"])
-                            self.pack_start(eb, False, False, 3)
+                            eb.connect("button-release-event", on_tag_clicked, i["index"], m_name)
 
                             if i['is_active']:
                                 eb.set_property("name", "task-box-focused")
                             else:
                                 eb.set_property("name", "")
+
+                            # Pakujemy tylko raz, po skonfigurowaniu właściwości
                             self.pack_start(eb, False, False, 3)
 
                             # tag index label
-                            lbl = Gtk.Label.new(f"{i["index"]}")
+                            lbl = Gtk.Label.new(f"{i['index']}")
                             lbl.set_property("name", "mango-tag-index")
                             if self.settings["angle"] != 0.0:
                                 lbl.set_angle(self.settings["angle"])
                             eb.add(lbl)
 
                             for client in self.all_clients:
+                                # filter out clients in scratchpad
+                                if client.get("is_scratchpad") or client.get("is_namedscratchpad"):
+                                    continue
+
                                 if client["monitor"] == m_name and i["index"] in client["tags"]:
-                                    print(client["appid"], end=" ")
                                     # client icon and title
                                     eb_icon_title = Gtk.EventBox()
                                     eb_icon_title.set_tooltip_text(client["title"])
-
-                                    # TWORZYMY WEWNĘTRZNY KONTENER
+                                    eb_icon_title.connect("button-release-event", on_client_clicked, client["id"])
                                     inner_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
                                     eb_icon_title.add(inner_box)
 
@@ -154,7 +192,6 @@ class MangoTags(Gtk.Box):
                                                 icon, client["appid"], self.settings["icon-size"], self.icons_path,
                                                 fallback=False
                                             )
-                                            # Pakujemy ikonę do wewnętrznego boxa!
                                             inner_box.pack_start(icon, False, False, 0)
                                         except:
                                             eprint(
@@ -169,8 +206,42 @@ class MangoTags(Gtk.Box):
                                         if self.settings["angle"] != 0.0:
                                             lbl.set_angle(self.settings["angle"])
 
-                                        # Pakujemy tytuł do wewnętrznego boxa obok ikony!
                                         inner_box.pack_start(lbl, False, False, 0)
 
-        print("\n")
+            scratchpad_clients = [
+                c for c in self.all_clients
+                if c["monitor"] == m_name and (c.get("is_scratchpad") or c.get("is_namedscratchpad"))
+            ]
+
+            if scratchpad_clients:
+                # scratchpad label
+                lbl = Gtk.Label.new(self.settings["scratchpad-label"])
+                self.pack_start(lbl, False, False, 3)
+
+                drawer_eb = Gtk.EventBox()
+                drawer_eb.set_property("name", "mango-scratchpad-drawer")
+                drawer_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+                drawer_eb.add(drawer_box)
+                self.pack_start(drawer_eb, False, False, 6)
+
+                for client in scratchpad_clients:
+                    eb_icon_title = Gtk.EventBox()
+                    eb_icon_title.set_tooltip_text(client["title"])
+                    eb_icon_title.connect("button-release-event", on_client_clicked, client["id"])
+
+                    # client icon
+                    if self.settings["show-icon"]:
+                        icon = Gtk.Image()
+                        icon.set_property("name", "mango-app-icon")
+                        try:
+                            update_image_fallback_desktop(
+                                icon, client["appid"], self.settings["icon-size"], self.icons_path,
+                                fallback=False
+                            )
+                            eb_icon_title.add(icon)
+                        except Exception as e:
+                            eprint(f"MangoTags:Scratchpad could not update per-ws icon for appid '{client['appid']}'", e)
+
+                        drawer_box.pack_start(eb_icon_title, False, False, 3)
+
         self.show_all()
