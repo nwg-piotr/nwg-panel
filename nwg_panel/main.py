@@ -179,6 +179,11 @@ def hypr_watcher():
         event_names = []
         for line in lines:
             event_names.append(line.split(">>")[0])
+
+        # keyboard layout changed (e.g. Alt+Shift): refresh KeyboardLayout modules, no polling needed
+        if "activelayout" in event_names:
+            for item in common.kb_layouts_list:
+                GLib.idle_add(item.update_label)
         # print(f"events: {event_names}")
 
         for event_name in event_names:
