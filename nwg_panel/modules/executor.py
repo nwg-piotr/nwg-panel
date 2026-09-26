@@ -26,6 +26,7 @@ class Executor(Gtk.EventBox):
         self.image = Gtk.Image()
         self.label = Gtk.Label.new("")
         self.icon_path = None
+        self.dynamic_tooltip = False
 
         check_key(settings, "script", "")
         check_key(settings, "interval", 0)
@@ -89,6 +90,16 @@ class Executor(Gtk.EventBox):
                     label = output[0]
             elif len(output) == 2:
                 new_path, label = output
+            else:
+                # 3+ lines: icon path (may be empty), label, then a tooltip (Pango markup, may span several lines)
+                new_path, label = output[0], output[1]
+                self.set_tooltip_markup("\n".join(output[2:]))
+                self.dynamic_tooltip = True
+
+        if self.dynamic_tooltip and (not output or len(output) < 3):
+            # the script stopped providing a tooltip: restore the static one (if any)
+            self.set_tooltip_text(self.settings["tooltip-text"] or None)
+            self.dynamic_tooltip = False
 
         # update widget contents
         if new_path and new_path != self.icon_path:
