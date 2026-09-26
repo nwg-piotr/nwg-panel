@@ -152,10 +152,14 @@ class KeyboardLayout(Gtk.EventBox):
                         return k["active_keymap"]
                 return "unknown"
             else:
+                # the main keyboard is the one used last
+                for k in self.keyboards:
+                    if k.get("main"):
+                        return k["active_keymap"]
                 for k in self.keyboards:
                     if "keyboard" in k["name"]:
                         return k["active_keymap"]
-                return self.keyboards[0]["layout"]
+                return self.keyboards[0]["layout"] if self.keyboards else "unknown"
         elif self.compositor == "sway":
             for k in self.keyboards:
                 if "keyboard" in k.identifier:
@@ -191,9 +195,15 @@ class KeyboardLayout(Gtk.EventBox):
                 # apply to selected device
                 hyprctl(f"switchxkblayout {self.device_name} next")
             else:
-                # apply to all devices
-                for name in self.keyboard_names:
-                    hyprctl(f"switchxkblayout {name} next")
+                # apply to all devices, including those added after the panel started (e.g. virtual keyboards
+                # created by wayvnc), and keep them in sync: next layout relative to the main (last used) keyboard
+                self.keyboards = self.list_keyboards()
+                main = next((k for k in self.keyboards if k.get("main")), self.keyboards[0] if self.keyboards else None)
+                n = len(self.get_kb_layouts())
+                if main is not None and n > 0:
+                    hyprctl(f"switchxkblayout all {(main.get('active_layout_index', 0) + 1) % n}")
+                else:
+                    hyprctl("switchxkblayout all next")
         elif self.compositor == "sway":
             # apply to all devices of type:keyboard
             self.i3.command(f'input type:keyboard xkb_switch_layout next')
@@ -209,9 +219,8 @@ class KeyboardLayout(Gtk.EventBox):
                 # apply to selected device
                 hyprctl(f'switchxkblayout {self.device_name} {idx}')
             else:
-                # apply to all devices
-                for name in self.keyboard_names:
-                    hyprctl(f'switchxkblayout {name} {idx}')
+                # apply to all devices, including those added after the panel started
+                hyprctl(f'switchxkblayout all {idx}')
         elif self.compositor == "sway":
             # apply to all devices of type:keyboard
             self.i3.command(f'input type:keyboard xkb_switch_layout {idx}')
