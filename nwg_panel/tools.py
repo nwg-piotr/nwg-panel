@@ -411,7 +411,7 @@ def get_volume():
     muted = False
     if nwg_panel.common.commands["pactl"]:
         try:
-            output = cmd2string("pactl get-sink-volume @DEFAULT_SINK@")
+            output = subprocess.check_output(["pactl", "get-sink-volume", "@DEFAULT_SINK@"], env=dict(os.environ, LANG="C.UTF-8"), text=True)
             volumes = re.findall(r"/\s+(?P<volume>\d+)%\s+/", output)
             if volumes:
                 volumes = [int(x) for x in volumes]
@@ -420,7 +420,7 @@ def get_volume():
             eprint(e)
 
         try:
-            output = cmd2string("pactl get-sink-mute @DEFAULT_SINK@").strip().lower()
+            output = subprocess.check_output(["pactl", "get-sink-mute", "@DEFAULT_SINK@"], env=dict(os.environ, LANG="C.UTF-8"), text=True).strip().lower()
             muted = output.endswith("yes")
         except Exception as e:
             eprint(e)

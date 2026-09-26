@@ -77,6 +77,7 @@ class KeyboardLayout(Gtk.EventBox):
                 check_key(settings, "interval", 0)
                 check_key(settings, "tooltip-text", "LMB: Next layout, RMB: Menu")
                 check_key(settings, "angle", 0.0)
+                check_key(settings, "labels", {})
 
                 self.label.set_angle(settings["angle"])
 
@@ -101,8 +102,12 @@ class KeyboardLayout(Gtk.EventBox):
                 self.build_box()
                 label = self.get_current_layout()
                 if label:
-                    self.label.set_text(label)
+                    self.label.set_text(self.settings["labels"].get(label, label))
                 self.show_all()
+                if self.compositor == "Hyprland":
+                    # updated on Hyprland "activelayout" events (see hypr_watcher), no polling needed
+                    import nwg_panel.common
+                    nwg_panel.common.kb_layouts_list.append(self)
             else:
                 print("KeyboardLayout module: failed listing devices, won't create UI, sorry.")
 
@@ -172,7 +177,10 @@ class KeyboardLayout(Gtk.EventBox):
         self.keyboards = self.list_keyboards()
         txt = self.get_current_layout()
         if txt:
-            self.label.set_text(txt)
+            txt = self.settings["labels"].get(txt, txt)
+            # may be called from a background thread: touch GTK widgets from the main loop only
+            GLib.idle_add(self.label.set_text, txt)
+        return False
 
     def refresh(self, *args):
         thread = create_background_task(self.update_label, self.settings["interval"])
