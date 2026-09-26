@@ -168,11 +168,50 @@ def hypr_watcher():
     hypr_dir = f"{xdg_runtime_dir}/hypr" if xdg_runtime_dir and os.path.isdir(
         f"{xdg_runtime_dir}/hypr") else "/tmp/hypr"
 
-    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    client.connect(f"{hypr_dir}/{his}/.socket2.sock")
+    import time
+
+    def connect():
+        # Retry until the Hyprland event socket is available
+        while True:
+            try:
+                s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                s.connect(f"{hypr_dir}/{his}/.socket2.sock")
+                return s
+            except OSError as ex:
+                eprint(f"hypr_watcher: can't connect to Hyprland socket ({ex}), retrying in 2 s")
+                time.sleep(2)
+
+    client = connect()
 
     while True:
-        datagram = client.recv(2048)
+        try:
+            datagram = client.recv(2048)
+        except OSError as ex:
+            eprint(f"hypr_watcher: socket read error ({ex})")
+            datagram = b""
+
+        if not datagram:
+            # recv() returns b"" once Hyprland has closed the connection (e.g. the client
+            # was too slow reading events). Without this check the loop spins forever at
+            # 100% CPU and the panel stops receiving events. Reconnect instead.
+            eprint("hypr_watcher: Hyprland closed the event socket, reconnecting in 1 s")
+            try:
+                client.close()
+            except OSError:
+                pass
+            time.sleep(1)
+            client = connect()
+            # Events may have been lost while disconnected: refresh Hyprland modules
+            try:
+                monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
+                for item in common.h_taskbars_list:
+                    GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
+                for item in common.h_workspaces_list:
+                    GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow, activeworkspace)
+            except Exception as ex:
+                eprint(f"hypr_watcher: refresh after reconnect failed ({ex})")
+            continue
+
         e_full_string = datagram.decode('utf-8', errors='replace').strip()
         lines = e_full_string.splitlines()
 
