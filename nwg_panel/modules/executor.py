@@ -150,6 +150,7 @@ class Executor(Gtk.EventBox):
             # built once, on first use: image above the Pango markup
             self.tooltip_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
             self.tooltip_img = Gtk.Image()
+            self.tooltip_img.set_halign(Gtk.Align.START)
             self.tooltip_lbl = Gtk.Label()
             self.tooltip_lbl.set_xalign(0)
             self.tooltip_box.pack_start(self.tooltip_img, False, False, 0)
