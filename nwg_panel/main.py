@@ -1024,7 +1024,6 @@ def main():
         thread.start()
 
     if mis:
-        print("Instantiating MangoWatcher class")
         mango_watcher = MangoWatcher(mis)
 
     if tray_available and len(common.tray_list) > 0:

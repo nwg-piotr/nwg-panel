@@ -176,6 +176,18 @@ SKELETON_PANEL: dict = {
             "name-length": 40,
             "angle": 0.0
     },
+    "mango-tags":{
+            "show-tags-from-all-monitors": False,
+            "sort-monitors-by-x": True,
+            "show-layout": True,
+            "show-per-tag-window-icons": True,
+            "icon-size": 16,
+            "show-per-tag-window-names": True,
+            "name-length": 20,
+            "show-empty-tags": False,
+            "scratchpad-label": "SCR:",
+            "angle": 0.0
+    },
     "clock": {
         "format": "%a, %d. %b  %H:%M:%S",
         "tooltip-text": "",
@@ -807,6 +819,7 @@ class EditorWrapper(object):
         builder.get_object("keyboard-layout").set_text(voc["keyboard-layout"])
         builder.get_object("niri-taskbar").set_text(voc["niri-taskbar"])
         builder.get_object("niri-workspaces").set_text(voc["niri-workspaces"])
+        builder.get_object("mango-tags").set_text(voc["mango-tags"])
         builder.get_object("executors").set_text(voc["executors"])
         builder.get_object("buttons").set_text(voc["buttons"])
         builder.get_object("menu-start").set_text(voc["menu-start"])
@@ -839,6 +852,7 @@ class EditorWrapper(object):
             "keyboard-layout",
             "niri-taskbar",
             "niri-workspaces",
+            "mango-tags",
             "tray",
             "random-wallpaper",
             "pinned"
@@ -880,6 +894,7 @@ class EditorWrapper(object):
         builder.get_object("eb-hyprland-taskbar").connect("button-press-event", self.edit_hyprland_taskbar)
         builder.get_object("eb-hyprland-workspaces").connect("button-press-event", self.edit_hyprland_workspaces)
         builder.get_object("eb-niri-workspaces").connect("button-press-event", self.edit_niri_workspaces)
+        builder.get_object("eb-mango-tags").connect("button-press-event", self.edit_mango_tags)
         builder.get_object("eb-hyprland-submap").connect("button-press-event", self.edit_hyprland_submap)
         builder.get_object("eb-keyboard-layout").connect("button-press-event", self.edit_keyboard_layout)
         builder.get_object("eb-niri-taskbar").connect("button-press-event", self.edit_niri_taskbar)
@@ -1355,6 +1370,8 @@ class EditorWrapper(object):
             self.update_niri_taskbar()
         elif self.edited == "niri-workspaces":
             self.update_niri_workspaces()
+        elif self.edited == "mango-tags":
+            self.update_mango_tags()
         elif self.edited == "pinned":
             self.update_pinned()
         elif self.edited == "openweather":
@@ -1859,6 +1876,109 @@ class EditorWrapper(object):
         settings["show-name"] = self.ws_show_name.get_active()
         settings["show-per-ws-app-icons"] = self.ws_per_workspace_window_icons.get_active()
         settings["name-length"] = int(self.ws_name_length.get_value())
+        try:
+            settings["angle"] = float(self.ws_angle.get_active_id())
+        except:
+            settings["angle"] = 0.0
+
+        save_json(self.config, self.file)
+
+
+    def edit_mango_tags(self, *args):
+        self.load_panel()
+        self.edited = "mango-tags"
+        check_key(self.panel, "mango-tags", {})
+        settings = self.panel["mango-tags"]
+        defaults = {
+            "show-tags-from-all-monitors": False,
+            "sort-monitors-by-x": True,
+            "show-layout": True,
+            "show-per-tag-window-icons": True,
+            "icon-size": 16,
+            "show-per-tag-window-names": True,
+            "name-length": 20,
+            "show-empty-tags": False,
+            "scratchpad-label": "SCR:",
+            "angle": 0.0
+        }
+        for key in defaults:
+            check_key(settings, key, defaults[key])
+
+        builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_mango_tags.glade"))
+        frame = builder.get_object("frame")
+        frame.set_label(f"  {voc["module"]}: MangoTags  ")
+
+        builder.get_object("show-tags-from-all-monitors").set_label(f"{voc["show-tags-from-all-monitors"]}:")
+        builder.get_object("sort-monitors-by-x").set_label(f"{voc["sort-monitors-by-x"]}:")
+        builder.get_object("show-layout").set_label(f"{voc["show-layout"]}:")
+        builder.get_object("show-per-tag-window-icons").set_label(f"{voc["show-per-tag-window-icons"]}:")
+        builder.get_object("lbl-icon-size").set_text(f"{voc["icon-size"]}:")
+        builder.get_object("show-per-tag-window-names").set_label(f"{voc["show-per-tag-window-names"]}:")
+        builder.get_object("lbl-window-name-length-limit").set_text(f"{voc["window-name-length-limit"]}:")
+        builder.get_object("show-empty-tags").set_label(f"{voc["show-empty-tags"]}:")
+        builder.get_object("lbl-scratchpad-label").set_text(f"{voc["scratchpad-label"]}:")
+        builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
+
+        self.ws_show_all_outputs = builder.get_object("show-tags-from-all-monitors")
+        self.ws_show_all_outputs.set_label(voc["show-tags-from-all-monitors"])
+        self.ws_show_all_outputs.set_active(settings["show-tags-from-all-monitors"])
+
+        self.ws_sort_outputs_by_x = builder.get_object("sort-monitors-by-x")
+        self.ws_sort_outputs_by_x.set_label(voc["sort-monitors-by-x"])
+        self.ws_sort_outputs_by_x.set_active(settings["sort-monitors-by-x"])
+
+        self.ws_show_layout = builder.get_object("show-layout")
+        self.ws_show_layout.set_label(voc["show-layout"])
+        self.ws_show_layout.set_active(settings["show-layout"])
+
+        self.ws_show_per_tag_icons = builder.get_object("show-per-tag-window-icons")
+        self.ws_show_per_tag_icons.set_label(voc["show-per-tag-window-icons"])
+        self.ws_show_per_tag_icons.set_active(settings["show-per-tag-window-icons"])
+
+        self.ws_image_size = builder.get_object("icon-size")
+        self.ws_image_size.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=8, upper=129, step_increment=1, page_increment=10, page_size=1)
+        self.ws_image_size.configure(adj, 1, 0)
+        self.ws_image_size.set_value(settings["icon-size"])
+
+        self.ws_show_per_tag_names = builder.get_object("show-per-tag-window-names")
+        self.ws_show_per_tag_names.set_label(voc["show-per-tag-window-names"])
+        self.ws_show_per_tag_names.set_active(settings["show-per-tag-window-names"])
+
+        self.ws_name_length = builder.get_object("name-length")
+        self.ws_name_length.set_numeric(True)
+        adj = Gtk.Adjustment(value=0, lower=1, upper=256, step_increment=1, page_increment=10, page_size=1)
+        self.ws_name_length.configure(adj, 1, 0)
+        self.ws_name_length.set_value(settings["name-length"])
+
+        self.ws_show_empty_tags = builder.get_object("show-empty-tags")
+        self.ws_show_empty_tags.set_label(voc["show-empty-tags"])
+        self.ws_show_empty_tags.set_active(settings["show-empty-tags"])
+
+        self.eb_scratchpad_label = builder.get_object("scratchpad-label")
+        self.eb_scratchpad_label.set_tooltip_text(voc["scratchpad-label"])
+        self.eb_scratchpad_label.set_text(settings["scratchpad-label"])
+
+        self.ws_angle = builder.get_object("angle")
+        self.ws_angle.set_tooltip_text(voc["angle-tooltip"])
+        self.ws_angle.set_active_id(str(settings["angle"]))
+
+        for item in self.scrolled_window.get_children():
+            item.destroy()
+        self.scrolled_window.add(frame)
+
+    def update_mango_tags(self):
+        settings = self.panel["mango-tags"]
+
+        settings["show-tags-from-all-monitors"] = self.ws_show_all_outputs.get_active()
+        settings["sort-monitors-by-x"] = self.ws_sort_outputs_by_x.get_active()
+        settings["show-layout"] = self.ws_show_layout.get_active()
+        settings["show-per-tag-window-icons"] = self.ws_show_per_tag_icons.get_active()
+        settings["icon-size"] = int(self.ws_image_size.get_value())
+        settings["show-per-tag-window-names"] = self.ws_show_per_tag_names.get_active()
+        settings["name-length"] = int(self.ws_name_length.get_value())
+        settings["show-empty-tags"] = self.ws_show_empty_tags.get_active()
+        settings["scratchpad-label"] = self.eb_scratchpad_label.get_text()
         try:
             settings["angle"] = float(self.ws_angle.get_active_id())
         except:

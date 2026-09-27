@@ -67,16 +67,16 @@ class MangoTags(Gtk.Box):
 
         # default settings
         defaults = {
-            "show-tags-from-all-monitors": False,   # determines if to show all displays->workspaces, or just the current display
-            "sort-monitors-by-x": True,                  # outputs may be sorted by their x coordinate or alphabetically
-            "show-per-tag-app-icons": True,             # determines if to show per-tag window client icons
-            "show-empty-tags": False,
-            "show-layout": True,
-            "icon-size": 16,                            # client window icon size
-            "show-per-tag-icon-names": True,                          # determines if to show active window title
-            "name-length": 20,                          # limits active window title length
-            "scratchpad-label": "SCR:",
-            "angle": 0.0                                # use 90 or 270 for vertical panels
+            "show-tags-from-all-monitors": False,  # determines if to show all monitors->tags, or just the current monitor
+            "sort-monitors-by-x": True,            # outputs may be sorted by their x coordinate or alphabetically
+            "show-layout": True,                   # determines if to show per-monitor layout symbol
+            "show-per-tag-window-icons": True,     # determines if to show per-tag client icons
+            "icon-size": 16,                       # client icon size
+            "show-per-tag-window-names": True,     # determines if to show per-tag client titles
+            "name-length": 20,                     # limits client title length
+            "show-empty-tags": False,              # determines if to show labels for tags with no client
+            "scratchpad-label": "SCR:",            # defines scratchpad label
+            "angle": 0.0                           # use 90 or 270 for vertical panels
         }
         for key in defaults:
             if key not in self.settings:
@@ -140,7 +140,7 @@ class MangoTags(Gtk.Box):
                         lbl.set_markup(f"<span size='xx-small'><b>{_i['layout_symbol']}</b></span>")
                         if self.settings["angle"] != 0.0:
                             lbl.set_angle(self.settings["angle"])
-                        lbl.set_property("name", "mango-tags-layout-symbol")
+                        lbl.set_property("name", "mango-tags-layout-label")
                         self.pack_start(lbl, False, False, 6)
 
             for item in self.all_tags:
@@ -159,15 +159,14 @@ class MangoTags(Gtk.Box):
                             else:
                                 eb.set_property("name", "")
 
-                            # Pakujemy tylko raz, po skonfigurowaniu właściwości
                             self.pack_start(eb, False, False, 3)
 
                             # tag index label
-                            lbl = Gtk.Label.new(f"{i['index']}")
-                            lbl.set_property("name", "mango-tag-index")
+                            tag_idx_lbl = Gtk.Label.new(f"{i['index']}")
+                            tag_idx_lbl.set_property("name", "mango-tags-index-label")
                             if self.settings["angle"] != 0.0:
-                                lbl.set_angle(self.settings["angle"])
-                            eb.add(lbl)
+                                tag_idx_lbl.set_angle(self.settings["angle"])
+                            eb.add(tag_idx_lbl)
 
                             for client in self.all_clients:
                                 # filter out clients in scratchpad
@@ -182,33 +181,38 @@ class MangoTags(Gtk.Box):
                                     inner_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
                                     eb_icon_title.add(inner_box)
 
-                                    if self.settings["show-per-tag-app-icons"] or self.settings["show-per-tag-icon-names"]:
+                                    if self.settings["show-per-tag-window-icons"] or self.settings["show-per-tag-window-names"]:
                                         self.pack_start(eb_icon_title, False, False, 3)
 
                                     # icon
-                                    if self.settings["show-per-tag-app-icons"]:
+                                    if self.settings["show-per-tag-window-icons"]:
                                         icon = Gtk.Image()
-                                        icon.set_property("name", "mango-app-icon")
+                                        icon.set_property("name", "mango-tags-app-icon")
                                         try:
                                             update_image_fallback_desktop(
                                                 icon, client["appid"], self.settings["icon-size"], self.icons_path,
                                                 fallback=False
                                             )
                                             inner_box.pack_start(icon, False, False, 0)
-                                        except:
+                                        except Exception as e:
                                             eprint(
-                                                f"MangoTags: could not update per-ws icon for appid '{client['appid']}'")
+                                                f"MangoTags: could not update per-ws icon for appid '{client['appid']}'", e)
 
                                     # title
-                                    if self.settings["show-per-tag-icon-names"]:
+                                    if self.settings["show-per-tag-window-names"]:
                                         max_len = self.settings["name-length"]
                                         display_title = client['title'] if len(client['title']) <= max_len else f"{client['title'][:max_len]}…"
                                         lbl = Gtk.Label.new(f"{display_title}")
-                                        lbl.set_property("name", "mango-client-title")
+                                        lbl.set_property("name", "mango-tags-client-title")
                                         if self.settings["angle"] != 0.0:
                                             lbl.set_angle(self.settings["angle"])
 
                                         inner_box.pack_start(lbl, False, False, 0)
+
+                                    if not self.settings["show-per-tag-window-icons"] and not self.settings["show-per-tag-window-names"]:
+                                        # mark non-empty tags w/ a dot if we don't show neither window icon nor title
+                                        if not tag_idx_lbl.get_text().endswith("."):
+                                            tag_idx_lbl.set_text(f"{tag_idx_lbl.get_text()}.")
 
             scratchpad_clients = [
                 c for c in self.all_clients
@@ -219,10 +223,11 @@ class MangoTags(Gtk.Box):
                 # scratchpad label
                 lbl = Gtk.Label.new()
                 lbl.set_markup(f"<span size='xx-small'><b>{self.settings["scratchpad-label"]}</b></span>")
+                lbl.set_property("name", "mango-scratchpad-label")
                 self.pack_start(lbl, False, False, 3)
 
                 drawer_eb = Gtk.EventBox()
-                drawer_eb.set_property("name", "mango-scratchpad-drawer")
+                drawer_eb.set_property("name", "mango-scratchpad")
                 drawer_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
                 drawer_eb.add(drawer_box)
                 self.pack_start(drawer_eb, False, False, 6)
@@ -233,9 +238,9 @@ class MangoTags(Gtk.Box):
                     eb_icon_title.connect("button-release-event", self.on_client_clicked, client["id"])
 
                     # client icon
-                    if self.settings["show-per-tag-app-icons"]:
+                    if self.settings["show-per-tag-window-icons"]:
                         icon = Gtk.Image()
-                        icon.set_property("name", "mango-app-icon")
+                        icon.set_property("name", "mango-tags-app-icon")
                         try:
                             update_image_fallback_desktop(
                                 icon, client["appid"], self.settings["icon-size"], self.icons_path,
