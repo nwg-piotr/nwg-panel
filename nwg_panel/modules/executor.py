@@ -26,6 +26,7 @@ class Executor(Gtk.EventBox):
         self.image = Gtk.Image()
         self.label = Gtk.Label.new("")
         self.icon_path = None
+        self.icon_mtime = None
         self.dynamic_tooltip = False
         self.tooltip_image_path = None
         self.tooltip_image_key = None
@@ -113,7 +114,15 @@ class Executor(Gtk.EventBox):
             self.dynamic_tooltip = False
 
         # update widget contents
-        if new_path and new_path != self.icon_path:
+        # A script may rewrite the same image file on each run (e.g. a generated graph):
+        # reload it when the path OR the file modification time changed.
+        new_mtime = None
+        if new_path:
+            try:
+                new_mtime = os.path.getmtime(new_path)
+            except OSError:
+                pass  # icon name, not a file
+        if new_path and (new_path != self.icon_path or new_mtime != self.icon_mtime):
             try:
                 update_image(self.image,
                              new_path,
@@ -121,6 +130,7 @@ class Executor(Gtk.EventBox):
                              self.icons_path,
                              fallback=False)
                 self.icon_path = new_path
+                self.icon_mtime = new_mtime
             except:
                 print("Failed setting image from {}".format(new_path))
                 new_path = None
