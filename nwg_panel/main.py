@@ -220,8 +220,28 @@ def hypr_watcher():
                     GLib.timeout_add(0, item.refresh)
 
 
+_niri_refresh_queued = False
+
+
+def _do_niri_refresh():
+    global _niri_refresh_queued
+
+    # get Niri state once for all Taskbar and Workspaces instances
+    outputs, workspaces, windows, focused_window = niri_get_all()
+
+    for item in common.niri_taskbars_list:
+        item.refresh(outputs, workspaces, windows, focused_window)
+
+    for item in common.niri_workspaces_list:
+        item.refresh(outputs, workspaces, windows, focused_window)
+
+    _niri_refresh_queued = False
+    return False  # False removes function from the idle_add queue
+
+
 def niri_watcher():
     import socket
+    global _niri_refresh_queued
 
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     client.connect(niri_sock)
@@ -241,8 +261,6 @@ def niri_watcher():
             try:
                 message = json.loads(line)
                 event_name = next(iter(message))
-                # event_data = message[event_name]
-                # print(f"[{event_name}]")
 
                 # Filter meaningless events
                 if event_name in ["WindowFocusChanged",
@@ -252,11 +270,10 @@ def niri_watcher():
                                   "WorkspaceActivated",
                                   "WorkspacesChanged"]:
 
-                    for item in common.niri_taskbars_list:
-                        GLib.timeout_add(0, item.refresh)
-
-                    for item in common.niri_workspaces_list:
-                        GLib.timeout_add(0, item.refresh)
+                    # Refresh in the nearest GTK idle cycle
+                    if not _niri_refresh_queued:
+                        _niri_refresh_queued = True
+                        GLib.idle_add(_do_niri_refresh)
 
             except json.JSONDecodeError as e:
                 print("niri_watcher: failed to decode JSON:", e)
