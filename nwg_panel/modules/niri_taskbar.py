@@ -62,6 +62,13 @@ class NiriTaskbar(Gtk.Box):
         outputs, workspaces, windows, focused_window = niri_get_all()
         self.outputs = outputs
         self.parse_workspaces(workspaces)
+
+        # Sort windows: first by workspace id, then by column id, finally by position in column
+        windows.sort(key=lambda w: (
+            w.get("workspace_id") or 0,
+            (w.get("layout") or {}).get("pos_in_scrolling_layout") or [0, 0]
+        ))
+
         self.windows = windows
         self.focused_window = focused_window
         for item in self.get_children():
