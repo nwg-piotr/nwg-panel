@@ -68,11 +68,8 @@ class NiriWorkspaces(Gtk.Box):
         if self.settings["angle"] != 0.0:
             self.set_orientation(Gtk.Orientation.VERTICAL)
 
-        # self.refresh()
 
     def refresh(self, outputs, workspaces, windows, focused_window):
-        # get output names
-        # outputs = niri_outputs()
         if self.settings["sort-outputs-by-x"]:
             # sort output names by output x coordinate
             output_names = sorted(
@@ -109,7 +106,7 @@ class NiriWorkspaces(Gtk.Box):
                 if self.settings["angle"] != 0.0:
                     lbl.set_angle(self.settings["angle"])
                 lbl.set_property("name", "niri-ws-output-name")
-                self.pack_start(lbl, False, False, 6)
+                self.pack_start(lbl, False, False, 3)
 
             for item in self.workspaces:
                 if item["output"] == o:
@@ -119,10 +116,6 @@ class NiriWorkspaces(Gtk.Box):
                     eb.connect("leave_notify_event", on_leave_notify_event)
                     eb.connect("button-release-event", on_workspace_clicked, item["id"])
 
-                    if item['is_focused']:
-                        eb.set_property("name", "task-box-focused")
-                    else:
-                        eb.set_property("name", "")
                     self.pack_start(eb, False, False, 3)
 
                     ws_name = item["name"] if item["name"] is not None else str(item["idx"])
@@ -130,7 +123,11 @@ class NiriWorkspaces(Gtk.Box):
                         ws_name = f"{ws_name}."
 
                     lbl = Gtk.Label.new(f"{ws_name}")
-                    lbl.set_property("name", "niri-ws-name")
+                    if item['is_focused']:
+                        lbl.set_property("name", "task-box-focused")
+                    else:
+                        lbl.set_property("name", "task-box")
+
                     if self.settings["angle"] != 0.0:
                         lbl.set_angle(self.settings["angle"])
                     eb.add(lbl)
@@ -146,16 +143,18 @@ class NiriWorkspaces(Gtk.Box):
                                 eb_icon = Gtk.EventBox()
                                 eb_icon.set_tooltip_text(win_title)
                                 eb_icon.connect("button-release-event", on_app_icon_clicked, win_id)
+                                eb_icon.connect("enter_notify_event", on_enter_notify_event)
+                                eb_icon.connect("leave_notify_event", on_leave_notify_event)
 
                                 icon = Gtk.Image()
-                                icon.set_property("name", "niri-app-icon")
+                                icon.set_property("name", "task-box")
 
                                 try:
                                     update_image_fallback_desktop(
                                         icon, app_id, self.settings["icon-size"], self.icons_path, fallback=False
                                     )
                                     eb_icon.add(icon)
-                                    self.pack_start(eb_icon, False, False, 3)
+                                    self.pack_start(eb_icon, False, False, 0)
                                 except:
                                     eprint(f"NiriWorkspaces: could not update per-ws icon for app_id '{app_id}'")
 
@@ -172,7 +171,7 @@ class NiriWorkspaces(Gtk.Box):
 
             try:
                 update_image_fallback_desktop(icon, app_id, self.settings["icon-size"], self.icons_path, fallback=False)
-                self.pack_start(icon, False, False, 6)
+                self.pack_start(icon, False, False, 3)
             except:
                 eprint(f"NiriWorkspaces: could not update icon for app_id '{app_id}'")
 
@@ -183,6 +182,6 @@ class NiriWorkspaces(Gtk.Box):
             lbl.set_property("name", "niri-ws-window-title")
             if self.settings["angle"] != 0.0:
                 lbl.set_angle(self.settings["angle"])
-            self.pack_start(lbl, False, False, 6)
+            self.pack_start(lbl, False, False, 3)
 
         self.show_all()
