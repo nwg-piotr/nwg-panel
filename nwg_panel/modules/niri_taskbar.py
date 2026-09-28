@@ -4,7 +4,7 @@ import json
 
 from gi.repository import Gtk, Gdk
 
-from nwg_panel.tools import niri_ipc, niri_get_all, update_image, update_image_fallback_desktop
+from nwg_panel.tools import niri_ipc, update_image, update_image_fallback_desktop
 
 
 class NiriTaskbar(Gtk.Box):
@@ -42,8 +42,6 @@ class NiriTaskbar(Gtk.Box):
         if self.settings["angle"] != 0.0:
             self.set_orientation(Gtk.Orientation.VERTICAL)
 
-        self.refresh()
-
     def parse_outputs(self, outputs):
         self.outputs = outputs
 
@@ -58,8 +56,7 @@ class NiriTaskbar(Gtk.Box):
                 self.active_workspaces.append(item["id"])
         self.ws_nums.sort()
 
-    def refresh(self):
-        outputs, workspaces, windows, focused_window = niri_get_all()
+    def refresh(self, outputs, workspaces, windows, focused_window):
         self.outputs = outputs
         self.parse_workspaces(workspaces)
 

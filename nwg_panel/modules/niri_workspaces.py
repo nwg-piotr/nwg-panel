@@ -68,11 +68,11 @@ class NiriWorkspaces(Gtk.Box):
         if self.settings["angle"] != 0.0:
             self.set_orientation(Gtk.Orientation.VERTICAL)
 
-        self.refresh()
+        # self.refresh()
 
-    def refresh(self):
+    def refresh(self, outputs, workspaces, windows, focused_window):
         # get output names
-        outputs = niri_outputs()
+        # outputs = niri_outputs()
         if self.settings["sort-outputs-by-x"]:
             # sort output names by output x coordinate
             output_names = sorted(
@@ -85,11 +85,11 @@ class NiriWorkspaces(Gtk.Box):
 
         # sort data and save for further use
         self.outputs_to_show = output_names if self.settings["show-workspaces-from-all-outputs"] else [self.output_name]
-        self.workspaces = sorted(niri_workspaces(), key=lambda item: item["idx"])
-        self.focused_window = niri_focused_window()
+        self.workspaces = sorted(workspaces, key=lambda item: item["idx"])
+        self.focused_window = focused_window
         # per-workspace window icons
         if self.settings["show-per-ws-app-icons"]:
-            self.windows = niri_windows()
+            self.windows = windows
             # sort windows by placement
             self.windows.sort(
                 key=lambda w: (w.get("layout", {}).get("pos_in_scrolling_layout") or [0, 0])
