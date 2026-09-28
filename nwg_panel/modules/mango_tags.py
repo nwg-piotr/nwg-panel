@@ -103,6 +103,9 @@ class MangoTags(Gtk.Box):
         self.all_tags = all_tags["all_tags"]
         self.all_clients = all_clients["clients"]
 
+        # sort clients by x and y window coordinate
+        self.all_clients = sorted(all_clients["clients"], key=lambda c: (c.get('x', 0), c.get('y', 0)))
+
         if self.settings["sort-monitors-by-x"]:
             # sort monitor names by monitor x coordinate
             sorted_monitors = sorted(self.all_monitors, key=lambda monitor: monitor['x'])
