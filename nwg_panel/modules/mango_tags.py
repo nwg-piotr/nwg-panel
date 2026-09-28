@@ -178,8 +178,17 @@ class MangoTags(Gtk.Box):
                                     eb_icon_title = Gtk.EventBox()
                                     eb_icon_title.set_tooltip_text(client["title"])
                                     eb_icon_title.connect("button-release-event", self.on_client_clicked, client["id"])
+
+                                    eb_icon_title.connect('enter-notify-event', on_enter_notify_event)
+                                    eb_icon_title.connect('leave-notify-event', on_leave_notify_event)
+
                                     inner_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
                                     eb_icon_title.add(inner_box)
+
+                                    if client["is_focused"]:
+                                        inner_box.set_property("name", "task-box-focused")
+                                    else:
+                                        inner_box.set_property("name", "task-box")
 
                                     if self.settings["show-per-tag-window-icons"] or self.settings["show-per-tag-window-names"]:
                                         self.pack_start(eb_icon_title, False, False, 3)
@@ -193,7 +202,7 @@ class MangoTags(Gtk.Box):
                                                 icon, client["appid"], self.settings["icon-size"], self.icons_path,
                                                 fallback=False
                                             )
-                                            inner_box.pack_start(icon, False, False, 0)
+                                            inner_box.pack_start(icon, False, False, 3)
                                         except Exception as e:
                                             eprint(
                                                 f"MangoTags: could not update per-ws icon for appid '{client['appid']}'", e)
@@ -207,7 +216,7 @@ class MangoTags(Gtk.Box):
                                         if self.settings["angle"] != 0.0:
                                             lbl.set_angle(self.settings["angle"])
 
-                                        inner_box.pack_start(lbl, False, False, 0)
+                                        inner_box.pack_start(lbl, False, False, 3)
 
                                     if not self.settings["show-per-tag-window-icons"] and not self.settings["show-per-tag-window-names"]:
                                         # mark non-empty tags w/ a dot if we don't show neither window icon nor title
