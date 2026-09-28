@@ -28,10 +28,20 @@ def on_monitor_clicked(widget, event, monitor_name):
         get_mango_ipc(cmd)
 
 
+def on_layout_label_clicked(widget, event):
+    if event.button == 1:
+        get_mango_ipc("dispatch switch_layout")
+
+
 def on_tag_clicked(widget, event, tag_index, monitor_name):
     if event.button == 1:
         cmd = f"dispatch viewcrossmon,{tag_index},{monitor_name}"
         get_mango_ipc(cmd)
+
+
+def on_scratchpad_label_clicked(widget, event):
+    if event.button == 1:
+        get_mango_ipc("dispatch toggle_scratchpad")
 
 
 def on_scratchpad_client_clicked(widget, event, client_id):
@@ -136,12 +146,19 @@ class MangoTags(Gtk.Box):
             if self.settings["show-layout"]:
                 for _i in self.all_monitors:
                     if m_name == _i["name"]:
+                        eb_layout = Gtk.EventBox()
+                        eb_layout.connect("enter_notify_event", on_enter_notify_event)
+                        eb_layout.connect("leave_notify_event", on_leave_notify_event)
+                        eb_layout.connect("button-release-event", on_layout_label_clicked)
+
                         lbl = Gtk.Label.new()
                         lbl.set_markup(f"<span size='xx-small'><b>{_i['layout_symbol']}</b></span>")
                         if self.settings["angle"] != 0.0:
                             lbl.set_angle(self.settings["angle"])
-                        lbl.set_property("name", "mango-tags-layout-label")
-                        self.pack_start(lbl, False, False, 6)
+                        lbl.set_property("name", "task-box")
+
+                        eb_layout.add(lbl)
+                        self.pack_start(eb_layout, False, False, 6)
 
             for item in self.all_tags:
                 if item["monitor"] == m_name:
@@ -231,18 +248,25 @@ class MangoTags(Gtk.Box):
 
             if scratchpad_clients:
                 # scratchpad label
+                eb_scratchpad = Gtk.EventBox()
+                eb_scratchpad.connect("enter_notify_event", on_enter_notify_event)
+                eb_scratchpad.connect("leave_notify_event", on_leave_notify_event)
+                eb_scratchpad.connect("button-release-event", on_scratchpad_label_clicked)
+                self.pack_start(eb_scratchpad, False, False, 3)
+
                 lbl = Gtk.Label.new()
                 lbl.set_markup(f"<span size='xx-small'><b>{self.settings["scratchpad-label"]}</b></span>")
-                lbl.set_property("name", "mango-scratchpad-label")
-                self.pack_start(lbl, False, False, 3)
+                lbl.set_property("name", "task-box")
+                eb_scratchpad.add(lbl)
 
-                drawer_eb = Gtk.EventBox()
-                drawer_eb.set_property("name", "mango-scratchpad")
-                drawer_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-                drawer_eb.add(drawer_box)
-                self.pack_start(drawer_eb, False, False, 6)
+                eb = Gtk.EventBox()
+                eb.set_property("name", "mango-scratchpad")
+                box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+                eb.add(box)
+                self.pack_start(eb, False, False, 3)
 
                 for client in scratchpad_clients:
+                    # scratchpad clients
                     eb_icon_title = Gtk.EventBox()
                     eb_icon_title.set_tooltip_text(client["title"])
                     eb_icon_title.connect("button-release-event", self.on_client_clicked, client["id"])
@@ -263,7 +287,7 @@ class MangoTags(Gtk.Box):
                         except Exception as e:
                             eprint(f"MangoTags:Scratchpad could not update per-ws icon for appid '{client['appid']}'", e)
 
-                        drawer_box.pack_start(eb_icon_title, False, False, 3)
+                        box.pack_start(eb_icon_title, False, False, 3)
 
         self.show_all()
 
