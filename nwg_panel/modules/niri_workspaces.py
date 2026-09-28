@@ -147,7 +147,10 @@ class NiriWorkspaces(Gtk.Box):
                                 eb_icon.connect("leave_notify_event", on_leave_notify_event)
 
                                 icon = Gtk.Image()
-                                icon.set_property("name", "task-box")
+                                if i['is_focused']:
+                                    icon.set_property("name", "task-box-focused")
+                                else:
+                                    icon.set_property("name", "task-box")
 
                                 try:
                                     update_image_fallback_desktop(
