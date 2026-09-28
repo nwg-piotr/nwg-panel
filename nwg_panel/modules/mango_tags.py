@@ -154,16 +154,17 @@ class MangoTags(Gtk.Box):
                             eb.connect("leave_notify_event", on_leave_notify_event)
                             eb.connect("button-release-event", on_tag_clicked, i["index"], m_name)
 
-                            if i['is_active']:
-                                eb.set_property("name", "task-box-focused")
-                            else:
-                                eb.set_property("name", "")
-
                             self.pack_start(eb, False, False, 3)
 
                             # tag index label
                             tag_idx_lbl = Gtk.Label.new(f"{i['index']}")
                             tag_idx_lbl.set_property("name", "mango-tags-index-label")
+
+                            if i['is_active']:
+                                tag_idx_lbl.set_property("name", "task-box-focused")
+                            else:
+                                tag_idx_lbl.set_property("name", "task-box")
+
                             if self.settings["angle"] != 0.0:
                                 tag_idx_lbl.set_angle(self.settings["angle"])
                             eb.add(tag_idx_lbl)
