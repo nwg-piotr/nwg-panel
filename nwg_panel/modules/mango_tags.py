@@ -247,6 +247,9 @@ class MangoTags(Gtk.Box):
                     eb_icon_title.set_tooltip_text(client["title"])
                     eb_icon_title.connect("button-release-event", self.on_client_clicked, client["id"])
 
+                    eb_icon_title.connect('enter-notify-event', on_enter_notify_event)
+                    eb_icon_title.connect('leave-notify-event', on_leave_notify_event)
+
                     # client icon
                     if self.settings["show-per-tag-window-icons"]:
                         icon = Gtk.Image()
