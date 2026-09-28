@@ -124,7 +124,7 @@
             <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="label" translatable="yes">&lt;span size="small"&gt;&lt;b&gt;CSS IDs&lt;/b&gt;: 
-#mango-tags, #mango-tags-output-box, #mango-tags-output-name, #mango-tags-layout-label, #task-box-focused, #mango-tags-index-label, #mango-tags-app-icon, #mango-tags-client-title, #mango-scratchpad, #mango-scratchpad-label&lt;/span&gt;</property>
+#mango-tags, #mango-tags-output-box, #mango-tags-output-name, #mango-tags-layout-label, #task-box, #task-box-focused, #mango-tags-index-label, #mango-tags-app-icon, #mango-tags-client-title, #mango-scratchpad, #mango-scratchpad-label&lt;/span&gt;</property>
             <property name="use-markup">True</property>
             <property name="wrap">True</property>
           </object>
