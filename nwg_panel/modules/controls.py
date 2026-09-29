@@ -573,6 +573,7 @@ class PopupWindow(Gtk.Window):
         GtkLayerShell.set_anchor(self.bcg_window, GtkLayerShell.Edge.BOTTOM, True)
         GtkLayerShell.set_anchor(self.bcg_window, GtkLayerShell.Edge.LEFT, True)
         GtkLayerShell.set_anchor(self.bcg_window, GtkLayerShell.Edge.RIGHT, True)
+        GtkLayerShell.set_namespace(self.bcg_window, "nwg-panel")
         # GtkLayerShell.set_exclusive_zone(self.bcg_window, -1)  # cover panels
         self.bcg_window.connect("button-release-event", self.hide_and_clear_tag)
         self.bcg_window.set_property("name", "bcg-window")
