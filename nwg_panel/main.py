@@ -687,12 +687,30 @@ def main():
     copy_files(os.path.join(dir_name, "config"), common.config_dir, args.restore)
     copy_files(os.path.join(dir_name, "local"), local_dir())
 
-    # tree = common.i3.get_tree() if sway else None
     common.outputs, common.mon_desc2output_name = list_outputs(sway=sway)
     print("Outputs:")
     for key in common.outputs:
         print(key, common.outputs[key])
     print(f"Descriptions: {common.mon_desc2output_name}")
+
+    try:
+        # Check if config is not an emtpy file
+        if os.path.getsize(config_file) == 0:
+            eprint(f"Error: Configuration file '{config_file}' is empty.")
+            sys.exit(1)
+
+        with open(config_file, "r", encoding="utf-8") as f:
+            config = json.load(f)
+
+        # Check if config JSON is not an emtpy container as {} lub []
+        if not config:
+            eprint(f"Error: Configuration file '{config_file}' contains empty data (e.g. {{}}).")
+            sys.exit(1)
+
+    except (json.JSONDecodeError, FileNotFoundError) as e:
+        # config erroneous
+        eprint(f"Error loading configuration from '{config_file}': {e}")
+        sys.exit(1)
 
     panels = load_json(config_file)
 
