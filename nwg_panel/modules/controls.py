@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import threading
 import time
 import os
 import subprocess
@@ -95,6 +96,25 @@ class Controls(Gtk.EventBox):
         if "battery" in settings["components"]:
             self.refresh_bat()
 
+        check_key(settings, "volume-subscribe", True)
+        if settings["volume-subscribe"] and "volume" in settings["components"] and commands["pactl"]:
+            threading.Thread(target=self.volume_watcher, daemon=True).start()
+
+    def volume_watcher(self):
+        # Event-driven volume updates: one long-running `pactl subscribe` instead of polling pactl every interval
+        env = dict(os.environ, LANG="C.UTF-8", LC_ALL="C.UTF-8")
+        while True:
+            try:
+                proc = subprocess.Popen(["pactl", "subscribe"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                        text=True, env=env)
+                for line in proc.stdout:
+                    if "on sink" in line or "on server" in line:
+                        GLib.idle_add(self.update_volume, get_volume())
+                proc.wait()
+            except Exception as e:
+                eprint(f"Controls: pactl subscribe failed ({e})")
+            time.sleep(5)  # pulseaudio/pipewire restarted: resubscribe
+
     def build_box(self):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         if self.settings["angle"] != 0.0:
@@ -130,7 +150,7 @@ class Controls(Gtk.EventBox):
 
         if "volume" in self.settings["components"] and (commands["pamixer"] or commands["pactl"]):
             try:
-                GLib.idle_add(self.update_volume)
+                GLib.idle_add(self.update_volume, get_volume())
             except Exception as e:
                 print(e)
 
@@ -164,9 +184,10 @@ class Controls(Gtk.EventBox):
         if get:
             self.popup_window.refresh()
 
-    def update_volume(self):
-        volume = get_volume()
-        if (self.vol_value, self.vol_muted != volume):
+    def update_volume(self, volume=None):
+        if volume is None:
+            volume = get_volume()
+        if (self.vol_value, self.vol_muted) != volume:
             icon_name = vol_icon_name(*volume)
 
             if icon_name != self.vol_icon_name:
