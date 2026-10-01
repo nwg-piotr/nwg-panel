@@ -12,7 +12,7 @@ from nwg_panel.tools import check_key, update_image, create_background_task, cmd
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gdk, GdkPixbuf
 
 
 class Executor(Gtk.EventBox):
@@ -26,6 +26,10 @@ class Executor(Gtk.EventBox):
         self.image = Gtk.Image()
         self.label = Gtk.Label.new("")
         self.icon_path = None
+        self.dynamic_tooltip = False
+        self.tooltip_image_path = None
+        self.tooltip_image_key = None
+        self.tooltip_box = None
 
         check_key(settings, "script", "")
         check_key(settings, "interval", 0)
@@ -89,6 +93,24 @@ class Executor(Gtk.EventBox):
                     label = output[0]
             elif len(output) == 2:
                 new_path, label = output
+            else:
+                # 3+ lines: icon path (may be empty), label, then a tooltip (Pango markup, may span several lines)
+                new_path, label = output[0], output[1]
+                tip = output[2:]
+                # optional image on top of the tooltip: 1st tooltip line = path to a .svg / .png file
+                if os.path.splitext(tip[0])[1] in ('.svg', '.png') and os.path.isfile(tip[0]):
+                    self.set_tooltip_image(tip[0])
+                    tip = tip[1:]
+                else:
+                    self.set_tooltip_image(None)
+                self.set_tooltip_markup("\n".join(tip) or " ")
+                self.dynamic_tooltip = True
+
+        if self.dynamic_tooltip and (not output or len(output) < 3):
+            # the script stopped providing a tooltip: restore the static one (if any)
+            self.set_tooltip_image(None)
+            self.set_tooltip_text(self.settings["tooltip-text"] or None)
+            self.dynamic_tooltip = False
 
         # update widget contents
         if new_path and new_path != self.icon_path:
@@ -122,6 +144,38 @@ class Executor(Gtk.EventBox):
                 self.label.hide()
 
         return False
+
+    def set_tooltip_image(self, path):
+        if path and self.tooltip_box is None:
+            # built once, on first use: image above the Pango markup
+            self.tooltip_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+            self.tooltip_img = Gtk.Image()
+            self.tooltip_img.set_halign(Gtk.Align.START)
+            self.tooltip_lbl = Gtk.Label()
+            self.tooltip_lbl.set_xalign(0)
+            self.tooltip_box.pack_start(self.tooltip_img, False, False, 0)
+            self.tooltip_box.pack_start(self.tooltip_lbl, False, False, 0)
+            self.tooltip_box.show_all()
+            self.connect("query-tooltip", self.on_query_tooltip)
+        self.tooltip_image_path = path
+
+    def on_query_tooltip(self, widget, x, y, keyboard_mode, tooltip):
+        path = self.tooltip_image_path
+        if not path:
+            return False  # default markup tooltip
+        try:
+            key = (path, os.path.getmtime(path))
+            if key != self.tooltip_image_key:  # reload only when the file changed
+                self.tooltip_img.set_from_pixbuf(GdkPixbuf.Pixbuf.new_from_file(path))
+                self.tooltip_image_key = key
+        except Exception as e:
+            print("Failed loading tooltip image {}: {}".format(path, e))
+            return False
+        markup = (self.get_tooltip_markup() or "").strip()
+        self.tooltip_lbl.set_markup(markup)
+        self.tooltip_lbl.set_visible(bool(markup))
+        tooltip.set_custom(self.tooltip_box)
+        return True
 
     def get_output(self):
         if "script" in self.settings and self.settings["script"]:
