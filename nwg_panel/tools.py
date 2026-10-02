@@ -22,6 +22,7 @@ gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk, Gdk, GdkPixbuf
 from shutil import copyfile, which
+from collections import OrderedDict
 from datetime import datetime
 
 try:
@@ -29,8 +30,10 @@ try:
 except:
     pass
 
-icon_pixbuf_cache = {}
+# LRU cache of icon pixbufs: (icon_name, icon_size, icons_path) -> (stamp, pixbuf)
+icon_pixbuf_cache = OrderedDict()
 icon_pixbuf_cache_limit = 50
+icon_theme_watched = False
 
 
 def eprint(*args, **kwargs):
@@ -726,13 +729,32 @@ def update_gtk_entry(entry, icon_pos, icon_name, icon_size, icons_path=""):
     entry.set_icon_from_pixbuf(icon_pos, pixbuf)
 
 
-def create_pixbuf(icon_name, icon_size, icons_path="", fallback=True):
-    # See if the icon was cached before
-    parameters = (icon_name, icon_size, icons_path)
-    cached = icon_pixbuf_cache.get(parameters, None)
-    if cached is not None:
-        return cached
+def clear_icon_pixbuf_cache(*args):
+    icon_pixbuf_cache.clear()
 
+
+def icon_stamp(icon_name):
+    # Files given by path may be regenerated in place (e.g. executor images):
+    # the cached pixbuf is only valid for a given mtime + size.
+    if icon_name.startswith("/"):
+        try:
+            st = os.stat(icon_name)
+            return st.st_mtime_ns, st.st_size
+        except OSError:
+            return None
+    return 0
+
+
+def create_pixbuf(icon_name, icon_size, icons_path="", fallback=True):
+    global icon_theme_watched
+    key = (icon_name, icon_size, icons_path)
+    stamp = icon_stamp(icon_name)
+    cached = icon_pixbuf_cache.get(key)
+    if cached is not None and stamp is not None and cached[0] == stamp:
+        icon_pixbuf_cache.move_to_end(key)
+        return cached[1]
+
+    cacheable = stamp is not None
     try:
         # In case a full path was given
         if icon_name.startswith("/"):
@@ -740,10 +762,15 @@ def create_pixbuf(icon_name, icon_size, icons_path="", fallback=True):
                 icon_name, icon_size, icon_size)
         else:
             icon_theme = Gtk.IconTheme.get_default()
+            if not icon_theme_watched:
+                # Theme switched or icons (un)installed: drop cached pixbufs
+                icon_theme.connect("changed", clear_icon_pixbuf_cache)
+                icon_theme_watched = True
             if icons_path:
                 search_path = icon_theme.get_search_path()
-                search_path.append(icons_path)
-                icon_theme.set_search_path(search_path)
+                if icons_path not in search_path:
+                    search_path.append(icons_path)
+                    icon_theme.set_search_path(search_path)
 
             try:
                 if icons_path:
@@ -761,15 +788,16 @@ def create_pixbuf(icon_name, icon_size, icons_path="", fallback=True):
         if fallback:
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
                 os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), icon_size, icon_size)
+            cacheable = False  # retry the lookup next time, the icon may appear
         else:
             raise e
 
-    # Add cache entry. Make sure the cache size does not exceed the limit.
-    icon_pixbuf_cache[parameters] = pixbuf
-    if len(icon_pixbuf_cache) > icon_pixbuf_cache_limit:
-        iterator = iter(icon_pixbuf_cache)
+    if cacheable:
+        # Replaces any stale entry for this key, so regenerated files don't fill the cache
+        icon_pixbuf_cache[key] = (stamp, pixbuf)
+        icon_pixbuf_cache.move_to_end(key)
         while len(icon_pixbuf_cache) > icon_pixbuf_cache_limit:
-            del icon_pixbuf_cache[next(iterator)]
+            icon_pixbuf_cache.popitem(last=False)
 
     return pixbuf
 
