@@ -3,6 +3,7 @@
 import os
 import subprocess
 import signal
+import threading
 
 import gi
 from gi.repository import GLib
@@ -28,6 +29,8 @@ class Executor(Gtk.EventBox):
         self.icon_path = None
         self.icon_mtime = None
         self.dynamic_tooltip = False
+        self.loop_started = False
+        self.run_lock = threading.Lock()
         self.tooltip_image_path = None
         self.tooltip_image_key = None
         self.tooltip_box = None
@@ -189,14 +192,22 @@ class Executor(Gtk.EventBox):
 
     def get_output(self):
         if "script" in self.settings and self.settings["script"]:
-            try:
-                output = subprocess.check_output(self.settings["script"].split()).decode("utf-8").splitlines()
-                GLib.idle_add(self.update_widget, output)
-            except Exception as e:
-                print(e)
+            # serialize runs: a signal-triggered refresh must not overlap the periodic one
+            with self.run_lock:
+                try:
+                    output = subprocess.check_output(self.settings["script"].split()).decode("utf-8").splitlines()
+                    GLib.idle_add(self.update_widget, output)
+                except Exception as e:
+                    print(e)
 
     def refresh(self):
-        thread = create_background_task(self.get_output, self.settings["interval"])
+        # The periodic loop is started once; later calls (RT signal) run the script once.
+        # Starting a new loop on each call would multiply the script executions (#67).
+        if self.loop_started:
+            thread = create_background_task(self.get_output, 0)
+        else:
+            self.loop_started = True
+            thread = create_background_task(self.get_output, self.settings["interval"])
         thread.start()
 
     def build_box(self):
