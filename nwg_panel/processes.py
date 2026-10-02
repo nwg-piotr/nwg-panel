@@ -23,11 +23,12 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, load_json, save_json, check_key, eprint
+from nwg_panel.mango_ipc import get_mango_ipc
 
 swaysock = os.getenv('SWAYSOCK')
 his = os.getenv("HYPRLAND_INSTANCE_SIGNATURE")
 niri_sock = os.getenv("NIRI_SOCKET")
-
+mis = os.getenv("MANGO_INSTANCE_SIGNATURE")
 
 class SortOrder(Enum):
     NONE = 0
@@ -87,8 +88,8 @@ def niri_ipc(cmd, is_json=False):
         return None
 
 
-if not swaysock and not his and not niri_sock:
-    eprint("Neither sway nor hyprland socket detected, terminating.")
+if not swaysock and not his and not niri_sock and not mis:
+    eprint("This program only works on sway, Hyprland, Niri and Mango, terminating.")
     sys.exit(1)
 
 W_OWNER = 10
@@ -135,6 +136,8 @@ def list_processes(once=False):
     elif niri_sock:
         command = "Windows"
         windows = niri_ipc(json.dumps(command), is_json=True)["Windows"]
+    elif mis:
+        clients = get_mango_ipc("get all-clients").get("clients", {})
 
     processes = {}
 
@@ -205,6 +208,11 @@ def list_processes(once=False):
             for window in windows:
                 if window["pid"] == pid:
                     mapped["pid"] = window["app_id"]
+                    break
+        elif mis:
+            for client in clients:
+                if client["pid"] == pid:
+                    mapped["pid"] = client["appid"]
                     break
 
         if not cons or not settings["processes-background-only"]:
