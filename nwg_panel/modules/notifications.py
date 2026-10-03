@@ -2,11 +2,14 @@
 
 from gi.repository import GLib
 
+import json
 import subprocess
+import threading
+import time
 
 from nwg_panel import common
 
-from nwg_panel.tools import check_key, update_image, create_background_task, cmd_through_compositor
+from nwg_panel.tools import check_key, update_image, create_background_task, cmd_through_compositor, popen_watcher
 
 import gi
 
@@ -41,6 +44,7 @@ class Notifications(Gtk.EventBox):
         check_key(settings, "on-scroll-up", "")
         check_key(settings, "on-scroll-down", "")
         check_key(settings, "always-show-icon", True)
+        check_key(settings, "subscribe", True)
 
         update_image(self.image, "view-refresh-symbolic", self.settings["icon-size"], self.icons_path)
 
@@ -105,8 +109,40 @@ class Notifications(Gtk.EventBox):
             print(e)
 
     def refresh(self):
+        if common.commands["swaync"] and self.settings["subscribe"]:
+            threading.Thread(target=self.swaync_watcher, daemon=True).start()
+        else:
+            self.start_polling()
+
+    def start_polling(self):
         thread = create_background_task(self.get_output, self.settings["interval"])
         thread.start()
+
+    def swaync_watcher(self):
+        # Event-driven updates: one long-running `swaync-client -s` (one JSON line per change, e.g.
+        # {"count": 3, "dnd": false, ...}) instead of spawning `swaync-client -c` every interval.
+        quick_exits = 0
+        while quick_exits < 3:
+            started = time.monotonic()
+            try:
+                proc = popen_watcher(["swaync-client", "-s"])
+                last = None
+                for line in proc.stdout:
+                    try:
+                        count = json.loads(line)["count"]
+                    except (ValueError, KeyError, TypeError):
+                        continue
+                    if count != last:  # e.g. "close all" emits one line per closed notification
+                        last = count
+                        GLib.idle_add(self.update_widget, str(count))
+                proc.wait()
+            except Exception as e:
+                print(f"Notifications: swaync-client -s failed ({e})")
+            # swaync restarted: resubscribe; repeated immediate exits = option not supported
+            quick_exits = quick_exits + 1 if time.monotonic() - started < 5 else 0
+            time.sleep(2)
+        print("Notifications: 'swaync-client -s' unavailable, falling back to polling")
+        self.start_polling()
 
     def build_box(self):
         if self.settings["icon-placement"] == "left":
