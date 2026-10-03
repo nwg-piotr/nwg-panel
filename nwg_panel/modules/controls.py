@@ -187,17 +187,19 @@ class Controls(Gtk.EventBox):
     def update_volume(self, volume=None):
         if volume is None:
             volume = get_volume()
-        if (self.vol_value, self.vol_muted) != volume:
-            icon_name = vol_icon_name(*volume)
+        # Compare with what is displayed, not with self.vol_value: the popup slider (set_vol) updates
+        # self.vol_value before the change is reported back, which would leave the label stale (#449).
+        icon_name = vol_icon_name(*volume)
+        if icon_name != self.vol_icon_name:
+            update_image(self.vol_image, icon_name, self.settings["icon-size"], self.icons_path)
+            self.vol_icon_name = icon_name
 
-            if icon_name != self.vol_icon_name:
-                update_image(self.vol_image, icon_name, self.settings["icon-size"], self.icons_path)
-                self.vol_icon_name = icon_name
+        if self.vol_label:
+            text = "{}%".format(volume[0])
+            if text != self.vol_label.get_text():
+                self.vol_label.set_text(text)
 
-            if self.vol_label:
-                self.vol_label.set_text("{}%".format(volume[0]))
-
-            self.vol_value, self.vol_muted = volume
+        self.vol_value, self.vol_muted = volume
 
     def update_battery(self, value, charging):
         icon_name = bat_icon_name(value, charging)
