@@ -14,7 +14,7 @@ from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
 from nwg_panel.tools import (check_key, get_brightness, set_brightness, get_volume, get_balance, set_volume, get_battery,
                              update_image, eprint, list_sinks, toggle_mute, create_background_task, list_sink_inputs,
-                             is_command, cmd_through_compositor)
+                             is_command, cmd_through_compositor, popen_watcher)
 
 from nwg_panel.common import commands
 
@@ -105,8 +105,7 @@ class Controls(Gtk.EventBox):
         env = dict(os.environ, LANG="C.UTF-8", LC_ALL="C.UTF-8")
         while True:
             try:
-                proc = subprocess.Popen(["pactl", "subscribe"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                                        text=True, env=env)
+                proc = popen_watcher(["pactl", "subscribe"], env=env)
                 for line in proc.stdout:
                     if "on sink" in line or "on server" in line:
                         GLib.idle_add(self.update_volume, get_volume())

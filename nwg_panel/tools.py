@@ -374,6 +374,24 @@ def check_commands():
         pass
 
 
+def _die_with_parent():
+    # Linux: have the child receive SIGTERM when the panel dies, so a restarted panel leaves no orphan
+    try:
+        import ctypes, signal
+        ctypes.CDLL(None, use_errno=True).prctl(1, signal.SIGTERM)  # 1 = PR_SET_PDEATHSIG
+    except Exception:
+        pass
+
+
+def popen_watcher(args, **kwargs):
+    """
+    Start a long-running helper whose stdout we follow (e.g. `pactl subscribe`, `swaync-client -s`).
+    The child is terminated together with the panel instead of being left running as an orphan.
+    """
+    return subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
+                            preexec_fn=_die_with_parent if sys.platform.startswith("linux") else None, **kwargs)
+
+
 def create_background_task(target, interval, args=(), kwargs=None):
     if kwargs is None:
         kwargs = {}
