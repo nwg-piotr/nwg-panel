@@ -4,7 +4,8 @@ import json
 
 from gi.repository import Gtk, Gdk
 
-from nwg_panel.tools import hyprctl, update_image, update_image_fallback_desktop, eprint
+from nwg_panel.tools import hyprctl, update_image, update_image_fallback_desktop, eprint, load_pinned, pin_app, \
+    unpin_app, desktop_id_for_class
 
 
 class HyprlandTaskbar(Gtk.Box):
@@ -262,6 +263,17 @@ class ClientBox(Gtk.EventBox):
             item.add(hbox)
             item.connect("activate", self.pin)
             item.set_tooltip_text("pin")
+            menu.append(item)
+
+        # Pin / unpin the application to / from the Pinned module
+        desktop_id = desktop_id_for_class(client["class"]) or desktop_id_for_class(client["initialClass"])
+        if desktop_id:
+            if desktop_id in load_pinned():
+                item = Gtk.MenuItem.new_with_label("Unpin from panel")
+                item.connect("activate", lambda *_: unpin_app(desktop_id))
+            else:
+                item = Gtk.MenuItem.new_with_label("Pin to panel")
+                item.connect("activate", lambda *_: pin_app(desktop_id))
             menu.append(item)
 
         # Close

@@ -20,7 +20,7 @@ gi.require_version('GdkPixbuf', '2.0')
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
-from gi.repository import Gtk, Gdk, GdkPixbuf
+from gi.repository import Gtk, Gdk, GdkPixbuf, Gio
 from shutil import copyfile, which
 from collections import OrderedDict
 from datetime import datetime
@@ -849,6 +849,75 @@ def get_cache_dir():
         return os.path.join(os.getenv("HOME"), ".cache")
     else:
         return None
+
+
+def pin_cache_path():
+    """Pinned items file shared with nwg-drawer and nwg-dock: one desktop ID per line."""
+    cache_dir = get_cache_dir()
+    return os.path.join(cache_dir, "nwg-pin-cache") if cache_dir else None
+
+
+def normalize_desktop_id(desktop_id):
+    desktop_id = desktop_id.strip()
+    if desktop_id and not desktop_id.endswith(".desktop"):
+        desktop_id += ".desktop"
+    return desktop_id
+
+
+def load_pinned():
+    path = pin_cache_path()
+    if not path or not os.path.isfile(path):
+        return []
+    content = load_text_file(path) or ""
+    pinned = []
+    for line in content.splitlines():
+        desktop_id = normalize_desktop_id(line)
+        if desktop_id and desktop_id not in pinned:
+            pinned.append(desktop_id)
+    return pinned
+
+
+def save_pinned(desktop_ids):
+    path = pin_cache_path()
+    if not path:
+        eprint("Cache dir not found, can't save pinned items")
+        return
+    content = "\n".join(desktop_ids) + "\n" if desktop_ids else ""
+    save_string(content, path)
+
+
+def pin_app(desktop_id, *args):
+    pinned = load_pinned()
+    desktop_id = normalize_desktop_id(desktop_id)
+    if desktop_id and desktop_id not in pinned:
+        pinned.append(desktop_id)
+        save_pinned(pinned)
+
+
+def unpin_app(desktop_id, *args):
+    pinned = load_pinned()
+    desktop_id = normalize_desktop_id(desktop_id)
+    if desktop_id in pinned:
+        pinned.remove(desktop_id)
+        save_pinned(pinned)
+
+
+def desktop_id_for_class(wm_class):
+    """Find the desktop ID of an application from its window class / app_id, or None."""
+    if not wm_class:
+        return None
+    for name in (wm_class, wm_class.lower()):
+        try:
+            if Gio.DesktopAppInfo.new(f"{name}.desktop"):
+                return f"{name}.desktop"
+        except TypeError:  # PyGObject raises when the constructor returns NULL
+            pass
+    for info in Gio.AppInfo.get_all():
+        if isinstance(info, Gio.DesktopAppInfo):
+            startup_wm_class = info.get_startup_wm_class()
+            if startup_wm_class and startup_wm_class.lower() == wm_class.lower():
+                return info.get_id()
+    return None
 
 
 def file_age(path):
