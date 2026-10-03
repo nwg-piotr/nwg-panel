@@ -139,6 +139,10 @@ class Tray(Gtk.EventBox):
 
             update_status(event_box, item)
 
+            # tooltip changes are fetched lazily, when the tooltip is about to be shown
+            image.set_has_tooltip(True)
+            image.connect("query-tooltip", self.on_query_tooltip, item)
+
             event_box.add(image)
             if not self.settings["new-left"]:
                 self.box.pack_start(event_box, False, False, 6)
@@ -182,6 +186,12 @@ class Tray(Gtk.EventBox):
         update_status(event_box, item)
 
         event_box.show_all()
+
+    @staticmethod
+    def on_query_tooltip(image, _x, _y, _keyboard_mode, _tooltip, item):
+        if item.refresh_tooltip():
+            update_tooltip(image, item)
+        return False  # let GTK show the (now up to date) tooltip markup
 
     def remove_item(self, item: StatusNotifierItem):
         full_service_name = "{}{}".format(item.service_name, item.object_path)
