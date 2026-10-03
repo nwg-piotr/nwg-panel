@@ -39,6 +39,7 @@ class StatusNotifierItem(object):
             "ItemIsMenu": True
         }
         self.item_proxy = None
+        self.tooltip_stale = False
 
         self.item_observer = DBusObserver(
             message_bus=self.session_bus,
@@ -76,9 +77,7 @@ class StatusNotifierItem(object):
                 lambda: self.change_handler(["Title"])
             )
         if hasattr(self.item_proxy, 'NewToolTip'):
-            self.item_proxy.NewToolTip.connect(
-                lambda: self.change_handler(["ToolTip"])
-            )
+            self.item_proxy.NewToolTip.connect(self.tooltip_changed_handler)
         if hasattr(self.item_proxy, 'NewIcon'):
             self.item_proxy.NewIcon.connect(
                 lambda: self.change_handler(["IconName", "IconPixmap", "IconThemePath"])
@@ -126,6 +125,23 @@ class StatusNotifierItem(object):
         if len(actual_changed_properties) > 0:
             if self.on_updated_callback is not None:
                 self.on_updated_callback(self, actual_changed_properties)
+
+    def tooltip_changed_handler(self):
+        # Some items re-emit NewToolTip every second or so (e.g. qBittorrent: transfer speeds).
+        # Fetching the property over D-Bus each time is wasted work: just mark it stale,
+        # it is read when the tooltip is about to be shown (see refresh_tooltip).
+        self.tooltip_stale = True
+
+    def refresh_tooltip(self):
+        """Fetch the tooltip if it changed since last read. Returns True if it was refreshed."""
+        if not self.tooltip_stale or self.item_proxy is None:
+            return False
+        self.tooltip_stale = False
+        try:
+            self.properties["ToolTip"] = self.item_proxy.ToolTip
+            return True
+        except (AttributeError, DBusError):
+            return False
 
     def set_on_loaded_callback(self, callback):
         self.on_loaded_callback = callback
