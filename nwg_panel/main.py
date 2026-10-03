@@ -415,11 +415,11 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                     check_key(panel["hyprland-taskbar"], "all-outputs", False)
                     if panel["hyprland-taskbar"]["all-outputs"] or "output" not in panel:
                         taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"], monitors, workspaces,
-                                                  clients, activewindow, icons_path=icons_path)
+                                                  clients, activewindow, icons_path=icons_path, voc=voc)
                     else:
                         taskbar = HyprlandTaskbar(panel["hyprland-taskbar"], panel["position"], monitors, workspaces,
                                                   clients, activewindow, display_name="{}".format(panel["output"]),
-                                                  icons_path=icons_path)
+                                                  icons_path=icons_path, voc=voc)
 
                     common.h_taskbars_list.append(taskbar)
                     container.pack_start(taskbar, False, False, panel["items-padding"])
@@ -500,7 +500,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
         if item == "pinned":
             if "pinned" not in panel:
                 panel["pinned"] = {}
-            pinned = Pinned(panel["pinned"], icons_path)
+            pinned = Pinned(panel["pinned"], icons_path, voc=voc)
             container.pack_start(pinned, False, False, panel["items-padding"])
 
         if "button-" in item:

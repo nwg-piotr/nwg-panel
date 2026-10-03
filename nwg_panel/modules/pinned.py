@@ -77,10 +77,11 @@ def launch(widget, cmd):
 
 
 class Pinned(Gtk.EventBox):
-    def __init__(self, settings, icons_path):
+    def __init__(self, settings, icons_path, voc=None):
         Gtk.EventBox.__init__(self)
         self.file_monitor = None
         self.menu = None
+        self.voc = voc or {}
         self.icons_path = icons_path
 
         check_key(settings, "limit", 0)
@@ -150,7 +151,7 @@ class Pinned(Gtk.EventBox):
             button.set_has_tooltip(False)
             self.menu.connect("deactivate", lambda *_: button.set_has_tooltip(True))
             self.menu.set_reserve_toggle_size(False)
-            item = Gtk.MenuItem.new_with_label("Unpin from panel")
+            item = Gtk.MenuItem.new_with_label(self.voc.get("unpin-from-panel", "Unpin from panel"))
             item.connect("activate", lambda *_: unpin_app(desktop_id))
             self.menu.append(item)
             self.menu.show_all()
