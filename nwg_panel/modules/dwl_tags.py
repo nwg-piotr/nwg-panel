@@ -14,7 +14,7 @@ class DwlTags(Gtk.EventBox):
         Gtk.EventBox.__init__(self)
         check_key(settings, "tag-names", "1 2 3 4 5 6 7 8 9")
         check_key(settings, "title-limit", 55)
-        check_key(self.settings, "angle", 0.0)
+        check_key(settings, "angle", 0.0)
 
         self.output = output
         self.settings = settings

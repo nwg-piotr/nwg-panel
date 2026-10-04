@@ -200,6 +200,9 @@ def list_outputs(sway=False, silent=False):
             print("Running on sway")
         outputs = i3.get_outputs()
         for item in outputs:
+            # non-desktop outputs (e.g. VR headsets) have no rect
+            if item.rect is None:
+                continue
             outputs_dict[item.name] = {"x": item.rect.x,
                                        "y": item.rect.y,
                                        "width": item.rect.width,
@@ -232,16 +235,13 @@ def list_outputs(sway=False, silent=False):
         result = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
         outputs = json.loads(result)
         for item in outputs:
-            transform = ""
-            x, y, w, h = 0, 0, 0, 0
-            for mode in outputs[item]["modes"]:
-                if mode["is_preferred"]:
-                    x = outputs[item]["logical"]["x"]
-                    y = outputs[item]["logical"]["y"]
-                    w = mode["width"]
-                    h = mode["height"]
-                    transform = outputs[item]["logical"]["transform"]
-                    break
+            # disabled outputs have no logical geometry
+            logical = outputs[item].get("logical")
+            if not logical:
+                continue
+            # logical size already accounts for scale and rotation: no swap needed
+            x, y = logical["x"], logical["y"]
+            w, h = logical["width"], logical["height"]
 
             outputs_dict[outputs[item]["name"]] = {"x": x,
                                                    "y": y,
@@ -249,12 +249,6 @@ def list_outputs(sway=False, silent=False):
                                                    "height": h,
                                                    "description": f'{outputs[item]["make"]} {outputs[item]["model"]} {outputs[item]["serial"]}',
                                                    "monitor": None}
-
-            # swap for rotated displays
-            if transform in ["90", "270", "flipped-90", "flipped-270"]:
-                outputs_dict[outputs[item]["name"]]["width"] = h
-                outputs_dict[outputs[item]["name"]]["height"] = w
-
 
     elif os.getenv('WAYLAND_DISPLAY') is not None:
         if not silent:
@@ -463,20 +457,23 @@ def list_sink_inputs():
     result = result.replace(u"\"", "\'")
 
     sinks = dict()
+    sink_name, name = None, None
 
     for oline in result.split("\n"):
         if oline == "":
             continue  # Skip empty lines
-        # Indentation indicates the JSON structure
-        indent = oline.count('\t')
-        line = oline[indent:]
+        # Indentation (leading tabs only) indicates the JSON structure
+        line = oline.lstrip('\t')
+        indent = len(oline) - len(line)
+        if indent > 0 and (sink_name is None or (indent == 2 and name is None)):
+            continue  # property line before its parent: skip it
         if indent == 0:  # Get sink name
             sink_name = line.split("#")[-1]
             sinks[sink_name] = {}
         elif indent == 1:  # Get sink object
-            if line.startswith("        "):  # Output is over two lines
+            if line.startswith("        ") and name is not None:  # Output is over two lines
                 sinks[sink_name][name] = sinks[sink_name][name] + " " + line.strip()
-            else:
+            elif ":" in line:
                 ii = line.index(":")
                 name = line[:ii].strip()
                 value = line[ii + 1:].strip()
@@ -484,6 +481,8 @@ def list_sink_inputs():
         elif indent == 2:  # Get sink object properties
             if sinks[sink_name][name] == "":
                 sinks[sink_name][name] = {}
+            if "=" not in line or not isinstance(sinks[sink_name][name], dict):
+                continue
             ii = line.index("=")
             sub_name = line[:ii].strip()
             sub_value = line[ii + 1:].strip()
@@ -491,8 +490,8 @@ def list_sink_inputs():
                 sub_value = sub_value[1:-1]
             sinks[sink_name][name][sub_name] = sub_value
         else:  # Unexpected indentation
-            print("Unexpected line : ", oline)
-            exit()
+            # never exit(): this runs in a GTK callback and would kill the whole panel
+            eprint("Unexpected line : ", oline)
 
     # eprint(json.dumps(sinks, indent=2))
     return sinks
@@ -583,7 +582,11 @@ def set_volume(percent, balance=0):
         right = 100
 
     if nwg_panel.common.commands["pactl"]:
-        subprocess.call(f"pactl set-sink-volume @DEFAULT_SINK@ {left}% {right}%".split())
+        if left == right:
+            # a single value applies to all channels, whatever their number (#416)
+            subprocess.call(f"pactl set-sink-volume @DEFAULT_SINK@ {left}%".split())
+        else:
+            subprocess.call(f"pactl set-sink-volume @DEFAULT_SINK@ {left}% {right}%".split())
     elif nwg_panel.common.commands["pamixer"]:
         subprocess.call("pamixer --set-volume {}".format(percent).split())
     else:
