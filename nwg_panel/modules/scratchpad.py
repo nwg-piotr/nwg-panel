@@ -4,7 +4,7 @@ import os.path
 from gi.repository import Gtk, GLib
 from i3ipc import Event
 
-from nwg_panel.tools import check_key, get_icon_name, update_image, temp_dir, save_json
+from nwg_panel.tools import check_key, get_icon_name, update_image, runtime_dir, save_json
 import nwg_panel.common
 
 
@@ -18,7 +18,7 @@ class Scratchpad(Gtk.Box):
         self.icons_path = icons_path
         self.output = output
 
-        self.cache_file = os.path.join(temp_dir(), "nwg-scratchpad")
+        self.cache_file = os.path.join(runtime_dir(), "nwg-scratchpad")
 
         defaults = {
             "css-name": "",
@@ -101,9 +101,13 @@ class Scratchpad(Gtk.Box):
             item = nwg_panel.common.scratchpad_cons[str(con_id)]
 
             if "workspace" in item:
-                if item["workspace"]:
+                try:
+                    workspace = int(item["workspace"])  # sway commands accept ';' and 'exec': numbers only
+                except (TypeError, ValueError):
+                    workspace = 0
+                if workspace:
                     # move to original workspace
-                    cmd = "[con_id=\"{}\"] move to workspace number {}".format(con_id, item["workspace"])
+                    cmd = "[con_id=\"{}\"] move to workspace number {}".format(int(con_id), workspace)
                     self.i3.command(cmd)
 
             if "floating_con" in item:

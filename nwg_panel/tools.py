@@ -53,6 +53,32 @@ def temp_dir():
     return "/tmp"
 
 
+def runtime_dir():
+    """Per-user, private directory for the panel's state files (PID file, scratchpad info,
+    weather caches). They used to live under fixed names in the shared /tmp: another local user
+    could pre-create them (the panel then read his content and could not overwrite it)."""
+    xdg = os.getenv("XDG_RUNTIME_DIR")
+    if xdg and os.path.isdir(xdg):
+        return xdg
+    path = os.path.join(temp_dir(), "nwg-panel-{}".format(os.getuid()))
+    try:
+        os.makedirs(path, mode=0o700, exist_ok=True)
+        if os.lstat(path).st_uid != os.getuid() or os.path.islink(path):
+            raise OSError("not ours")
+    except OSError as e:
+        eprint("runtime_dir: can't use {}: {}".format(path, e))
+    return path
+
+
+def owned_by_us(path):
+    """True if path is a regular file that belongs to the current user (not a symlink)."""
+    try:
+        st = os.lstat(path)
+    except OSError:
+        return False
+    return stat.S_ISREG(st.st_mode) and st.st_uid == os.getuid()
+
+
 def local_dir():
     local_dir = os.path.join(os.path.join(os.getenv("HOME"), ".local/share/nwg-panel"))
     if not os.path.isdir(local_dir):

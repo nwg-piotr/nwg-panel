@@ -12,7 +12,7 @@ while true; do
   case "$1" in
     --prefix=*)
       opts+=("$1")
-      eval "prefix=${1##--prefix=}"
+      prefix="${1#--prefix=}"  # no eval: the argument used to be executed as shell code
       shift
       ;;
     *)

@@ -939,7 +939,8 @@ class PerAppSlider(Gtk.Box):
         if len(name) > 40:
             name = "{}…".format(name[:40])
         lbl = Gtk.Label()
-        lbl.set_markup('<span size="small">{}</span>'.format(name))
+        # media.name is e.g. a browser tab title: never markup
+        lbl.set_markup('<span size="small">{}</span>'.format(GLib.markup_escape_text(name)))
         vbox.pack_start(lbl, False, False, 0)
         self.scale = Gtk.Scale.new_with_range(orientation=Gtk.Orientation.HORIZONTAL, min=0, max=153, step=1)
         self.scale.set_increments(0.5, 0.5)
@@ -1001,7 +1002,7 @@ class SinkBox(Gtk.Box):
     def switch_sink(self, w, e, sink):
         if commands["pactl"]:
             eprint("Sink: '{}'".format(sink))
-            subprocess.Popen('exec pactl set-default-sink "{}"'.format(sink), shell=True)
+            subprocess.Popen(["pactl", "set-default-sink", sink])
         else:
             eprint("Couldn't switch sinks, 'pactl' (libpulse) not found")
         self.hide()

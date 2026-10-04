@@ -15,6 +15,10 @@ import requests
 from nwg_panel.tools import check_key, eprint, local_dir, update_image
 
 
+# remote album covers larger than this are ignored
+COVER_MAX_BYTES = 5 * 1024 * 1024
+
+
 class Playerctl(Gtk.EventBox):
     PlayerOps = Enum('PlayerOps', ['PLAY_PAUSE', 'NEXT', 'PREVIOUS'])
 
@@ -58,7 +62,10 @@ class Playerctl(Gtk.EventBox):
         self.connect("realize", hide_self)
 
     def subscribe(self):
-        # Must associate manager with self to increase its reference count
+        # One PlayerManager for the whole life of the module. It used to be recreated here, and
+        # subscribe() was called from the manager's own handlers (name-appeared, player-vanished)
+        # and on every scroll: the old manager lost its last reference while libplayerctl was
+        # still emitting its signal -> use-after-free, panel spinning at 100% CPU (#233).
         self.manager = Ctl.PlayerManager()
         self.manager.connect('name-appeared', self.on_name_appeared)
         self.manager.connect('player-vanished', self.on_player_vanished)
@@ -68,16 +75,24 @@ class Playerctl(Gtk.EventBox):
         for name in reversed(self.manager.props.player_names):
             self.manage_player_by_name(self.manager, name)
 
-        self.num_players = len(self.manager.props.players)
+        self.select_player(0)
+
+    def select_player(self, idx):
+        """Show the player at idx (clamped), or hide when there is none."""
+        players = self.manager.props.players
+        self.num_players = len(players)
         if self.num_players > 1:
+            self.player_idx = idx % self.num_players
             self.num_players_lbl.set_text(f" {self.player_idx + 1}/{self.num_players} ")
             self.num_players_lbl.set_tooltip_text(
                 f"{self.voc['media-player']} {self.player_idx + 1}/{self.num_players}, {self.voc['scroll-to-switch']}")
         else:
+            self.player_idx = 0
             self.num_players_lbl.set_text("")
 
-        if len(self.manager.props.players) > 0:
-            self.init_player(self.manager.props.players[self.player_idx])
+        self.deinit_player(hide_widget=self.num_players == 0)
+        if self.num_players > 0:
+            self.init_player(players[self.player_idx])
 
     @staticmethod
     def manage_player_by_name(manager, name):
@@ -85,21 +100,12 @@ class Playerctl(Gtk.EventBox):
         manager.manage_player(player)
 
     def on_name_appeared(self, manager, name):
-        self.subscribe()
-        self.deinit_player()
         self.manage_player_by_name(manager, name)
-        self.init_player(manager.props.players[self.player_idx])
+        self.select_player(0)  # the newest player comes first
 
     def on_player_vanished(self, manager, player):
-        self.subscribe()
-        # Non-active player vanished, do nothing
-        if self.player and player.props.player_name != self.player.props.player_name:
-            return
-
-        # Active player vanished, populate another one if exists
-        self.deinit_player()
-        if len(manager.props.players) > 0:
-            self.init_player(manager.props.players[self.player_idx])
+        # keep the current player if it is still there, otherwise fall back to the first one
+        self.select_player(self.player_idx)
 
     def init_player(self, player):
         self.player = player
@@ -163,23 +169,36 @@ class Playerctl(Gtk.EventBox):
         self.on_playback_status(player, player.props.playback_status)
 
     def update_remote_cover(self, url):
+        # The URL comes from the player (e.g. a web page's MediaSession artwork through the
+        # browser): bounded download, image content only.
+        cover_path = ""
         try:
-            r = requests.get(url, allow_redirects=True)
-            cover_path = os.path.join(local_dir(), "cover.jpg")
-            with open(cover_path, 'wb') as f:
-                f.write(r.content)
-            cover_path = "file://" + cover_path
+            with requests.get(url, allow_redirects=True, stream=True, timeout=(5, 15)) as r:
+                r.raise_for_status()
+                if not r.headers.get("Content-Type", "").startswith("image/"):
+                    raise ValueError("not an image: {}".format(r.headers.get("Content-Type")))
+                data = bytearray()
+                for chunk in r.iter_content(65536):
+                    data += chunk
+                    if len(data) > COVER_MAX_BYTES:
+                        raise ValueError("cover larger than {} bytes".format(COVER_MAX_BYTES))
+            path = os.path.join(local_dir(), "cover.jpg")
+            with open(path, 'wb') as f:
+                f.write(data)
+            cover_path = "file://" + path
         except Exception as e:
             eprint("Couldn't update remote cover: {}".format(e))
-            cover_path = ""
         GLib.idle_add(self.update_cover_image, cover_path)
 
     def update_cover_image(self, url):
         url = urlparse(url)
         path = unquote(url.path)
 
-        if url.scheme.startswith("http"):
-            threading.Thread(target=self.update_remote_cover(url.geturl()), daemon=True).start()
+        if url.scheme in ("http", "https"):
+            if self.settings["show-cover"]:
+                # in a thread: the function used to be *called* here, i.e. the download ran on the
+                # GTK main loop and froze the whole panel until the server answered
+                threading.Thread(target=self.update_remote_cover, args=(url.geturl(),), daemon=True).start()
             return
 
         if url.scheme == "file" and path:
@@ -222,12 +241,9 @@ class Playerctl(Gtk.EventBox):
 
         print(f"Switched to player {self.player_idx}")
 
-        # Memory leak fix: Just switch the active player, don't restart PlayerManager
-        self.deinit_player(hide_widget=False)
-
-        if len(self.manager.props.players) > 0:
-            self.init_player(self.manager.props.players[self.player_idx])
-            self.num_players_lbl.set_text(f" {self.player_idx + 1}/{self.num_players} ")
+        # Memory leak fix: Just switch the active player, don't restart PlayerManager.
+        # select_player() also keeps the widget shown and clamps the index if a player just vanished.
+        self.select_player(self.player_idx)
 
     def build_box(self):
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
