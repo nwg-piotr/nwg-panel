@@ -5,12 +5,13 @@ import subprocess
 
 import gi
 
-from nwg_panel.tools import check_key, update_image, load_text_file, cmd_through_compositor, get_cache_dir, eprint
+from nwg_panel.tools import check_key, update_image, cmd_through_compositor, eprint, pin_cache_path, load_pinned, \
+    unpin_app
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
-from gi.repository import Gtk, Gio
+from gi.repository import Gtk, Gdk, Gio
 
 
 def get_app_dirs():
@@ -76,9 +77,11 @@ def launch(widget, cmd):
 
 
 class Pinned(Gtk.EventBox):
-    def __init__(self, settings, icons_path):
+    def __init__(self, settings, icons_path, voc=None):
         Gtk.EventBox.__init__(self)
         self.file_monitor = None
+        self.menu = None
+        self.voc = voc or {}
         self.icons_path = icons_path
 
         check_key(settings, "limit", 0)
@@ -93,23 +96,17 @@ class Pinned(Gtk.EventBox):
 
         self.desktop_dirs = get_app_dirs()
 
-        self.desktop_ids = []
-        self.cache_file_path = os.path.join(get_cache_dir(), "nwg-pin-cache")
-        if os.path.exists(self.cache_file_path):
-            cache_content = load_text_file(self.cache_file_path)
-            if cache_content:
-                self.desktop_ids = cache_content.splitlines()
-                if self.desktop_ids:
-                    self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-                    self.add(self.box)
-                    if settings["angle"] != 0.0:
-                        self.box.set_orientation(Gtk.Orientation.VERTICAL)
+        # The box always exists, so that items pinned later (e.g. from the taskbar) show up
+        self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        self.add(self.box)
+        if settings["angle"] != 0.0:
+            self.box.set_orientation(Gtk.Orientation.VERTICAL)
 
-                    self.build_box()
-            else:
-                eprint(f"Nothing found in cache: '{self.cache_file_path}'")
-        else:
-            eprint(f"{self.cache_file_path} file not found")
+        self.cache_file_path = pin_cache_path()
+        self.desktop_ids = load_pinned()
+        if not self.desktop_ids:
+            eprint(f"No pinned items found in '{self.cache_file_path}'")
+        self.build_box()
 
         self.setup_file_monitor()
 
@@ -134,16 +131,37 @@ class Pinned(Gtk.EventBox):
                         btn.set_tooltip_text(name)
 
                         btn.connect("clicked", launch, exec)
+                        btn.connect("button-release-event", self.on_button_release, desktop_id)
                         self.box.pack_start(btn, False, False, 0)
                     counter += 1
                     break
 
-                if 0 < self.settings["limit"] <= counter:
-                    break
+            if 0 < self.settings["limit"] <= counter:
+                break
 
         self.show_all()
 
+    def on_button_release(self, button, event, desktop_id):
+        if event.button == 3:
+            if self.menu:
+                self.menu.destroy()
+            # keep a reference, or the menu may be garbage-collected while shown
+            self.menu = Gtk.Menu()
+            # The button tooltip would pop up over the menu and make it flicker
+            button.set_has_tooltip(False)
+            self.menu.connect("deactivate", lambda *_: button.set_has_tooltip(True))
+            self.menu.set_reserve_toggle_size(False)
+            item = Gtk.MenuItem.new_with_label(self.voc.get("unpin-from-panel", "Unpin from panel"))
+            item.connect("activate", lambda *_: unpin_app(desktop_id))
+            self.menu.append(item)
+            self.menu.show_all()
+            self.menu.popup_at_widget(button, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, None)
+            return True
+        return False
+
     def setup_file_monitor(self):
+        if not self.cache_file_path:
+            return
         file = Gio.File.new_for_path(self.cache_file_path)
         self.file_monitor = file.monitor_file(Gio.FileMonitorFlags.NONE, None)
         self.file_monitor.connect("changed", self.on_file_changed)
@@ -151,9 +169,5 @@ class Pinned(Gtk.EventBox):
     def on_file_changed(self, monitor, file, other_file, event_type):
         if event_type in [Gio.FileMonitorEvent.CHANGES_DONE_HINT, Gio.FileMonitorEvent.CREATED]:
             print(f"{self.cache_file_path} changed, rebuilding box...")
-            cache_content = load_text_file(self.cache_file_path)
-            if cache_content:
-                self.desktop_ids = cache_content.splitlines()
-            else:
-                self.desktop_ids = []
+            self.desktop_ids = load_pinned()
             self.build_box()

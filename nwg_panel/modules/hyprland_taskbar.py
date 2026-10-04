@@ -4,11 +4,13 @@ import json
 
 from gi.repository import Gtk, Gdk
 
-from nwg_panel.tools import hyprctl, update_image, update_image_fallback_desktop, eprint
+from nwg_panel.tools import hyprctl, update_image, update_image_fallback_desktop, eprint, load_pinned, pin_app, \
+    unpin_app, desktop_id_for_class
 
 
 class HyprlandTaskbar(Gtk.Box):
-    def __init__(self, settings, position, monitors, workspaces, clients, activewindow, display_name="", icons_path=""):
+    def __init__(self, settings, position, monitors, workspaces, clients, activewindow, display_name="", icons_path="",
+                 voc=None):
         defaults = {
             "name-max-len": 24,
             "image-size": 16,
@@ -32,6 +34,7 @@ class HyprlandTaskbar(Gtk.Box):
         self.position = position
         self.display_name = display_name
         self.icons_path = icons_path
+        self.voc = voc or {}
 
         self.monitors = None
         self.mon_id2name = {}
@@ -108,7 +111,8 @@ class HyprlandTaskbar(Gtk.Box):
                 for client in self.clients:
                     # if client["title"] prevents from creation of ghost client boxes
                     if client["title"] and client["workspace"]["id"] == ws_num:
-                        client_box = ClientBox(self.settings, client, self.position, self.icons_path, self.ws_strings)
+                        client_box = ClientBox(self.settings, client, self.position, self.icons_path, self.ws_strings,
+                                                   self.voc)
                         if self.activewindow and client["address"] == self.activewindow["address"]:
                             client_box.box.set_property("name", "task-box-focused")
                         else:
@@ -134,13 +138,14 @@ def on_leave_notify_event(widget, event):
 
 
 class ClientBox(Gtk.EventBox):
-    def __init__(self, settings, client, position, icons_path, ws_strings):
+    def __init__(self, settings, client, position, icons_path, ws_strings, voc=None):
         self.position = position
         self.settings = settings
         self.address = client["address"]
         self.floating = client["floating"]
         self.icons_path = icons_path
         self.ws_strings = ws_strings
+        self.voc = voc or {}
         Gtk.EventBox.__init__(self)
         self.box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, spacing=0)
         if settings["angle"] != 0.0:
@@ -262,6 +267,17 @@ class ClientBox(Gtk.EventBox):
             item.add(hbox)
             item.connect("activate", self.pin)
             item.set_tooltip_text("pin")
+            menu.append(item)
+
+        # Pin / unpin the application to / from the Pinned module
+        desktop_id = desktop_id_for_class(client["class"]) or desktop_id_for_class(client["initialClass"])
+        if desktop_id:
+            if desktop_id in load_pinned():
+                item = Gtk.MenuItem.new_with_label(self.voc.get("unpin-from-panel", "Unpin from panel"))
+                item.connect("activate", lambda *_: unpin_app(desktop_id))
+            else:
+                item = Gtk.MenuItem.new_with_label(self.voc.get("pin-to-panel", "Pin to panel"))
+                item.connect("activate", lambda *_: pin_app(desktop_id))
             menu.append(item)
 
         # Close
