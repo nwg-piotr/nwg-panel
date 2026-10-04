@@ -32,17 +32,16 @@ class Scratchpad(Gtk.Box):
         if settings["angle"] != 0.0:
             self.set_orientation(Gtk.Orientation.VERTICAL)
 
-        self.check_scratchpad(i3.get_tree())
-        self.subscribe()
-
-    def subscribe(self):
-        self.i3.on(Event.WINDOW, self.on_i3ipc_event)
+        self.check_scratchpad(tree)
+        # refreshed by main.py from a single, coalesced get_tree() for all sway modules (#395)
+        nwg_panel.common.scratchpads_list.append(self)
 
     def check_scratchpad(self, tree):
+        # called on the GTK main loop
         content = []
 
         scratchpad = tree.find_named('__i3_scratch')
-        leaves = scratchpad[0].floating_nodes
+        leaves = scratchpad[0].floating_nodes if scratchpad else []
 
         for node in leaves:
             aid = node.app_id if node.app_id else node.window_class
@@ -60,7 +59,7 @@ class Scratchpad(Gtk.Box):
 
         if content != self.content:
             self.content = content
-            GLib.idle_add(self.build_box, priority=GLib.PRIORITY_HIGH)
+            self.build_box()
 
     def build_box(self):
         for item in self.get_children():
@@ -127,6 +126,3 @@ class Scratchpad(Gtk.Box):
             # Let's just show the item.
             cmd = "[pid={}] scratchpad show".format(pid)
             self.i3.command(cmd)
-
-    def on_i3ipc_event(self, i3conn, event):
-        self.check_scratchpad(i3conn.get_tree())

@@ -347,6 +347,73 @@ def hide_controls_popup():
             item.popup_window.hide_and_clear_tag()
 
 
+# A burst of sway events (new window = new + focus + title...) triggers a single refresh.
+SWAY_REFRESH_DELAY_MS = 40
+# Title-only changes (terminals, browsers updating their title) are rate-limited harder.
+SWAY_TITLE_REFRESH_DELAY_MS = 250
+
+_sway_refresh_src = 0
+_sway_refresh_fast = False
+
+
+def _sway_do_refresh():
+    """
+    Runs on the GTK main loop: one get_tree() + one get_workspaces() for every sway module of every panel.
+    Each module used to fetch its own copy on every event (up to 13 IPC round-trips per event for two
+    panels), on the GTK thread and at PRIORITY_HIGH, which built a queue that froze the panel (#395).
+    """
+    global _sway_refresh_src
+    _sway_refresh_src = 0  # events arriving from now on schedule a new refresh
+    try:
+        tree = common.i3.get_tree()
+        workspaces = common.i3.get_workspaces() if common.sway_workspaces_list else []
+    except Exception as ex:
+        eprint(f"sway refresh: IPC failed ({ex})")
+        return False
+    for item in common.sway_taskbars_list:
+        try:
+            item.refresh(tree)
+        except Exception as ex:
+            eprint(f"sway-taskbar refresh failed: {ex}")
+    for item in common.sway_workspaces_list:
+        try:
+            item.refresh(tree, workspaces)
+        except Exception as ex:
+            eprint(f"sway-workspaces refresh failed: {ex}")
+    for item in common.scratchpads_list:
+        try:
+            item.check_scratchpad(tree)
+        except Exception as ex:
+            eprint(f"scratchpad refresh failed: {ex}")
+    return False
+
+
+def _sway_schedule_refresh(fast):
+    """Runs on the GTK main loop. Coalesces refresh requests."""
+    global _sway_refresh_src, _sway_refresh_fast
+    if _sway_refresh_src:
+        if not fast or _sway_refresh_fast:
+            return False  # a refresh is already pending, soon enough
+        GLib.source_remove(_sway_refresh_src)  # replace a slow (title-only) refresh with a fast one
+    _sway_refresh_fast = fast
+    _sway_refresh_src = GLib.timeout_add(SWAY_REFRESH_DELAY_MS if fast else SWAY_TITLE_REFRESH_DELAY_MS,
+                                         _sway_do_refresh)
+    return False
+
+
+def on_sway_module_event(i3conn, event):
+    # runs on the i3ipc thread
+    if common.sway_taskbars_list or common.sway_workspaces_list or common.scratchpads_list:
+        GLib.idle_add(_sway_schedule_refresh, event.change != "title")
+
+
+def on_sway_input_event(i3conn, event):
+    # runs on the i3ipc thread; KeyboardLayout.refresh() does its IPC here and touches GTK through idle_add
+    if event.change in ("xkb_layout", "xkb_keymap", "added", "removed"):
+        for item in common.keyboard_layouts_list:
+            item.refresh()
+
+
 def refresh_dwl(*args):
     if len(common.dwl_instances) > 0:
         dwl_data = load_json(common.dwl_data_file)
@@ -1086,6 +1153,15 @@ def main():
         # Notice: Don't use Event.OUTPUT, it's not supported on old sway releases.
         common.i3.on(Event.WORKSPACE, on_i3ipc_event)
         common.i3.on(Event.WINDOW, on_i3ipc_event)
+        # sway-taskbar, sway-workspaces and scratchpad no longer subscribe on their own (#395)
+        common.i3.on(Event.WORKSPACE, on_sway_module_event)
+        common.i3.on(Event.WINDOW, on_sway_module_event)
+        if common.keyboard_layouts_list:
+            try:
+                # keyboard-layout never refreshed on sway unless polled (`interval` defaults to 0)
+                common.i3.on(Event.INPUT, on_sway_input_event)
+            except Exception as e:
+                eprint(f"Event.INPUT not supported by this i3ipc/sway: {e}")
 
         # We monitor i3ipc events in a separate thread, and callbacks will also
         # be executed there. Hence, UI operations MUST be scheduled by
