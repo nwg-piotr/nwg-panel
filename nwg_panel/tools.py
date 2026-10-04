@@ -430,7 +430,7 @@ def get_volume():
         try:
             output = cmd2string("pamixer --get-volume")
             if output:
-                vol = int(cmd2string("pamixer --get-volume"))
+                vol = int(output)
         except Exception as e:
             eprint(e)
 
@@ -590,6 +590,9 @@ def set_volume(percent, balance=0):
         eprint("Couldn't set volume, no 'pamixer' or 'pactl' found")
 
 
+brightness_max_cache = {}
+
+
 def get_brightness(device="", controller=""):
     brightness = 0
     if nwg_panel.common.commands["light"] and controller == "light":
@@ -597,9 +600,12 @@ def get_brightness(device="", controller=""):
         output = cmd2string(cmd)
         brightness = int(round(float(output), 0))
     elif nwg_panel.common.commands["brightnessctl"] and controller == "brightnessctl":
-        cmd = "brightnessctl m -d {}".format(device) if device else "brightnessctl m"
-        output = cmd2string(cmd)
-        max_bri = int(output)
+        # the maximum never changes: read it once per device instead of at every poll
+        max_bri = brightness_max_cache.get(device)
+        if max_bri is None:
+            cmd = "brightnessctl m -d {}".format(device) if device else "brightnessctl m"
+            max_bri = int(cmd2string(cmd))
+            brightness_max_cache[device] = max_bri
 
         cmd = "brightnessctl g -d {}".format(device) if device else "brightnessctl g"
         output = cmd2string(cmd)

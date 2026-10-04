@@ -18,6 +18,12 @@ from nwg_panel.tools import (check_key, get_brightness, set_brightness, get_volu
 
 from nwg_panel.common import commands
 
+# brightness polling backs off after this many consecutive failures
+BRIGHTNESS_MAX_FAILURES = 3
+BRIGHTNESS_RETRY_S = 60
+# per-app sliders: `pactl list sink-inputs` every Nth popup refresh (refresh: every 500 ms)
+SINK_INPUTS_EVERY = 4
+
 bat_critical_last_check = 0
 
 
@@ -70,6 +76,8 @@ class Controls(Gtk.EventBox):
             self.bri_label.set_property("name", "executor-label")
         self.bri_value = 0
         self.bri_read = False
+        self.bri_failures = 0
+        self.bri_last_retry = 0.0
 
         self.vol_icon_name = "view-refresh-symbolic"
         self.vol_image = Gtk.Image.new_from_icon_name(self.vol_icon_name, Gtk.IconSize.MENU)
@@ -108,6 +116,9 @@ class Controls(Gtk.EventBox):
             self.refresh_bat()
 
         check_key(settings, "volume-subscribe", True)
+        # True while `pactl subscribe` runs: the volume is then event-driven, not polled
+        self.volume_watching = False
+        self.volume_read_pending = False
         if settings["volume-subscribe"] and "volume" in settings["components"] and commands["pactl"]:
             threading.Thread(target=self.volume_watcher, daemon=True).start()
 
@@ -117,13 +128,22 @@ class Controls(Gtk.EventBox):
         while True:
             try:
                 proc = popen_watcher(["pactl", "subscribe"], env=env)
+                self.volume_watching = True
                 for line in proc.stdout:
-                    if "on sink" in line or "on server" in line:
-                        GLib.idle_add(self.update_volume, get_volume())
+                    if ("on sink" in line or "on server" in line) and not self.volume_read_pending:
+                        # dragging a slider or starting a stream sends dozens of events: read the
+                        # volume once, shortly after the first one (2 pactl processes per read)
+                        self.volume_read_pending = True
+                        threading.Timer(0.1, self.read_volume_after_event).start()
                 proc.wait()
             except Exception as e:
                 eprint(f"Controls: pactl subscribe failed ({e})")
+            self.volume_watching = False
             time.sleep(5)  # pulseaudio/pipewire restarted: resubscribe
+
+    def read_volume_after_event(self):
+        self.volume_read_pending = False
+        GLib.idle_add(self.update_volume, get_volume())
 
     def build_box(self):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
@@ -152,21 +172,39 @@ class Controls(Gtk.EventBox):
         # Some monitors accept DDC/CI writes but always report the same value back:
         # with "backlight-poll": false the value is read once, then only our own changes count.
         if "brightness" in self.settings["components"] and (
-                self.settings["backlight-poll"] or not self.bri_read):
+                self.settings["backlight-poll"] or not self.bri_read) and self.brightness_due():
             try:
                 self.bri_value = get_brightness(
                     device=self.settings["backlight-device"],
                     controller=self.settings["backlight-controller"])
                 self.bri_read = True  # only once it succeeded
+                self.bri_failures = 0
                 GLib.idle_add(self.update_brightness)
             except Exception as e:
-                eprint(e)
+                self.bri_failures += 1
+                if self.bri_failures <= BRIGHTNESS_MAX_FAILURES:
+                    eprint(e)
+                if self.bri_failures == BRIGHTNESS_MAX_FAILURES:
+                    eprint(f"Controls: brightness unavailable, now retrying every {BRIGHTNESS_RETRY_S} s")
 
-        if "volume" in self.settings["components"] and (commands["pamixer"] or commands["pactl"]):
+        # with `pactl subscribe` running, polling would only spawn 2 pactl processes per interval
+        if "volume" in self.settings["components"] and (commands["pamixer"] or commands["pactl"]) \
+                and not self.volume_watching:
             try:
                 GLib.idle_add(self.update_volume, get_volume())
             except Exception as e:
                 print(e)
+
+    def brightness_due(self):
+        """After repeated failures (no backlight: desktop, HDMI...), only retry now and then
+        instead of spawning a failing command and logging an error at every interval."""
+        if self.bri_failures < BRIGHTNESS_MAX_FAILURES:
+            return True
+        now = time.monotonic()
+        if now - self.bri_last_retry >= BRIGHTNESS_RETRY_S:
+            self.bri_last_retry = now
+            return True
+        return False
 
     def refresh_bat_output(self):
         if "battery" in self.settings["components"]:
@@ -302,6 +340,8 @@ class PopupWindow(Gtk.Window):
 
         self.bri_scale = None
         self.bri_scale_handler = None
+        self.refresh_scheduled = False
+        self.refresh_count = 0
         self.vol_scale = None
         self.vol_scale_handler = None
 
@@ -593,13 +633,27 @@ class PopupWindow(Gtk.Window):
                 e_box.connect('button-release-event', self.switch_menu_box)
 
         self.refresh(True)
+        # the refresh timer stops while the popup is hidden: restart it when shown
+        self.connect("show", lambda *args: self.schedule_refresh())
 
     def get_balance(self):
         self.balance = get_balance()
         print("Audio balance", self.balance)
 
     def schedule_refresh(self):
-        Gdk.threads_add_timeout(GLib.PRIORITY_LOW, 500, self.refresh, (True,))
+        # one timer at a time, and only while the popup is shown: it used to wake up twice a
+        # second for the whole session, and every popup_at/show added nothing but every call to
+        # refresh(True) could start another chain
+        if self.refresh_scheduled:
+            return
+        self.refresh_scheduled = True
+        Gdk.threads_add_timeout(GLib.PRIORITY_LOW, 500, self.scheduled_refresh)
+
+    def scheduled_refresh(self, *args):
+        self.refresh_scheduled = False
+        if self.get_visible():
+            self.refresh(True)
+        return False
 
     def set_up_bcg_window(self):
         self.bcg_window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
@@ -705,8 +759,9 @@ class PopupWindow(Gtk.Window):
 
     def refresh(self, schedule=False):
         if self.get_visible():
-            self.refresh_sinks()
-            # self.parent.refresh_output()
+            # (refresh_sinks() was called here: 2 pactl processes every 500 ms for a list nobody
+            # reads; the sink menu lists sinks itself when it is opened)
+            self.refresh_count += 1
 
             if "battery" in self.settings["components"]:
                 if self.parent.bat_icon_name != self.bat_icon_name:
@@ -716,14 +771,18 @@ class PopupWindow(Gtk.Window):
                 self.bat_label.set_text("{}% {}".format(self.parent.bat_value, self.parent.bat_time))
 
             if "volume" in self.settings["components"] and (commands["pamixer"] or commands["pactl"]):
-                self.vol_scale.set_value(self.parent.vol_value)
+                # without handler_block, set_value() fired set_vol(): a refresh wrote the volume
+                # back with pactl, and clamped e.g. 120 % to the slider maximum
+                with self.vol_scale.handler_block(self.vol_scale_handler):
+                    self.vol_scale.set_value(self.parent.vol_value)
                 if self.parent.vol_icon_name != self.vol_icon_name:
                     update_image(self.vol_image, self.parent.vol_icon_name, self.icon_size, self.icons_path)
                     self.vol_icon_name = self.parent.vol_icon_name
                 self.vol_scale.set_draw_value(
                     False if self.parent.vol_value > 100 else True)  # Don't display val out of scale
 
-            if "per-app-volume" in self.settings["components"] and commands["pactl"]:
+            if "per-app-volume" in self.settings["components"] and commands["pactl"] \
+                    and (schedule is False or self.refresh_count % SINK_INPUTS_EVERY == 1):
                 # list input numbers we already have a slider for
                 already_have_slider = []
                 for s in self.per_app_sliders:
@@ -775,7 +834,9 @@ class PopupWindow(Gtk.Window):
 
             if "brightness" in self.settings["components"]:
                 if not self.value_changed:
-                    self.bri_scale.set_value(self.parent.bri_value)
+                    # same as volume: a refresh must not send the value back to the backlight
+                    with self.bri_scale.handler_block(self.bri_scale_handler):
+                        self.bri_scale.set_value(self.parent.bri_value)
                 if self.parent.bri_icon_name != self.bri_icon_name:
                     update_image(self.bri_image, self.parent.bri_icon_name, self.icon_size, self.icons_path)
                     self.bri_icon_name = self.parent.bri_icon_name
