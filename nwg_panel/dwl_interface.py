@@ -18,6 +18,41 @@ import json
 from time import sleep
 
 
+_panel_pids = []
+
+
+def panel_pids():
+    """PIDs of our running nwg-panel instances (cached; the /proc scan only happens when they change)."""
+    global _panel_pids
+    alive = []
+    for pid in _panel_pids:
+        try:
+            os.kill(pid, 0)
+            alive.append(pid)
+        except OSError:
+            pass
+    if alive:
+        return alive
+
+    uid = os.getuid()
+    for entry in os.listdir("/proc"):
+        if not entry.isdigit():
+            continue
+        try:
+            if os.stat(f"/proc/{entry}").st_uid != uid:
+                continue
+            with open(f"/proc/{entry}/cmdline", "rb") as f:
+                argv = f.read().split(b"\0")
+        except OSError:
+            continue
+        # `nwg-panel ...` or `python3 /usr/bin/nwg-panel ...`; not `nwg-panel-config`, nor an editor
+        # opened on `~/.config/nwg-panel/style.css`
+        if any(os.path.basename(a) == b"nwg-panel" for a in argv[:2]):
+            alive.append(int(entry))
+    _panel_pids = alive
+    return alive
+
+
 def is_command(cmd):
     cmd = cmd.split()[0]  # strip arguments
     cmd = "command -v {}".format(cmd)
@@ -138,7 +173,13 @@ def main():
             with open(output_file, 'w') as fp:
                 json.dump(data, fp, indent=4)
 
-            subprocess.Popen("pkill -f -{} nwg-panel".format(refresh_signal), shell=True)
+            # was `pkill -f -SIG nwg-panel`: 2 forks per update, and SIGUSR1 (default action: terminate)
+            # sent to any process whose command line merely contains "nwg-panel"
+            for pid in panel_pids():
+                try:
+                    os.kill(pid, int(refresh_signal))
+                except OSError:
+                    pass
             cnt = 0
 
 

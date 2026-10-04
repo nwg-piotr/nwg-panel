@@ -327,13 +327,13 @@ def load_vocabulary():
                     voc[key] = loc[key]
 
 
-def signal_handler(sig, frame):
-    desc = {2: "SIGINT", 15: "SIGTERM"}
-    if sig == 2 or sig == 15:
-        print("Terminated with {}".format(desc[sig]))
-        Gtk.main_quit()
-    else:
-        eprint("{} signal received".format(sig))
+def signal_handler(sig):
+    """Runs on the GTK main loop (GLib.unix_signal_add)."""
+    print("Terminated with {}".format(signal.Signals(sig).name))
+    # quit from an idle callback: with PyGObject >= 3.50, Gtk.main_quit() called directly from a
+    # GLib signal source does not stop Gtk.main()
+    GLib.idle_add(Gtk.main_quit)
+    return True
 
 
 def rt_sig_handler(sig, frame):
@@ -5130,9 +5130,10 @@ def main():
     global selector_window
     selector_window = PanelSelector()
 
-    catchable_sigs = set(signal.Signals) - {signal.SIGKILL, signal.SIGSTOP}
-    for sig in catchable_sigs:
-        signal.signal(sig, signal_handler)
+    # Only the signals we use: catching SIGSEGV & co. turned a native crash into a 100% CPU loop,
+    # and catching SIGCHLD logged every finished subprocess.
+    for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+        GLib.unix_signal_add(GLib.PRIORITY_HIGH, sig, signal_handler, sig)
 
     for sig in range(signal.SIGRTMIN, signal.SIGRTMAX + 1):
         try:

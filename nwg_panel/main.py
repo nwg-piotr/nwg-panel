@@ -133,22 +133,29 @@ def load_vocabulary():
                     voc[key] = loc[key]
 
 
-def signal_handler(sig, frame):
-    global sig_dwl
-    desc = {2: "SIGINT", 15: "SIGTERM", 10: "SIGUSR1"}
-    if sig == 2 or sig == 15:
-        print("Terminated with {}".format(desc[sig]))
+def signal_handler(sig):
+    """Runs on the GTK main loop (GLib.unix_signal_add), never inside a raw signal context."""
+    if sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+        print("Terminated with {}".format(signal.Signals(sig).name))
         if tray_available:
             sni_system_tray.deinit_tray()
-        Gtk.main_quit()
+        # quit from an idle callback: with PyGObject >= 3.50, Gtk.main_quit() called directly from a
+        # GLib signal source does not stop Gtk.main()
+        GLib.idle_add(Gtk.main_quit)
     elif sig == sig_dwl:
         refresh_dwl()
-    else:
-        return
+    return True  # keep the handler installed
 
 
 def rt_sig_handler(sig, frame):
+    # Python runs this between two bytecodes of the main thread; do the GTK work on the main loop.
+    GLib.idle_add(handle_rt_signal, sig)
+
+
+def handle_rt_signal(sig):
     print("{} RT signal received".format(sig))
+    if sig == sig_dwl:  # -sigdwl may be a real-time signal
+        refresh_dwl()
     for executor in common.executors_list:
         if executor.use_sigrt and executor.sigrt == sig:
             eprint("Refreshing {} on signal {}".format(executor.name, sig))
@@ -160,6 +167,7 @@ def rt_sig_handler(sig, frame):
                 win.hide()
             else:
                 win.show()
+    return False
 
 
 def restart():
@@ -615,17 +623,20 @@ def main():
     own_pid = os.getpid()
     running_instances = []
 
-    for proc in psutil.process_iter(['pid', 'name']):
+    own_uid = os.getuid()
+    for proc in psutil.process_iter(['pid', 'name', 'uids']):
         name = proc.info['name']
-        if name and "nwg-panel" in name and "-con" not in name:
+        uids = proc.info['uids']
+        # only our own instances: other users' panels (multi-seat, fast user switching) are not ours to kill
+        if name and "nwg-panel" in name and "-con" not in name and uids and uids.real == own_uid:
             pid = proc.info['pid']
             if pid != own_pid:
                 running_instances.append(pid)
                 print(f"Running instance found, PID {pid}, sending SIGINT")
                 try:
                     os.kill(pid, signal.SIGINT)
-                except ProcessLookupError:
-                    continue  # Process already dead
+                except (ProcessLookupError, PermissionError):
+                    continue  # already dead, or not ours
 
     # Wait for clean shutdown (max 3 seconds)
     max_wait = 3.0
@@ -653,10 +664,12 @@ def main():
     if os.path.isfile(pid_file):
         try:
             pid = int(load_text_file(pid_file))
-            if psutil.pid_exists(pid):
+            # the PID may have been reused since: only kill an nwg-panel of ours, never ourselves
+            p = psutil.Process(pid)
+            if pid != own_pid and "nwg-panel" in " ".join(p.cmdline()) and p.uids().real == own_uid:
                 print(f"Unnamed instance found via PID file, killing PID {pid}")
                 os.kill(pid, signal.SIGKILL)
-        except:
+        except Exception:
             pass
 
     # Warn if KDE's background daemon is running
@@ -700,10 +713,12 @@ def main():
     global sig_dwl
     sig_dwl = args.sigdwl
 
-    catchable_sigs = set(signal.Signals) - {signal.SIGKILL, signal.SIGSTOP, signal.SIGCHLD}
-    for sig in catchable_sigs:
+    # Only the signals we use. Catching everything (SIGSEGV, SIGBUS, SIGFPE, SIGILL included) turned
+    # a crash in a C library into an endless loop at 100% CPU instead of a clean exit, and made
+    # SIGHUP/SIGQUIT do nothing. SIGUSR1/SIGUSR2 keep being ignored unless used for dwl.
+    for sig in {signal.SIGINT, signal.SIGTERM, signal.SIGHUP, signal.SIGUSR1, signal.SIGUSR2, sig_dwl}:
         try:
-            signal.signal(sig, signal_handler)
+            GLib.unix_signal_add(GLib.PRIORITY_HIGH, sig, signal_handler, sig)
         except Exception as exc:
             eprint("{} subscription error: {}".format(sig, exc))
 
