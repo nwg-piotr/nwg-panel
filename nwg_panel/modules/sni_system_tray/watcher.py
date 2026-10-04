@@ -1,3 +1,4 @@
+import os
 import typing
 
 from dasbus.connection import SessionMessageBus
@@ -206,11 +207,18 @@ class StatusNotifierWatcherInterface(object):
             self.PropertiesChanged.emit(WATCHER_SERVICE_NAME, {
                 "IsStatusNotifierHostRegistered": dasbus.typing.get_variant(dasbus.typing.Bool, False)
             }, [])
-        # deinit on host (parent process) unavailable to avoid becoming zombie process
-        deinit()
+        # Quit once the panel that started us is gone, to avoid an orphan watcher. Any other host
+        # leaving (a second nwg-panel instance...) must not take the tray down with it.
+        if os.getppid() != _parent_pid:
+            deinit()
+
+
+_parent_pid = os.getppid()
 
 
 def init():
+    global _parent_pid
+    _parent_pid = os.getppid()
     session_bus = SessionMessageBus()
     session_bus.publish_object(WATCHER_OBJECT_PATH, StatusNotifierWatcherInterface())
     session_bus.register_service(WATCHER_SERVICE_NAME)

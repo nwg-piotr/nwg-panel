@@ -15,7 +15,7 @@ HOST_OBJECT_PATH_TEMPLATE = "/StatusNotifierHost/{}"
 
 def get_service_name_and_object_path(service: str) -> (str, str):
     index = service.find("/")
-    if index != len(service):
+    if index != -1:
         return service[0:index], service[index:]
     return service, "/StatusNotifierItem"
 
@@ -64,8 +64,15 @@ class StatusNotifierHostInterface(object):
 
     def watcher_unavailable_handler(self, _observer):
         # print("StatusNotifierHostInterface -> watcher_unavailable_handler")
+        # The next watcher re-announces the items: drop the current ones from the trays too,
+        # they were left on screen, frozen.
+        for item in self._statusNotifierItems:
+            for tray in self.trays:
+                tray.remove_item(item)
+            item.destroy()
         self._statusNotifierItems.clear()
-        disconnect_proxy(self.watcher_proxy)
+        if self.watcher_proxy is not None:
+            disconnect_proxy(self.watcher_proxy)
         self.watcher_proxy = None
 
     def item_registered_handler(self, full_service_service):
@@ -93,6 +100,8 @@ class StatusNotifierHostInterface(object):
             self._statusNotifierItems.remove(item)
             for tray in self.trays:
                 tray.remove_item(item)
+            # release its D-Bus subscriptions and name watch: nothing else ever did
+            item.destroy()
 
     def find_item(self, service_name, object_path) -> typing.Union[StatusNotifierItem, None]:
         for item in self._statusNotifierItems:
@@ -110,5 +119,9 @@ class StatusNotifierHostInterface(object):
             tray.update_item(item, changed_properties)
 
 
+_host = None
+
+
 def init(host_id, trays: typing.List[Tray]):
-    _status_notifier_host_interface = StatusNotifierHostInterface(host_id, trays)
+    global _host
+    _host = StatusNotifierHostInterface(host_id, trays)
