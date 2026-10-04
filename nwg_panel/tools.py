@@ -10,6 +10,7 @@ import socket
 import threading
 import re
 import glob
+from unittest import result
 
 import gi
 
@@ -224,7 +225,7 @@ def list_outputs(sway=False, silent=False):
                 outputs_dict[item["name"]]["width"] = item["height"]
                 outputs_dict[item["name"]]["height"] = item["width"]
 
-    elif os.getenv('NIRI_SOCKET'):
+    elif os.getenv('NIRI_SOCKET') is not None:
         if not silent:
             print("Running on Niri")
         cmd = "niri msg -j outputs"
@@ -254,58 +255,32 @@ def list_outputs(sway=False, silent=False):
                 outputs_dict[outputs[item]["name"]]["width"] = h
                 outputs_dict[outputs[item]["name"]]["height"] = w
 
+
     elif os.getenv('WAYLAND_DISPLAY') is not None:
         if not silent:
-            print("Running on Wayland, but neither sway nor Hyprland")
-        if nwg_panel.common.commands["wlr-randr"]:
-            lines = subprocess.check_output("wlr-randr", shell=True).decode("utf-8").strip().splitlines()
-            if lines:
-                name, description, w, h, x, y, transform, scale = None, None, None, None, None, None, None, 1.0
-                for line in lines:
-                    if not line.startswith(" "):
-                        name = line.split()[0]
-                        description = line.split()[1]
-                    elif "current" in line:
-                        w_h = line.split()[0].split('x')
-                        w = int(w_h[0])
-                        h = int(w_h[1])
-                    elif "Transform" in line:
-                        transform = line.split()[1].strip()
-                    elif "Position" in line:
-                        x_y = line.split()[1].split(',')
-                        x = int(x_y[0])
-                        y = int(x_y[1])
-                    elif "Scale" in line:
-                        try:
-                            scale = float(line.split()[1])
-                        except ValueError:
-                            scale = 1.0
+            print("Running on Wayland, but neither sway, nor Hyprland, nor Niri")
+            if os.getenv('MANGO_INSTANCE_SIGNATURE') is not None:
+                print("MangoWM detected, but we'll use wlr-randr anyway, as 'mmsg get all-monitors' does not return enough info")
 
-                    if name is not None and w is not None and h is not None and x is not None and y is not None \
-                            and transform is not None:
-                        if transform == "normal":  # which other values it returns for not rotated displays?
-                            outputs_dict[name] = {'name': name,
-                                                  'x': x,
-                                                  'y': y,
-                                                  'width': int(w / scale),
-                                                  'height': int(h / scale),
-                                                  'transform': transform,
-                                                  'description': description,
-                                                  'monitor': None}
-                        else:
-                            outputs_dict[name] = {'name': name,
-                                                  'x': x,
-                                                  'y': y,
-                                                  'width': int(h / scale),
-                                                  'height': int(w / scale),
-                                                  'transform': transform,
-                                                  'description': description,
-                                                  'scale': scale,
-                                                  'monitor': None}
-                        # Each monitor only has a single transform, this is to avoid parsing the same monitor multiple times
-                        # Disabled monitors don't have transforms.
-                        # Gdk doesn't report disabled monitors, not filtering them would cause crashes
-                        transform = None
+        if nwg_panel.common.commands["wlr-randr"]:
+            res = subprocess.check_output("wlr-randr --json", shell=True).decode("utf-8").strip()
+            outputs = json.loads(res)
+            for o in outputs:
+                name = o.get("name", "")
+                outputs_dict[name] = {}
+                outputs_dict[name]["name"] = name
+                outputs_dict[name]["description"] = f"{o["make"] } {o["model"]} {o["serial"]}"
+                for mode in o["modes"]:
+                    if mode["current"]:
+                        outputs_dict[name]["width"] = mode["width"]
+                        outputs_dict[name]["height"] = mode["height"]
+                        break
+                outputs_dict[name]["transform"] = o["transform"]
+                outputs_dict[name]["x"] = o["position"]["x"]
+                outputs_dict[name]["y"] = o["position"]["y"]
+                outputs_dict[name]["transform"] = o["transform"]
+                outputs_dict[name]["scale"] = float(o["scale"])
+
         else:
             print("'wlr-randr' command not found, terminating")
             sys.exit(1)

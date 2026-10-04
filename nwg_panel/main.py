@@ -741,7 +741,6 @@ def main():
     print("Outputs:")
     for key in common.outputs:
         print(key, common.outputs[key])
-    print(f"Descriptions: {common.mon_desc2output_name}")
 
     try:
         # Check if config is not an emtpy file
