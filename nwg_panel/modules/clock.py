@@ -84,19 +84,31 @@ class Clock(Gtk.EventBox):
         self.build_box()
         self.refresh()
 
-    def update_widget(self, output, tooltip=""):
-        self.label.set_text(output)
-        if self.settings["tooltip-date-format"] and tooltip:
-            self.set_tooltip_text(tooltip)
+    def update_widget(self, output, tooltip="", has_note=False):
+        # Runs on the GTK main thread (via GLib.idle_add): all widget changes go here.
+        if output is not None:
+            self.label.set_text(output)
+            if self.settings["tooltip-date-format"] and tooltip:
+                self.set_tooltip_text(tooltip)
+
+        if has_note:
+            if not self.reminder_img_updated:
+                update_image(self.reminder_img, "gtk-apply", self.settings["calendar-icon-size"], self.icons_path)
+                self.reminder_img_updated = True
+            self.reminder_img.set_visible(True)
+        else:
+            self.reminder_img.set_visible(False)
 
         return False
 
     def get_output(self):
+        # Runs in a background thread: compute only, never touch GTK widgets here
+        # (concurrent GTK calls can corrupt the window's redraw region and hang the panel).
         now = datetime.now()
+        time, tooltip = None, ""
         try:
             time = now.strftime(self.settings["format"])
             tooltip = now.strftime(self.settings["tooltip-text"]) if self.settings["tooltip-date-format"] else ""
-            GLib.idle_add(self.update_widget, time, tooltip)
         except Exception as e:
             print(e)
 
@@ -108,13 +120,7 @@ class Clock(Gtk.EventBox):
         except:
             m = None
         d = ymd[2]
-        if self.has_note(y, m, d):
-            if not self.reminder_img_updated:
-                update_image(self.reminder_img, "gtk-apply", self.settings["calendar-icon-size"], self.icons_path)
-                self.reminder_img_updated = True
-            self.reminder_img.set_visible(True)
-        else:
-            self.reminder_img.set_visible(False)
+        GLib.idle_add(self.update_widget, time, tooltip, self.has_note(y, m, d))
 
     def refresh(self):
         thread = create_background_task(self.get_output, self.settings["interval"])
