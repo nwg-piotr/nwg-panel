@@ -122,5 +122,8 @@ class MangoWatcher:
             all_clients = get_mango_ipc("get all-clients")
             item.refresh(all_monitors=all_monitors, all_tags=all_tags, all_clients=all_clients)
 
+        for item in common.keyboard_layouts_list:
+            item.refresh()
+
         # Returning False ensures idle_add removes this one-time task
         return False

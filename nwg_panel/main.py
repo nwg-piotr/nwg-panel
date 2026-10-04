@@ -228,7 +228,7 @@ def hypr_watcher():
         # keyboard layout changed (e.g. Alt+Shift): refresh KeyboardLayout modules, no polling needed
         if "activelayout" in event_names:
             for item in common.kb_layouts_list:
-                GLib.idle_add(item.update_label)
+                GLib.idle_add(item.refresh)
         # print(f"events: {event_names}")
 
         for event_name in event_names:
@@ -267,7 +267,7 @@ def hypr_watcher():
 _niri_refresh_queued = False
 
 
-def _do_niri_refresh():
+def _do_niri_refresh(event_name):
     global _niri_refresh_queued
 
     # get Niri state once for all Taskbar and Workspaces instances
@@ -278,6 +278,10 @@ def _do_niri_refresh():
 
     for item in common.niri_workspaces_list:
         item.refresh(outputs, workspaces, windows, focused_window)
+
+    if event_name == "KeyboardLayoutSwitched":
+        for item in common.keyboard_layouts_list:
+            item.refresh()
 
     _niri_refresh_queued = False
     return False  # False removes function from the idle_add queue
@@ -312,12 +316,13 @@ def niri_watcher():
                                   "WindowClosed",
                                   "WorkspaceActiveWindowChanged",
                                   "WorkspaceActivated",
-                                  "WorkspacesChanged"]:
+                                  "WorkspacesChanged",
+                                  "KeyboardLayoutSwitched"]:
 
                     # Refresh in the nearest GTK idle cycle
                     if not _niri_refresh_queued:
                         _niri_refresh_queued = True
-                        GLib.idle_add(_do_niri_refresh)
+                        GLib.idle_add(_do_niri_refresh, event_name)
 
             except json.JSONDecodeError as e:
                 print("niri_watcher: failed to decode JSON:", e)
@@ -489,11 +494,12 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                 eprint("HyprlandSubmap module only works on Hyprland, ignoring")
 
         if item == "keyboard-layout":
-            if his or sway or niri_sock:
+            if his or sway or niri_sock or mis:
                 if "keyboard-layout" not in panel:
                     panel["keyboard-layout"] = {}
                 kb_layout = KeyboardLayout(panel["keyboard-layout"], icons_path)
                 container.pack_start(kb_layout, False, False, panel["items-padding"])
+                common.keyboard_layouts_list.append(kb_layout)
             else:
                 eprint("KeyboardLayout module does not yet support your compositor")
 
