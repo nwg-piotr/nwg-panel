@@ -32,6 +32,7 @@ class Controls(Gtk.EventBox):
         defaults = {
             "show-brightness": False,
             "backlight-poll": True,
+            "backlight-max": 100,
             "show-volume": False,
             "show-battery": True,
             "icon-size": 16,
@@ -796,7 +797,10 @@ class PopupWindow(Gtk.Window):
     def set_bri(self, slider):
         self.parent.bri_value = int(slider.get_value())
         self.parent.update_brightness(get=False)
-        set_brightness(self.parent.bri_value, device=self.settings["backlight-device"],
+        # "backlight-max" caps the value actually sent (the slider and label keep 0-100):
+        # some monitors ignore a DDC/CI write equal to the value they (wrongly) report, e.g. 100.
+        set_brightness(min(self.parent.bri_value, self.settings["backlight-max"]),
+                       device=self.settings["backlight-device"],
                        controller=self.settings["backlight-controller"])
 
     def on_button_release(self, scale, event):
