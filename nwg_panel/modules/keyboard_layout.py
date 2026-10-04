@@ -4,8 +4,8 @@ import os
 
 import gi
 
-from nwg_panel.tools import check_key, update_image, create_background_task, eprint, hyprctl, niri_keyboard_layouts, \
-    niri_ipc
+from nwg_panel.tools import check_key, update_image, eprint, hyprctl, niri_keyboard_layouts, niri_ipc
+from nwg_panel.mango_ipc import get_mango_ipc
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -47,9 +47,11 @@ class KeyboardLayout(Gtk.EventBox):
             self.compositor = "Hyprland"
         elif os.getenv("NIRI_SOCKET"):
             self.compositor = "niri"
+        elif os.getenv("MANGO_INSTANCE_SIGNATURE"):
+            self.compositor = "mango"
         else:
             self.compositor = ""
-            eprint("KeyboardLayout module only supports sway, Hyprland or Niri")
+            eprint("KeyboardLayout module only supports sway, Hyprland, Niri and Mango")
 
         if self.compositor:
             self.keyboards = self.list_keyboards()
@@ -57,6 +59,8 @@ class KeyboardLayout(Gtk.EventBox):
                 self.keyboard_names = []
                 for k in self.keyboards:
                     if self.compositor == "Hyprland":
+                        self.keyboard_names.append(k["name"])
+                    elif self.compositor == "mango":
                         self.keyboard_names.append(k["name"])
                     # On sway some devices may be listed twice, let's add them just once
                     elif k.identifier not in self.keyboard_names:
@@ -124,6 +128,12 @@ class KeyboardLayout(Gtk.EventBox):
             for i in inputs:
                 if i.type == "keyboard":
                     keyboards.append(i)
+        elif self.compositor == "mango":
+            keyboards = []
+            devices = get_mango_ipc("get all-devices")["devices"]
+            for d in devices:
+                if "keyboard" in d["types"]:
+                    keyboards.append(d)
         else:
             keyboards = []
 
@@ -146,6 +156,9 @@ class KeyboardLayout(Gtk.EventBox):
             return layout_names
         elif self.compositor == "niri":
             return niri_keyboard_layouts()["names"]
+        elif self.compositor == "mango":
+            # we don't seem to have a way to get all layouts on Mango
+            return []
         else:
             return []
 
@@ -174,6 +187,8 @@ class KeyboardLayout(Gtk.EventBox):
         elif self.compositor == "niri":
             nkl = niri_keyboard_layouts()
             return nkl["names"][nkl["current_idx"]]
+        elif self.compositor == "mango":
+            return get_mango_ipc("get keyboardlayout").get("layout", "")
         else:
             return "unknown"
 
@@ -187,8 +202,7 @@ class KeyboardLayout(Gtk.EventBox):
         return False
 
     def refresh(self, *args):
-        thread = create_background_task(self.update_label, self.settings["interval"])
-        thread.start()
+        self.update_label()
 
     def build_box(self):
         if self.settings["show-icon"] and self.settings["icon-placement"] == "left":
@@ -218,6 +232,8 @@ class KeyboardLayout(Gtk.EventBox):
         elif self.compositor == "niri":
             command = {"Action":{"SwitchLayout":{"layout":"Next"}}}
             niri_ipc(json.dumps(command), is_json=True)
+        elif self.compositor == "mango":
+            get_mango_ipc("dispatch  switch_keyboard_layout")
 
         self.update_label()
 
@@ -239,15 +255,16 @@ class KeyboardLayout(Gtk.EventBox):
         self.update_label()
 
     def on_right_click(self):
-        menu = Gtk.Menu()
-        menu.connect("popped-up", on_menu_popped_up, self)
-        for i in range(len(self.kb_layouts)):
-            item = Gtk.MenuItem.new_with_label(self.kb_layouts[i])
-            item.connect("activate", self.on_menu_item, i)
-            menu.append(item)
-        menu.set_reserve_toggle_size(False)
-        menu.show_all()
-        menu.popup_at_widget(self.label, Gdk.Gravity.STATIC, Gdk.Gravity.STATIC, None)
+        if self.kb_layouts:
+            menu = Gtk.Menu()
+            menu.connect("popped-up", on_menu_popped_up, self)
+            for i in range(len(self.kb_layouts)):
+                item = Gtk.MenuItem.new_with_label(self.kb_layouts[i])
+                item.connect("activate", self.on_menu_item, i)
+                menu.append(item)
+            menu.set_reserve_toggle_size(False)
+            menu.show_all()
+            menu.popup_at_widget(self.label, Gdk.Gravity.STATIC, Gdk.Gravity.STATIC, None)
 
 
     def on_button_release(self, widget, event):
