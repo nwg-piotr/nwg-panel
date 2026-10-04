@@ -6,7 +6,7 @@ from gi.repository import GLib
 import subprocess
 from datetime import datetime
 
-from nwg_panel.tools import (check_key, eprint, local_dir, load_json, save_json, update_image, update_gtk_entry,
+from nwg_panel.tools import (check_key, eprint, local_dir, load_json_strict, save_json, update_image, update_gtk_entry,
                              create_background_task, cmd_through_compositor)
 
 import gi
@@ -59,6 +59,7 @@ class Clock(Gtk.EventBox):
         self.reminder_img = Gtk.Image()
 
         self.calendar = {}
+        self.calendar_unreadable = False
 
         self.set_property("name", settings["root-css-name"])
         self.label.set_property("name", settings["css-name"])
@@ -280,23 +281,38 @@ class Clock(Gtk.EventBox):
                                     note = self.calendar[key_year][key_month][key_day]
                                     if note:
                                         c[key_year][key_month][key_day] = note
-        save_json(c, self.path)
+        if self.calendar_unreadable:
+            # never overwrite notes we could not read (file being synced, corrupted...)
+            eprint("Calendar: '{}' could not be read, not saving over it".format(self.path))
+        else:
+            save_json(c, self.path)
         self.popup.destroy()
+
+    def read_calendar(self, path):
+        """load_json() returned {} on any error, and its "is None" test never matched: a calendar
+        read while being written (Syncthing, another panel...) came back empty, and the next
+        note saved over all the others. An unreadable file now keeps the notes in memory and
+        blocks saving until it can be read again."""
+        c = load_json_strict(path)
+        if c is None:
+            self.calendar_unreadable = True
+            return False
+        self.calendar_unreadable = False
+        self.calendar = c
+        return True
 
     def load_calendar(self):
         if self.settings["calendar-path"]:
             self.path = self.settings["calendar-path"]
-            c = load_json(self.path)
-            if c is not None:
-                self.calendar = c
+            if os.path.isfile(self.path):
+                self.read_calendar(self.path)
+                return True
+            result = save_json(self.calendar, self.path)
+            if result == "ok":
+                print("Created new calendar file at '{}'".format(self.path))
                 return True
             else:
-                result = save_json(self.calendar, self.path)
-                if result == "ok":
-                    print("Created new calendar file at '{}'".format(self.path))
-                    return True
-                else:
-                    eprint("Couldn't create '{}': {}. Using default path.".format(self.path, result))
+                eprint("Couldn't create '{}': {}. Using default path.".format(self.path, result))
 
         self.path = os.path.join(local_dir(), "calendar.json")
         if not os.path.isfile(self.path):
@@ -305,8 +321,7 @@ class Clock(Gtk.EventBox):
                 print("Created new calendar file at '{}'".format(self.path))
             else:
                 eprint("Couldn't create '{}': {}. No more idea...".format(self.path, result))
-        c = load_json(self.path)
-        self.calendar = c
+        self.read_calendar(self.path)
 
     def reload_calendar(self):
         if not self.popup or not self.popup.is_visible():

@@ -3,6 +3,7 @@
 import os
 import sys
 import json
+import shutil
 import subprocess
 import stat
 import time
@@ -135,12 +136,40 @@ def load_json(path):
 
 
 def save_json(src_dict, path):
+    """Write atomically: a temporary file in the same directory, flushed to disk, then renamed
+    over the target. A crash, a power cut or a full disk (SD cards...) while writing used to
+    leave a truncated or empty file: the panel configs, common settings or the calendar then
+    loaded as {} and the next save made the loss permanent."""
+    tmp = "{}.tmp-{}".format(path, os.getpid())
     try:
-        with open(path, 'w') as f:
+        with open(tmp, 'w') as f:
             json.dump(src_dict, f, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
+        if os.path.exists(path):
+            shutil.copymode(path, tmp)
+        os.replace(tmp, path)
         return "ok"
     except Exception as e:
+        eprint("Error saving json to {}: {}".format(path, e))
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
         return e
+
+
+def load_json_strict(path):
+    """Like load_json(), but None when the file exists and cannot be read or parsed, so that
+    callers can tell "empty" from "unreadable" and avoid saving over a file they never read."""
+    try:
+        with open(path, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+    except Exception as e:
+        eprint("Error loading json {}: {}".format(path, e))
+        return None
 
 
 def save_string(string, file):
