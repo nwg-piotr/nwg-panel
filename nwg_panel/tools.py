@@ -399,7 +399,12 @@ def create_background_task(target, interval, args=(), kwargs=None):
     def loop_wrapper():
         if interval > 0:
             while True:
-                target(*args, **kwargs)
+                try:
+                    target(*args, **kwargs)
+                except Exception as e:
+                    # one exception (e.g. hyprctl returning "" during a restart) used to kill the
+                    # polling loop for good: the module then never refreshed again
+                    eprint("{}: {}: {}".format(getattr(target, "__qualname__", target), type(e).__name__, e))
                 time.sleep(interval)
         else:
             target(*args, **kwargs)
@@ -1000,37 +1005,41 @@ def get_mango_socket_path():
 def h_list_monitors():
     reply = hyprctl("j/monitors")
     try:
-        return json.loads(reply)
+        result = json.loads(reply)
+        return result if isinstance(result, list) else []
     except Exception as e:
         eprint(e)
-        return {}
+        return []  # callers iterate over it: {} gave them str keys
 
 
 def h_list_workspaces():
     reply = hyprctl("j/workspaces")
     try:
-        return json.loads(reply)
+        result = json.loads(reply)
+        return result if isinstance(result, list) else []
     except Exception as e:
         eprint(e)
-        return {}
+        return []  # callers iterate over it: {} gave them str keys
 
 
 def h_list_workspace_rules():
     reply = hyprctl("j/workspacerules")
     try:
-        return json.loads(reply)
+        result = json.loads(reply)
+        return result if isinstance(result, list) else []
     except Exception as e:
         eprint(e)
-        return {}
+        return []  # callers iterate over it: {} gave them str keys
 
 
 def h_list_clients():
     reply = hyprctl("j/clients")
     try:
-        return json.loads(reply)
+        result = json.loads(reply)
+        return result if isinstance(result, list) else []
     except Exception as e:
         eprint(e)
-        return {}
+        return []  # callers iterate over it: {} gave them str keys
 
 
 def h_get_activewindow():
