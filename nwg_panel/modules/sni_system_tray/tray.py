@@ -96,6 +96,14 @@ def update_status(event_box, item):
         event_box_style.add_class(status)
 
 
+SNI_CATEGORIES = ["ApplicationStatus", "Communications", "SystemServices", "Hardware"]
+
+
+def category_rank(item):
+    category = item.properties.get("Category", "ApplicationStatus")
+    return SNI_CATEGORIES.index(category) if category in SNI_CATEGORIES else 0
+
+
 class Tray(Gtk.EventBox):
     def __init__(self, settings, panel_position, icons_path=""):
         self.menu = None
@@ -108,6 +116,7 @@ class Tray(Gtk.EventBox):
         check_key(settings, "inner-css-name", "inner-tray")
         check_key(settings, "smooth-scrolling-threshold", 0)
         check_key(settings, "new-left", False)
+        check_key(settings, "sort-by-category", False)
 
         self.set_property("name", settings["root-css-name"])
 
@@ -145,7 +154,15 @@ class Tray(Gtk.EventBox):
             image.connect("query-tooltip", self.on_query_tooltip, item)
 
             event_box.add(image)
-            if not self.settings["new-left"]:
+            if self.settings["sort-by-category"]:
+                # Applications first, then communications, system services and hardware
+                # (network, volume, bluetooth...), each group in order of appearance.
+                event_box.category_rank = category_rank(item)
+                self.box.pack_start(event_box, False, False, 6)
+                position = sum(1 for child in self.box.get_children()
+                               if child is not event_box and getattr(child, "category_rank", 0) <= event_box.category_rank)
+                self.box.reorder_child(event_box, position)
+            elif not self.settings["new-left"]:
                 self.box.pack_start(event_box, False, False, 6)
             else:
                 self.box.pack_end(event_box, False, False, 6)
