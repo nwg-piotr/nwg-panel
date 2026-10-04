@@ -58,7 +58,8 @@ class BrightnessSlider(Gtk.EventBox):
 
         if settings["angle"] != 0.0:
             self.box.set_orientation(Gtk.Orientation.VERTICAL)
-            self.bri_label.set_angle(settings["angle"])
+            if self.bri_label:  # None with "show-values": false -> AttributeError on vertical panels
+                self.bri_label.set_angle(settings["angle"])
 
         # events
         self.connect('button-release-event', self.on_button_release)
@@ -219,9 +220,8 @@ class PopupWindow(Gtk.Window):
         Gtk.Widget.set_size_request(self.box, settings["popup-width"], settings["popup-height"])
 
         self.build_box()
+        # no own 500 ms timer: the parent calls refresh() whenever it has a new brightness value
 
-        Gdk.threads_add_timeout(GLib.PRIORITY_LOW, 500, self.refresh)
-    
     def build_box(self):
         if self.settings["popup-icon-placement"] == "start":
             self.box.pack_start(self.bri_image, False, False, 6)

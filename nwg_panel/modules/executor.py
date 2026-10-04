@@ -31,6 +31,7 @@ class Executor(Gtk.EventBox):
         self.dynamic_tooltip = False
         self.loop_started = False
         self.run_lock = threading.Lock()
+        self.rerun_pending = False  # a refresh requested while the script was running
         self.tooltip_image_path = None
         self.tooltip_image_key = None
         self.tooltip_box = None
@@ -192,13 +193,26 @@ class Executor(Gtk.EventBox):
 
     def get_output(self):
         if "script" in self.settings and self.settings["script"]:
-            # serialize runs: a signal-triggered refresh must not overlap the periodic one
-            with self.run_lock:
-                try:
-                    output = subprocess.check_output(self.settings["script"].split()).decode("utf-8").splitlines()
-                    GLib.idle_add(self.update_widget, output)
-                except Exception as e:
-                    print(e)
+            # serialize runs: a signal-triggered refresh must not overlap the periodic one. Requests that
+            # arrive while the script runs are merged into one rerun instead of piling up threads behind the lock.
+            if not self.run_lock.acquire(blocking=False):
+                self.rerun_pending = True
+                return
+            try:
+                # a script that never returns used to hold the lock (and a thread) forever
+                timeout = max(self.settings["interval"], 30) if self.settings["interval"] > 0 else 60
+                output = subprocess.check_output(self.settings["script"].split(), timeout=timeout) \
+                    .decode("utf-8", errors="replace").splitlines()
+                GLib.idle_add(self.update_widget, output)
+            except subprocess.TimeoutExpired:
+                print("Executor '{}': script timed out after {} s".format(self.name, timeout))
+            except Exception as e:
+                print(e)
+            finally:
+                self.run_lock.release()
+            if self.rerun_pending:
+                self.rerun_pending = False
+                self.get_output()
 
     def refresh(self):
         # The periodic loop is started once; later calls (RT signal) run the script once.

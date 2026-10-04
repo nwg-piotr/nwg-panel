@@ -363,7 +363,9 @@ def popen_watcher(args, **kwargs):
     Start a long-running helper whose stdout we follow (e.g. `pactl subscribe`, `swaync-client -s`).
     The child is terminated together with the panel instead of being left running as an orphan.
     """
-    return subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
+    # errors="replace": one invalid byte in a notification title or a sink name used to raise
+    # UnicodeDecodeError in the reader thread and silently end the subscription for good
+    return subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, errors="replace",
                             preexec_fn=_die_with_parent if sys.platform.startswith("linux") else None, **kwargs)
 
 
@@ -949,14 +951,16 @@ def niri_ipc(cmd, is_json=False):
             else:
                 client.send(f'{cmd}\n'.encode("utf-8"))
 
-            buffer = ""
+            # accumulate bytes: decoding 1024-byte chunks could split a multi-byte character
+            data = b""
             while True:
-                chunk = client.recv(1024).decode('utf-8', errors='replace')
+                chunk = client.recv(4096)
                 if not chunk:
                     break
-                buffer += chunk
-                if buffer.endswith('\n'):  # Detect end of message
+                data += chunk
+                if data.endswith(b'\n'):  # Detect end of message
                     break
+            buffer = data.decode('utf-8', errors='replace')
 
     except (socket.error, OSError) as e:
         print("Socket error:", e)

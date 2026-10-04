@@ -143,7 +143,7 @@ class ClientBox(Gtk.EventBox):
             update_image_fallback_desktop(image, name, settings["icon-size"], icons_path)
             self.box.pack_start(image, False, False, 4)
 
-        name = window["title"][:settings["name-max-len"]]
+        name = (window.get("title") or "")[:settings["name-max-len"]]  # title is null for some windows
 
         if settings["show-app-name"]:
             lbl = Gtk.Label()

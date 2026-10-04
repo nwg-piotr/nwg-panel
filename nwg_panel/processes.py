@@ -16,13 +16,14 @@ import sys
 from enum import Enum
 
 import psutil
-from i3ipc import Connection
 import gi
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
-from nwg_panel.tools import get_config_dir, load_json, save_json, check_key, eprint
+# tools.hyprctl() reads the reply until EOF: the local copy did a single recv(20480), which truncated
+# `j/clients` with many windows and made the JSON unparsable
+from nwg_panel.tools import get_config_dir, load_json, save_json, check_key, eprint, hyprctl
 from nwg_panel.mango_ipc import get_mango_ipc
 
 swaysock = os.getenv('SWAYSOCK')
@@ -46,22 +47,6 @@ sort_order = SortOrder.PID
 btn_pid, btn_ppid, btn_owner, btn_cpu, btn_mem, btn_name = None, None, None, None, None, None,
 
 
-def hyprctl(cmd):
-    # /tmp/hypr moved to $XDG_RUNTIME_DIR/hypr in #5788
-    xdg_runtime_dir = os.getenv("XDG_RUNTIME_DIR")
-    hypr_dir = f"{xdg_runtime_dir}/hypr" if xdg_runtime_dir and os.path.isdir(
-        f"{xdg_runtime_dir}/hypr") else "/tmp/hypr"
-
-    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    s.connect(f"{hypr_dir}/{os.getenv('HYPRLAND_INSTANCE_SIGNATURE')}/.socket.sock")
-
-    s.send(cmd.encode("utf-8"))
-    output = s.recv(20480).decode('utf-8')
-    s.close()
-
-    return output
-
-
 def niri_ipc(cmd, is_json=False):
     niri_sock = os.getenv("NIRI_SOCKET")
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -71,12 +56,13 @@ def niri_ipc(cmd, is_json=False):
     else:
         client.send(f'{cmd}\n'.encode("utf-8"))
 
-    buffer = ""
+    data = b""
     while True:
-        chunk = client.recv(1024).decode('utf-8', errors='replace')
+        chunk = client.recv(4096)
         if not chunk:
             break
-        buffer += chunk
+        data += chunk
+    buffer = data.decode('utf-8', errors='replace')
     try:
         reply = json.loads(buffer)
         key = next(iter(reply))
@@ -129,6 +115,7 @@ def list_processes(once=False):
     clients = {}
     windows = {}
     if swaysock:
+        from i3ipc import Connection  # python-i3ipc is only needed (and installed) on sway
         tree = Connection().get_tree()
     elif his:
         output = hyprctl("j/clients")
