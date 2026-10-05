@@ -411,7 +411,11 @@ def on_sway_input_event(i3conn, event):
     # runs on the i3ipc thread; KeyboardLayout.refresh() does its IPC here and touches GTK through idle_add
     if event.change in ("xkb_layout", "xkb_keymap", "added", "removed"):
         for item in common.keyboard_layouts_list:
-            item.refresh()
+            try:
+                item.refresh()
+            except Exception as ex:
+                # i3ipc re-raises what a handler raises and leaves its main loop: no more events for any module
+                eprint(f"keyboard-layout refresh failed: {ex}")
 
 
 def refresh_dwl(*args):
