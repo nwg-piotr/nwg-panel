@@ -247,9 +247,11 @@ class KeyboardLayout(Gtk.EventBox):
                 # `active_layout_index` is reported since Hyprland 0.51 only; before that, an absolute index would
                 # always be computed from 0 and the click would be stuck on the second layout: use `next`
                 if main is not None and isinstance(main.get("active_layout_index"), int):
-                    # the layouts of the main keyboard (per-device config), not the global option
-                    n = len(self.device_layouts(main)) or len(self.get_kb_layouts())
-                    self.hypr_switch_all((main["active_layout_index"] + 1) % n if n else "next")
+                    # the layouts of the main keyboard (per-device config), not the global option. With fewer than
+                    # two of them (device rule with a single layout, empty list) an absolute index would pin every
+                    # keyboard on the same layout for good: let each keyboard go to its own next one
+                    n = len(self.device_layouts(main))
+                    self.hypr_switch_all((main["active_layout_index"] + 1) % n if n > 1 else "next")
                 else:
                     self.hypr_switch_all("next")
         elif self.compositor == "sway":
