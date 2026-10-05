@@ -80,12 +80,12 @@ def update_icon(image, item, icon_size, icon_path):
 def pixmap_to_pixbuf(pixmaps, icon_size):
     """IconPixmap (ARGB32, network byte order) -> pixbuf, from the smallest image not smaller
     than icon_size (the largest one, often 256x256 or more, was converted pixel by pixel)."""
-    candidates = [(w, h, d) for w, h, d in pixmaps if w > 0 and h > 0 and len(d) >= w * h * 4]
-    if not candidates:
+    if not pixmaps:
         return None
-    big_enough = [c for c in candidates if min(c[0], c[1]) >= icon_size]
+    # sizes and length of the data were checked when the property was read (item.unpack_pixmaps)
+    big_enough = [c for c in pixmaps if min(c[0], c[1]) >= icon_size]
     width, height, data = min(big_enough, key=lambda c: c[0] * c[1]) if big_enough \
-        else max(candidates, key=lambda c: c[0] * c[1])
+        else max(pixmaps, key=lambda c: c[0] * c[1])
     argb = bytes(data[:width * height * 4])
     rgba = bytearray(len(argb))
     rgba[0::4] = argb[1::4]
@@ -99,11 +99,12 @@ def pixmap_to_pixbuf(pixmaps, icon_size):
 def update_icon_from_pixmap(image, item, icon_size):
     icon_size *= image.get_scale_factor()
     pixmaps = item.properties["IconPixmap"]
-    # decoded once per pixmap and size, shared by the trays of all outputs
-    key = (id(pixmaps), icon_size)
-    if item.pixmap_cache is None or item.pixmap_cache[0] != key:
-        item.pixmap_cache = (key, pixmap_to_pixbuf(pixmaps, icon_size))
-    pixbuf = item.pixmap_cache[1]
+    # decoded once per pixmap and size, shared by the trays of all outputs (the cache holds the list
+    # itself, not its id(): the address of a freed list can be given to the next one)
+    cache = item.pixmap_cache
+    if cache is None or cache[0] is not pixmaps or cache[1] != icon_size:
+        cache = item.pixmap_cache = (pixmaps, icon_size, pixmap_to_pixbuf(pixmaps, icon_size))
+    pixbuf = cache[2]
     if pixbuf is not None:
         resize_pix_buf(image, pixbuf, icon_size)
 
