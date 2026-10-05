@@ -42,15 +42,25 @@ class HyprlandSubmap(Gtk.Box):
 
         self.refresh()
 
-        self.connect("show", self.refresh)
+        # the panel's show_all() also shows us: hide again if there is nothing to display
+        self.connect("show", self.hide_if_default)
 
         if self.submap == "default" and not self.settings["show-default"]:
             GLib.idle_add(self.hide, priority=GLib.PRIORITY_HIGH)
 
     def refresh(self, *args):
-        self.submap = hyprctl("submap").strip()
+        self.set_submap(hyprctl("submap").strip())
+
+    def set_submap(self, submap):
+        # the "submap>>NAME" event gives the name: no need to query Hyprland
+        self.submap = submap or "default"
         self.label.set_text(self.submap)
         if self.submap != "default" or self.settings["show-default"]:
             self.show_all()
         else:
+            self.hide()
+        return False
+
+    def hide_if_default(self, *args):
+        if self.submap == "default" and not self.settings["show-default"]:
             self.hide()

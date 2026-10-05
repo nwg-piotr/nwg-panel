@@ -166,6 +166,86 @@ def restart():
     subprocess.Popen(restart_cmd, shell=True)
 
 
+# Hyprland events that change what taskbars / workspaces display
+HYPR_REFRESH_EVENTS = {
+    "activespecial", "activewindow", "activewindowv2", "changefloatingmode", "closewindow",
+    "createworkspace", "createworkspacev2", "destroyworkspace", "destroyworkspacev2",
+    "focusedmon", "monitoradded", "monitorremoved", "movewindow", "movewindowv2",
+    "moveworkspace", "moveworkspacev2", "openwindow", "pin", "renameworkspace",
+    "windowtitle", "windowtitlev2", "workspace", "workspacev2",
+}
+# A burst of events (e.g. openwindow + activewindow + workspace) triggers a single refresh.
+HYPR_REFRESH_DELAY_MS = 40
+# Title-only changes (terminals, browsers, players updating their title) are rate-limited harder.
+HYPR_TITLE_REFRESH_DELAY_MS = 250
+# A refresh Hyprland did not answer is tried again after this delay, doubled on each new attempt.
+HYPR_REFRESH_RETRY_DELAY_MS = 1000
+HYPR_REFRESH_RETRIES = 3
+
+_hypr_refresh_src = 0
+_hypr_refresh_fast = False
+_restart_src = 0
+
+
+def _hypr_do_refresh(attempt=0):
+    """Runs on the GTK main loop: one IPC round for all Hyprland modules."""
+    global _hypr_refresh_src, _hypr_refresh_fast
+    _hypr_refresh_src = 0  # events arriving from now on schedule a new refresh
+    data = h_modules_get_all_checked()
+    if data is None:
+        # No reply (Hyprland busy or restarting): keep what is displayed rather than draw empty
+        # modules, and try again a few times in case no other event comes to trigger a refresh.
+        if attempt < HYPR_REFRESH_RETRIES:
+            # a title-only change waits for this retry; any other event replaces it with a sooner refresh
+            _hypr_refresh_fast = False
+            _hypr_refresh_src = GLib.timeout_add(HYPR_REFRESH_RETRY_DELAY_MS << attempt, _hypr_do_refresh,
+                                                 attempt + 1)
+        return False
+    monitors, workspaces, clients, activewindow, activeworkspace = data
+    # one failing module must not prevent the others from refreshing
+    for item in common.h_taskbars_list:
+        try:
+            item.refresh(monitors, workspaces, clients, activewindow)
+        except Exception as ex:
+            eprint(f"hypr_watcher: refresh failed ({ex})")
+    for item in common.h_workspaces_list:
+        try:
+            item.refresh(monitors, workspaces, clients, activewindow, activeworkspace)
+        except Exception as ex:
+            eprint(f"hypr_watcher: refresh failed ({ex})")
+    return False
+
+
+def _hypr_schedule_refresh(fast):
+    """Runs on the GTK main loop. Coalesces refresh requests."""
+    global _hypr_refresh_src, _hypr_refresh_fast
+    if _hypr_refresh_src:
+        if not fast or _hypr_refresh_fast:
+            return False  # a refresh is already pending, soon enough
+        GLib.source_remove(_hypr_refresh_src)  # replace a slow (title-only) refresh with a fast one
+    _hypr_refresh_fast = fast
+    _hypr_refresh_src = GLib.timeout_add(HYPR_REFRESH_DELAY_MS if fast else HYPR_TITLE_REFRESH_DELAY_MS,
+                                         _hypr_do_refresh)
+    return False
+
+
+def _schedule_restart():
+    """Runs on the GTK main loop. Several monitor events in a row restart the panel once."""
+    global _restart_src
+
+    def do_restart():
+        global _restart_src
+        _restart_src = 0
+        restart()
+        return False
+
+    if _restart_src:
+        GLib.source_remove(_restart_src)
+    _restart_src = GLib.timeout_add(common_settings.get("restart-delay", 500), do_restart,
+                                    priority=GLib.PRIORITY_HIGH)
+    return False
+
+
 def hypr_watcher():
     import socket
 
@@ -188,10 +268,14 @@ def hypr_watcher():
                 time.sleep(2)
 
     client = connect()
+    pending = b""  # incomplete last line of the previous read
+    # A title change of the focused window also emits activewindow/activewindowv2 with the same
+    # address: remember it to tell a real focus change from a title update.
+    active_address = None
 
     while True:
         try:
-            datagram = client.recv(2048)
+            datagram = client.recv(65536)
         except OSError as ex:
             eprint(f"hypr_watcher: socket read error ({ex})")
             datagram = b""
@@ -207,61 +291,49 @@ def hypr_watcher():
                 pass
             time.sleep(1)
             client = connect()
+            pending = b""
             # Events may have been lost while disconnected: refresh Hyprland modules
-            try:
-                monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
-                for item in common.h_taskbars_list:
-                    GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
-                for item in common.h_workspaces_list:
-                    GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow, activeworkspace)
-            except Exception as ex:
-                eprint(f"hypr_watcher: refresh after reconnect failed ({ex})")
+            if common.h_taskbars_list or common.h_workspaces_list:
+                GLib.idle_add(_hypr_schedule_refresh, True)
             continue
 
-        e_full_string = datagram.decode('utf-8', errors='replace').strip()
-        lines = e_full_string.splitlines()
+        # Events are newline-terminated; a read may end in the middle of a line (or of a
+        # UTF-8 character), so only complete lines are decoded.
+        *lines, pending = (pending + datagram).split(b"\n")
 
-        event_names = []
-        for line in lines:
-            event_names.append(line.split(">>")[0])
+        refresh, fast, submap, layout, restart_needed = False, False, None, False, False
+        for raw in lines:
+            line = raw.decode("utf-8", errors="replace")
+            event_name, _, data = line.partition(">>")
+            if event_name in HYPR_REFRESH_EVENTS:
+                refresh = True
+                if event_name == "activewindowv2":
+                    if data != active_address:
+                        active_address = data
+                        fast = True  # focus moved to another window
+                elif event_name not in ("windowtitle", "windowtitlev2", "activewindow"):
+                    fast = True
+            if event_name == "submap":
+                submap = data  # the last one wins
+            elif event_name == "activelayout":
+                layout = True
+            if event_name in ("monitoradded", "monitorremoved") and common_settings.get("restart-on-display"):
+                restart_needed = True
+                print("Received event '{}'; restart in {} ms.".format(event_name,
+                                                                      common_settings.get("restart-delay", 500)))
 
-        # keyboard layout changed (e.g. Alt+Shift): refresh KeyboardLayout modules, no polling needed
-        if "activelayout" in event_names:
+        # Everything below is handled on the GTK main loop.
+        if restart_needed:
+            GLib.idle_add(_schedule_restart, priority=GLib.PRIORITY_HIGH)
+        if refresh and (common.h_taskbars_list or common.h_workspaces_list):
+            GLib.idle_add(_hypr_schedule_refresh, fast)
+        if submap is not None:
+            for item in common.h_submaps_list:
+                GLib.idle_add(item.set_submap, submap)
+        if layout:
+            # keyboard layout changed (e.g. Alt+Shift): refresh KeyboardLayout modules, no polling needed
             for item in common.kb_layouts_list:
                 GLib.idle_add(item.refresh)
-        # print(f"events: {event_names}")
-
-        for event_name in event_names:
-            if common_settings["restart-on-display"] and (event_name in ["monitoradded", "monitorremoved"]):
-                print("Received event '{}'; restart in {} ms.".format(event_name, common_settings["restart-delay"]))
-                GLib.timeout_add(common_settings["restart-delay"], restart, priority=GLib.PRIORITY_HIGH)
-
-            if event_name in ["activespecial",
-                              "activewindow",
-                              "activewindowv2",
-                              "changefloatingmode",
-                              "closewindow",
-                              "createworkspace",
-                              "destroyworkspace",
-                              "focusedmon",
-                              "monitoradded",
-                              "movewindow",
-                              "openwindow",
-                              "windowtitle",
-                              "workspace"]:
-
-                # print(f">>> refreshing on {event_name}")
-                monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
-                for item in common.h_taskbars_list:
-                    GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow)
-
-                for item in common.h_workspaces_list:
-                    GLib.timeout_add(0, item.refresh, monitors, workspaces, clients, activewindow, activeworkspace)
-                break
-
-            elif event_name == "submap":
-                for item in common.h_submaps_list:
-                    GLib.timeout_add(0, item.refresh)
 
 
 _niri_refresh_queued = False
@@ -1096,7 +1168,8 @@ def main():
         thread.start()
 
     if his:
-        if len(common.h_taskbars_list) > 0 or len(common.h_workspaces_list) > 0:
+        if (common.h_taskbars_list or common.h_workspaces_list or common.h_submaps_list
+                or common.kb_layouts_list):
             print("his: '{}', starting hypr_watcher".format(his))
             # read from Hyprland socket2 on another thread
             thread = threading.Thread(target=hypr_watcher, daemon=True)

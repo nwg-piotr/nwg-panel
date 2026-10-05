@@ -1014,29 +1014,31 @@ def niri_get_all():
     return niri_outputs(), niri_workspaces(), niri_windows(), niri_focused_window()
 
 
-def hyprctl(cmd, buf_size=2048):
+def hyprctl(cmd, buf_size=65536):
     # /tmp/hypr moved to $XDG_RUNTIME_DIR/hypr in #5788
     xdg_runtime_dir = os.getenv("XDG_RUNTIME_DIR")
     hypr_dir = f"{xdg_runtime_dir}/hypr" if xdg_runtime_dir and os.path.isdir(
         f"{xdg_runtime_dir}/hypr") else "/tmp/hypr"
 
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    # Most calls run on the GTK main loop: never wait forever for a busy compositor
+    s.settimeout(2)
     try:
         s.connect(f"{hypr_dir}/{os.getenv('HYPRLAND_INSTANCE_SIGNATURE')}/.socket.sock")
-        s.send(cmd.encode("utf-8"))
+        s.sendall(cmd.encode("utf-8"))
 
-        output = b""
+        chunks = []
         while True:
             buffer = s.recv(buf_size)
-            if buffer:
-                output = b"".join([output, buffer])
-            else:
+            if not buffer:
                 break
-        s.close()
-        return output.decode('utf-8', errors='replace')
+            chunks.append(buffer)
+        return b"".join(chunks).decode('utf-8', errors='replace')
     except Exception as e:
         eprint(f"hyprctl: {e}")
         return ""
+    finally:
+        s.close()
 
 
 def get_mango_socket_path():
@@ -1110,6 +1112,26 @@ def h_get_active_workspace():
 
 def h_modules_get_all():
     return h_list_monitors(), h_list_workspaces(), h_list_clients(), h_get_activewindow(), h_get_active_workspace()
+
+
+def h_modules_get_all_checked():
+    """
+    h_modules_get_all() for refreshes: returns None when one of the replies is missing or unusable
+    (hyprctl() timed out and returned "", Hyprland is restarting, the reply is cut short), so that
+    the caller keeps what it displays instead of drawing empty modules. Gives up at the first such
+    reply, as each of them may have waited for the hyprctl() timeout.
+    """
+    data = []
+    for query, expected in (("j/monitors", list), ("j/workspaces", list), ("j/clients", list),
+                            ("j/activewindow", dict), ("j/activeworkspace", dict)):
+        try:
+            reply = json.loads(hyprctl(query))
+        except ValueError:
+            return None
+        if not isinstance(reply, expected):
+            return None
+        data.append(reply)
+    return data
 
 
 def cmd_through_compositor(cmd):
