@@ -1274,14 +1274,6 @@ def h_modules_get_all_checked():
     return data
 
 
-def _double_quoted(cmd, lua=False):
-    """`cmd` as one double-quoted word for sway's command parser, or as a Lua string literal
-    (Hyprland lua dispatchers)."""
-    if lua:
-        cmd = cmd.replace("\\", "\\\\")
-    return '"' + cmd.replace('"', '\\"') + '"'
-
-
 def cmd_through_compositor(cmd):
     """Wrap `cmd` so that the compositor launches it. Callers quote untrusted parts of `cmd`
     (shlex.quote): on every compositor, `cmd` itself is still parsed by a shell."""
@@ -1297,28 +1289,62 @@ def cmd_through_compositor(cmd):
         # its own `sh -c`). Each layer gets its own quoting: shlex.quote() for the outer shell (it
         # used to see the command inside double quotes, where `$(…)` and backticks are still
         # expanded), and for sway one double-quoted word for its command parser, which splits
-        # unquoted commands on `,` and `;`.
+        # unquoted commands on `,` and `;`. A command that a parser can't carry unchanged is
+        # returned as it is: the panel then runs it itself.
         if "\n" in cmd:
             return cmd  # no compositor parser copes with a newline: run it directly
         if os.getenv("SWAYSOCK"):
             if "miracle-wm" in (os.getenv("XDG_SESSION_DESKTOP") or ""):
-                # miracle-wm: "…" literal without any escape, then split and execvp without a shell
+                # miracle-wm: "…" literal without any escape, then Mir's launcher splits the words
+                # (blanks, quotes, `\` as escape) and starts them without a shell. It gets one
+                # here, like on sway: otherwise nothing expands `$VAR` in the command any more.
                 if '"' in cmd:
                     return cmd
-                cmd = f'miraclemsg exec {shlex.quote(chr(34) + cmd + chr(34))}'
+                arg = 'sh -c "{}"'.format(re.sub(r"([\\' \t\n\r\f\v])", r"\\\1", cmd))
+                cmd = f'miraclemsg exec {shlex.quote(arg)}'
             else:
-                cmd = f'swaymsg exec {shlex.quote(_double_quoted(cmd))}'
+                arg = _sway_quoted(cmd)
+                if arg is None:
+                    return cmd
+                cmd = f'swaymsg exec {shlex.quote(arg)}'
         elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
+            # hyprctl reads an argument that starts with `-` as one of its options, and picks the
+            # request type by substring over all its arguments before it gets to `dispatch`: with
+            # `/--batch` in a path, the rest is cut at every `;` into requests of their own. The
+            # names on the last line only raise the number of blanks it wants in the request.
+            if cmd.startswith("-") or re.search(r"/(--batch|instances|hyprpaper|hyprsunset)", cmd) or (
+                    cmd.count(" ") < 2 and re.search(r"/(switchxkblayout|setprop|notify|output)", cmd)):
+                return cmd
             # check if we are on lua dispatchers (Hyprland >= v0.55.0 with lua config)
             res = hyprctl("dispatch hl.dsp.no_op")  # do nothing
             if res == "ok":
-                cmd = f"hyprctl dispatch {shlex.quote('hl.dsp.exec_cmd(' + _double_quoted(cmd, lua=True) + ')')}"
+                cmd = f"hyprctl dispatch {shlex.quote('hl.dsp.exec_cmd(' + _lua_quoted(cmd) + ')')}"
             else:
                 cmd = f"hyprctl dispatch exec {shlex.quote(cmd)}"
         elif os.getenv("NIRI_SOCKET"):
             cmd = f'niri msg action spawn -- {cmd}'
 
     return cmd
+
+
+def _sway_quoted(cmd):
+    """`cmd` as one double-quoted word for sway's `exec`, or None if sway's command parser can't
+    carry it unchanged. sway replaces its own $variables in that word, removes the unescaped
+    quotes from it and gives the rest to `sh -c`. It knows no escape for a quote: a backslash
+    stays in the text, and the quote after it stays too."""
+    # An odd number of backslashes before a `"`, or at the end, would escape one of the quotes
+    # added here (split_args() and strip_quotes() in sway's common/stringop.c).
+    if re.search(r'(?<!\\)(?:\\\\)*\\("|$)', cmd):
+        return None
+    # a `"` inside is written as a single-quoted `"` between two double-quoted parts
+    arg = '"' + cmd.replace('"', '"\'"\'"') + '"'
+    # `$$` is sway's spelling of a literal `$`; a `\$` it leaves alone
+    return re.sub(r'(?<!(?<!\\)\\)\$', "$$", arg)
+
+
+def _lua_quoted(cmd):
+    """`cmd` as a Lua string literal (Hyprland lua dispatchers)."""
+    return '"' + cmd.replace("\\", "\\\\").replace('"', '\\"').replace("\r", "\\r") + '"'
 
 
 def load_resource(package, resource_name):
