@@ -62,6 +62,8 @@ def niri_ipc(cmd, is_json=False):
         if not chunk:
             break
         data += chunk
+        if data.endswith(b'\n'):  # end of the reply: niri keeps the connection open, EOF never comes
+            break
     buffer = data.decode('utf-8', errors='replace')
     try:
         reply = json.loads(buffer)

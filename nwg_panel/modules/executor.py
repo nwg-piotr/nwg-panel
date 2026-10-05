@@ -4,6 +4,7 @@ import os
 import subprocess
 import signal
 import threading
+import time
 
 import gi
 from gi.repository import GLib
@@ -38,6 +39,7 @@ class Executor(Gtk.EventBox):
 
         check_key(settings, "script", "")
         check_key(settings, "interval", 0)
+        # "timeout" (optional): seconds after which a running script is terminated, see script_timeout()
         check_key(settings, "root-css-name", "root-executor")
         check_key(settings, "css-name", "")
         check_key(settings, "icon-placement", "left")
@@ -191,28 +193,59 @@ class Executor(Gtk.EventBox):
         tooltip.set_custom(self.tooltip_box)
         return True
 
+    def run_script(self):
+        """
+        Runs the script and returns its output; raises like subprocess.check_output() did.
+        The script is started in its own session, i.e. as the leader of its own process group: when it times out,
+        the commands it started (curl, ping...) are terminated with it instead of staying around as orphans.
+        """
+        timeout = script_timeout(self.settings)
+        proc = subprocess.Popen(self.settings["script"].split(), stdout=subprocess.PIPE, start_new_session=True)
+        try:
+            output = proc.communicate(timeout=timeout)[0]
+        except subprocess.TimeoutExpired as e:
+            self.kill_script(proc)
+            e.timeout = timeout  # communicate() may report what was left of it instead
+            raise
+        finally:
+            proc.stdout.close()
+        if proc.returncode:
+            raise subprocess.CalledProcessError(proc.returncode, proc.args, output=output)
+        return output
+
+    def kill_script(self, proc):
+        # SIGTERM, 2 s to clean up, SIGKILL. The script is only reaped afterwards: until then its PID, which is
+        # also the ID of its process group, can't be given to another process.
+        try:
+            os.killpg(proc.pid, signal.SIGTERM)
+            time.sleep(2)
+            os.killpg(proc.pid, signal.SIGKILL)
+        except OSError as e:
+            print("Executor '{}': {}".format(self.name, e))
+        try:
+            proc.wait(timeout=2)
+        except subprocess.TimeoutExpired:
+            # not ours to kill (sudo), or in uninterruptible sleep (dead network mount): don't wait for it
+            print("Executor '{}': could not kill the script (PID {})".format(self.name, proc.pid))
+
     def get_output(self):
         if "script" in self.settings and self.settings["script"]:
-            # serialize runs: a signal-triggered refresh must not overlap the periodic one. Requests that
-            # arrive while the script runs are merged into one rerun instead of piling up threads behind the lock.
-            if not self.run_lock.acquire(blocking=False):
-                self.rerun_pending = True
-                return
-            try:
-                # a script that never returns used to hold the lock (and a thread) forever
-                timeout = max(self.settings["interval"], 30) if self.settings["interval"] > 0 else 60
-                output = subprocess.check_output(self.settings["script"].split(), timeout=timeout) \
-                    .decode("utf-8", errors="replace").splitlines()
-                GLib.idle_add(self.update_widget, output)
-            except subprocess.TimeoutExpired:
-                print("Executor '{}': script timed out after {} s".format(self.name, timeout))
-            except Exception as e:
-                print(e)
-            finally:
-                self.run_lock.release()
-            if self.rerun_pending:
+            # Serialize runs: a signal-triggered refresh must not overlap the periodic one. The request is noted
+            # before the lock is tried, so whoever holds the lock runs the script once more for it: requests that
+            # arrive while the script runs are merged into one rerun, and no thread waits behind the lock.
+            self.rerun_pending = True
+            while self.rerun_pending and self.run_lock.acquire(blocking=False):
                 self.rerun_pending = False
-                self.get_output()
+                try:
+                    # a script that never returns used to hold the lock (and a thread) forever
+                    output = self.run_script().decode("utf-8", errors="replace").splitlines()
+                    GLib.idle_add(self.update_widget, output)
+                except subprocess.TimeoutExpired as e:
+                    print("Executor '{}': script timed out after {:g} s".format(self.name, e.timeout))
+                except Exception as e:
+                    print(e)
+                finally:
+                    self.run_lock.release()
 
     def refresh(self):
         # The periodic loop is started once; later calls (RT signal) run the script once.
@@ -260,3 +293,23 @@ class Executor(Gtk.EventBox):
 
         print(f"Executing: {cmd}")
         subprocess.Popen('{}'.format(cmd), shell=True)
+
+
+def to_number(value, default):
+    try:
+        return float(value)
+    except (TypeError, ValueError, OverflowError):
+        return default
+
+
+def script_timeout(settings):
+    """
+    Seconds after which a running script is considered stuck and terminated: the "timeout" setting, by default
+    max(interval, 300). None = never. The config file may have been edited by hand: a value that is not a number
+    ("5 min", null) is treated as missing.
+    """
+    timeout = to_number(settings.get("timeout"), None)
+    if timeout is None:
+        timeout = max(300, to_number(settings.get("interval"), 0))
+    # 0 = no timeout. There can't be one longer than poll() is able to wait either: 2**31 ms, 24 days.
+    return timeout if 0 < timeout < 2 ** 31 // 1000 else None
