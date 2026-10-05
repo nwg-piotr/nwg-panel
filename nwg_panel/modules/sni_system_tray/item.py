@@ -60,6 +60,10 @@ NO_ANSWER_ERRORS = (
 # NewIcon & co. can come in bursts (animated icons): properties are re-read once per burst.
 REFRESH_DELAY_MS = 50
 
+# Pixmaps with a longer side are ignored: a peer could send images up to the D-Bus message limit
+# (128 MiB), which we copy to convert ARGB -> RGBA. Tray icons are 16-256 px, this leaves a wide margin.
+MAX_PIXMAP_SIDE = 1024
+
 # Signals that only say "something changed": the new value has to be read.
 SIGNAL_PROPERTIES = {
     "NewTitle": ["Title"],
@@ -76,13 +80,14 @@ def is_answer(error):
 def unpack_pixmaps(variant):
     """a(iiay) -> [(width, height, bytes)]. Variant.unpack() would make one Python int per byte, which
     froze the panel for half a second per 256x256 image: the sizes are read first, and the data is
-    taken as bytes, only if it is as long as they say."""
+    taken as bytes, only if they are sensible and it is as long as they say."""
     pixmaps = []
     for i in range(variant.n_children()):
         pixmap = variant.get_child_value(i)
         width, height = pixmap.get_child_value(0).get_int32(), pixmap.get_child_value(1).get_int32()
         data = pixmap.get_child_value(2)
-        if width > 0 and height > 0 and data.n_children() >= width * height * 4:
+        if 0 < width <= MAX_PIXMAP_SIDE and 0 < height <= MAX_PIXMAP_SIDE \
+                and data.n_children() >= width * height * 4:
             pixmaps.append((width, height, data.get_data_as_bytes().get_data()))
     return pixmaps
 

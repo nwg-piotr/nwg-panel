@@ -11,7 +11,10 @@ from dasbus.client.observer import DBusObserver
 from dasbus.server.interface import accepts_additional_arguments
 import dasbus.typing
 
-from nwg_panel.tools import _die_with_parent
+from nwg_panel.tools import _die_with_parent, eprint
+
+# items one bus connection (or one proxied connection) may register: well above what any real app does
+MAX_ITEMS_PER_SENDER = 32
 
 WATCHER_SERVICE_NAME = "org.kde.StatusNotifierWatcher"
 WATCHER_OBJECT_PATH = "/StatusNotifierWatcher"
@@ -79,6 +82,7 @@ class StatusNotifierWatcherInterface(object):
 
     def __init__(self):
         self._statusNotifierItems = []
+        self._pending_items = set()  # registered, owner not seen on the bus yet
         self._statusNotifierHosts = []
         self._isStatusNotifierHostRegistered = False
         self._protocolVersion = 0
@@ -96,36 +100,47 @@ class StatusNotifierWatcherInterface(object):
             )
         )"""
 
+        sender = call_info["sender"]
+        if not isinstance(service, str) or not service:
+            eprint("StatusNotifierWatcher: ignoring empty registration from {}".format(sender))
+            return
+
         # libappindicator sends object path, use sender name and object path
         if service[0] == "/":
-            full_service_name = "{}{}".format(call_info["sender"], service)
+            owner = sender
+            full_service_name = "{}{}".format(sender, service)
 
         # xembedsniproxy sends item name, use the item from the argument
         elif service[0] == ":":
+            owner = service
             full_service_name = "{}{}".format(service, "/StatusNotifierItem")
 
         else:
-            full_service_name = "{}{}".format(call_info["sender"], "/StatusNotifierItem")
+            owner = sender
+            full_service_name = "{}{}".format(sender, "/StatusNotifierItem")
 
-        if full_service_name not in self._statusNotifierItems:
-            item_service_observer = DBusObserver(
-                message_bus=self.session_bus,
-                service_name=call_info["sender"]
-            )
-            item_service_observer.service_available.connect(
-                lambda _observer: self.item_available_handler(full_service_name)
-            )
-            item_service_observer.service_unavailable.connect(
-                lambda _observer: self.item_unavailable_handler(full_service_name)
-            )
-            item_service_observer.connect_once_available()
-        else:
-            """print(
-                (
-                    "StatusNotifierWatcher -> RegisterStatusNotifierItem: item already registered\n"
-                    "  full_service_name: {}"
-                ).format(full_service_name, service)
-            )"""
+        if full_service_name in self._statusNotifierItems or full_service_name in self._pending_items:
+            return
+        # any peer on the bus may call this: bound what one connection can make us track
+        if sum(1 for name in self._statusNotifierItems + list(self._pending_items)
+               if name.split("/", 1)[0] in (sender, owner)) >= MAX_ITEMS_PER_SENDER:
+            eprint("StatusNotifierWatcher: too many items from {}, ignoring {}".format(sender, service))
+            return
+
+        self._pending_items.add(full_service_name)
+        # watch the connection that actually owns the item: for xembedsniproxy that is `service`, not the
+        # caller, otherwise an item whose connection is gone stays registered as long as the proxy lives
+        item_service_observer = DBusObserver(
+            message_bus=self.session_bus,
+            service_name=owner
+        )
+        item_service_observer.service_available.connect(
+            lambda _observer: self.item_available_handler(full_service_name)
+        )
+        item_service_observer.service_unavailable.connect(
+            lambda _observer: self.item_unavailable_handler(full_service_name)
+        )
+        item_service_observer.connect_once_available()
 
     @accepts_additional_arguments
     def RegisterStatusNotifierHost(self, service, call_info):
@@ -175,6 +190,9 @@ class StatusNotifierWatcherInterface(object):
                 full_service_name
             )
         )"""
+        self._pending_items.discard(full_service_name)
+        if full_service_name in self._statusNotifierItems:
+            return
         self._statusNotifierItems.append(full_service_name)
         self.StatusNotifierItemRegistered.emit(full_service_name)
         self.PropertiesChanged.emit(WATCHER_SERVICE_NAME, {
@@ -190,6 +208,7 @@ class StatusNotifierWatcherInterface(object):
                 full_service_name
             )
         )"""
+        self._pending_items.discard(full_service_name)
         if full_service_name in set(self._statusNotifierItems):
             self._statusNotifierItems.remove(full_service_name)
             self.StatusNotifierItemUnregistered.emit(full_service_name)
