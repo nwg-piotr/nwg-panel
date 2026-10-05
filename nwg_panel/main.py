@@ -467,10 +467,12 @@ def instantiate_content(panel, container, content_list, icons_path=""):
         if item == "hyprland-workspaces":
             if his:
                 if "hyprland-workspaces" in panel:
-                    workspaces = HyprlandWorkspaces(panel["hyprland-workspaces"], panel["output"], monitors, workspaces, clients,
-                                                    activewindow, activeworkspace, icons_path=icons_path)
-                    container.pack_start(workspaces, False, False, panel["items-padding"])
-                    common.h_workspaces_list.append(workspaces)
+                    # not `workspaces = ...`: that name holds the IPC data shared by every Hyprland module of
+                    # this panel; shadowing it broke the next module (`'Box' object is not subscriptable`)
+                    h_ws = HyprlandWorkspaces(panel["hyprland-workspaces"], panel["output"], monitors, workspaces,
+                                              clients, activewindow, activeworkspace, icons_path=icons_path)
+                    container.pack_start(h_ws, False, False, panel["items-padding"])
+                    common.h_workspaces_list.append(h_ws)
                 else:
                     print("'hyprland-workspaces' not defined in this panel instance")
             else:
