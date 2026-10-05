@@ -592,6 +592,12 @@ def set_volume(percent, balance=0):
 
 brightness_max_cache = {}
 
+# ddcutil: one `getvcp` is a DDC/CI transaction over I2C (hundreds of ms, logs on some monitors, #379), and the
+# value only changes through us or the monitor's own buttons. Reads are cached per device for DDCUTIL_CACHE_S
+# and refreshed right away by set_brightness().
+DDCUTIL_CACHE_S = 30
+ddcutil_cache = {}  # device -> (monotonic time, value)
+
 
 def get_brightness(device="", controller=""):
     brightness = 0
@@ -612,10 +618,14 @@ def get_brightness(device="", controller=""):
         b = int(output) * 100 / max_bri
         brightness = int(round(float(b), 0))
     elif nwg_panel.common.commands["ddcutil"] and controller == "ddcutil":
+        cached = ddcutil_cache.get(device)
+        if cached and time.monotonic() - cached[0] < DDCUTIL_CACHE_S:
+            return cached[1]
         cmd = "ddcutil getvcp 10 --bus={}".format(device) if device else "ddcutil getvcp 10"
         output = cmd2string(cmd)
         b = int(output.split("current value =")[1].split(",")[0])
         brightness = int(round(float(b), 0))
+        ddcutil_cache[device] = (time.monotonic(), brightness)
     else:
         raise ValueError("Couldn't get brightness, is 'light' or 'brightnessctl' or 'ddcutil' installed?")
 
@@ -640,6 +650,7 @@ def set_brightness(percent, device="", controller=""):
                              stdout=subprocess.DEVNULL,
                              stderr=subprocess.STDOUT)
     elif nwg_panel.common.commands["ddcutil"] and controller == "ddcutil":
+        ddcutil_cache[device] = (time.monotonic(), percent)  # what we just set is what a poll would read
         if device:
             subprocess.Popen("ddcutil setvcp 10 {} --bus={}".format(percent, device).split())
         else:
