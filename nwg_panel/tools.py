@@ -1101,6 +1101,26 @@ def h_modules_get_all():
     return h_list_monitors(), h_list_workspaces(), h_list_clients(), h_get_activewindow(), h_get_active_workspace()
 
 
+def h_modules_get_all_checked():
+    """
+    h_modules_get_all() for refreshes: returns None when one of the replies is missing or unusable
+    (hyprctl() timed out and returned "", Hyprland is restarting, the reply is cut short), so that
+    the caller keeps what it displays instead of drawing empty modules. Gives up at the first such
+    reply, as each of them may have waited for the hyprctl() timeout.
+    """
+    data = []
+    for query, expected in (("j/monitors", list), ("j/workspaces", list), ("j/clients", list),
+                            ("j/activewindow", dict), ("j/activeworkspace", dict)):
+        try:
+            reply = json.loads(hyprctl(query))
+        except ValueError:
+            return None
+        if not isinstance(reply, expected):
+            return None
+        data.append(reply)
+    return data
+
+
 def cmd_through_compositor(cmd):
     cs_file = os.path.join(get_config_dir(), "common-settings.json")
     common_settings = load_json(cs_file)

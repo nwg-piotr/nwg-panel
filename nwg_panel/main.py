@@ -178,24 +178,41 @@ HYPR_REFRESH_EVENTS = {
 HYPR_REFRESH_DELAY_MS = 40
 # Title-only changes (terminals, browsers, players updating their title) are rate-limited harder.
 HYPR_TITLE_REFRESH_DELAY_MS = 250
+# A refresh Hyprland did not answer is tried again after this delay, doubled on each new attempt.
+HYPR_REFRESH_RETRY_DELAY_MS = 1000
+HYPR_REFRESH_RETRIES = 3
 
 _hypr_refresh_src = 0
 _hypr_refresh_fast = False
 _restart_src = 0
 
 
-def _hypr_do_refresh():
+def _hypr_do_refresh(attempt=0):
     """Runs on the GTK main loop: one IPC round for all Hyprland modules."""
-    global _hypr_refresh_src
+    global _hypr_refresh_src, _hypr_refresh_fast
     _hypr_refresh_src = 0  # events arriving from now on schedule a new refresh
-    try:
-        monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
-        for item in common.h_taskbars_list:
+    data = h_modules_get_all_checked()
+    if data is None:
+        # No reply (Hyprland busy or restarting): keep what is displayed rather than draw empty
+        # modules, and try again a few times in case no other event comes to trigger a refresh.
+        if attempt < HYPR_REFRESH_RETRIES:
+            # a title-only change waits for this retry; any other event replaces it with a sooner refresh
+            _hypr_refresh_fast = False
+            _hypr_refresh_src = GLib.timeout_add(HYPR_REFRESH_RETRY_DELAY_MS << attempt, _hypr_do_refresh,
+                                                 attempt + 1)
+        return False
+    monitors, workspaces, clients, activewindow, activeworkspace = data
+    # one failing module must not prevent the others from refreshing
+    for item in common.h_taskbars_list:
+        try:
             item.refresh(monitors, workspaces, clients, activewindow)
-        for item in common.h_workspaces_list:
+        except Exception as ex:
+            eprint(f"hypr_watcher: refresh failed ({ex})")
+    for item in common.h_workspaces_list:
+        try:
             item.refresh(monitors, workspaces, clients, activewindow, activeworkspace)
-    except Exception as ex:
-        eprint(f"hypr_watcher: refresh failed ({ex})")
+        except Exception as ex:
+            eprint(f"hypr_watcher: refresh failed ({ex})")
     return False
 
 
