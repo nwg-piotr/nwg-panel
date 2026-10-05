@@ -13,7 +13,8 @@ while true; do
     --prefix=*)
       opts+=("$1")
       prefix="${1#--prefix=}"  # no eval: the argument used to be executed as shell code
-      prefix="${prefix/#\~/$HOME}"  # eval used to expand a leading ~
+      # eval used to expand a leading ~ (not ~user: that one is left as it is)
+      [[ "$prefix" == \~ || "$prefix" == \~/* ]] && prefix="$HOME${prefix:1}"
       shift
       ;;
     *)

@@ -543,7 +543,8 @@ class OpenWeather(Gtk.EventBox):
                             #         regions += "{} ".format(r)
                             #     regions += "]"
                             description = "<b>{}: {} - {}</b>\n\n{}\n".format(
-                                GLib.markup_escape_text(str(alert["title"])), effective, expires,
+                                GLib.markup_escape_text(str(alert["title"])),
+                                GLib.markup_escape_text(str(effective)), GLib.markup_escape_text(str(expires)),
                                 GLib.markup_escape_text(str(alert["description"]).splitlines()[0]))
                             # Omit repeating alerts
                             if description not in descriptions:

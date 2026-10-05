@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from enum import Enum
+import glob
 import os.path
+import tempfile
 import threading
 from urllib.parse import unquote, urlparse
 
@@ -21,6 +23,7 @@ COVER_MAX_BYTES = 5 * 1024 * 1024
 
 class Playerctl(Gtk.EventBox):
     PlayerOps = Enum('PlayerOps', ['PLAY_PAUSE', 'NEXT', 'PREVIOUS'])
+    stale_covers_removed = False
 
     def __init__(self, settings, voc, icons_path=""):
         self.settings = settings
@@ -50,6 +53,13 @@ class Playerctl(Gtk.EventBox):
         self.player_idx = 0
         self.add_events(Gdk.EventMask.SCROLL_MASK)
         self.connect('scroll-event', self.on_scroll)
+
+        # cover downloads that a previous run did not get to rename to cover.jpg. Once per process:
+        # with one panel per output, another panel's module may already be downloading its cover.
+        if not Playerctl.stale_covers_removed:
+            Playerctl.stale_covers_removed = True
+            for path in glob.glob(os.path.join(glob.escape(local_dir()), "cover-*")):
+                self.remove_cover_file(path)
 
         self.build_box()
         self.subscribe()
@@ -90,6 +100,9 @@ class Playerctl(Gtk.EventBox):
             self.player_idx = 0
             self.num_players_lbl.set_text("")
 
+        if self.num_players > 0 and players[self.player_idx] == self.player:
+            return  # another player vanished: this one keeps its handlers and its cover
+
         self.deinit_player(hide_widget=self.num_players == 0)
         if self.num_players > 0:
             self.init_player(players[self.player_idx])
@@ -104,10 +117,10 @@ class Playerctl(Gtk.EventBox):
         self.select_player(0)  # the newest player comes first
 
     def on_player_vanished(self, manager, player):
-        # keep the current player if it is still there (its index may have changed), else the first one
-        names = [p.props.player_name for p in manager.props.players]
-        current = self.player.props.player_name if self.player else None
-        self.select_player(names.index(current) if current in names else 0)
+        # keep the current player if it is still there (its index may have changed), else the first one.
+        # The player itself is looked up: two instances of one player have the same player_name.
+        players = manager.props.players
+        self.select_player(players.index(self.player) if self.player in players else 0)
 
     def init_player(self, player):
         self.player = player
@@ -171,28 +184,58 @@ class Playerctl(Gtk.EventBox):
         self.on_playback_status(player, player.props.playback_status)
 
     def update_remote_cover(self, url, cover_url):
-        # The URL comes from the player (e.g. a web page's MediaSession artwork through the
-        # browser): bounded download, image content only.
-        cover_path = ""
+        # Runs in a thread. The URL comes from the player (e.g. a web page's MediaSession artwork
+        # through the browser): bounded download, nothing that declares itself as not an image.
+        tmp_path = ""
         try:
             with requests.get(url, allow_redirects=True, stream=True, timeout=(5, 15)) as r:
                 r.raise_for_status()
-                if not r.headers.get("Content-Type", "").startswith("image/"):
-                    raise ValueError("not an image: {}".format(r.headers.get("Content-Type")))
+                # No type, or a generic one, is common for covers: GdkPixbuf goes by the content.
+                content_type = r.headers.get("Content-Type", "").split(";")[0].strip().lower()
+                if content_type and not content_type.startswith("image/") and content_type not in (
+                        "application/octet-stream", "binary/octet-stream"):
+                    raise ValueError("not an image: {}".format(content_type))
                 data = bytearray()
                 for chunk in r.iter_content(65536):
                     data += chunk
                     if len(data) > COVER_MAX_BYTES:
                         raise ValueError("cover larger than {} bytes".format(COVER_MAX_BYTES))
-            path = os.path.join(local_dir(), "cover.jpg")
-            with open(path, 'wb') as f:
+            # A file of its own: another download may be running, and the main loop may be
+            # reading cover.jpg right now.
+            fd, tmp_path = tempfile.mkstemp(prefix="cover-", dir=local_dir())
+            with os.fdopen(fd, 'wb') as f:
                 f.write(data)
-            cover_path = "file://" + path
         except Exception as e:
             eprint("Couldn't update remote cover: {}".format(e))
+            if tmp_path:
+                self.remove_cover_file(tmp_path)  # written in part only
+                tmp_path = ""
+        GLib.idle_add(self.apply_remote_cover, cover_url, tmp_path)
+
+    @staticmethod
+    def remove_cover_file(path):
+        try:
+            os.remove(path)
+        except OSError as e:
+            eprint("Couldn't remove {}: {}".format(path, e))
+
+    def apply_remote_cover(self, cover_url, tmp_path):
+        # Back on the main loop. The track may have changed while this cover was downloading: a
+        # newer download owns the image then, and this one is dropped.
         if cover_url != self.old_cover_url:
-            return  # the track changed while this cover was downloading: a newer download owns the image
-        GLib.idle_add(self.update_cover_image, cover_path)
+            if tmp_path:
+                self.remove_cover_file(tmp_path)
+            return False
+        cover_path = ""
+        if tmp_path:
+            try:
+                path = os.path.join(local_dir(), "cover.jpg")
+                os.replace(tmp_path, path)
+                cover_path = "file://" + path
+            except OSError as e:
+                eprint("Couldn't update remote cover: {}".format(e))
+        self.update_cover_image(cover_path)
+        return False
 
     def update_cover_image(self, cover_url):
         url = urlparse(cover_url)

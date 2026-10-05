@@ -169,7 +169,8 @@ class RandomWallpaper(Gtk.Button):
         subprocess.run(["pkill", "-x", "swaybg"], check=False)
         cmd = cmd_through_compositor("swaybg -i {} -m fill".format(shlex.quote(image_path)))
         print(f"Executing: {cmd}")
-        subprocess.Popen(cmd, shell=True, preexec_fn=os.setpgrp)
+        # not preexec_fn=os.setpgrp: this is also reached from the wallhaven thread
+        subprocess.Popen(cmd, shell=True, start_new_session=True)
 
     def apply_wallpaper(self, widget):
         if self.settings["source"] == "local":

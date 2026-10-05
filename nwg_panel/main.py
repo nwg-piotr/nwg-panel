@@ -755,7 +755,7 @@ def main():
 
     # Fallback: kill by PID file (should never happen)
     pid_file = os.path.join(runtime_dir(), "nwg-panel.pid")
-    if os.path.isfile(pid_file):
+    if owned_by_us(pid_file):
         try:
             pid = int(load_text_file(pid_file))
             # the PID may have been reused since: only kill an nwg-panel of ours, never ourselves
