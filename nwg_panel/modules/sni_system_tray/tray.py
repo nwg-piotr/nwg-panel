@@ -21,13 +21,10 @@ def resize_pix_buf(image, pixbuf, icon_size):
         width = scaled_icon_size * pixbuf.get_width() / pixbuf.get_height()
         pixbuf = pixbuf.scale_simple(width, scaled_icon_size, GdkPixbuf.InterpType.BILINEAR)
     """
-    factor = 1
     w, h = pixbuf.get_width(), pixbuf.get_height()
-    if w != icon_size:
-        factor = icon_size / w
-    elif h != icon_size:
-        factor = icon_size / h
-    pixbuf = pixbuf.scale_simple(w * factor, h * factor, GdkPixbuf.InterpType.BILINEAR)
+    # fit the longer side: scaled on its width, a tall image was higher than the bar and a very wide one 0 px
+    factor = icon_size / max(w, h)
+    pixbuf = pixbuf.scale_simple(max(1, round(w * factor)), max(1, round(h * factor)), GdkPixbuf.InterpType.BILINEAR)
 
     surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf,
                                                    image.get_scale_factor(),
@@ -73,6 +70,9 @@ def update_icon(image, item, icon_size, icon_path):
     icon_name = item.properties["IconName"]
     pixbuf = None if icon_name.startswith("/") else load_item_theme_icon(item, icon_name, icon_size)
     if pixbuf is None:
+        # as before: the panel's own icons are for items that give no IconThemePath, not even an empty one
+        if "IconThemePath" in item.properties:
+            icon_path = ""
         pixbuf = create_pixbuf(icon_name, icon_size, icon_path)
     resize_pix_buf(image, pixbuf, icon_size)
 
@@ -119,14 +119,15 @@ def markup_or_escaped(text):
 
 
 def update_tooltip(image, item):
-    tooltip = item.properties["ToolTip"] if "ToolTip" in item.properties else item.properties.get("Tooltip")
-    if not tooltip or len(tooltip) < 4:
+    value = item.properties["ToolTip"] if "ToolTip" in item.properties else item.properties.get("Tooltip")
+    if not value or len(value) < 4:
         return
-    icon_name, icon_data, title, description = tooltip
-    markup = GLib.markup_escape_text(title or "")
+    icon_name, icon_data, title, description = value
+    tooltip = GLib.markup_escape_text(title or "")
     if description:
-        markup = "<b>{}</b>\n{}".format(markup, markup_or_escaped(description))
-    image.set_tooltip_markup(markup)
+        tooltip = "<b>{}</b>\n{}".format(tooltip, markup_or_escaped(description))
+    image.set_tooltip_markup(tooltip)
+    image.set_has_tooltip(True)
 
 
 def update_status(event_box, item):
@@ -199,7 +200,7 @@ class Tray(Gtk.EventBox):
             self.box.show()
 
             # Clicks and scrolling are handled even without a dbusmenu ("Menu" is optional):
-            # Activate / SecondaryAction / ContextMenu / Scroll are then sent to the item.
+            # Activate / SecondaryActivate / ContextMenu / Scroll are then sent to the item.
             menu = Menu(
                 service_name=item.service_name,
                 object_path=item.properties.get("Menu"),
@@ -235,8 +236,9 @@ class Tray(Gtk.EventBox):
         if "Tooltip" in changed_properties or "ToolTip" in changed_properties:
             update_tooltip(image, item)
             image.tooltip_version = item.tooltip_fetched_version
-        elif "Title" in changed_properties:
+        elif "Title" in changed_properties and "Title" in item.properties:
             image.set_tooltip_markup(GLib.markup_escape_text(item.properties["Title"]))
+            image.set_has_tooltip(True)
 
         event_box.show_all()
         update_status(event_box, item)
@@ -250,7 +252,7 @@ class Tray(Gtk.EventBox):
                     update_tooltip(image, item)
                     image.tooltip_version = item.tooltip_fetched_version
                     image.trigger_tooltip_query()
-            item.fetch_tooltip(on_fetched)
+            item.fetch_tooltip(image, on_fetched)
         elif getattr(image, "tooltip_version", -1) != item.tooltip_fetched_version:
             # fetched for the tray of another output
             update_tooltip(image, item)

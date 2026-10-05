@@ -63,7 +63,7 @@ REFRESH_DELAY_MS = 50
 # Signals that only say "something changed": the new value has to be read.
 SIGNAL_PROPERTIES = {
     "NewTitle": ["Title"],
-    "NewIcon": ["IconName", "IconPixmap"],
+    "NewIcon": ["IconName", "IconPixmap", "IconThemePath"],
     "NewAttentionIcon": ["AttentionIconName", "AttentionIconPixmap"],
     "NewOverlayIcon": ["OverlayIconName", "OverlayIconPixmap"],
 }
@@ -122,9 +122,7 @@ class StatusNotifierItem(object):
         self.on_updated_callback = None
         self.connection = SessionMessageBus().connection
         self.interface = SNI_INTERFACES[0]
-        self.properties = {
-            "ItemIsMenu": True
-        }
+        self.properties = {}
         self.loaded = False
         self.alive = True
 
@@ -134,7 +132,7 @@ class StatusNotifierItem(object):
         self.tooltip_version = 0
         self.tooltip_fetched_version = 0
         self.tooltip_fetching = False
-        self.on_tooltip_fetched = []
+        self.on_tooltip_fetched = {}
 
         # Decoded IconPixmap, shared by all trays: (pixmaps, icon size, pixbuf)
         self.pixmap_cache = None
@@ -177,7 +175,7 @@ class StatusNotifierItem(object):
         self.item_observer.disconnect()
         self.on_loaded_callback = None
         self.on_updated_callback = None
-        self.on_tooltip_fetched = []
+        self.on_tooltip_fetched = {}
 
     # --- loading -------------------------------------------------------------------------------
 
@@ -349,9 +347,10 @@ class StatusNotifierItem(object):
     def tooltip_stale(self):
         return self.tooltip_fetched_version < self.tooltip_version
 
-    def fetch_tooltip(self, callback):
-        """Read the tooltip asynchronously; callback() runs once it is up to date."""
-        self.on_tooltip_fetched.append(callback)
+    def fetch_tooltip(self, image, callback):
+        """Read the tooltip asynchronously; callback() runs once it is up to date. One callback is kept
+        per image that shows it: GTK asks again on every pointer motion while the answer is awaited."""
+        self.on_tooltip_fetched[image] = callback
         if self.tooltip_fetching:
             return
         self.tooltip_fetching = True
@@ -359,7 +358,7 @@ class StatusNotifierItem(object):
 
         def on_tooltip(_name, value):
             self.tooltip_fetching = False
-            callbacks, self.on_tooltip_fetched = self.on_tooltip_fetched, []
+            callbacks, self.on_tooltip_fetched = list(self.on_tooltip_fetched.values()), {}
             if value is NO_ANSWER:
                 return  # still stale: read again the next time it is about to be shown
             if value is not None:
@@ -383,7 +382,9 @@ class StatusNotifierItem(object):
         if "ItemIsMenu" in self.properties:
             return self.properties["ItemIsMenu"]
         else:
-            return False
+            # Not said (libappindicator): an item with a menu shows it on left click, as before.
+            # Without a menu the specification's default applies, false: the left click is Activate.
+            return "Menu" in self.properties
 
     def _call(self, method, parameters):
         def on_result(connection, result, _data):
@@ -403,7 +404,7 @@ class StatusNotifierItem(object):
         self._call("Activate", GLib.Variant("(ii)", (int(event.x), int(event.y))))
 
     def secondary_action(self, event: Gdk.EventButton):
-        self._call("SecondaryAction", GLib.Variant("(ii)", (int(event.x), int(event.y))))
+        self._call("SecondaryActivate", GLib.Variant("(ii)", (int(event.x), int(event.y))))
 
     def scroll(self, distance, direction):
         self._call("Scroll", GLib.Variant("(is)", (int(distance), direction)))
