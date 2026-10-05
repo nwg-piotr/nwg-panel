@@ -15,25 +15,57 @@ import fileinput
 import os
 import sys
 import json
+import signal
 from time import sleep
 
 
-_panel_pids = []
+_panel_pids = {}  # PID -> start time
+
+
+def is_panel_cmdline(argv):
+    """
+    Tells if a command line (list of strings) is the one of a running panel: `nwg-panel ...`,
+    `python3 /usr/bin/nwg-panel ...`, a wrapped install (`.nwg-panel-wrapped`), `python3 -m nwg_panel.main` or
+    `python3 /some/path/nwg_panel/main.py`. "nwg-panel" somewhere in the command line is not enough: that also
+    matches `nwg-panel-config`, `tail -f ~/.config/nwg-panel/style.css` or `earlyoom --avoid nwg-panel`.
+    """
+    if not argv:
+        return False
+    names = ("nwg-panel", ".nwg-panel-wrapped")
+    if os.path.basename(argv[0]) in names:
+        return True
+    if not os.path.basename(argv[0]).startswith("python"):
+        return False
+    # what the interpreter runs: the 1st argument after its options, of which -W and -X take a value
+    args = argv[1:]
+    while args and args[0].startswith("-") and args[0] != "-m":
+        args = args[2:] if args[0] in ("-W", "-X") else args[1:]
+    if args[:1] == ["-m"]:
+        return args[1:2] == ["nwg_panel.main"]
+    path, script = os.path.split(args[0]) if args else ("", "")
+    return script in names or (script == "main.py" and os.path.basename(path) == "nwg_panel")
+
+
+def start_time(pid):
+    """Start time of a process (field 22 of /proc/<pid>/stat), None if it's gone."""
+    try:
+        with open(f"/proc/{pid}/stat", "rb") as f:
+            # the 2nd field, (comm), may contain spaces and parentheses: count from the last ")"
+            return f.read().rsplit(b")", 1)[1].split()[19]
+    except (OSError, IndexError):
+        return None
 
 
 def panel_pids():
     """PIDs of our running nwg-panel instances (cached; the /proc scan only happens when they change)."""
     global _panel_pids
-    alive = []
-    for pid in _panel_pids:
-        try:
-            os.kill(pid, 0)
-            alive.append(pid)
-        except OSError:
-            pass
+    # a cached PID is only trusted if it still belongs to the same process: once the panel is gone, its PID may
+    # be given to anything, and our signal would terminate it
+    alive = [pid for pid in _panel_pids if start_time(pid) == _panel_pids[pid]]
     if alive:
         return alive
 
+    _panel_pids = {}
     uid = os.getuid()
     for entry in os.listdir("/proc"):
         if not entry.isdigit():
@@ -41,16 +73,36 @@ def panel_pids():
         try:
             if os.stat(f"/proc/{entry}").st_uid != uid:
                 continue
+            started = start_time(entry)
             with open(f"/proc/{entry}/cmdline", "rb") as f:
-                argv = f.read().split(b"\0")
+                argv = f.read().decode("utf-8", errors="replace").split("\0")
         except OSError:
             continue
-        # `nwg-panel ...` or `python3 /usr/bin/nwg-panel ...`; not `nwg-panel-config`, nor an editor
-        # opened on `~/.config/nwg-panel/style.css`
-        if any(os.path.basename(a) == b"nwg-panel" for a in argv[:2]):
-            alive.append(int(entry))
-    _panel_pids = alive
-    return alive
+        if started and is_panel_cmdline(argv):
+            _panel_pids[int(entry)] = started
+    return list(_panel_pids)
+
+
+def parse_signal(value):
+    """
+    Signal number from the `SIG` variable, None if invalid. The value used to be handed over to `pkill -<SIG>`:
+    like there, it may be a number or a name, with or without the SIG prefix (USR1, SIGUSR2, RTMIN+1, RTMAX-2).
+    """
+    name = str(value).strip().upper()
+    if name.startswith("SIG"):
+        name = name[3:]
+    try:
+        if name.isdigit():
+            sig = int(name)
+        elif name.startswith("RTMIN+"):
+            sig = signal.SIGRTMIN + int(name[6:])
+        elif name.startswith("RTMAX-"):
+            sig = signal.SIGRTMAX - int(name[6:])
+        else:
+            sig = int(signal.Signals["SIG" + name])
+    except (KeyError, ValueError):
+        return None
+    return sig if sig in signal.valid_signals() else None
 
 
 def is_command(cmd):
@@ -100,7 +152,11 @@ def get_config_dir():
 
 
 def main():
-    refresh_signal = os.getenv("SIG") if os.getenv("SIG") else 10
+    refresh_signal = parse_signal(os.getenv("SIG")) if os.getenv("SIG") else 10
+    if refresh_signal is None:
+        # not fatal: autostart-dwl.sh has to run and the data file to be written all the same
+        print("Invalid signal SIG={}: expected a number or a name such as USR1 or RTMIN+1. "
+              "The panel will not be told to refresh.".format(os.getenv("SIG")))
 
     outputs = list_outputs()
     if len(outputs) > 0:
@@ -175,11 +231,12 @@ def main():
 
             # was `pkill -f -SIG nwg-panel`: 2 forks per update, and SIGUSR1 (default action: terminate)
             # sent to any process whose command line merely contains "nwg-panel"
-            for pid in panel_pids():
-                try:
-                    os.kill(pid, int(refresh_signal))
-                except OSError:
-                    pass
+            if refresh_signal is not None:
+                for pid in panel_pids():
+                    try:
+                        os.kill(pid, refresh_signal)
+                    except OSError:
+                        pass
             cnt = 0
 
 

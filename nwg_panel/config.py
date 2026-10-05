@@ -5135,6 +5135,11 @@ def main():
     for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
         GLib.unix_signal_add(GLib.PRIORITY_HIGH, sig, signal_handler, sig)
 
+    # SIGUSR1 / SIGUSR2 are meant for the panel (dwl refresh), but `pkill -USR1 nwg-panel` reaches us as well, and
+    # their default action is to terminate. Keep ignoring them; SIG_IGN would be inherited by the commands we run.
+    for sig in (signal.SIGUSR1, signal.SIGUSR2):
+        GLib.unix_signal_add(GLib.PRIORITY_HIGH, sig, lambda: True)
+
     for sig in range(signal.SIGRTMIN, signal.SIGRTMAX + 1):
         try:
             signal.signal(sig, rt_sig_handler)
