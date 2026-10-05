@@ -119,8 +119,13 @@ class Clock(Gtk.EventBox):
             m = str(month)
         except:
             m = None
-        d = ymd[2]
-        GLib.idle_add(self.update_widget, time, tooltip, self.has_note(y, m, d))
+        d = now.day  # not "%d": the keys come from Gtk.Calendar and have no leading zero ("5", not "05")
+        try:
+            has_note = self.has_note(y, m, d)
+        except Exception:
+            # e.g. a hand-edited calendar: no reminder, but the loop must go on and the time be displayed
+            has_note = False
+        GLib.idle_add(self.update_widget, time, tooltip, has_note)
 
     def refresh(self):
         thread = create_background_task(self.get_output, self.settings["interval"])
