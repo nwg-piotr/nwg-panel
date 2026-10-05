@@ -258,7 +258,7 @@ class MangoTags(Gtk.Box):
                 self.pack_start(eb_scratchpad, False, False, 3)
 
                 lbl = Gtk.Label.new()
-                lbl.set_markup(f"<span size='xx-small'><b>{self.settings["scratchpad-label"]}</b></span>")
+                lbl.set_markup(f"<span size='xx-small'><b>{self.settings['scratchpad-label']}</b></span>")
                 lbl.set_property("name", "task-box")
                 eb_scratchpad.add(lbl)
 
@@ -302,7 +302,7 @@ class MangoTags(Gtk.Box):
             eprint("Failed loading vocabulary")
             sys.exit(1)
 
-        lang = os.getenv("LANG").split(".")[0] if not self.shell_data["interface-locale"] else self.shell_data["interface-locale"]
+        lang = (os.getenv("LANG") or "en_US").split(".")[0] if not self.shell_data["interface-locale"] else self.shell_data["interface-locale"]
         # translate if translation available
         if lang != "en_US":
             loc_file = os.path.join(dir_name, "langs", "{}.json".format(lang))

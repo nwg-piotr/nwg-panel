@@ -315,7 +315,7 @@ def load_vocabulary():
         eprint("Failed loading vocabulary")
         sys.exit(1)
 
-    lang = os.getenv("LANG").split(".")[0] if not shell_data["interface-locale"] else shell_data["interface-locale"]
+    lang = (os.getenv("LANG") or "en_US").split(".")[0] if not shell_data["interface-locale"] else shell_data["interface-locale"]
     # translate if translation available
     if lang != "en_US":
         loc_file = os.path.join(dir_name, "langs", "{}.json".format(lang))
@@ -1820,14 +1820,14 @@ class EditorWrapper(object):
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_niri_workspaces.glade"))
         frame = builder.get_object("frame")
-        frame.set_label(f"  {voc["module"]}: NiriWorkspaces  ")
+        frame.set_label(f"  {voc['module']}: NiriWorkspaces  ")
 
-        builder.get_object("show-workspaces-from-all-outputs").set_label(f"{voc["show-workspaces-from-all-outputs"]}:")
-        builder.get_object("show-icon").set_label(f"{voc["show-focused-window-icon"]}:")
-        builder.get_object("lbl-icon-size").set_text(f"{voc["icon-size"]}:")
-        builder.get_object("show-name").set_label(f"{voc["show-focused-window-name"]}:")
-        builder.get_object("lbl-window-name-length-limit").set_text(f"{voc["window-name-length-limit"]}:")
-        builder.get_object("show-per-workspace-window-icons").set_label(f"{voc["show-window-icons-in-workspace"]}")
+        builder.get_object("show-workspaces-from-all-outputs").set_label(f"{voc['show-workspaces-from-all-outputs']}:")
+        builder.get_object("show-icon").set_label(f"{voc['show-focused-window-icon']}:")
+        builder.get_object("lbl-icon-size").set_text(f"{voc['icon-size']}:")
+        builder.get_object("show-name").set_label(f"{voc['show-focused-window-name']}:")
+        builder.get_object("lbl-window-name-length-limit").set_text(f"{voc['window-name-length-limit']}:")
+        builder.get_object("show-per-workspace-window-icons").set_label(f"{voc['show-window-icons-in-workspace']}")
         builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
 
         self.ws_show_all_outputs = builder.get_object("show-workspaces-from-all-outputs")
@@ -1908,17 +1908,17 @@ class EditorWrapper(object):
 
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_mango_tags.glade"))
         frame = builder.get_object("frame")
-        frame.set_label(f"  {voc["module"]}: MangoTags  ")
+        frame.set_label(f"  {voc['module']}: MangoTags  ")
 
-        builder.get_object("show-tags-from-all-monitors").set_label(f"{voc["show-tags-from-all-monitors"]}:")
-        builder.get_object("sort-monitors-by-x").set_label(f"{voc["sort-monitors-by-x"]}:")
-        builder.get_object("show-layout").set_label(f"{voc["show-layout"]}:")
-        builder.get_object("show-per-tag-window-icons").set_label(f"{voc["show-per-tag-window-icons"]}:")
-        builder.get_object("lbl-icon-size").set_text(f"{voc["icon-size"]}:")
-        builder.get_object("show-per-tag-window-names").set_label(f"{voc["show-per-tag-window-names"]}:")
-        builder.get_object("lbl-window-name-length-limit").set_text(f"{voc["window-name-length-limit"]}:")
-        builder.get_object("show-empty-tags").set_label(f"{voc["show-empty-tags"]}:")
-        builder.get_object("lbl-scratchpad-label").set_text(f"{voc["scratchpad-label"]}:")
+        builder.get_object("show-tags-from-all-monitors").set_label(f"{voc['show-tags-from-all-monitors']}:")
+        builder.get_object("sort-monitors-by-x").set_label(f"{voc['sort-monitors-by-x']}:")
+        builder.get_object("show-layout").set_label(f"{voc['show-layout']}:")
+        builder.get_object("show-per-tag-window-icons").set_label(f"{voc['show-per-tag-window-icons']}:")
+        builder.get_object("lbl-icon-size").set_text(f"{voc['icon-size']}:")
+        builder.get_object("show-per-tag-window-names").set_label(f"{voc['show-per-tag-window-names']}:")
+        builder.get_object("lbl-window-name-length-limit").set_text(f"{voc['window-name-length-limit']}:")
+        builder.get_object("show-empty-tags").set_label(f"{voc['show-empty-tags']}:")
+        builder.get_object("lbl-scratchpad-label").set_text(f"{voc['scratchpad-label']}:")
         builder.get_object("lbl-angle").set_text("{}:".format(voc["angle"]))
 
         self.ws_show_all_outputs = builder.get_object("show-tags-from-all-monitors")

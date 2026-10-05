@@ -119,7 +119,7 @@ def load_vocabulary():
         sys.exit(1)
 
     shell_data = load_shell_data()
-    lang = os.getenv("LANG").split(".")[0] if not shell_data["interface-locale"] else shell_data["interface-locale"]
+    lang = (os.getenv("LANG") or "en_US").split(".")[0] if not shell_data["interface-locale"] else shell_data["interface-locale"]
     # translate if translation available
     if lang != "en_US":
         loc_file = os.path.join(dir_name, "langs", "{}.json".format(lang))
@@ -878,6 +878,7 @@ def main():
             check_key(panel, "width", 0)
             w = panel["width"]
 
+            check_key(panel, "controls-settings", {})
             check_key(panel["controls-settings"], "window-width", 0)
             controls_width = panel["controls-settings"]["window-width"] if panel["controls-settings"][
                                                                                "window-width"] > 0 else int(w / 5)
@@ -994,7 +995,7 @@ def main():
             print("right box created")
 
             if panel["menu-start"] == "right":
-                ms = MenuStart(panel["menu-start-settings"], icons_path=icons_path)
+                ms = MenuStart(panel, icons_path=icons_path)
                 right_box.pack_end(ms, False, False, 0)
 
             if panel["controls"] and panel["controls"] == "right":
