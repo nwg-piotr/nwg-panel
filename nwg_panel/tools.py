@@ -270,17 +270,20 @@ def list_outputs(sway=False, silent=False):
                 outputs_dict[name] = {}
                 outputs_dict[name]["name"] = name
                 outputs_dict[name]["description"] = f"{o["make"] } {o["model"]} {o["serial"]}"
+                outputs_dict[name]["transform"] = o["transform"]
                 for mode in o["modes"]:
                     if mode["current"]:
                         outputs_dict[name]["width"] = mode["width"]
                         outputs_dict[name]["height"] = mode["height"]
+                        # flip width/height on vertical monitors
+                        if o["transform"] in ["90", "270", "flipped-90", "flipped-270"]:
+                            outputs_dict[name]["width"] = mode["height"]
+                            outputs_dict[name]["height"] = mode["width"]
                         break
-                outputs_dict[name]["transform"] = o["transform"]
                 outputs_dict[name]["x"] = o["position"]["x"]
                 outputs_dict[name]["y"] = o["position"]["y"]
-                outputs_dict[name]["transform"] = o["transform"]
                 outputs_dict[name]["scale"] = float(o["scale"])
-
+                outputs_dict[name]["transform"] = o["transform"]
         else:
             print("'wlr-randr' command not found, terminating")
             sys.exit(1)
