@@ -2340,7 +2340,8 @@ class EditorWrapper(object):
             "root-css-name": "tray",
             "inner-css-name": "inner-tray",
             "smooth-scrolling-threshold": 0,
-            "new-left": False
+            "new-left": False,
+            "sort-by-category": False
         }
         for key in defaults:
             check_key(settings, key, defaults[key])
@@ -2354,6 +2355,8 @@ class EditorWrapper(object):
         builder.get_object("lbl-css-name").set_text("{}:".format(voc["css-name"]))
         builder.get_object("lbl-smooth-scrolling-threshold").set_text("{}:".format(voc["smooth-scrolling-threshold"]))
         builder.get_object("new-left").set_label("{}".format(voc["new-left"]))
+        builder.get_object("sort-by-category").set_label("{}".format(voc["sort-by-category"]))
+        builder.get_object("sort-by-category").set_tooltip_text(voc["sort-by-category-tooltip"])
 
         self.nc_icon_size = builder.get_object("icon-size")
         self.nc_icon_size.set_numeric(True)
@@ -2376,6 +2379,12 @@ class EditorWrapper(object):
         self.ckb_new_left = builder.get_object("new-left")
         self.ckb_new_left.set_active(settings["new-left"])
 
+        # the tray ignores "new-left" when it sorts by category
+        self.ckb_sort_by_category = builder.get_object("sort-by-category")
+        self.ckb_sort_by_category.set_active(settings["sort-by-category"])
+        self.ckb_new_left.set_sensitive(not self.ckb_sort_by_category.get_active())
+        self.ckb_sort_by_category.connect("toggled", lambda cb: self.ckb_new_left.set_sensitive(not cb.get_active()))
+
         for item in self.scrolled_window.get_children():
             item.destroy()
         self.scrolled_window.add(frame)
@@ -2388,6 +2397,7 @@ class EditorWrapper(object):
         settings["inner-css-name"] = self.nc_inner_css_name.get_text()
         settings["smooth-scrolling-threshold"] = int(self.nc_smooth_scrolling_threshold.get_value())
         settings["new-left"] = self.ckb_new_left.get_active()
+        settings["sort-by-category"] = self.ckb_sort_by_category.get_active()
 
         save_json(self.config, self.file)
 

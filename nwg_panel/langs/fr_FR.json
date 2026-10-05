@@ -283,6 +283,8 @@
   "slider-width-tooltip": "Largeur de la fenêtre en pixels. 0 pour automatique.",
   "small-icon-size": "Taille des petites icônes",
   "smooth-scrolling-threshold": "Seuil du défilement fluide",
+  "sort-by-category": "Trier par catégorie",
+  "sort-by-category-tooltip": "Applications d'abord, puis communications, services système et matériel (réseau, volume, Bluetooth...), chaque groupe dans l'ordre d'apparition. Remplace « Nouveaux éléments à gauche ».",
   "sort-monitors-by-x": "Trier les écrans par coordonnée x",
   "sort-outputs-by-x": "Trier les sorties par coordonnée x",
   "source": "Source",
