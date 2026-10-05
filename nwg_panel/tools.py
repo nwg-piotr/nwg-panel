@@ -625,6 +625,10 @@ def get_brightness(device="", controller=""):
         output = cmd2string(cmd)
         b = int(output.split("current value =")[1].split(",")[0])
         brightness = int(round(float(b), 0))
+        latest = ddcutil_cache.get(device)
+        if latest is not cached:
+            # set_brightness() ran while we were reading: what it set is newer than what we read
+            return latest[1]
         ddcutil_cache[device] = (time.monotonic(), brightness)
     else:
         raise ValueError("Couldn't get brightness, is 'light' or 'brightnessctl' or 'ddcutil' installed?")
