@@ -31,6 +31,8 @@ class Controls(Gtk.EventBox):
 
         defaults = {
             "show-brightness": False,
+            "backlight-poll": True,
+            "backlight-max": 100,
             "show-volume": False,
             "show-battery": True,
             "icon-size": 16,
@@ -59,6 +61,7 @@ class Controls(Gtk.EventBox):
         if self.bri_label:
             self.bri_label.set_property("name", "executor-label")
         self.bri_value = 0
+        self.bri_read = False
 
         self.vol_icon_name = "view-refresh-symbolic"
         self.vol_image = Gtk.Image.new_from_icon_name(self.vol_icon_name, Gtk.IconSize.MENU)
@@ -138,7 +141,11 @@ class Controls(Gtk.EventBox):
         box.pack_start(self.pan_image, False, False, 4)
 
     def refresh_output(self):
-        if "brightness" in self.settings["components"]:
+        # Some monitors accept DDC/CI writes but always report the same value back:
+        # with "backlight-poll": false the value is read once, then only our own changes count.
+        if "brightness" in self.settings["components"] and (
+                self.settings["backlight-poll"] or not self.bri_read):
+            self.bri_read = True
             try:
                 self.bri_value = get_brightness(
                     device=self.settings["backlight-device"],
@@ -790,13 +797,17 @@ class PopupWindow(Gtk.Window):
     def set_bri(self, slider):
         self.parent.bri_value = int(slider.get_value())
         self.parent.update_brightness(get=False)
-        set_brightness(self.parent.bri_value, device=self.settings["backlight-device"],
+        # "backlight-max" caps the value actually sent (the slider and label keep 0-100):
+        # some monitors ignore a DDC/CI write equal to the value they (wrongly) report, e.g. 100.
+        set_brightness(min(self.parent.bri_value, self.settings["backlight-max"]),
+                       device=self.settings["backlight-device"],
                        controller=self.settings["backlight-controller"])
 
     def on_button_release(self, scale, event):
-        if self.value_changed:
-            self.set_bri(scale)
-            self.value_changed = False
+        # Apply on every release, not only when "value-changed" fired: if the slider was
+        # reset to the value reported by the monitor, dragging back to it must still apply.
+        self.set_bri(scale)
+        self.value_changed = False
 
     def on_value_changed(self, *args):
         if self.scrolled:

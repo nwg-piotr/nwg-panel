@@ -81,6 +81,8 @@ SKELETON_PANEL: dict = {
         "components": ["brightness", "volume", "battery"],
         "commands": {"battery": ""},
         "show-brightness": False,
+        "backlight-poll": True,
+        "backlight-max": 100,
         "show-volume": False,
         "show-battery": True,
         "interval": 1,
@@ -4458,6 +4460,8 @@ class EditorWrapper(object):
             "per-app-volume": False,
             "backlight-controller": "brightnessctl",
             "backlight-device": "",
+            "backlight-poll": True,
+            "backlight-max": 100,
             "interval": 1,
             "window-width": 0,
             "window-margin-horizontal": 0,
@@ -4523,6 +4527,19 @@ class EditorWrapper(object):
         self.ctrl_backlight_device.set_text(settings["backlight-device"])
         self.ctrl_backlight_device.set_placeholder_text(voc["backlight-device"])
         self.ctrl_backlight_device.set_tooltip_text(voc["backlight-device-tooltip"])
+
+        self.ctrl_backlight_poll = builder.get_object("backlight-poll")
+        self.ctrl_backlight_poll.set_label(voc["backlight-poll"])
+        self.ctrl_backlight_poll.set_tooltip_text(voc["backlight-poll-tooltip"])
+        self.ctrl_backlight_poll.set_active(settings["backlight-poll"])
+
+        builder.get_object("lbl-backlight-max").set_text("{}:".format(voc["backlight-max"]))
+        self.ctrl_backlight_max = builder.get_object("backlight-max")
+        self.ctrl_backlight_max.set_numeric(True)
+        adj = Gtk.Adjustment(value=100, lower=1, upper=100, step_increment=1, page_increment=10, page_size=0)
+        self.ctrl_backlight_max.configure(adj, 1, 0)
+        self.ctrl_backlight_max.set_value(settings["backlight-max"])
+        self.ctrl_backlight_max.set_tooltip_text(voc["backlight-max-tooltip"])
 
         self.ctrl_comp_volume = builder.get_object("ctrl-comp-volume")
         self.ctrl_comp_volume.set_label(voc["volume"])
@@ -4691,6 +4708,8 @@ class EditorWrapper(object):
         settings["backlight-controller"] = self.ctrl_backlight_controller.get_active_id()
 
         settings["backlight-device"] = self.ctrl_backlight_device.get_text()
+        settings["backlight-poll"] = self.ctrl_backlight_poll.get_active()
+        settings["backlight-max"] = int(self.ctrl_backlight_max.get_value())
 
         if self.ctrl_comp_volume.get_active():
             if "volume" not in settings["components"]:
