@@ -20,8 +20,12 @@ setup(
     license='MIT',
     author='Piotr Miller',
     author_email='nwg.piotr@gmail.com',
-    python_requires='>=3.4.0',
-    install_requires=['pygobject'],
+    # f-strings everywhere (3.6), `list[str]` annotations in the tray (3.9)
+    python_requires='>=3.9',
+    # i3ipc and requests are imported unconditionally by modules main.py always imports (scratchpad, sway_mode,
+    # playerctl, random_wallpaper); dasbus is optional (the tray is skipped without it)
+    install_requires=['pygobject', 'psutil', 'i3ipc', 'requests'],
+    extras_require={'tray': ['dasbus']},
     entry_points={
         'gui_scripts': [
             'nwg-panel = nwg_panel.main:main',

@@ -9,6 +9,7 @@ License: MIT
 """
 import argparse
 import os
+import re
 import signal
 import sys
 import threading
@@ -339,6 +340,78 @@ def on_i3ipc_event(i3conn, event):
         common.outputs_num = num
 
     GLib.idle_add(hide_controls_popup, priority=GLib.PRIORITY_HIGH)
+
+
+def load_css_tolerant(provider, css, path, max_passes=20):
+    """
+    GTK3 drops the WHOLE stylesheet when a single declaration fails to parse (e.g. `width:` on a widget):
+    the panel then runs unstyled, opaque, with the default theme (#419). The declarations at fault are
+    reported with file, line and column, removed from the text and the sheet is loaded again, so that
+    everything else still applies.
+    """
+    for _ in range(max_passes):
+        errors = []
+
+        def on_error(_provider, section, error):
+            if error.matches(Gtk.CssProviderError.quark(), Gtk.CssProviderError.DEPRECATED):
+                return  # a warning: the sheet still loads
+            errors.append((section.get_start_line(), section.get_start_position(), error.message))
+
+        handler = provider.connect("parsing-error", on_error)
+        try:
+            provider.load_from_data(css)
+            return True
+        except GLib.Error as e:
+            if not errors:
+                eprint(f"{path}: {e.message}")
+                return False
+        finally:
+            provider.disconnect(handler)
+
+        # the section only covers the token at fault (the property name, say): drop the whole declaration
+        # around it. Boundaries are searched in a copy with the comments blanked out, so that a `;` or `}`
+        # inside a comment can't be mistaken for one.
+        plain = re.sub(rb"/\*.*?\*/", lambda m: b" " * len(m.group()), css, flags=re.S)
+        line_starts = [0]
+        for line in css.split(b"\n")[:-1]:
+            line_starts.append(line_starts[-1] + len(line) + 1)
+        spans = []
+        for line, pos, message in errors:
+            if line >= len(line_starts):
+                continue
+            at = min(line_starts[line] + pos, len(plain))
+            depth = plain.count(b"{", 0, at) - plain.count(b"}", 0, at)
+            start = max(plain.rfind(b"{", 0, at), plain.rfind(b";", 0, at), plain.rfind(b"}", 0, at)) + 1
+            semicolon, open_brace, close_brace = plain.find(b";", at), plain.find(b"{", at), plain.find(b"}", at)
+            if depth > 0:
+                # inside a block: one declaration, up to the next `;` (or the end of the block)
+                end = semicolon + 1 if semicolon != -1 and (close_brace == -1 or semicolon < close_brace) else \
+                    (close_brace if close_brace != -1 else len(css))
+            elif semicolon != -1 and (open_brace == -1 or semicolon < open_brace):
+                end = semicolon + 1  # an at-rule such as @define-color
+            elif open_brace != -1:
+                end = plain.find(b"}", open_brace)  # a whole ruleset with a bad selector
+                end = end + 1 if end != -1 else len(css)
+            else:
+                end = len(css)
+            eprint(f"{path}:{line + 1}:{pos + 1}: {message} -- ignoring: "
+                   f"{css[start:end].strip().decode('utf-8', errors='replace')}")
+            spans.append((start, end))
+        # merge overlapping spans, cut from the end so that earlier offsets stay valid
+        merged = []
+        for start, end in sorted(spans):
+            if merged and start <= merged[-1][1]:
+                merged[-1] = (merged[-1][0], max(end, merged[-1][1]))
+            else:
+                merged.append((start, end))
+        new_css = css
+        for start, end in reversed(merged):
+            new_css = new_css[:start] + new_css[end:]
+        if new_css == css:
+            break
+        css = new_css
+    eprint(f"{path}: still invalid after {max_passes} passes, giving up")
+    return False
 
 
 def hide_controls_popup():
@@ -767,15 +840,16 @@ def main():
     provider = Gtk.CssProvider()
     style_context = Gtk.StyleContext()
     style_context.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+    style_path = os.path.join(common.config_dir, args.style)
     try:
-        provider.load_from_path(os.path.join(common.config_dir, args.style))
-    except Exception as e:
+        with open(style_path, "rb") as f:
+            css = f.read()
+    except OSError as e:
         eprint(e)
-
+        css = b""
     # Controls background window (invisible): add style missing from the css file
-    css = provider.to_string().encode('utf-8')
-    css += b""" window#bcg-window { background-color: rgba(0, 0, 0, 0.2); } """
-    provider.load_from_data(css)
+    css += b"\nwindow#bcg-window { background-color: rgba(0, 0, 0, 0.2); }\n"
+    load_css_tolerant(provider, css, style_path)
 
     # Mirror bars to all outputs #48 (if panel["output"] == "All")
     to_remove = []

@@ -810,7 +810,9 @@ def list_configs(config_dir):
             try:
                 with open(path, 'r') as f:
                     config = json.load(f)
-                configs[path] = config
+                # a panel config is a list of panels; any other JSON file in the directory is not ours
+                if isinstance(config, list) and all(isinstance(p, dict) for p in config):
+                    configs[path] = config
             except:
                 pass
 

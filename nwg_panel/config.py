@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import copy
 import json
 import os
 import signal
@@ -734,7 +735,7 @@ class PanelSelector(Gtk.Window):
 
     def append(self, btn, file):
         config = load_json(file)
-        panel = SKELETON_PANEL
+        panel = copy.deepcopy(SKELETON_PANEL)  # a shared dict would carry edits from one panel to the next
         config.append(panel)
         idx = config.index(panel)
         save_json(config, file)
@@ -963,7 +964,7 @@ class EditorWrapper(object):
             self.panel = self.config[self.panel_idx]
         else:
             self.config = []
-            self.panel = SKELETON_PANEL
+            self.panel = copy.deepcopy(SKELETON_PANEL)
             self.config.append(self.panel)
             self.panel_idx = self.config.index(self.panel)
             save_json(self.config, self.file)
@@ -974,7 +975,7 @@ class EditorWrapper(object):
         if self.file:
             self.load_panel()
         else:
-            self.panel = SKELETON_PANEL
+            self.panel = copy.deepcopy(SKELETON_PANEL)
 
         self.check_defaults()
 
@@ -3888,6 +3889,7 @@ class EditorWrapper(object):
         self.executor_name = builder.get_object("name")
         self.executor_name.set_text(name[9:])
         self.executor_name.connect("changed", validate_name)
+        self.executor_original_key = name  # to rename instead of duplicating when the name changes
 
         self.executor_script = builder.get_object("script")
         self.executor_script.set_tooltip_text(voc["script-tooltip"])
@@ -3981,6 +3983,20 @@ class EditorWrapper(object):
 
     def update_executor(self):
         config_key = "executor-{}".format(self.executor_name.get_text())
+        original_key = getattr(self, "executor_original_key", config_key)
+        if self.executor_remove.get_active():
+            config_key = original_key  # remove the executor being edited, whatever the name field says
+        elif config_key != original_key and original_key in self.panel:
+            if config_key in self.panel:
+                eprint("Executor '{}' already exists, keeping '{}'".format(config_key, original_key))
+                config_key = original_key
+            else:
+                # renamed: move the settings and the references instead of leaving a duplicate behind
+                self.panel[config_key] = self.panel.pop(original_key)
+                for side in ["modules-left", "modules-center", "modules-right"]:
+                    if side in self.panel:
+                        self.panel[side] = [config_key if item == original_key else item
+                                            for item in self.panel[side]]
         settings = self.panel[config_key] if config_key in self.panel else {}
 
         if not self.executor_remove.get_active():
