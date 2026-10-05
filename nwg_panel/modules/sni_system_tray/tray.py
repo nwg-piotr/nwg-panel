@@ -81,6 +81,7 @@ def update_tooltip(image, item):
     if description:
         tooltip = "<b>{}</b>\n{}".format(title, description)
     image.set_tooltip_markup(tooltip)
+    image.set_has_tooltip(True)
 
 
 def update_status(event_box, item):
