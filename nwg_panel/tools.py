@@ -472,10 +472,13 @@ def list_sink_inputs():
         if indent > 0 and (sink_name is None or (indent == 2 and name is None)):
             continue  # property line before its parent: skip it
         if indent == 0:  # Get sink name
+            if not line.split("#")[-1].isdigit():
+                continue  # not "Sink Input #N": e.g. 2nd line of a property value containing a newline
             sink_name = line.split("#")[-1]
             sinks[sink_name] = {}
+            name = None
         elif indent == 1:  # Get sink object
-            if line.startswith("        ") and name is not None:  # Output is over two lines
+            if line.startswith("        ") and isinstance(sinks[sink_name].get(name), str):  # Output is over two lines
                 sinks[sink_name][name] = sinks[sink_name][name] + " " + line.strip()
             elif ":" in line:
                 ii = line.index(":")
@@ -490,7 +493,7 @@ def list_sink_inputs():
             ii = line.index("=")
             sub_name = line[:ii].strip()
             sub_value = line[ii + 1:].strip()
-            if sub_value[0] == "'" and sub_value[-1] == "'":
+            if sub_value.startswith("'") and sub_value.endswith("'"):  # the value may be empty
                 sub_value = sub_value[1:-1]
             sinks[sink_name][name][sub_name] = sub_value
         else:  # Unexpected indentation
