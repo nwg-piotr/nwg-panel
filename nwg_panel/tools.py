@@ -260,10 +260,14 @@ def list_outputs(sway=False, silent=False):
             res = subprocess.check_output("wlr-randr --json", shell=True).decode("utf-8").strip()
             outputs = json.loads(res)
             for o in outputs:
+                # a disabled output has no position, transform or current mode
+                if not o.get("enabled", True):
+                    continue
                 name = o.get("name", "")
                 outputs_dict[name] = {}
                 outputs_dict[name]["name"] = name
-                outputs_dict[name]["description"] = f"{o["make"] } {o["model"]} {o["serial"]}"
+                # single quotes inside: nested double quotes in an f-string need Python 3.12
+                outputs_dict[name]["description"] = f"{o['make']} {o['model']} {o['serial']}"
                 outputs_dict[name]["transform"] = o["transform"]
                 for mode in o["modes"]:
                     if mode["current"]:
