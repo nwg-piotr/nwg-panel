@@ -104,8 +104,10 @@ class Playerctl(Gtk.EventBox):
         self.select_player(0)  # the newest player comes first
 
     def on_player_vanished(self, manager, player):
-        # keep the current player if it is still there, otherwise fall back to the first one
-        self.select_player(self.player_idx)
+        # keep the current player if it is still there (its index may have changed), else the first one
+        names = [p.props.player_name for p in manager.props.players]
+        current = self.player.props.player_name if self.player else None
+        self.select_player(names.index(current) if current in names else 0)
 
     def init_player(self, player):
         self.player = player
@@ -168,7 +170,7 @@ class Playerctl(Gtk.EventBox):
 
         self.on_playback_status(player, player.props.playback_status)
 
-    def update_remote_cover(self, url):
+    def update_remote_cover(self, url, cover_url):
         # The URL comes from the player (e.g. a web page's MediaSession artwork through the
         # browser): bounded download, image content only.
         cover_path = ""
@@ -188,17 +190,19 @@ class Playerctl(Gtk.EventBox):
             cover_path = "file://" + path
         except Exception as e:
             eprint("Couldn't update remote cover: {}".format(e))
+        if cover_url != self.old_cover_url:
+            return  # the track changed while this cover was downloading: a newer download owns the image
         GLib.idle_add(self.update_cover_image, cover_path)
 
-    def update_cover_image(self, url):
-        url = urlparse(url)
+    def update_cover_image(self, cover_url):
+        url = urlparse(cover_url)
         path = unquote(url.path)
 
         if url.scheme in ("http", "https"):
             if self.settings["show-cover"]:
                 # in a thread: the function used to be *called* here, i.e. the download ran on the
                 # GTK main loop and froze the whole panel until the server answered
-                threading.Thread(target=self.update_remote_cover, args=(url.geturl(),), daemon=True).start()
+                threading.Thread(target=self.update_remote_cover, args=(url.geturl(), cover_url), daemon=True).start()
             return
 
         if url.scheme == "file" and path:

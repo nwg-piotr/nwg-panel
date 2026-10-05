@@ -2,7 +2,9 @@
 
 import errno
 import os
+import shlex
 import sys
+import tempfile
 import json
 import subprocess
 import stat
@@ -60,14 +62,21 @@ def runtime_dir():
     xdg = os.getenv("XDG_RUNTIME_DIR")
     if xdg and os.path.isdir(xdg):
         return xdg
-    path = os.path.join(temp_dir(), "nwg-panel-{}".format(os.getuid()))
-    try:
-        os.makedirs(path, mode=0o700, exist_ok=True)
-        if os.lstat(path).st_uid != os.getuid() or os.path.islink(path):
-            raise OSError("not ours")
-    except OSError as e:
-        eprint("runtime_dir: can't use {}: {}".format(path, e))
-    return path
+    cache = get_cache_dir()
+    candidates = [os.path.join(temp_dir(), "nwg-panel-{}".format(os.getuid()))]
+    if cache:
+        candidates.append(os.path.join(cache, "nwg-panel-runtime"))
+    for path in candidates:
+        try:
+            os.makedirs(path, mode=0o700, exist_ok=True)
+            if os.lstat(path).st_uid != os.getuid() or os.path.islink(path):
+                raise OSError("not ours")
+            return path
+        except OSError as e:
+            eprint("runtime_dir: can't use {}: {}".format(path, e))
+    # last resort (no XDG_RUNTIME_DIR, /tmp entry hijacked, no HOME): a fresh directory, so the
+    # path is deliberately not stable across restarts here
+    return tempfile.mkdtemp(prefix="nwg-panel-")
 
 
 def owned_by_us(path):
@@ -1265,7 +1274,17 @@ def h_modules_get_all_checked():
     return data
 
 
+def _double_quoted(cmd, lua=False):
+    """`cmd` as one double-quoted word for sway's command parser, or as a Lua string literal
+    (Hyprland lua dispatchers)."""
+    if lua:
+        cmd = cmd.replace("\\", "\\\\")
+    return '"' + cmd.replace('"', '\\"') + '"'
+
+
 def cmd_through_compositor(cmd):
+    """Wrap `cmd` so that the compositor launches it. Callers quote untrusted parts of `cmd`
+    (shlex.quote): on every compositor, `cmd` itself is still parsed by a shell."""
     cs_file = os.path.join(get_config_dir(), "common-settings.json")
     common_settings = load_json(cs_file)
 
@@ -1274,19 +1293,28 @@ def cmd_through_compositor(cmd):
         return cmd
 
     if "run-through-compositor" not in common_settings or common_settings["run-through-compositor"]:
-        cmd = cmd.replace("\"", "\\\"")
+        # The result runs through `sh -c`, then the compositor runs `cmd` (sway, Hyprland: through
+        # its own `sh -c`). Each layer gets its own quoting: shlex.quote() for the outer shell (it
+        # used to see the command inside double quotes, where `$(…)` and backticks are still
+        # expanded), and for sway one double-quoted word for its command parser, which splits
+        # unquoted commands on `,` and `;`.
+        if "\n" in cmd:
+            return cmd  # no compositor parser copes with a newline: run it directly
         if os.getenv("SWAYSOCK"):
-            if os.getenv("XDG_SESSION_DESKTOP") and "miracle-wm" in os.getenv("XDG_SESSION_DESKTOP"):
-                cmd = f'miraclemsg exec "{cmd}"'
+            if "miracle-wm" in (os.getenv("XDG_SESSION_DESKTOP") or ""):
+                # miracle-wm: "…" literal without any escape, then split and execvp without a shell
+                if '"' in cmd:
+                    return cmd
+                cmd = f'miraclemsg exec {shlex.quote(chr(34) + cmd + chr(34))}'
             else:
-                cmd = f'swaymsg exec "{cmd}"'
+                cmd = f'swaymsg exec {shlex.quote(_double_quoted(cmd))}'
         elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
             # check if we are on lua dispatchers (Hyprland >= v0.55.0 with lua config)
             res = hyprctl("dispatch hl.dsp.no_op")  # do nothing
             if res == "ok":
-                cmd = f"hyprctl dispatch 'hl.dsp.exec_cmd(\"{cmd}\")'"
+                cmd = f"hyprctl dispatch {shlex.quote('hl.dsp.exec_cmd(' + _double_quoted(cmd, lua=True) + ')')}"
             else:
-                cmd = f'hyprctl dispatch exec "{cmd}"'
+                cmd = f"hyprctl dispatch exec {shlex.quote(cmd)}"
         elif os.getenv("NIRI_SOCKET"):
             cmd = f'niri msg action spawn -- {cmd}'
 
