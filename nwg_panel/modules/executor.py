@@ -13,7 +13,7 @@ from nwg_panel.tools import check_key, update_image, create_background_task, cmd
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
-from gi.repository import Gtk, Gdk, GdkPixbuf
+from gi.repository import Gtk, Gdk, GdkPixbuf, Pango
 
 
 class Executor(Gtk.EventBox):
@@ -29,6 +29,7 @@ class Executor(Gtk.EventBox):
         self.icon_path = None
         self.icon_mtime = None
         self.dynamic_tooltip = False
+        self.tooltip_state = None  # dynamic tooltip last set: (markup, image path, image mtime)
         self.loop_started = False
         self.run_lock = threading.Lock()
         self.tooltip_image_path = None
@@ -87,7 +88,7 @@ class Executor(Gtk.EventBox):
 
     def update_widget(self, output):
         # parse output
-        label = new_path = None
+        label = new_path = tip = tip_image = None
         if output:
             output = [o.strip() for o in output]
             if len(output) == 1:
@@ -103,18 +104,18 @@ class Executor(Gtk.EventBox):
                 tip = output[2:]
                 # optional image on top of the tooltip: 1st tooltip line = path to a .svg / .png file
                 if os.path.splitext(tip[0])[1] in ('.svg', '.png') and os.path.isfile(tip[0]):
-                    self.set_tooltip_image(tip[0])
+                    tip_image = tip[0]
                     tip = tip[1:]
-                else:
-                    self.set_tooltip_image(None)
-                self.set_tooltip_markup("\n".join(tip) or " ")
-                self.dynamic_tooltip = True
+                tip = "\n".join(tip)
 
-        if self.dynamic_tooltip and (not output or len(output) < 3):
-            # the script stopped providing a tooltip: restore the static one (if any)
+        if tip_image or (tip and tip.strip()):
+            self.set_dynamic_tooltip(tip, tip_image)
+        elif self.dynamic_tooltip:
+            # the script stopped providing a tooltip (or only blank lines): restore the static one (if any)
             self.set_tooltip_image(None)
             self.set_tooltip_text(self.settings["tooltip-text"] or None)
             self.dynamic_tooltip = False
+            self.tooltip_state = None
 
         # update widget contents
         # A script may rewrite the same image file on each run (e.g. a generated graph):
@@ -158,6 +159,25 @@ class Executor(Gtk.EventBox):
 
         return False
 
+    def set_dynamic_tooltip(self, markup, image):
+        try:
+            Pango.parse_markup(markup, -1, "\0")
+        except GLib.Error:
+            # not valid Pango markup: GTK would refuse it and show the text of the previous tooltip
+            markup = GLib.markup_escape_text(markup)
+        try:
+            mtime = os.path.getmtime(image) if image else None
+        except OSError:
+            mtime = None
+        # Setting a tooltip makes GTK query the tooltip under the pointer again, which restarts its delay,
+        # whatever widget it belongs to. Don't do it on each run of the script, only when something changed.
+        state = (markup, image, mtime)
+        if state != self.tooltip_state:
+            self.set_tooltip_image(image)
+            self.set_tooltip_markup(markup or " ")
+            self.tooltip_state = state
+        self.dynamic_tooltip = True
+
     def set_tooltip_image(self, path):
         if path and self.tooltip_box is None:
             # built once, on first use: image above the Pango markup
@@ -172,6 +192,19 @@ class Executor(Gtk.EventBox):
             self.connect("query-tooltip", self.on_query_tooltip)
         self.tooltip_image_path = path
 
+    def load_tooltip_pixbuf(self, path):
+        # A large picture would give a tooltip larger than the screen: fit it into half of the monitor
+        # the widget is on. Smaller pictures keep their size.
+        try:
+            geometry = self.get_display().get_monitor_at_window(self.get_window()).get_geometry()
+            max_width, max_height = geometry.width // 2, geometry.height // 2
+        except Exception:
+            max_width, max_height = 960, 540
+        _, width, height = GdkPixbuf.Pixbuf.get_file_info(path)
+        if width > max_width or height > max_height:
+            return GdkPixbuf.Pixbuf.new_from_file_at_scale(path, max_width, max_height, True)
+        return GdkPixbuf.Pixbuf.new_from_file(path)
+
     def on_query_tooltip(self, widget, x, y, keyboard_mode, tooltip):
         path = self.tooltip_image_path
         if not path:
@@ -179,7 +212,7 @@ class Executor(Gtk.EventBox):
         try:
             key = (path, os.path.getmtime(path))
             if key != self.tooltip_image_key:  # reload only when the file changed
-                self.tooltip_img.set_from_pixbuf(GdkPixbuf.Pixbuf.new_from_file(path))
+                self.tooltip_img.set_from_pixbuf(self.load_tooltip_pixbuf(path))
                 self.tooltip_image_key = key
         except Exception as e:
             print("Failed loading tooltip image {}: {}".format(path, e))
