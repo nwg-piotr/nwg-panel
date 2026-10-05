@@ -10,7 +10,6 @@ import socket
 import threading
 import re
 import glob
-from unittest import result
 
 import gi
 
@@ -639,6 +638,62 @@ def set_brightness(percent, device="", controller=""):
         eprint("Either 'light' or 'brightnessctl' or 'ddcutil' package required")
 
 
+def _read_sysfs_int(path):
+    try:
+        with open(path) as f:
+            return int(f.read().strip())
+    except (OSError, ValueError):
+        return None
+
+
+def get_battery_sysfs(root="/sys/class/power_supply"):
+    """
+    Aggregate every /sys/class/power_supply/BAT*: laptops with two batteries (ThinkPad T480...) report the
+    total charge, like upower's DisplayDevice does. Returns (percent, time, charging) or None.
+    """
+    energy_now, energy_full, power_now = 0, 0, 0
+    statuses = []
+    for bat in sorted(glob.glob(os.path.join(root, "BAT*"))):
+        # energy_* (µWh, power_now µW) preferred; charge_* (µAh, current_now µA) converted with the
+        # voltage so that batteries exposing different units add up (what upower does)
+        now = _read_sysfs_int(f"{bat}/energy_now")
+        full = _read_sysfs_int(f"{bat}/energy_full")
+        rate = _read_sysfs_int(f"{bat}/power_now")
+        if now is None or full is None:
+            voltage = _read_sysfs_int(f"{bat}/voltage_now") or _read_sysfs_int(f"{bat}/voltage_min_design")
+            if not voltage:
+                continue
+            now = _read_sysfs_int(f"{bat}/charge_now")
+            full = _read_sysfs_int(f"{bat}/charge_full")
+            rate = _read_sysfs_int(f"{bat}/current_now")
+            now = now * voltage // 1_000_000 if now is not None else None
+            full = full * voltage // 1_000_000 if full is not None else None
+            rate = rate * voltage // 1_000_000 if rate is not None else None
+        if now is None or not full:
+            continue
+        energy_now += now
+        energy_full += full
+        power_now += abs(rate or 0)  # the sign of the rate is driver-dependent
+        try:
+            with open(f"{bat}/status") as f:
+                statuses.append(f.read().strip())
+        except OSError:
+            pass
+
+    if not energy_full:
+        return None
+
+    percent = min(100, int(round(energy_now * 100 / energy_full, 0)))  # worn cells report now > full
+    charging = "Charging" in statuses
+    time = ""
+    if power_now > 0:
+        if "Discharging" in statuses:
+            time = seconds2string(int(energy_now * 3600 / power_now))
+        elif charging:
+            time = seconds2string(int((energy_full - energy_now) * 3600 / power_now))
+    return percent, time, charging
+
+
 def get_battery():
     percent, time, charging = 0, "", False
     success = False
@@ -658,11 +713,20 @@ def get_battery():
                 success = True
         except:
             pass
+    else:
+        # psutil reports the first battery only (#415): sum them up from sysfs
+        result = get_battery_sysfs()
+        if result:
+            percent, time, charging = result
+            success = True
 
     if not success and nwg_panel.common.commands["upower"]:
+        # a timeout, so that a hung upower can't block the polling thread; a failure still propagates to the
+        # caller, which keeps the last known value instead of showing 0 %
         lines = subprocess.check_output(
-            "LANG=en_US upower -i $(upower -e | grep devices/DisplayDevice) | grep --color=never -E 'state|to[[:space:]]full|to[[:space:]]empty|percentage'",
-            shell=True).decode("utf-8").strip().splitlines()
+            "LANG=en_US upower -i $(upower -e | grep devices/DisplayDevice) | grep --color=never -E "
+            "'state|to[[:space:]]full|to[[:space:]]empty|percentage'",
+            shell=True, timeout=5).decode("utf-8", errors="replace").strip().splitlines()
         for line in lines:
             if "state:" in line:
                 charging = line.split(":")[1].strip() == "charging"
