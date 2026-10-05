@@ -281,19 +281,34 @@ class Clock(Gtk.EventBox):
                                     note = self.calendar[key_year][key_month][key_day]
                                     if note:
                                         c[key_year][key_month][key_day] = note
-        if self.calendar_unreadable:
-            # never overwrite notes we could not read (file being synced, corrupted...)
-            eprint("Calendar: '{}' could not be read, not saving over it".format(self.path))
-        else:
+        if not self.calendar_unreadable or self.set_aside_unreadable():
             save_json(c, self.path)
         self.popup.destroy()
 
+    def set_aside_unreadable(self):
+        """Never save over notes we could not read (truncated or corrupted file...), but do not
+        refuse to save for ever either: the new notes would be lost at the next restart. The
+        file is kept next to the calendar under another name (a single copy), then we save."""
+        path = os.path.realpath(self.path)
+        try:
+            os.replace(path, path + ".unreadable")
+            eprint("Calendar: '{}' could not be read, kept as '{}'".format(self.path, path + ".unreadable"))
+        except FileNotFoundError:
+            pass
+        except OSError as e:
+            eprint("Calendar: '{}' could not be read or renamed ({}), not saving over it".format(self.path, e))
+            return False
+        self.calendar_unreadable = False
+        return True
+
     def read_calendar(self, path):
         """load_json() returned {} on any error, and its "is None" test never matched: a calendar
-        read while being written (Syncthing, another panel...) came back empty, and the next
-        note saved over all the others. An unreadable file now keeps the notes in memory and
-        blocks saving until it can be read again."""
-        c = load_json_strict(path)
+        that could not be read or parsed (caught half written by Syncthing or another panel,
+        corrupted...) loaded as {}, and the next note saved over all the others. Such a file now
+        leaves the notes in memory alone and is set aside, not overwritten, by the next save; the
+        error is logged once. An empty file is not covered: it is an empty calendar (see
+        load_json_strict()), also when another program has just truncated it to write it again."""
+        c = load_json_strict(path, quiet=self.calendar_unreadable)
         if c is None:
             self.calendar_unreadable = True
             return False

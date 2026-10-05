@@ -201,16 +201,19 @@ def save_json(src_dict, path):
         return e
 
 
-def load_json_strict(path):
+def load_json_strict(path, quiet=False):
     """Like load_json(), but None when the file exists and cannot be read or parsed, so that
-    callers can tell "empty" from "unreadable" and avoid saving over a file they never read."""
+    callers can tell "empty" from "unreadable" and avoid saving over a file they never read.
+    An empty file (what an interrupted non-atomic save leaves behind) holds nothing to lose: {}."""
     try:
         with open(path, 'r') as f:
-            return json.load(f)
+            content = f.read()
+        return json.loads(content) if content.strip() else {}
     except FileNotFoundError:
         return {}
     except Exception as e:
-        eprint("Error loading json {}: {}".format(path, e))
+        if not quiet:
+            eprint("Error loading json {}: {}".format(path, e))
         return None
 
 
