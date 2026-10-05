@@ -1,5 +1,8 @@
+import multiprocessing
 import os
 import typing
+
+from gi.repository import GLib
 
 from dasbus.connection import SessionMessageBus
 from dasbus.loop import EventLoop
@@ -8,8 +11,12 @@ from dasbus.client.observer import DBusObserver
 from dasbus.server.interface import accepts_additional_arguments
 import dasbus.typing
 
+from nwg_panel.tools import _die_with_parent
+
 WATCHER_SERVICE_NAME = "org.kde.StatusNotifierWatcher"
 WATCHER_OBJECT_PATH = "/StatusNotifierWatcher"
+
+PARENT_CHECK_DELAY_S = 1
 
 dasbus_event_loop: typing.Union[EventLoop, None] = None
 
@@ -209,16 +216,30 @@ class StatusNotifierWatcherInterface(object):
             }, [])
         # Quit once the panel that started us is gone, to avoid an orphan watcher. Any other host
         # leaving (a second nwg-panel instance...) must not take the tray down with it.
-        if os.getppid() != _parent_pid:
-            deinit()
+        # The bus name of a killed panel can vanish before we are given a new parent: look again
+        # in a moment (only matters where _die_with_parent() does nothing).
+        quit_if_orphan()
+        GLib.timeout_add_seconds(PARENT_CHECK_DELAY_S, quit_if_orphan)
 
 
 _parent_pid = os.getppid()
 
 
+def quit_if_orphan():
+    if os.getppid() != _parent_pid:
+        deinit()
+    return False
+
+
 def init():
     global _parent_pid
-    _parent_pid = os.getppid()
+    # the pid of the panel as it knows it: os.getppid() is already another one if it died meanwhile
+    parent = multiprocessing.parent_process()
+    _parent_pid = parent.pid if parent is not None else os.getppid()
+    # Linux: SIGTERM as soon as the panel dies, however it dies (as for the helpers of popen_watcher)
+    _die_with_parent()
+    if os.getppid() != _parent_pid:
+        return  # the panel died before the line above
     session_bus = SessionMessageBus()
     session_bus.publish_object(WATCHER_OBJECT_PATH, StatusNotifierWatcherInterface())
     session_bus.register_service(WATCHER_SERVICE_NAME)
