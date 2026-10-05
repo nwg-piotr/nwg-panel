@@ -2,7 +2,7 @@ import multiprocessing
 import os
 import typing
 
-from gi.repository import GLib
+from gi.repository import Gio, GLib
 
 from dasbus.connection import SessionMessageBus
 from dasbus.loop import EventLoop
@@ -15,6 +15,10 @@ from nwg_panel.tools import _die_with_parent, eprint
 
 # items one bus connection (or one proxied connection) may register: well above what any real app does
 MAX_ITEMS_PER_SENDER = 32
+# A registration that is ignored is reported, but its text and how often it comes are the caller's
+# choice: the beginning of the text, once per connection, and for this many connections at most.
+MAX_REPORTED_LENGTH = 100
+MAX_REPORTED_SENDERS = 32
 
 WATCHER_SERVICE_NAME = "org.kde.StatusNotifierWatcher"
 WATCHER_OBJECT_PATH = "/StatusNotifierWatcher"
@@ -82,7 +86,8 @@ class StatusNotifierWatcherInterface(object):
 
     def __init__(self):
         self._statusNotifierItems = []
-        self._pending_items = set()  # registered, owner not seen on the bus yet
+        self._item_watches = {}  # item -> name watch on its owner, from registration until the owner is gone
+        self._reported_senders = set()
         self._statusNotifierHosts = []
         self._isStatusNotifierHostRegistered = False
         self._protocolVersion = 0
@@ -90,6 +95,13 @@ class StatusNotifierWatcherInterface(object):
 
     def __del__(self):
         self.session_bus.disconnect()
+
+    def _report_ignored(self, sender, message):
+        if sender not in self._reported_senders and len(self._reported_senders) < MAX_REPORTED_SENDERS:
+            self._reported_senders.add(sender)
+            if len(self._reported_senders) == MAX_REPORTED_SENDERS:
+                message += " (no other connection will be reported)"
+            eprint("StatusNotifierWatcher: {}".format(message))
 
     @accepts_additional_arguments
     def RegisterStatusNotifierItem(self, service, call_info):
@@ -102,7 +114,7 @@ class StatusNotifierWatcherInterface(object):
 
         sender = call_info["sender"]
         if not isinstance(service, str) or not service:
-            eprint("StatusNotifierWatcher: ignoring empty registration from {}".format(sender))
+            self._report_ignored(sender, "ignoring empty registration from {}".format(sender))
             return
 
         # libappindicator sends object path, use sender name and object path
@@ -119,28 +131,29 @@ class StatusNotifierWatcherInterface(object):
             owner = sender
             full_service_name = "{}{}".format(sender, "/StatusNotifierItem")
 
-        if full_service_name in self._statusNotifierItems or full_service_name in self._pending_items:
+        if full_service_name in self._item_watches:
+            return
+        # nothing can be read from an item whose bus name or object path is not valid
+        if not Gio.dbus_is_unique_name(owner) or not GLib.Variant.is_object_path(full_service_name[len(owner):]):
+            self._report_ignored(sender, "ignoring invalid registration {!r} from {}".format(
+                service[:MAX_REPORTED_LENGTH], sender))
             return
         # any peer on the bus may call this: bound what one connection can make us track
-        if sum(1 for name in self._statusNotifierItems + list(self._pending_items)
+        if sum(1 for name in self._item_watches
                if name.split("/", 1)[0] in (sender, owner)) >= MAX_ITEMS_PER_SENDER:
-            eprint("StatusNotifierWatcher: too many items from {}, ignoring {}".format(sender, service))
+            self._report_ignored(sender, "too many items from {}, ignoring {!r}".format(
+                sender, service[:MAX_REPORTED_LENGTH]))
             return
 
-        self._pending_items.add(full_service_name)
         # watch the connection that actually owns the item: for xembedsniproxy that is `service`, not the
-        # caller, otherwise an item whose connection is gone stays registered as long as the proxy lives
-        item_service_observer = DBusObserver(
-            message_bus=self.session_bus,
-            service_name=owner
+        # caller, otherwise an item whose connection is gone stays registered as long as the proxy lives.
+        # Not a DBusObserver: it says nothing when the name is not on the bus to begin with (an invented
+        # one, or a peer that left at once), and the registration would be remembered forever.
+        self._item_watches[full_service_name] = Gio.bus_watch_name_on_connection(
+            self.session_bus.connection, owner, Gio.BusNameWatcherFlags.NONE,
+            lambda *_args: self.item_available_handler(full_service_name),
+            lambda *_args: self.item_unavailable_handler(full_service_name)
         )
-        item_service_observer.service_available.connect(
-            lambda _observer: self.item_available_handler(full_service_name)
-        )
-        item_service_observer.service_unavailable.connect(
-            lambda _observer: self.item_unavailable_handler(full_service_name)
-        )
-        item_service_observer.connect_once_available()
 
     @accepts_additional_arguments
     def RegisterStatusNotifierHost(self, service, call_info):
@@ -190,7 +203,6 @@ class StatusNotifierWatcherInterface(object):
                 full_service_name
             )
         )"""
-        self._pending_items.discard(full_service_name)
         if full_service_name in self._statusNotifierItems:
             return
         self._statusNotifierItems.append(full_service_name)
@@ -208,7 +220,10 @@ class StatusNotifierWatcherInterface(object):
                 full_service_name
             )
         )"""
-        self._pending_items.discard(full_service_name)
+        # the owner is a connection, and a unique name is never given again: stop watching it
+        watch = self._item_watches.pop(full_service_name, 0)
+        if watch:
+            Gio.bus_unwatch_name(watch)
         if full_service_name in set(self._statusNotifierItems):
             self._statusNotifierItems.remove(full_service_name)
             self.StatusNotifierItemUnregistered.emit(full_service_name)

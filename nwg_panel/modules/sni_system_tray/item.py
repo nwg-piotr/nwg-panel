@@ -62,7 +62,11 @@ REFRESH_DELAY_MS = 50
 
 # Pixmaps with a longer side are ignored: a peer could send images up to the D-Bus message limit
 # (128 MiB), which we copy to convert ARGB -> RGBA. Tray icons are 16-256 px, this leaves a wide margin.
+# Nor is more than the beginning of a list looked at: 100 000 images of 1x1 take a second to walk, and
+# as many properties half a second (the interface has 16, some implementations a few more).
 MAX_PIXMAP_SIDE = 1024
+MAX_PIXMAPS = 32
+MAX_PROPERTIES = 64
 
 # Signals that only say "something changed": the new value has to be read.
 SIGNAL_PROPERTIES = {
@@ -82,13 +86,14 @@ def unpack_pixmaps(variant):
     froze the panel for half a second per 256x256 image: the sizes are read first, and the data is
     taken as bytes, only if they are sensible and it is as long as they say."""
     pixmaps = []
-    for i in range(variant.n_children()):
+    for i in range(min(variant.n_children(), MAX_PIXMAPS)):
         pixmap = variant.get_child_value(i)
         width, height = pixmap.get_child_value(0).get_int32(), pixmap.get_child_value(1).get_int32()
         data = pixmap.get_child_value(2)
-        if 0 < width <= MAX_PIXMAP_SIDE and 0 < height <= MAX_PIXMAP_SIDE \
-                and data.n_children() >= width * height * 4:
-            pixmaps.append((width, height, data.get_data_as_bytes().get_data()))
+        size = width * height * 4
+        if 0 < width <= MAX_PIXMAP_SIDE and 0 < height <= MAX_PIXMAP_SIDE and data.n_children() >= size:
+            # the image and no more: the array can be far longer than the sizes say
+            pixmaps.append((width, height, data.get_data_as_bytes().new_from_bytes(0, size).get_data()))
     return pixmaps
 
 
@@ -109,7 +114,7 @@ def unpack_property(name, variant):
 def unpack_properties(variant):
     """a{sv} -> {name: value}, without the properties we don't read or can't use."""
     properties = {}
-    for i in range(variant.n_children()):
+    for i in range(min(variant.n_children(), MAX_PROPERTIES)):
         entry = variant.get_child_value(i)
         name = entry.get_child_value(0).get_string()
         if name in PROPERTIES:
@@ -288,7 +293,10 @@ class StatusNotifierItem(object):
             self._notify(names)
             # Invalidated: changed, value not sent. Read again, as for NewIcon & co. (the old value is
             # kept meanwhile; one no longer exposed is dropped when the answer says so).
-            invalidated = [name for name in parameters.get_child_value(2).unpack() if name in PROPERTIES]
+            invalidated_names = parameters.get_child_value(2)
+            invalidated = [invalidated_names.get_child_value(i).get_string()
+                           for i in range(min(invalidated_names.n_children(), MAX_PROPERTIES))]
+            invalidated = [name for name in invalidated if name in PROPERTIES]
             if "ToolTip" in invalidated:
                 invalidated.remove("ToolTip")
                 self.tooltip_version += 1  # read lazily, as for NewToolTip

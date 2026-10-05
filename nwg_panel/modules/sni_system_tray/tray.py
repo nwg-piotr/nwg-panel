@@ -84,9 +84,8 @@ def pixmap_to_pixbuf(pixmaps, icon_size):
         return None
     # sizes and length of the data were checked when the property was read (item.unpack_pixmaps)
     big_enough = [c for c in pixmaps if min(c[0], c[1]) >= icon_size]
-    width, height, data = min(big_enough, key=lambda c: c[0] * c[1]) if big_enough \
+    width, height, argb = min(big_enough, key=lambda c: c[0] * c[1]) if big_enough \
         else max(pixmaps, key=lambda c: c[0] * c[1])
-    argb = bytes(data[:width * height * 4])
     rgba = bytearray(len(argb))
     rgba[0::4] = argb[1::4]
     rgba[1::4] = argb[2::4]
