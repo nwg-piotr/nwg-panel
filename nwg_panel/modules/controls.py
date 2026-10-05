@@ -109,16 +109,18 @@ class Controls(Gtk.EventBox):
         self.connect('enter-notify-event', self.on_enter_notify_event, settings)
         self.connect('leave-notify-event', self.on_leave_notify_event)
 
+        check_key(settings, "volume-subscribe", True)
+        # True while `pactl subscribe` runs: the volume is then event-driven, not polled.
+        # Set before refresh(): its thread reads these flags as soon as it starts.
+        self.volume_watching = False
+        self.volume_read_pending = False
+
         self.build_box()
         self.refresh()
 
         if "battery" in settings["components"]:
             self.refresh_bat()
 
-        check_key(settings, "volume-subscribe", True)
-        # True while `pactl subscribe` runs: the volume is then event-driven, not polled
-        self.volume_watching = False
-        self.volume_read_pending = False
         if settings["volume-subscribe"] and "volume" in settings["components"] and commands["pactl"]:
             threading.Thread(target=self.volume_watcher, daemon=True).start()
 
@@ -129,6 +131,9 @@ class Controls(Gtk.EventBox):
             try:
                 proc = popen_watcher(["pactl", "subscribe"], env=env)
                 self.volume_watching = True
+                # the poller skips the volume from now on: read it once here, or the widget would
+                # show nothing until the first volume event
+                GLib.idle_add(self.update_volume, get_volume())
                 for line in proc.stdout:
                     if ("on sink" in line or "on server" in line) and not self.volume_read_pending:
                         # dragging a slider or starting a stream sends dozens of events: read the
