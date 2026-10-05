@@ -51,6 +51,14 @@ class Controls(Gtk.EventBox):
         for key in defaults:
             check_key(settings, key, defaults[key])
 
+        # "backlight-max" may come from a hand-edited config: make sure it is an int in 1-100
+        try:
+            if isinstance(settings["backlight-max"], bool):
+                raise TypeError  # int(True) is 1: not a brightness anyone meant
+            settings["backlight-max"] = max(1, min(100, int(settings["backlight-max"])))
+        except (TypeError, ValueError, OverflowError):
+            settings["backlight-max"] = 100
+
         self.set_property("name", settings["root-css-name"])
 
         self.icon_size = settings["icon-size"]
@@ -145,11 +153,11 @@ class Controls(Gtk.EventBox):
         # with "backlight-poll": false the value is read once, then only our own changes count.
         if "brightness" in self.settings["components"] and (
                 self.settings["backlight-poll"] or not self.bri_read):
-            self.bri_read = True
             try:
                 self.bri_value = get_brightness(
                     device=self.settings["backlight-device"],
                     controller=self.settings["backlight-controller"])
+                self.bri_read = True  # only once it succeeded
                 GLib.idle_add(self.update_brightness)
             except Exception as e:
                 eprint(e)
@@ -796,6 +804,7 @@ class PopupWindow(Gtk.Window):
 
     def set_bri(self, slider):
         self.parent.bri_value = int(slider.get_value())
+        self.parent.bri_read = True  # a late first read must not overwrite what the user has set
         self.parent.update_brightness(get=False)
         # "backlight-max" caps the value actually sent (the slider and label keep 0-100):
         # some monitors ignore a DDC/CI write equal to the value they (wrongly) report, e.g. 100.

@@ -4538,7 +4538,11 @@ class EditorWrapper(object):
         self.ctrl_backlight_max.set_numeric(True)
         adj = Gtk.Adjustment(value=100, lower=1, upper=100, step_increment=1, page_increment=10, page_size=0)
         self.ctrl_backlight_max.configure(adj, 1, 0)
-        self.ctrl_backlight_max.set_value(settings["backlight-max"])
+        try:
+            if not isinstance(settings["backlight-max"], bool):
+                self.ctrl_backlight_max.set_value(int(settings["backlight-max"]))
+        except (TypeError, ValueError, OverflowError):
+            pass  # hand-edited config: the spin button keeps the default (100)
         self.ctrl_backlight_max.set_tooltip_text(voc["backlight-max-tooltip"])
 
         self.ctrl_comp_volume = builder.get_object("ctrl-comp-volume")
