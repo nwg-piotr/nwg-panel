@@ -139,10 +139,24 @@ class KeyboardLayout(Gtk.EventBox):
 
         return keyboards
 
+    @staticmethod
+    def device_layouts(keyboard):
+        # `hyprctl devices -j` reports the layouts configured for each keyboard ("fr,us"); per-device
+        # rules make it differ from the global `input:kb_layout`
+        layout = keyboard.get("layout") if isinstance(keyboard, dict) else None
+        return [name.strip() for name in layout.split(",") if name.strip()] if isinstance(layout, str) else []
+
     def get_kb_layouts(self):
         if self.compositor == "Hyprland":
+            main = next((k for k in self.keyboards if k.get("main")), self.keyboards[0] if self.keyboards else None)
+            layouts = self.device_layouts(main) if main is not None else []
+            if layouts:
+                return layouts
             o = hyprctl("j/getoption input:kb_layout")
-            option = json.loads(o)
+            try:
+                option = json.loads(o)
+            except ValueError:
+                return []
             if option and "str" in option:
                 return option["str"].split(",")
             return []
@@ -211,6 +225,15 @@ class KeyboardLayout(Gtk.EventBox):
         if self.settings["show-icon"] and self.settings["icon-placement"] != "left":
             self.box.pack_start(self.image, False, False, 3)
 
+    def hypr_switch_all(self, arg):
+        """`switchxkblayout all <arg>`: `all` exists since Hyprland 0.43; older versions answer
+        "device not found", then every keyboard is switched one by one."""
+        reply = hyprctl(f"switchxkblayout all {arg}")
+        if "device not found" in reply:
+            for k in self.keyboards:
+                if k.get("name"):
+                    hyprctl(f"switchxkblayout {k['name']} {arg}")
+
     def on_left_click(self):
         if self.compositor == "Hyprland":
             if self.device_name:
@@ -221,11 +244,14 @@ class KeyboardLayout(Gtk.EventBox):
                 # created by wayvnc), and keep them in sync: next layout relative to the main (last used) keyboard
                 self.keyboards = self.list_keyboards()
                 main = next((k for k in self.keyboards if k.get("main")), self.keyboards[0] if self.keyboards else None)
-                n = len(self.get_kb_layouts())
-                if main is not None and n > 0:
-                    hyprctl(f"switchxkblayout all {(main.get('active_layout_index', 0) + 1) % n}")
+                # `active_layout_index` is reported since Hyprland 0.51 only; before that, an absolute index would
+                # always be computed from 0 and the click would be stuck on the second layout: use `next`
+                if main is not None and isinstance(main.get("active_layout_index"), int):
+                    # the layouts of the main keyboard (per-device config), not the global option
+                    n = len(self.device_layouts(main)) or len(self.get_kb_layouts())
+                    self.hypr_switch_all((main["active_layout_index"] + 1) % n if n else "next")
                 else:
-                    hyprctl("switchxkblayout all next")
+                    self.hypr_switch_all("next")
         elif self.compositor == "sway":
             # apply to all devices of type:keyboard
             self.i3.command(f'input type:keyboard xkb_switch_layout next')
@@ -244,7 +270,8 @@ class KeyboardLayout(Gtk.EventBox):
                 hyprctl(f'switchxkblayout {self.device_name} {idx}')
             else:
                 # apply to all devices, including those added after the panel started
-                hyprctl(f'switchxkblayout all {idx}')
+                self.keyboards = self.list_keyboards()
+                self.hypr_switch_all(idx)
         elif self.compositor == "sway":
             # apply to all devices of type:keyboard
             self.i3.command(f'input type:keyboard xkb_switch_layout {idx}')
