@@ -37,6 +37,8 @@ icon_theme_watched = False
 
 # seconds; a hung upowerd must not block the battery polling thread
 UPOWER_TIMEOUT = 5
+# power_supply types of external chargers (sysfs "type"); batteries are "Battery"
+AC_SUPPLY_TYPES = ("Mains", "USB", "USB_C", "USB_PD")
 
 
 def eprint(*args, **kwargs):
@@ -694,11 +696,16 @@ def get_battery_sysfs(root="/sys/class/power_supply"):
 
     percent = min(100, int(round(energy_now * 100 / energy_full, 0)))  # worn cells report now > full
     # "charging" means plugged in (psutil's power_plugged): on AC with charge thresholds the batteries say
-    # "Full" / "Not charging", which must not look like running on battery
-    mains = [_read_sysfs_int(os.path.join(os.path.dirname(t), "online"))
-             for t in glob.glob(os.path.join(root, "*", "type")) if _read_sysfs_str(t) == "Mains"]
-    if mains:
-        charging = any(online == 1 for online in mains)
+    # "Full" / "Not charging", which must not look like running on battery. A battery saying "Charging" is
+    # authoritative; otherwise any online charger counts (a USB-C PD one while the barrel-jack Mains is
+    # offline), and with no readable charger the statuses decide.
+    online = [_read_sysfs_int(os.path.join(os.path.dirname(t), "online"))
+              for t in glob.glob(os.path.join(root, "*", "type")) if _read_sysfs_str(t) in AC_SUPPLY_TYPES]
+    online = [o for o in online if o is not None]
+    if "Charging" in statuses:
+        charging = True
+    elif online:
+        charging = any(o == 1 for o in online)
     else:
         charging = bool(statuses) and "Discharging" not in statuses
     time = ""
