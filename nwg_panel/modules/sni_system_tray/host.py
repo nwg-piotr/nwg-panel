@@ -26,9 +26,10 @@ def get_service_name_and_object_path(service: str) -> (str, str):
 
 
 class StatusNotifierHostInterface(object):
-    def __init__(self, host_id, trays: typing.List[Tray]):
+    def __init__(self, host_id, trays: typing.List[Tray], on_watcher_vanished=None):
         self.host_id = host_id
         self.trays = trays
+        self.on_watcher_vanished = on_watcher_vanished
 
         self._statusNotifierItems = []
         self._watcher_signal_ids = []
@@ -119,6 +120,8 @@ class StatusNotifierHostInterface(object):
             item.destroy()
         self._statusNotifierItems.clear()
         self._unsubscribe_watcher()
+        if self.on_watcher_vanished is not None:
+            self.on_watcher_vanished()
 
     def item_registered_handler(self, full_service_service):
         """print(
@@ -167,6 +170,6 @@ class StatusNotifierHostInterface(object):
 _host = None
 
 
-def init(host_id, trays: typing.List[Tray]):
+def init(host_id, trays: typing.List[Tray], on_watcher_vanished=None):
     global _host
-    _host = StatusNotifierHostInterface(host_id, trays)
+    _host = StatusNotifierHostInterface(host_id, trays, on_watcher_vanished)
