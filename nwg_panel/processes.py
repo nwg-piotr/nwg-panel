@@ -91,11 +91,20 @@ def list_processes(once=False):
         from i3ipc import Connection  # python-i3ipc is only needed (and installed) on sway
         tree = Connection().get_tree()
     elif his:
-        output = hyprctl("j/clients")
-        clients = json.loads(output)
+        # hyprctl() returns "" on error/timeout: an exception here would remove the GLib timeout source,
+        # and the list would never refresh again; skip this round instead
+        try:
+            clients = json.loads(hyprctl("j/clients"))
+        except ValueError:
+            eprint("nwg-processes: no valid j/clients reply, skipping this refresh")
+            return not once
     elif niri_sock:
         command = "Windows"
-        windows = niri_ipc(json.dumps(command), is_json=True)["Windows"]
+        reply = niri_ipc(json.dumps(command), is_json=True)
+        if not isinstance(reply, dict):
+            eprint("nwg-processes: no valid Windows reply, skipping this refresh")
+            return not once
+        windows = reply.get("Windows", [])
     elif mis:
         clients = get_mango_ipc("get all-clients").get("clients", {})
 
