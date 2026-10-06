@@ -350,6 +350,8 @@ CSS_UNKNOWN_AT_RULE = "unknown @ rule"
 # errors about comments come with whatever section is open (gtkcssparser.c skip_comment: "FIXME: position"),
 # e.g. the rule before a comment left open at the end of the file: they say nothing about that rule
 CSS_UNPOSITIONED_ERRORS = ("Unterminated comment", "'/*' in comment block")
+# a quoted string (a `/*` in it opens no comment) or a comment opener; an unterminated string ends with its line
+CSS_STRING_OR_COMMENT = re.compile(rb"""(["'])(?:\\.|(?!\1)[^\\\n])*\1?|/\*""", re.S)
 # relative paths GTK resolves: `@import "x"`, `@import url("x")`, `url("x")` (GTK3 needs the quotes)
 CSS_RELATIVE_PATH = re.compile(rb"""(@import\s+|url\(\s*)(["'])((?:\\.|(?!\2)[^\\\n])*)\2""", re.I)
 CSS_URI_SCHEME = re.compile(rb"[A-Za-z][A-Za-z0-9+.-]*:")
@@ -360,6 +362,37 @@ CSS_BCG_WINDOW = b"window#bcg-window { background-color: rgba(0, 0, 0, 0.2); }"
 def _css_blank_comments(css):
     # same length, so that offsets stay valid: a `;`, `}` or `@` inside a comment is not mistaken for syntax
     return re.sub(rb"/\*.*?\*/", lambda m: b" " * len(m.group()), css, flags=re.S)
+
+
+def _css_repair_comments(css, path):
+    """
+    GTK3 drops the whole sheet for a `/*` inside a comment or a comment left open, and can't say where
+    (CSS_UNPOSITIONED_ERRORS), so these can't be cut: fix them in the text instead. A nested `/*` loses its
+    slash (same length: the positions of later errors stay right), an open comment is closed at the end.
+    """
+    i = 0
+    while True:
+        m = CSS_STRING_OR_COMMENT.search(css, i)
+        if not m:
+            return css
+        if m.group() != b"/*":
+            i = m.end()
+            continue
+        end = css.find(b"*/", m.end())
+        # up to the star of `*/` included: GTK reads `/*/` as a nested opener too
+        stop = len(css) if end == -1 else end + 1
+        at = css.find(b"/*", m.end(), stop)
+        while at != -1:
+            line = css.count(b"\n", 0, at) + 1
+            eprint(f"{path}:{line}: '/*' in comment block -- removed the '/'")
+            css = css[:at] + b" " + css[at + 1:]
+            at = css.find(b"/*", at + 2, stop)
+        if end == -1:
+            line = css.count(b"\n", 0, m.start()) + 1
+            eprint(f"{path}:{line}: Unterminated comment -- closed at the end of the file")
+            # the space: a file ending with `/` would make `/*/`
+            return css + b" */"
+        i = end + 2
 
 
 def _css_statement_end(plain, at):
@@ -435,6 +468,7 @@ def load_css(screen, style_path):
         except OSError as e:
             eprint(e)
         else:
+            css = _css_repair_comments(css, style_path)
             load_css_tolerant(provider, _css_absolute_paths(css, os.path.dirname(style_path)), style_path)
 
     bcg_provider = Gtk.CssProvider()
