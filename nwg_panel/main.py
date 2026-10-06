@@ -437,12 +437,8 @@ def niri_watcher():
                 print("niri_watcher: failed to decode JSON:", e)
 
 def on_i3ipc_event(i3conn, event):
-    if common_settings["restart-on-display"]:
-        num = num_active_outputs(i3conn.get_outputs())
-        if num != common.outputs_num:
-            GLib.idle_add(schedule_restart, "Number of outputs changed ({} -> {})".format(common.outputs_num, num))
-        common.outputs_num = num
-
+    # output changes are handled by watch_display (GDK sees sway's outputs come, go, and change mode, scale
+    # or transform): no get_outputs() round-trip on every window/workspace event
     GLib.idle_add(hide_controls_popup, priority=GLib.PRIORITY_HIGH)
 
 
@@ -1181,11 +1177,8 @@ def main():
             else:
                 window.show_all()
 
-    if sway:
-        common.outputs_num = num_active_outputs(common.i3.get_outputs())
-    else:
+    if not sway:
         common.outputs, common.mon_desc2output_name = list_outputs(sway=sway, silent=True)
-        common.outputs_num = len(common.outputs)
 
     if sway:
         # Notice: Don't use Event.OUTPUT, it's not supported on old sway releases.

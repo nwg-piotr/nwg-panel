@@ -173,14 +173,6 @@ def load_autotiling():
     return autotiling
 
 
-def num_active_outputs(outputs):
-    a = 0
-    for output in outputs:
-        if output.active:
-            a += 1
-    return a
-
-
 def list_outputs(sway=False, silent=False):
     """
     Get output names and geometry from i3 tree, assign to Gdk.Display monitors.
