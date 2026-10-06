@@ -415,7 +415,9 @@ def load_css(screen, style_path):
     """
     Load the panel stylesheet. load_from_path() first: GTK resolves relative @import and url() against the
     style file. Only if it fails (GTK3 then drops the whole sheet), the text is loaded by load_css_tolerant().
-    The bcg-window rule goes to a provider of its own (added later: it wins ties) so the file is loaded as is.
+    The bcg-window rule goes to a provider of its own, so that the file is loaded as is. At the same priority
+    the provider added later is consulted first and GTK3 takes each property from the first provider that
+    sets it: the rule always applies, whatever the specificity of a user rule for the same window.
     """
     provider = Gtk.CssProvider()
     Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
