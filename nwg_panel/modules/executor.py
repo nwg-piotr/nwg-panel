@@ -9,12 +9,15 @@ import time
 import gi
 from gi.repository import GLib
 
-from nwg_panel.tools import check_key, update_image, create_background_task, cmd_through_compositor
+from nwg_panel.tools import check_key, update_image, create_background_task, cmd_through_compositor, eprint
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk, Gdk, GdkPixbuf
+
+# seconds a timed out script gets to clean up after SIGTERM, before its process group gets SIGKILL
+KILL_GRACE = 2
 
 
 class Executor(Gtk.EventBox):
@@ -214,19 +217,24 @@ class Executor(Gtk.EventBox):
         return output
 
     def kill_script(self, proc):
-        # SIGTERM, 2 s to clean up, SIGKILL. The script is only reaped afterwards: until then its PID, which is
-        # also the ID of its process group, can't be given to another process.
+        # SIGTERM, up to KILL_GRACE s to clean up, SIGKILL to what is left of the group. The script is only reaped
+        # afterwards: until then its PID, which is also the ID of its process group, can't be given to another
+        # process. Hence the poll with WNOWAIT, which sees the script exit without reaping it.
         try:
             os.killpg(proc.pid, signal.SIGTERM)
-            time.sleep(2)
+            deadline = time.monotonic() + KILL_GRACE
+            while (time.monotonic() < deadline
+                   and os.waitid(os.P_PID, proc.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT) is None):
+                time.sleep(0.05)
+            # also when the script is gone: a child of it may have survived SIGTERM
             os.killpg(proc.pid, signal.SIGKILL)
         except OSError as e:
-            print("Executor '{}': {}".format(self.name, e))
+            eprint("Executor '{}': {}".format(self.name, e))
         try:
             proc.wait(timeout=2)
         except subprocess.TimeoutExpired:
             # not ours to kill (sudo), or in uninterruptible sleep (dead network mount): don't wait for it
-            print("Executor '{}': could not kill the script (PID {})".format(self.name, proc.pid))
+            eprint("Executor '{}': could not kill the script (PID {})".format(self.name, proc.pid))
 
     def get_output(self):
         if "script" in self.settings and self.settings["script"]:
@@ -241,7 +249,7 @@ class Executor(Gtk.EventBox):
                     output = self.run_script().decode("utf-8", errors="replace").splitlines()
                     GLib.idle_add(self.update_widget, output)
                 except subprocess.TimeoutExpired as e:
-                    print("Executor '{}': script timed out after {:g} s".format(self.name, e.timeout))
+                    eprint("Executor '{}': script timed out after {:g} s".format(self.name, e.timeout))
                 except Exception as e:
                     print(e)
                 finally:
@@ -305,11 +313,13 @@ def to_number(value, default):
 def script_timeout(settings):
     """
     Seconds after which a running script is considered stuck and terminated: the "timeout" setting, by default
-    max(interval, 300). None = never. The config file may have been edited by hand: a value that is not a number
-    ("5 min", null) is treated as missing.
+    max(interval, 300), and none with "interval": 0 (a one-shot or signal-driven script may legitimately run long).
+    None = never. The config file may have been edited by hand: a value that is not a number ("5 min", null) is
+    treated as missing.
     """
     timeout = to_number(settings.get("timeout"), None)
     if timeout is None:
-        timeout = max(300, to_number(settings.get("interval"), 0))
+        interval = to_number(settings.get("interval"), 0)
+        timeout = max(300, interval) if interval > 0 else 0
     # 0 = no timeout. There can't be one longer than poll() is able to wait either: 2**31 ms, 24 days.
     return timeout if 0 < timeout < 2 ** 31 // 1000 else None
