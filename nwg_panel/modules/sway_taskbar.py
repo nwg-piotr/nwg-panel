@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-from gi.repository import Gtk, Gdk, GLib
+from gi.repository import Gtk, Gdk
 
 from nwg_panel.tools import check_key, get_icon_name, update_image, load_autotiling, get_config_dir, temp_dir, \
     save_json, update_image, update_image_fallback_desktop

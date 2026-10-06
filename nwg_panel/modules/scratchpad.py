@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 import os.path
 
-from gi.repository import Gtk, GLib
-from i3ipc import Event
+from gi.repository import Gtk
 
 from nwg_panel.tools import check_key, get_icon_name, update_image, temp_dir, save_json
 import nwg_panel.common
