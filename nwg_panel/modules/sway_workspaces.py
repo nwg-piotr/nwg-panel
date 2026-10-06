@@ -54,7 +54,7 @@ class SwayWorkspaces(Gtk.Box):
             ws_num, win_name, win_id, non_empty, win_layout, numbers = self.find_details(tree, workspaces)
 
         # a single label applies to every workspace; with `numbers: []` (dynamic list, #190) the single label
-        # is kept as is and a longer list is matched by position (1st workspace -> 1st label)
+        # is kept as is and a longer list is indexed by workspace number (workspace N -> Nth label)
         for key in ("custom-labels", "focused-labels"):
             labels = self.settings[key]
             if self.settings["numbers"]:
@@ -123,18 +123,19 @@ class SwayWorkspaces(Gtk.Box):
         if self.settings["numbers"]:
             idx = self.settings["numbers"].index(num) if num in self.settings["numbers"] else None
         else:
-            # dynamic list (#190): 1st workspace -> 1st label; a single label applies to all
+            # dynamic list (#190): workspace N -> Nth label, a named workspace has no index
             try:
                 idx = int(num) - 1
             except ValueError:
                 idx = None
         for key in (("focused-labels",) if num == str(ws_num) else ()) + ("custom-labels",):
             labels = self.settings[key]
-            if labels and idx is not None:
-                if len(labels) == 1:
-                    return labels[0]
-                if 0 <= idx < len(labels):
-                    return labels[idx]
+            if labels and idx is not None and 0 <= idx < len(labels):
+                return labels[idx]
+            # dynamic list: a single label applies to every workspace, named ones included (with `numbers`
+            # set, it has already been repeated for each of them)
+            if len(labels) == 1 and not self.settings["numbers"]:
+                return labels[0]
         return str(num)
 
     def refresh(self, tree, workspaces):
