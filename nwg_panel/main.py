@@ -332,7 +332,7 @@ def hypr_watcher():
                 GLib.idle_add(item.set_submap, submap)
         if layout:
             # keyboard layout changed (e.g. Alt+Shift): refresh KeyboardLayout modules, no polling needed
-            for item in common.kb_layouts_list:
+            for item in common.keyboard_layouts_list:
                 GLib.idle_add(item.refresh)
 
 
@@ -1169,7 +1169,7 @@ def main():
 
     if his:
         if (common.h_taskbars_list or common.h_workspaces_list or common.h_submaps_list
-                or common.kb_layouts_list):
+                or common.keyboard_layouts_list):
             print("his: '{}', starting hypr_watcher".format(his))
             # read from Hyprland socket2 on another thread
             thread = threading.Thread(target=hypr_watcher, daemon=True)

@@ -116,11 +116,8 @@ class KeyboardLayout(Gtk.EventBox):
                 label = self.get_current_layout()
                 if label:
                     self.label.set_text(self.settings["labels"].get(label, label))
+                # on Hyprland, refreshed on "activelayout" events (hypr_watcher), no polling needed
                 self.show_all()
-                if self.compositor == "Hyprland":
-                    # updated on Hyprland "activelayout" events (see hypr_watcher), no polling needed
-                    import nwg_panel.common
-                    nwg_panel.common.kb_layouts_list.append(self)
             else:
                 print("KeyboardLayout module: failed listing devices, won't create UI, sorry.")
 
