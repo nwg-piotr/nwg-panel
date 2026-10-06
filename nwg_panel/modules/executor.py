@@ -223,8 +223,12 @@ class Executor(Gtk.EventBox):
         try:
             os.killpg(proc.pid, signal.SIGTERM)
             deadline = time.monotonic() + KILL_GRACE
-            while (time.monotonic() < deadline
-                   and os.waitid(os.P_PID, proc.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT) is None):
+            while time.monotonic() < deadline:
+                try:
+                    if os.waitid(os.P_PID, proc.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT) is not None:
+                        break
+                except ChildProcessError:
+                    break  # already reaped elsewhere: still SIGKILL the group, a child may have survived
                 time.sleep(0.05)
             # also when the script is gone: a child of it may have survived SIGTERM
             os.killpg(proc.pid, signal.SIGKILL)
