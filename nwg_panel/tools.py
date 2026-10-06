@@ -148,6 +148,12 @@ def fsync_dir(path):
         pass
 
 
+def in_config_dir(path):
+    """True if path (as given, a link is not resolved) is in the nwg-panel config directory."""
+    config_dir = os.path.abspath(get_config_dir())
+    return os.path.commonpath([os.path.abspath(path), config_dir]) == config_dir
+
+
 def save_json(src_dict, path):
     """Write atomically: a temporary file in the same directory, flushed to disk, then renamed
     over the target. A crash, a power cut or a full disk (SD cards...) while writing used to
@@ -175,6 +181,10 @@ def save_json(src_dict, path):
                 # place as before, or not at all (below).
                 raise PermissionError(errno.EACCES, os.strerror(errno.EACCES), target)
             mode = stat.S_IMODE(st.st_mode)  # an existing file keeps its mode
+            if in_config_dir(path):
+                # ...but a config created before files were made 0600 loses group/other access:
+                # it may hold API keys
+                mode &= ~0o077
         except FileNotFoundError:
             # A new one is created 0600 and stays so: the configs hold API keys (openweather
             # `appid`, Wallhaven `apikey`...) and used to be created world-readable through the
