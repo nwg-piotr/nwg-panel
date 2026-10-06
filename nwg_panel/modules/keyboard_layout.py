@@ -187,7 +187,11 @@ class KeyboardLayout(Gtk.EventBox):
 
     def get_kb_layouts(self):
         if self.compositor == "Hyprland":
-            ref = self.hypr_reference_keyboard()
+            # the menu index is sent to the configured device when there is one: list that device's layouts
+            ref = next((k for k in self.keyboards if k.get("name") == self.device_name), None) \
+                if self.device_name else None
+            if ref is None:
+                ref = self.hypr_reference_keyboard()
             layouts = self.device_layouts(ref) if ref is not None else []
             if layouts:
                 return layouts
@@ -316,6 +320,10 @@ class KeyboardLayout(Gtk.EventBox):
         self.update_label()
 
     def on_right_click(self):
+        if self.compositor == "Hyprland":
+            # keyboards plugged in (or a devices reply that timed out at start) since the last listing
+            self.keyboards = self.list_keyboards()
+            self.kb_layouts = self.get_kb_layouts()
         if self.kb_layouts:
             menu = Gtk.Menu()
             menu.connect("popped-up", on_menu_popped_up, self)
