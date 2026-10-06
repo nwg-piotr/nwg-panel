@@ -135,6 +135,19 @@ def load_json(path):
         return {}
 
 
+def fsync_dir(path):
+    """Flush a directory entry (the rename of save_json) to disk: without it, ext4 & co. may still
+    hold the old file after a power cut. Best effort: not every file system allows it."""
+    try:
+        fd = os.open(path or ".", os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+    except OSError:
+        pass
+
+
 def save_json(src_dict, path):
     """Write atomically: a temporary file in the same directory, flushed to disk, then renamed
     over the target. A crash, a power cut or a full disk (SD cards...) while writing used to
@@ -178,6 +191,7 @@ def save_json(src_dict, path):
                 os.fchmod(fd, mode)
             os.fsync(fd)
         os.replace(tmp, target)
+        fsync_dir(os.path.dirname(target))
         return "ok"
     except Exception as e:
         if tmp:
