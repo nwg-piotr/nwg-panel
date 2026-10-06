@@ -445,10 +445,10 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                     check_key(panel["sway-taskbar"], "all-outputs", False)
                     if panel["sway-taskbar"]["all-outputs"] or "output" not in panel:
                         taskbar = SwayTaskbar(panel["sway-taskbar"], common.i3, panel["position"],
-                                              icons_path=icons_path)
+                                              icons_path=icons_path, voc=voc)
                     else:
                         taskbar = SwayTaskbar(panel["sway-taskbar"], common.i3, panel["position"],
-                                              display_name="{}".format(panel["output"]), icons_path=icons_path)
+                                              display_name="{}".format(panel["output"]), icons_path=icons_path, voc=voc)
 
                     container.pack_start(taskbar, False, False, panel["items-padding"])
                 else:
@@ -513,11 +513,11 @@ def instantiate_content(panel, container, content_list, icons_path=""):
                         check_key(panel["niri-taskbar"], "all-outputs", False)
                         if panel["niri-taskbar"]["all-outputs"] or "output" not in panel:
                             taskbar = NiriTaskbar(panel["niri-taskbar"], panel["position"], outputs, workspaces,
-                                                  windows, focused_window, icons_path=icons_path)
+                                                  windows, focused_window, icons_path=icons_path, voc=voc)
                         else:
                             taskbar = NiriTaskbar(panel["niri-taskbar"], panel["position"], outputs, workspaces,
                                                   windows, focused_window, display_name="{}".format(panel["output"]),
-                                                  icons_path=icons_path)
+                                                  icons_path=icons_path, voc=voc)
 
                         common.niri_taskbars_list.append(taskbar)
                         container.pack_start(taskbar, False, False, panel["items-padding"])
@@ -598,10 +598,10 @@ def instantiate_content(panel, container, content_list, icons_path=""):
 
         if item == "clock":
             if item in panel:
-                clock = Clock(panel[item], icons_path=icons_path)
+                clock = Clock(panel[item], icons_path=icons_path, voc=voc)
                 container.pack_start(clock, False, False, panel["items-padding"])
             else:
-                clock = Clock({})
+                clock = Clock({}, voc=voc)
                 container.pack_start(clock, False, False, 0)
 
         if item == "playerctl":

@@ -9,7 +9,7 @@ from nwg_panel.tools import niri_ipc, update_image, update_image_fallback_deskto
 
 class NiriTaskbar(Gtk.Box):
     def __init__(self, settings, position, outputs, workspaces, windows, focused_window, display_name="",
-                 icons_path=""):
+                 icons_path="", voc=None):
         defaults = {
             "name-max-len": 24,
             "icon-size": 16,
@@ -30,6 +30,7 @@ class NiriTaskbar(Gtk.Box):
         self.position = position
         self.display_name = display_name
         self.icons_path = icons_path
+        self.voc = voc or {}
 
         self.outputs = None
         self.active_workspaces = []
@@ -98,7 +99,7 @@ class NiriTaskbar(Gtk.Box):
                 ws_box.pack_start(win_box, False, False, 0)
                 for window in self.windows:
                     if window["workspace_id"] == ws_num:
-                        client_box = ClientBox(self.settings, window, self.position, self.icons_path)
+                        client_box = ClientBox(self.settings, window, self.position, self.icons_path, voc=self.voc)
                         if self.focused_window and window["id"] == self.focused_window["id"]:
                             client_box.box.set_property("name", "task-box-focused")
                         else:
@@ -119,13 +120,14 @@ def on_leave_notify_event(widget, event):
 
 
 class ClientBox(Gtk.EventBox):
-    def __init__(self, settings, window, position, icons_path):
+    def __init__(self, settings, window, position, icons_path, voc=None):
         self.position = position
         self.settings = settings
         self.id = window["id"]
         self.pid = window["pid"]
         self.icons_path = icons_path
         Gtk.EventBox.__init__(self)
+        self.voc = voc or {}
         self.box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, spacing=0)
         if settings["angle"] != 0.0:
             self.box.set_orientation(Gtk.Orientation.VERTICAL)
@@ -189,7 +191,7 @@ class ClientBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.toggle_floating)
-        item.set_tooltip_text("toggle-window-floating")
+        item.set_tooltip_text(self.voc.get("toggle-floating", "Toggle floating"))
         menu.append(item)
 
         # Fullscreen
@@ -200,7 +202,7 @@ class ClientBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.fullscreen)
-        item.set_tooltip_text("fullscreen-window")
+        item.set_tooltip_text(self.voc.get("toggle-full-screen", "Toggle full screen"))
         menu.append(item)
 
         # Up
@@ -211,7 +213,7 @@ class ClientBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.up_ws_up)
-        item.set_tooltip_text("move-window-up-or-to-workspace-up")
+        item.set_tooltip_text(self.voc.get("move-window-up", "Move up or to the workspace above"))
         menu.append(item)
 
         # Left
@@ -222,7 +224,7 @@ class ClientBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.left)
-        item.set_tooltip_text("move-column-left-or-to-monitor-left")
+        item.set_tooltip_text(self.voc.get("move-column-left", "Move the column left or to the monitor on the left"))
         menu.append(item)
 
         # Right
@@ -233,7 +235,7 @@ class ClientBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.right)
-        item.set_tooltip_text("move-column-right-or-to-monitor-right")
+        item.set_tooltip_text(self.voc.get("move-column-right", "Move the column right or to the monitor on the right"))
         menu.append(item)
 
         # Down
@@ -244,7 +246,7 @@ class ClientBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.down_ws_down)
-        item.set_tooltip_text("move-window-down-or-to-workspace-down")
+        item.set_tooltip_text(self.voc.get("move-window-down", "Move down or to the workspace below"))
         menu.append(item)
 
         # Close
@@ -255,7 +257,7 @@ class ClientBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.close)
-        item.set_tooltip_text("close-window")
+        item.set_tooltip_text(self.voc.get("close-window", "Close window"))
         menu.append(item)
 
         return menu

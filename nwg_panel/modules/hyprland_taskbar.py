@@ -229,7 +229,7 @@ class ClientBox(Gtk.EventBox):
             item = Gtk.MenuItem()
             item.add(hbox)
             item.connect("activate", self.movetoworkspace, _item)
-            item.set_tooltip_text(f"movetoworkspace {_item}")
+            item.set_tooltip_text(self.voc.get("move-to-workspace", "Move to workspace {}").format(_item))
             menu.append(item)
 
         # Toggle floating
@@ -243,7 +243,7 @@ class ClientBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.toggle_floating)
-        item.set_tooltip_text("togglefloating")
+        item.set_tooltip_text(self.voc.get("toggle-floating", "Toggle floating"))
         menu.append(item)
 
         # Fullscreen
@@ -254,7 +254,7 @@ class ClientBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.fullscreen)
-        item.set_tooltip_text("fullscreen")
+        item.set_tooltip_text(self.voc.get("toggle-full-screen", "Toggle full screen"))
         menu.append(item)
 
         # Pin
@@ -266,7 +266,7 @@ class ClientBox(Gtk.EventBox):
             item = Gtk.MenuItem()
             item.add(hbox)
             item.connect("activate", self.pin)
-            item.set_tooltip_text("pin")
+            item.set_tooltip_text(self.voc.get("show-on-all-workspaces", "Show on all workspaces"))
             menu.append(item)
 
         # Pin / unpin the application to / from the Pinned module
@@ -288,7 +288,7 @@ class ClientBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.close, self.address)
-        item.set_tooltip_text("closewindow")
+        item.set_tooltip_text(self.voc.get("close-window", "Close window"))
         menu.append(item)
 
         return menu

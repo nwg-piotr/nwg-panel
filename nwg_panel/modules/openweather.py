@@ -131,7 +131,7 @@ class OpenWeather(Gtk.EventBox):
         self.add(self.box)
         self.image = Gtk.Image()
         self.alert_image = Gtk.Image()
-        self.label = Gtk.Label.new("No weather data")
+        self.label = Gtk.Label.new(self.lang["no-weather-data"])
         self.icon_path = None
 
         self.weather = None
@@ -329,7 +329,7 @@ class OpenWeather(Gtk.EventBox):
             self.label.set_text(lbl_content)
 
             mtime = datetime.fromtimestamp(os.stat(self.weather_file)[stat.ST_MTIME])
-            self.set_tooltip_text("Update: {}".format(mtime.strftime("%d %b %H:%M:%S")))
+            self.set_tooltip_text("{}: {}".format(self.lang["weather-updated"], mtime.strftime("%d %b %H:%M:%S")))
 
         self.show_all()
 
