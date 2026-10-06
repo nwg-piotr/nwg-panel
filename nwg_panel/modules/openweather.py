@@ -16,7 +16,7 @@ except ModuleNotFoundError:
     sys.exit(1)
 
 from nwg_panel.tools import (check_key, eprint, load_json, save_json, runtime_dir, owned_by_us, file_age, hms, update_image,
-                             get_config_dir, create_background_task, cmd_through_compositor)
+                             get_config_dir, create_background_task, cmd_through_compositor, request_error)
 
 config_dir = get_config_dir()
 dir_name = os.path.dirname(__file__)
@@ -67,12 +67,6 @@ def on_button_press(window, event):
 
 
 REQUEST_TIMEOUT = (5, 15)
-
-
-def request_error(e):
-    """requests' ConnectionError messages embed the full URL, API key included: keep them out of
-    the journal."""
-    return type(e).__name__ if isinstance(e, requests.RequestException) else str(e)
 
 
 def safe_icon_code(code):

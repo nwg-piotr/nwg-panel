@@ -44,6 +44,13 @@ def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 
+def request_error(e):
+    """requests' ConnectionError messages embed the full URL, API key included: keep them out of
+    the journal."""
+    import requests  # lazily: python-requests is optional for the panel itself
+    return type(e).__name__ if isinstance(e, requests.RequestException) else str(e)
+
+
 def temp_dir():
     if os.getenv("TMPDIR"):
         return os.getenv("TMPDIR")

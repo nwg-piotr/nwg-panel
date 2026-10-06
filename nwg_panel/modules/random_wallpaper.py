@@ -11,7 +11,7 @@ import threading
 
 from shutil import copyfile
 from nwg_panel.tools import update_image, local_dir, cmd_through_compositor, create_background_task, eprint, save_json, \
-    load_json
+    load_json, request_error
 
 
 def on_enter_notify_event(widget, event):
@@ -153,7 +153,12 @@ class RandomWallpaper(Gtk.Button):
             eprint(f"'{image_path}' is not a valid image file")
 
     def load_apply_wallhaven_image(self):
-        self.load_wallhaven_image()
+        # Runs in a thread: an uncaught error would be printed by the thread excepthook, and
+        # requests' messages carry the URL with the apikey query parameter.
+        try:
+            self.load_wallhaven_image()
+        except (requests.RequestException, ValueError) as e:
+            eprint("Wallhaven request failed:", request_error(e))
 
         if os.path.isfile(self.wallpaper_path):
             self.start_swaybg(self.wallpaper_path)
