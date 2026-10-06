@@ -163,11 +163,15 @@ def rt_sig_handler(sig, frame):
 
 
 _restart_source = 0
+# set once the new instance is spawned: this one lives on until it gets SIGINT from it, and a display event
+# meanwhile must not spawn yet another one
+_restarting = False
 
 
 def restart():
-    global _restart_source
+    global _restart_source, _restarting
     _restart_source = 0
+    _restarting = True
     subprocess.Popen(restart_cmd, shell=True)
     return False
 
@@ -179,7 +183,7 @@ def schedule_restart(reason):
     rescheduled instead of spawning one new instance per event. Call from the main thread.
     """
     global _restart_source
-    if not common_settings.get("restart-on-display", True):
+    if _restarting or not common_settings.get("restart-on-display", True):
         return False
     delay = common_settings.get("restart-delay", 500)
     if _restart_source:
