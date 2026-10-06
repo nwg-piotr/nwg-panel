@@ -649,6 +649,14 @@ def _read_sysfs_int(path):
         return None
 
 
+def _read_sysfs_str(path):
+    try:
+        with open(path) as f:
+            return f.read().strip()
+    except OSError:
+        return None
+
+
 def get_battery_sysfs(root="/sys/class/power_supply"):
     """
     Aggregate every /sys/class/power_supply/BAT*: laptops with two batteries (ThinkPad T480...) report the
@@ -677,22 +685,27 @@ def get_battery_sysfs(root="/sys/class/power_supply"):
         energy_now += now
         energy_full += full
         power_now += abs(rate or 0)  # the sign of the rate is driver-dependent
-        try:
-            with open(f"{bat}/status") as f:
-                statuses.append(f.read().strip())
-        except OSError:
-            pass
+        status = _read_sysfs_str(f"{bat}/status")
+        if status:
+            statuses.append(status)
 
     if not energy_full:
         return None
 
     percent = min(100, int(round(energy_now * 100 / energy_full, 0)))  # worn cells report now > full
-    charging = "Charging" in statuses
+    # "charging" means plugged in (psutil's power_plugged): on AC with charge thresholds the batteries say
+    # "Full" / "Not charging", which must not look like running on battery
+    mains = [_read_sysfs_int(os.path.join(os.path.dirname(t), "online"))
+             for t in glob.glob(os.path.join(root, "*", "type")) if _read_sysfs_str(t) == "Mains"]
+    if mains:
+        charging = any(online == 1 for online in mains)
+    else:
+        charging = bool(statuses) and "Discharging" not in statuses
     time = ""
     if power_now > 0:
         if "Discharging" in statuses:
             time = seconds2string(int(energy_now * 3600 / power_now))
-        elif charging:
+        elif "Charging" in statuses:
             time = seconds2string(int((energy_full - energy_now) * 3600 / power_now))
     return percent, time, charging
 
