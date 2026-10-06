@@ -206,16 +206,16 @@ def list_outputs(sway=False, silent=False):
         result = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
         outputs = json.loads(result)
         for item in outputs:
+            # logical size: the mode in pixels divided by the scale, swapped for rotated displays
+            width, height = int(item["width"] / item["scale"]), int(item["height"] / item["scale"])
+            if item["transform"] in [1, 3, 5, 7]:
+                width, height = height, width
             outputs_dict[item["name"]] = {"x": item["x"],
                                           "y": item["y"],
-                                          "width": int(item["width"] / item["scale"]),
-                                          "height": int(item["height"] / item["scale"]),
+                                          "width": width,
+                                          "height": height,
                                           "description": item["description"],
                                           "monitor": None}
-            # swap for rotated displays
-            if item["transform"] in [1, 3, 5, 7]:
-                outputs_dict[item["name"]]["width"] = item["height"]
-                outputs_dict[item["name"]]["height"] = item["width"]
 
     elif os.getenv('NIRI_SOCKET') is not None:
         if not silent:
