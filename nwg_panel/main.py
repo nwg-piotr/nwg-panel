@@ -354,7 +354,7 @@ def instantiate_content(panel, container, content_list, icons_path=""):
     check_key(panel, "position", "top")
     check_key(panel, "items-padding", 0)
 
-    # initial data for Hyprland modules: one IPC round for the whole panel (it ran once per module)
+    # initial data for Hyprland modules: one IPC round per container (left/center/right), not one per module
     monitors, workspaces, clients, activewindow, activeworkspace = [], [], [], {}, {}
     if his and ("hyprland-workspaces" in content_list or "hyprland-taskbar" in content_list):
         monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
