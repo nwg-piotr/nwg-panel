@@ -345,6 +345,11 @@ def on_i3ipc_event(i3conn, event):
 # GTK3 reports an at-rule it doesn't know (@media, @supports, @font-face...) with the whole document (0:0);
 # only these are parsed (prefix, case-insensitive, as gtkcssprovider.c compares them)
 CSS_GTK3_AT_RULES = (b"@import", b"@define-color", b"@binding-set", b"@keyframes")
+# GTK 3.24's message for those (gtkcssprovider.c parse_at_keyword); any other error at that level is not one
+CSS_UNKNOWN_AT_RULE = "unknown @ rule"
+# errors about comments come with whatever section is open (gtkcssparser.c skip_comment: "FIXME: position"),
+# e.g. the rule before a comment left open at the end of the file: they say nothing about that rule
+CSS_UNPOSITIONED_ERRORS = ("Unterminated comment", "'/*' in comment block")
 # relative paths GTK resolves: `@import "x"`, `@import url("x")`, `url("x")` (GTK3 needs the quotes)
 CSS_RELATIVE_PATH = re.compile(rb"""(@import\s+|url\(\s*)(["'])((?:\\.|(?!\2)[^\\\n])*)\2""", re.I)
 CSS_URI_SCHEME = re.compile(rb"[A-Za-z][A-Za-z0-9+.-]*:")
@@ -479,11 +484,14 @@ def load_css_tolerant(provider, css, path, max_passes=20):
                 top = top.get_parent()
             if top is not section:
                 where = f"{section.get_file().get_path()}:{section.get_start_line() + 1}"
-            if top is None or top.get_file() is not None:
+            if top is None or top.get_file() is not None or (top is section and message in CSS_UNPOSITIONED_ERRORS):
                 eprint(f"{where}: {message} -- can't locate it")
                 continue
             if top.get_section_type() == Gtk.CssSectionType.DOCUMENT:
-                # "unknown @ rule", reported at 0:0: GTK emits one per unknown top-level at-rule, in order
+                if message != CSS_UNKNOWN_AT_RULE:
+                    eprint(f"{where}: {message} -- can't locate it")
+                    continue
+                # reported at 0:0: GTK emits one per unknown top-level at-rule, in order
                 unknown_at_rules += 1
                 continue
             line, pos = top.get_start_line(), top.get_start_position()
