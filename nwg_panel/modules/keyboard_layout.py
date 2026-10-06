@@ -57,9 +57,20 @@ class KeyboardLayout(Gtk.EventBox):
             self.compositor = ""
             eprint("KeyboardLayout module only supports sway, Hyprland, Niri and Mango")
 
+        # set before anything that may call refresh(): it must work with no keyboard listed
+        check_key(settings, "keyboard-device-sway", "")
+        check_key(settings, "keyboard-device-hyprland", "")
+        self.device_name = settings["keyboard-device-sway"] if self.compositor == "sway" else settings[
+            "keyboard-device-hyprland"]
+        check_key(settings, "labels", {})
+        self.keyboards = []
+        self.kb_layouts = []
+
         if self.compositor:
             self.keyboards = self.list_keyboards()
-            if self.keyboards or self.compositor == "niri":
+            # on Hyprland, a headless Pi has no keyboard until a VNC client connects, and `hyprctl devices` may
+            # time out at session start: build the UI anyway, the label follows on the next layout event
+            if self.keyboards or self.compositor in ("niri", "Hyprland"):
                 self.keyboard_names = []
                 for k in self.keyboards:
                     if self.compositor == "Hyprland":
@@ -72,11 +83,6 @@ class KeyboardLayout(Gtk.EventBox):
 
                 self.kb_layouts = self.get_kb_layouts()
 
-                check_key(settings, "keyboard-device-sway", "")
-                check_key(settings, "keyboard-device-hyprland", "")
-                self.device_name = settings["keyboard-device-sway"] if self.compositor == "sway" else settings[
-                    "keyboard-device-hyprland"]
-
                 check_key(settings, "root-css-name", "root-executor")
                 check_key(settings, "css-name", "executor-label")
                 check_key(settings, "icon-placement", "left")
@@ -85,7 +91,6 @@ class KeyboardLayout(Gtk.EventBox):
                 check_key(settings, "interval", 0)
                 check_key(settings, "tooltip-text", "LMB: Next layout, RMB: Menu")
                 check_key(settings, "angle", 0.0)
-                check_key(settings, "labels", {})
 
                 self.label.set_angle(settings["angle"])
 
@@ -123,9 +128,15 @@ class KeyboardLayout(Gtk.EventBox):
 
     def list_keyboards(self):
         if self.compositor == "Hyprland":
-            o = hyprctl("j/devices")
-            devices = json.loads(o)
-            keyboards = devices["keyboards"] if "keyboards" in devices else []
+            # hyprctl returns "" on timeout (busy compositor, session start): keep what we had
+            try:
+                devices = json.loads(hyprctl("j/devices"))
+            except ValueError:
+                devices = None
+            keyboards = devices.get("keyboards", []) if isinstance(devices, dict) else None
+            if not isinstance(keyboards, list):
+                eprint("KeyboardLayout: no valid reply to `hyprctl devices`")
+                return self.keyboards
         elif self.compositor == "sway":
             inputs = self.i3.get_inputs()
             keyboards = []
@@ -213,7 +224,8 @@ class KeyboardLayout(Gtk.EventBox):
                 return "unknown"
             else:
                 keyboard = self.hypr_reference_keyboard()
-                return keyboard["active_keymap"] if keyboard else "unknown"
+                # no keyboard (headless, before a VNC client connects): nothing to show
+                return keyboard.get("active_keymap", "") if keyboard else ""
         elif self.compositor == "sway":
             for k in self.keyboards:
                 if "keyboard" in k.identifier:
