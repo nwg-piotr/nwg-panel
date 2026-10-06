@@ -86,7 +86,9 @@ class StatusNotifierWatcherInterface(object):
 
     def __init__(self):
         self._statusNotifierItems = []
-        self._item_watches = {}  # item -> name watch on its owner, from registration until the owner is gone
+        # item -> (name watch on its owner, connection that registered it), from registration until the
+        # owner is gone
+        self._item_watches = {}
         self._reported_senders = set()
         self._statusNotifierHosts = []
         self._isStatusNotifierHostRegistered = False
@@ -138,9 +140,11 @@ class StatusNotifierWatcherInterface(object):
             self._report_ignored(sender, "ignoring invalid registration {!r} from {}".format(
                 service[:MAX_REPORTED_LENGTH], sender))
             return
-        # any peer on the bus may call this: bound what one connection can make us track
-        if sum(1 for name in self._item_watches
-               if name.split("/", 1)[0] in (sender, owner)) >= MAX_ITEMS_PER_SENDER:
+        # Any peer on the bus may call this: bound what one connection can make us track. Counted by
+        # the connection that registered: with ":1.N" registrations the caller chooses the owner, so
+        # counting by name prefix let one peer register an item for every connection on the bus.
+        if sum(1 for _watch, registered_by in self._item_watches.values()
+               if registered_by == sender) >= MAX_ITEMS_PER_SENDER:
             self._report_ignored(sender, "too many items from {}, ignoring {!r}".format(
                 sender, service[:MAX_REPORTED_LENGTH]))
             return
@@ -149,11 +153,11 @@ class StatusNotifierWatcherInterface(object):
         # caller, otherwise an item whose connection is gone stays registered as long as the proxy lives.
         # Not a DBusObserver: it says nothing when the name is not on the bus to begin with (an invented
         # one, or a peer that left at once), and the registration would be remembered forever.
-        self._item_watches[full_service_name] = Gio.bus_watch_name_on_connection(
+        self._item_watches[full_service_name] = (Gio.bus_watch_name_on_connection(
             self.session_bus.connection, owner, Gio.BusNameWatcherFlags.NONE,
             lambda *_args: self.item_available_handler(full_service_name),
             lambda *_args: self.item_unavailable_handler(full_service_name)
-        )
+        ), sender)
 
     @accepts_additional_arguments
     def RegisterStatusNotifierHost(self, service, call_info):
@@ -221,7 +225,7 @@ class StatusNotifierWatcherInterface(object):
             )
         )"""
         # the owner is a connection, and a unique name is never given again: stop watching it
-        watch = self._item_watches.pop(full_service_name, 0)
+        watch, _registered_by = self._item_watches.pop(full_service_name, (0, None))
         if watch:
             Gio.bus_unwatch_name(watch)
         if full_service_name in set(self._statusNotifierItems):
