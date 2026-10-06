@@ -9,6 +9,7 @@ License: MIT
 """
 import argparse
 import os
+import re
 import signal
 import sys
 import threading
@@ -411,6 +412,237 @@ def on_i3ipc_event(i3conn, event):
         common.outputs_num = num
 
     GLib.idle_add(hide_controls_popup, priority=GLib.PRIORITY_HIGH)
+
+
+# GTK3 reports an at-rule it doesn't know (@media, @supports, @font-face...) with the whole document (0:0);
+# only these are parsed (prefix, case-insensitive, as gtkcssprovider.c compares them)
+CSS_GTK3_AT_RULES = (b"@import", b"@define-color", b"@binding-set", b"@keyframes")
+# GTK 3.24's message for those (gtkcssprovider.c parse_at_keyword); any other error at that level is not one
+CSS_UNKNOWN_AT_RULE = "unknown @ rule"
+# errors about comments come with whatever section is open (gtkcssparser.c skip_comment: "FIXME: position"),
+# e.g. the rule before a comment left open at the end of the file: they say nothing about that rule
+CSS_UNPOSITIONED_ERRORS = ("Unterminated comment", "'/*' in comment block")
+# a quoted string (a `/*` in it opens no comment) or a comment opener; an unterminated string ends with its line
+CSS_STRING_OR_COMMENT = re.compile(rb"""(["'])(?:\\.|(?!\1)[^\\\n])*\1?|/\*""", re.S)
+# relative paths GTK resolves: `@import "x"`, `@import url("x")`, `url("x")` (GTK3 needs the quotes)
+CSS_RELATIVE_PATH = re.compile(rb"""(@import\s+|url\(\s*)(["'])((?:\\.|(?!\2)[^\\\n])*)\2""", re.I)
+CSS_URI_SCHEME = re.compile(rb"[A-Za-z][A-Za-z0-9+.-]*:")
+# Controls background window (invisible): style missing from the css file
+CSS_BCG_WINDOW = b"window#bcg-window { background-color: rgba(0, 0, 0, 0.2); }"
+
+
+def _css_blank_comments(css):
+    # same length, so that offsets stay valid: a `;`, `}` or `@` inside a comment is not mistaken for syntax
+    return re.sub(rb"/\*.*?\*/", lambda m: b" " * len(m.group()), css, flags=re.S)
+
+
+def _css_repair_comments(css, path):
+    """
+    GTK3 drops the whole sheet for a `/*` inside a comment or a comment left open, and can't say where
+    (CSS_UNPOSITIONED_ERRORS), so these can't be cut: fix them in the text instead. A nested `/*` loses its
+    slash (same length: the positions of later errors stay right), an open comment is closed at the end.
+    """
+    i = 0
+    while True:
+        m = CSS_STRING_OR_COMMENT.search(css, i)
+        if not m:
+            return css
+        if m.group() != b"/*":
+            i = m.end()
+            continue
+        end = css.find(b"*/", m.end())
+        # up to the star of `*/` included: GTK reads `/*/` as a nested opener too
+        stop = len(css) if end == -1 else end + 1
+        at = css.find(b"/*", m.end(), stop)
+        while at != -1:
+            line = css.count(b"\n", 0, at) + 1
+            eprint(f"{path}:{line}: '/*' in comment block -- removed the '/'")
+            css = css[:at] + b" " + css[at + 1:]
+            at = css.find(b"/*", at + 2, stop)
+        if end == -1:
+            line = css.count(b"\n", 0, m.start()) + 1
+            eprint(f"{path}:{line}: Unterminated comment -- closed at the end of the file")
+            # the space: a file ending with `/` would make `/*/`
+            return css + b" */"
+        i = end + 2
+
+
+def _css_statement_end(plain, at):
+    """End of the top-level statement starting at `at`: its first `;`, or its brace-balanced block."""
+    depth = 0
+    for i in range(at, len(plain)):
+        c = plain[i:i + 1]
+        if c in b"{([":
+            depth += 1
+        elif c in b"})]" and depth:
+            depth -= 1
+            if depth == 0 and c == b"}":
+                return i + 1
+        elif c == b";" and depth == 0:
+            return i + 1
+    return len(plain)
+
+
+def _css_unknown_at_rules(plain):
+    """Spans of the top-level at-rules GTK3 doesn't know, in document order."""
+    spans = []
+    depth, statement_start, i = 0, True, 0
+    while i < len(plain):
+        c = plain[i:i + 1]
+        if c == b"@" and depth == 0 and statement_start \
+                and not plain[i:i + 16].lower().startswith(CSS_GTK3_AT_RULES):
+            end = _css_statement_end(plain, i)
+            spans.append((i, end))
+            i = end
+            continue
+        if c in b"{([":
+            depth += 1
+        elif c in b"})]" and depth:
+            depth -= 1
+        if not c.isspace():
+            statement_start = depth == 0 and c in b";}"
+        i += 1
+    return spans
+
+
+def _css_absolute_paths(css, base_dir):
+    """
+    load_from_data() resolves relative @import / url() against the CWD, load_from_path() against the file:
+    make them absolute (relative to `base_dir`) so that the text loads like the file.
+    """
+    plain = _css_blank_comments(css)
+    # the directory goes into a CSS string: escape what would end it
+    prefix = re.sub(rb"""([\\"'])""", rb"\\\1", os.fsencode(os.path.abspath(base_dir))) + b"/"
+    for m in reversed(list(CSS_RELATIVE_PATH.finditer(plain))):
+        path = m.group(3)
+        if path.startswith(b"/") or CSS_URI_SCHEME.match(path):
+            continue
+        css = css[:m.start(3)] + prefix + css[m.start(3):]
+    return css
+
+
+def load_css(screen, style_path):
+    """
+    Load the panel stylesheet. load_from_path() first: GTK resolves relative @import and url() against the
+    style file. Only if it fails (GTK3 then drops the whole sheet), the text is loaded by load_css_tolerant().
+    The bcg-window rule goes to a provider of its own, so that the file is loaded as is. At the same priority
+    the provider added later is consulted first and GTK3 takes each property from the first provider that
+    sets it: the rule always applies, whatever the specificity of a user rule for the same window.
+    """
+    provider = Gtk.CssProvider()
+    Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+    try:
+        provider.load_from_path(style_path)
+    except GLib.Error:
+        try:
+            with open(style_path, "rb") as f:
+                css = f.read()
+        except OSError as e:
+            eprint(e)
+        else:
+            css = _css_repair_comments(css, style_path)
+            load_css_tolerant(provider, _css_absolute_paths(css, os.path.dirname(style_path)), style_path)
+
+    bcg_provider = Gtk.CssProvider()
+    bcg_provider.load_from_data(CSS_BCG_WINDOW)
+    Gtk.StyleContext.add_provider_for_screen(screen, bcg_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+
+def load_css_tolerant(provider, css, path, max_passes=20):
+    """
+    GTK3 drops the WHOLE stylesheet when a single declaration fails to parse (e.g. `width:` on a widget):
+    the panel then runs unstyled, opaque, with the default theme (#419). The declarations at fault are
+    reported with file, line and column, removed from the text and the sheet is loaded again, so that
+    everything else still applies. Never cut where GTK can't tell: an unlocatable error stops the loop.
+    """
+    for _ in range(max_passes):
+        errors = []
+
+        def on_error(_provider, section, error):
+            if error.matches(Gtk.CssProviderError.quark(), Gtk.CssProviderError.DEPRECATED):
+                return  # a warning: the sheet still loads
+            errors.append((section, error.message))
+
+        handler = provider.connect("parsing-error", on_error)
+        try:
+            provider.load_from_data(css)
+            return True
+        except GLib.Error as e:
+            if not errors:
+                eprint(f"{path}: {e.message}")
+                return False
+        finally:
+            provider.disconnect(handler)
+
+        # the section only covers the token at fault (the property name, say): drop the whole declaration
+        # around it. Boundaries are searched in a copy with the comments blanked out.
+        plain = _css_blank_comments(css)
+        line_starts = [0]
+        for line in css.split(b"\n")[:-1]:
+            line_starts.append(line_starts[-1] + len(line) + 1)
+        spans = []
+        unknown_at_rules = 0
+        for section, message in errors:
+            where = path
+            # an error in an @imported file: walk up to the @import statement of this text (get_file() None)
+            top = section
+            while top is not None and top.get_file() is not None and top.get_parent() is not None:
+                top = top.get_parent()
+            if top is not section:
+                where = f"{section.get_file().get_path()}:{section.get_start_line() + 1}"
+            if top is None or top.get_file() is not None or (top is section and message in CSS_UNPOSITIONED_ERRORS):
+                eprint(f"{where}: {message} -- can't locate it")
+                continue
+            if top.get_section_type() == Gtk.CssSectionType.DOCUMENT:
+                if message != CSS_UNKNOWN_AT_RULE:
+                    eprint(f"{where}: {message} -- can't locate it")
+                    continue
+                # reported at 0:0: GTK emits one per unknown top-level at-rule, in order
+                unknown_at_rules += 1
+                continue
+            line, pos = top.get_start_line(), top.get_start_position()
+            if line >= len(line_starts):
+                continue
+            at = min(line_starts[line] + pos, len(plain))
+            depth = plain.count(b"{", 0, at) - plain.count(b"}", 0, at)
+            start = max(plain.rfind(b"{", 0, at), plain.rfind(b";", 0, at), plain.rfind(b"}", 0, at)) + 1
+            if depth > 0:
+                # inside a block: one declaration, up to the next `;` (or the end of the block)
+                semicolon, close_brace = plain.find(b";", at), plain.find(b"}", at)
+                end = semicolon + 1 if semicolon != -1 and (close_brace == -1 or semicolon < close_brace) else \
+                    (close_brace if close_brace != -1 else len(css))
+            else:
+                # an at-rule such as @import, or a whole ruleset with a bad selector
+                end = _css_statement_end(plain, at)
+            if where == path:
+                where = f"{path}:{line + 1}:{pos + 1}"
+            eprint(f"{where}: {message} -- ignoring: "
+                   f"{css[start:end].strip().decode('utf-8', errors='replace')}")
+            spans.append((start, end))
+        if unknown_at_rules:
+            found = _css_unknown_at_rules(plain)[:unknown_at_rules]
+            if len(found) < unknown_at_rules:
+                eprint(f"{path}: unknown @ rule -- can't locate it")
+            for start, end in found:
+                eprint(f"{path}: unknown @ rule -- ignoring: "
+                       f"{css[start:end].strip().decode('utf-8', errors='replace')}")
+            spans += found
+        # merge overlapping spans, cut from the end so that earlier offsets stay valid
+        merged = []
+        for start, end in sorted(spans):
+            if merged and start <= merged[-1][1]:
+                merged[-1] = (merged[-1][0], max(end, merged[-1][1]))
+            else:
+                merged.append((start, end))
+        new_css = css
+        for start, end in reversed(merged):
+            new_css = new_css[:start] + new_css[end:]
+        if new_css == css:
+            eprint(f"{path}: stylesheet not loaded")
+            return False
+        css = new_css
+    eprint(f"{path}: still invalid after {max_passes} passes, giving up")
+    return False
 
 
 def hide_controls_popup():
@@ -835,19 +1067,7 @@ def main():
 
     panels = load_json(config_file)
 
-    screen = Gdk.Screen.get_default()
-    provider = Gtk.CssProvider()
-    style_context = Gtk.StyleContext()
-    style_context.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-    try:
-        provider.load_from_path(os.path.join(common.config_dir, args.style))
-    except Exception as e:
-        eprint(e)
-
-    # Controls background window (invisible): add style missing from the css file
-    css = provider.to_string().encode('utf-8')
-    css += b""" window#bcg-window { background-color: rgba(0, 0, 0, 0.2); } """
-    provider.load_from_data(css)
+    load_css(Gdk.Screen.get_default(), os.path.join(common.config_dir, args.style))
 
     # Mirror bars to all outputs #48 (if panel["output"] == "All")
     to_remove = []
