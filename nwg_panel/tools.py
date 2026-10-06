@@ -149,8 +149,16 @@ def fsync_dir(path):
 
 
 def in_config_dir(path):
-    """True if path (as given, a link is not resolved) is in the nwg-panel config directory."""
-    config_dir = os.path.abspath(get_config_dir())
+    """True if path (as given, a link is not resolved) is in the nwg-panel config directory.
+    Same location as get_config_dir(), without its side effects (creating directories) and
+    without failing when neither XDG_CONFIG_HOME nor HOME is set (False then)."""
+    config_home = os.getenv("XDG_CONFIG_HOME")
+    if not config_home:
+        home = os.getenv("HOME")
+        if not home:
+            return False
+        config_home = os.path.join(home, ".config")
+    config_dir = os.path.abspath(os.path.join(config_home, "nwg-panel"))
     return os.path.commonpath([os.path.abspath(path), config_dir]) == config_dir
 
 
