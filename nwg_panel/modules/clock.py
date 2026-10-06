@@ -288,11 +288,17 @@ class Clock(Gtk.EventBox):
     def set_aside_unreadable(self):
         """Never save over notes we could not read (truncated or corrupted file...), but do not
         refuse to save for ever either: the new notes would be lost at the next restart. The
-        file is kept next to the calendar under another name (a single copy), then we save."""
+        file is kept next to the calendar under another name, then we save. A name not taken yet:
+        a copy set aside earlier holds other notes."""
         path = os.path.realpath(self.path)
+        aside = path + ".unreadable"
+        n = 0
+        while os.path.lexists(aside):
+            n += 1
+            aside = "{}.unreadable.{}".format(path, n)
         try:
-            os.replace(path, path + ".unreadable")
-            eprint("Calendar: '{}' could not be read, kept as '{}'".format(self.path, path + ".unreadable"))
+            os.replace(path, aside)
+            eprint("Calendar: '{}' could not be read, kept as '{}'".format(self.path, aside))
         except FileNotFoundError:
             pass
         except OSError as e:
