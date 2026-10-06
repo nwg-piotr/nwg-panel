@@ -2,8 +2,10 @@
 from enum import Enum
 import glob
 import os.path
+import socket
 import tempfile
 import threading
+import time
 from urllib.parse import unquote, urlparse
 
 import gi
@@ -19,6 +21,22 @@ from nwg_panel.tools import check_key, eprint, local_dir, update_image
 
 # remote album covers larger than this are ignored
 COVER_MAX_BYTES = 5 * 1024 * 1024
+# whole remote cover download, in seconds: the requests read timeout only bounds each read, so a
+# server sending a byte now and then would keep the thread (and connection) alive for hours
+COVER_DEADLINE = 20
+# (connect, read) timeouts of the cover request; the read one also bounds each wait for the headers
+COVER_TIMEOUT = (5, 15)
+# http -> https and CDN hops are common for covers
+COVER_MAX_REDIRECTS = 3
+
+
+def _cut_connection(sock, expired):
+    # watchdog (Timer thread): shutting the socket down wakes the read blocked in the download thread
+    expired.set()
+    try:
+        sock.shutdown(socket.SHUT_RDWR)
+    except OSError:
+        pass
 
 
 class Playerctl(Gtk.EventBox):
@@ -45,6 +63,12 @@ class Playerctl(Gtk.EventBox):
 
         self.old_cover_url = ""
         self.old_media_info = ""
+        # One cover download at a time per panel: the deadline above is only enforced once the headers
+        # are in, so a server sending its headers a byte at a time is only bounded by this, and skipping
+        # tracks can't pile up threads and sockets. A cover asked for meanwhile waits here; only the
+        # latest one is kept.
+        self.cover_downloading = False
+        self.cover_pending = ""
 
         self.player = None
         self.player_handler_ids = []
@@ -184,12 +208,25 @@ class Playerctl(Gtk.EventBox):
         self.on_playback_status(player, player.props.playback_status)
 
     def update_remote_cover(self, url, cover_url):
-        # Runs in a thread. The URL comes from the player (e.g. a web page's MediaSession artwork
-        # through the browser): bounded download, nothing that declares itself as not an image.
+        # Runs in a thread: the panel's only cover download, ended by apply_remote_cover. The URL comes
+        # from the player (e.g. a web page's MediaSession artwork through the browser): bounded
+        # download, nothing that declares itself as not an image.
         tmp_path = ""
+        deadline = time.monotonic() + COVER_DEADLINE
+        expired = threading.Event()
+        watchdog = sock = None
         try:
-            with requests.get(url, allow_redirects=True, stream=True, timeout=(5, 15)) as r:
+            # Redirects are followed, a few: refusing them broke http -> https covers and protected
+            # nothing, since the URL itself comes unchecked from any MPRIS peer.
+            session = requests.Session()
+            session.max_redirects = COVER_MAX_REDIRECTS
+            with session, session.get(url, stream=True, timeout=COVER_TIMEOUT) as r:
                 r.raise_for_status()
+                # A duplicate of the connection's socket: still valid if the watchdog fires late.
+                sock = socket.socket(fileno=os.dup(r.raw.fileno()))
+                timer = threading.Timer(max(0, deadline - time.monotonic()), _cut_connection, (sock, expired))
+                timer.start()
+                watchdog = timer  # only once started: join() raises on a Timer that never started
                 # No type, or a generic one, is common for covers: GdkPixbuf goes by the content.
                 content_type = r.headers.get("Content-Type", "").split(";")[0].strip().lower()
                 if content_type and not content_type.startswith("image/") and content_type not in (
@@ -200,6 +237,9 @@ class Playerctl(Gtk.EventBox):
                     data += chunk
                     if len(data) > COVER_MAX_BYTES:
                         raise ValueError("cover larger than {} bytes".format(COVER_MAX_BYTES))
+                # a connection cut by the watchdog may look like a normal end of a body without length
+                if expired.is_set():
+                    raise ValueError("download took more than {} s".format(COVER_DEADLINE))
             # A file of its own: another download may be running, and the main loop may be
             # reading cover.jpg right now.
             fd, tmp_path = tempfile.mkstemp(prefix="cover-", dir=local_dir())
@@ -210,7 +250,16 @@ class Playerctl(Gtk.EventBox):
             if tmp_path:
                 self.remove_cover_file(tmp_path)  # written in part only
                 tmp_path = ""
-        GLib.idle_add(self.apply_remote_cover, cover_url, tmp_path)
+        finally:
+            if watchdog:
+                # The Timer may be running _cut_connection right now: wait for it, or the fd closed
+                # below could be reused by another thread and then shut down by the late callback.
+                watchdog.cancel()
+                watchdog.join()
+            if sock:
+                sock.close()
+            # always: this ends the panel's download, even on an unexpected error
+            GLib.idle_add(self.apply_remote_cover, cover_url, tmp_path)
 
     @staticmethod
     def remove_cover_file(path):
@@ -220,11 +269,15 @@ class Playerctl(Gtk.EventBox):
             eprint("Couldn't remove {}: {}".format(path, e))
 
     def apply_remote_cover(self, cover_url, tmp_path):
-        # Back on the main loop. The track may have changed while this cover was downloading: a
-        # newer download owns the image then, and this one is dropped.
+        # Back on the main loop. The track may have changed while this cover was downloading: this
+        # one is dropped then, and the current track's cover, if asked for meanwhile, is fetched now.
+        self.cover_downloading = False
+        pending, self.cover_pending = self.cover_pending, ""
         if cover_url != self.old_cover_url:
             if tmp_path:
                 self.remove_cover_file(tmp_path)
+            if pending and pending == self.old_cover_url:
+                self.update_cover_image(pending)
             return False
         cover_path = ""
         if tmp_path:
@@ -245,7 +298,12 @@ class Playerctl(Gtk.EventBox):
             if self.settings["show-cover"]:
                 # in a thread: the function used to be *called* here, i.e. the download ran on the
                 # GTK main loop and froze the whole panel until the server answered
-                threading.Thread(target=self.update_remote_cover, args=(url.geturl(), cover_url), daemon=True).start()
+                if self.cover_downloading:
+                    self.cover_pending = cover_url
+                    return
+                threading.Thread(target=self.update_remote_cover, args=(url.geturl(), cover_url),
+                                 daemon=True).start()
+                self.cover_downloading = True
             return
 
         if url.scheme == "file" and path:
