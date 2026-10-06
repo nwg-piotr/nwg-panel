@@ -5,7 +5,7 @@ from gi.repository import Gtk, Gdk, GLib
 from i3ipc import Event
 
 from nwg_panel.tools import check_key, get_icon_name, update_image, load_autotiling, get_config_dir, temp_dir, \
-    save_json, update_image, update_image_fallback_desktop
+    save_json, update_image_fallback_desktop, voc_format
 import nwg_panel.common
 
 
@@ -253,7 +253,7 @@ class WindowBox(Gtk.EventBox):
                 item = Gtk.MenuItem()
                 item.add(hbox)
                 item.connect("activate", self.move_to_workspace, i)
-                item.set_tooltip_text(self.voc.get("move-to-workspace", "Move to workspace {}").format(i))
+                item.set_tooltip_text(voc_format(self.voc, "move-to-workspace", "Move to workspace {}", i))
                 menu.append(item)
 
         # Move to scratchpad
