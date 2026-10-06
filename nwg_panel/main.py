@@ -431,13 +431,12 @@ def instantiate_content(panel, container, content_list, icons_path=""):
     check_key(panel, "position", "top")
     check_key(panel, "items-padding", 0)
 
+    # initial data for Hyprland modules: one IPC round per container (left/center/right), not one per module
+    monitors, workspaces, clients, activewindow, activeworkspace = [], [], [], {}, {}
+    if his and ("hyprland-workspaces" in content_list or "hyprland-taskbar" in content_list):
+        monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
+
     for item in content_list:
-        # list initial data for Hyprland modules
-        if his:
-            if "hyprland-workspaces" in content_list or "hyprland-taskbar" in content_list:
-                monitors, workspaces, clients, activewindow, activeworkspace = h_modules_get_all()
-            else:
-                monitors, workspaces, clients, activewindow, activeworkspace = {}, {}, {}, {}, {}
 
         if item == "sway-taskbar":
             if "sway-taskbar" in panel:
@@ -545,10 +544,12 @@ def instantiate_content(panel, container, content_list, icons_path=""):
         if item == "hyprland-workspaces":
             if his:
                 if "hyprland-workspaces" in panel:
-                    workspaces = HyprlandWorkspaces(panel["hyprland-workspaces"], panel["output"], monitors, workspaces, clients,
-                                                    activewindow, activeworkspace, icons_path=icons_path)
-                    container.pack_start(workspaces, False, False, panel["items-padding"])
-                    common.h_workspaces_list.append(workspaces)
+                    # not `workspaces = ...`: that name holds the IPC data shared by every Hyprland module of
+                    # this panel; shadowing it broke the next module (`'Box' object is not subscriptable`)
+                    h_ws = HyprlandWorkspaces(panel["hyprland-workspaces"], panel["output"], monitors, workspaces,
+                                              clients, activewindow, activeworkspace, icons_path=icons_path)
+                    container.pack_start(h_ws, False, False, panel["items-padding"])
+                    common.h_workspaces_list.append(h_ws)
                 else:
                     print("'hyprland-workspaces' not defined in this panel instance")
             else:

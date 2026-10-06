@@ -182,8 +182,8 @@ class KeyboardLayout(Gtk.EventBox):
             for k in self.keyboards:
                 if "keyboard" in k.identifier:
                     return k.xkb_active_layout_name
-                return self.keyboards[0].xkb_active_layout_name
-            return "unknown"
+            # the `return` used to sit inside the loop: only the first device was ever considered
+            return self.keyboards[0].xkb_active_layout_name if self.keyboards else "unknown"
         elif self.compositor == "niri":
             nkl = niri_keyboard_layouts()
             return nkl["names"][nkl["current_idx"]]

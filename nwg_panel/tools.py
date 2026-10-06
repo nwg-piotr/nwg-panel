@@ -375,7 +375,12 @@ def create_background_task(target, interval, args=(), kwargs=None):
     def loop_wrapper():
         if interval > 0:
             while True:
-                target(*args, **kwargs)
+                try:
+                    target(*args, **kwargs)
+                except Exception as e:
+                    # one exception (e.g. hyprctl returning "" during a restart) used to kill the
+                    # polling loop for good: the module then never refreshed again
+                    eprint("{}: {}: {}".format(getattr(target, "__qualname__", target), type(e).__name__, e))
                 time.sleep(interval)
         else:
             target(*args, **kwargs)
@@ -1056,58 +1061,40 @@ def get_mango_socket_path():
     return None
 
 
-def h_list_monitors():
-    reply = hyprctl("j/monitors")
+def _h_json(query, expected_type):
+    """hyprctl `query` parsed as JSON; an empty instance of `expected_type` on failure or a reply of another type
+    (callers iterate over lists and index dicts: {} for a list gave them str keys)"""
+    reply = hyprctl(query)
     try:
-        return json.loads(reply)
+        result = json.loads(reply)
     except Exception as e:
         eprint(e)
-        return {}
+        return expected_type()
+    return result if isinstance(result, expected_type) else expected_type()
+
+
+def h_list_monitors():
+    return _h_json("j/monitors", list)
 
 
 def h_list_workspaces():
-    reply = hyprctl("j/workspaces")
-    try:
-        return json.loads(reply)
-    except Exception as e:
-        eprint(e)
-        return {}
+    return _h_json("j/workspaces", list)
 
 
 def h_list_workspace_rules():
-    reply = hyprctl("j/workspacerules")
-    try:
-        return json.loads(reply)
-    except Exception as e:
-        eprint(e)
-        return {}
+    return _h_json("j/workspacerules", list)
 
 
 def h_list_clients():
-    reply = hyprctl("j/clients")
-    try:
-        return json.loads(reply)
-    except Exception as e:
-        eprint(e)
-        return {}
+    return _h_json("j/clients", list)
 
 
 def h_get_activewindow():
-    reply = hyprctl("j/activewindow")
-    try:
-        return json.loads(reply)
-    except Exception as e:
-        eprint(e)
-        return {}
+    return _h_json("j/activewindow", dict)
 
 
 def h_get_active_workspace():
-    reply = hyprctl("j/activeworkspace")
-    try:
-        return json.loads(reply)
-    except Exception as e:
-        eprint(e)
-        return {}
+    return _h_json("j/activeworkspace", dict)
 
 
 def h_modules_get_all():
