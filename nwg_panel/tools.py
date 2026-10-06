@@ -62,13 +62,21 @@ def temp_dir():
     return "/tmp"
 
 
+# runtime_dir()'s last resort, created once: the PID file and the scratchpad info writer and reader
+# must agree on the directory, and a new one per call was leaked each time
+_runtime_fallback = None
+
+
 def runtime_dir():
     """Per-user, private directory for the panel's state files (PID file, scratchpad info,
     weather caches). They used to live under fixed names in the shared /tmp: another local user
     could pre-create them (the panel then read his content and could not overwrite it)."""
+    global _runtime_fallback
     xdg = os.getenv("XDG_RUNTIME_DIR")
     if xdg and os.path.isdir(xdg):
         return xdg
+    if _runtime_fallback:
+        return _runtime_fallback
     cache = get_cache_dir()
     candidates = [os.path.join(temp_dir(), "nwg-panel-{}".format(os.getuid()))]
     if cache:
@@ -81,9 +89,10 @@ def runtime_dir():
             return path
         except OSError as e:
             eprint("runtime_dir: can't use {}: {}".format(path, e))
-    # last resort (no XDG_RUNTIME_DIR, /tmp entry hijacked, no HOME): a fresh directory, so the
-    # path is deliberately not stable across restarts here
-    return tempfile.mkdtemp(prefix="nwg-panel-")
+    # last resort (no XDG_RUNTIME_DIR, /tmp entry hijacked, no HOME): a fresh directory, stable for
+    # this process only (deliberately not across restarts)
+    _runtime_fallback = tempfile.mkdtemp(prefix="nwg-panel-")
+    return _runtime_fallback
 
 
 def owned_by_us(path):
