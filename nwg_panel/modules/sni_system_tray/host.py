@@ -1,13 +1,18 @@
 import typing
 import os
 
+from gi.repository import Gio, GLib
+
 from dasbus.connection import SessionMessageBus
 from dasbus.client.observer import DBusObserver
-from dasbus.client.proxy import disconnect_proxy
+
+from nwg_panel.tools import eprint
 
 from .watcher import WATCHER_SERVICE_NAME, WATCHER_OBJECT_PATH
 from .tray import Tray
-from .item import StatusNotifierItem
+from .item import StatusNotifierItem, DBUS_TIMEOUT_MS
+
+WATCHER_INTERFACE = "org.kde.StatusNotifierWatcher"
 
 HOST_SERVICE_NAME_TEMPLATE = "org.kde.StatusNotifierHost-{}-{}"
 HOST_OBJECT_PATH_TEMPLATE = "/StatusNotifierHost/{}"
@@ -26,8 +31,11 @@ class StatusNotifierHostInterface(object):
         self.trays = trays
 
         self._statusNotifierItems = []
-        self.watcher_proxy = None
+        self._watcher_signal_ids = []
+        # bumped when the watcher goes: an answer from the previous one is then ignored
+        self._watcher_generation = 0
         self.session_bus = SessionMessageBus()
+        self.connection = self.session_bus.connection
 
         self.host_service_name = HOST_SERVICE_NAME_TEMPLATE.format(os.getpid(), self.host_id)
         self.host_object_path = HOST_OBJECT_PATH_TEMPLATE.format(self.host_id)
@@ -46,21 +54,60 @@ class StatusNotifierHostInterface(object):
         self.watcher_service_observer.connect_once_available()
 
     def __del__(self):
-        if self.watcher_proxy is not None:
-            disconnect_proxy(self.watcher_proxy)
+        self._unsubscribe_watcher()
         self.watcher_service_observer.disconnect()
         self.session_bus.disconnect()
 
     def watcher_available_handler(self, _observer):
         # print("StatusNotifierHostInterface -> watcher_available_handler")
-        self.watcher_proxy = self.session_bus.get_proxy(WATCHER_SERVICE_NAME, WATCHER_OBJECT_PATH)
-        self.watcher_proxy.StatusNotifierItemRegistered.connect(self.item_registered_handler)
-        self.watcher_proxy.StatusNotifierItemUnregistered.connect(self.item_unregistered_handler)
-        self.watcher_proxy.RegisterStatusNotifierHost(self.host_object_path, callback=lambda _: None)
-
+        # Plain asynchronous Gio, as for the items: a dasbus proxy introspected the watcher and read
+        # RegisteredStatusNotifierItems synchronously, on the GTK loop (up to 25 s if it was busy).
+        # Subscribed before the read: an item registered meanwhile is announced, or in the answer.
+        self._unsubscribe_watcher()
+        for member, handler in (("StatusNotifierItemRegistered", self.item_registered_handler),
+                                ("StatusNotifierItemUnregistered", self.item_unregistered_handler)):
+            self._watcher_signal_ids.append(self.connection.signal_subscribe(
+                WATCHER_SERVICE_NAME, WATCHER_INTERFACE, member, WATCHER_OBJECT_PATH, None,
+                Gio.DBusSignalFlags.NONE, self._on_watcher_signal, handler))
+        self._call_watcher(WATCHER_INTERFACE, "RegisterStatusNotifierHost",
+                           GLib.Variant("(s)", (self.host_object_path,)), None, None)
         # Add items registered before host available
-        for item in self.watcher_proxy.RegisteredStatusNotifierItems:
+        self._call_watcher("org.freedesktop.DBus.Properties", "Get",
+                           GLib.Variant("(ss)", (WATCHER_INTERFACE, "RegisteredStatusNotifierItems")),
+                           GLib.VariantType("(v)"), self._on_registered_items)
+
+    def _call_watcher(self, interface, method, parameters, reply_type, callback):
+        generation = self._watcher_generation
+
+        def on_result(connection, result, _data):
+            try:
+                reply = connection.call_finish(result)
+            except GLib.Error as e:
+                eprint(f"Tray: {method} on the watcher failed: {e.message}")
+                return
+            if callback is not None and generation == self._watcher_generation:
+                callback(reply)
+
+        self.connection.call(WATCHER_SERVICE_NAME, WATCHER_OBJECT_PATH, interface, method, parameters, reply_type,
+                             Gio.DBusCallFlags.NONE, DBUS_TIMEOUT_MS, None, on_result, None)
+
+    def _on_registered_items(self, reply):
+        items = reply.get_child_value(0).get_variant()
+        if items.get_type_string() != "as":
+            return
+        for item in items.unpack():
             self.item_registered_handler(item)
+
+    @staticmethod
+    def _on_watcher_signal(_connection, _sender, _path, _interface, _member, parameters, handler):
+        if parameters.get_type_string() == "(s)":
+            handler(parameters.unpack()[0])
+
+    def _unsubscribe_watcher(self):
+        self._watcher_generation += 1
+        for signal_id in self._watcher_signal_ids:
+            self.connection.signal_unsubscribe(signal_id)
+        self._watcher_signal_ids.clear()
 
     def watcher_unavailable_handler(self, _observer):
         # print("StatusNotifierHostInterface -> watcher_unavailable_handler")
@@ -71,9 +118,7 @@ class StatusNotifierHostInterface(object):
                 tray.remove_item(item)
             item.destroy()
         self._statusNotifierItems.clear()
-        if self.watcher_proxy is not None:
-            disconnect_proxy(self.watcher_proxy)
-        self.watcher_proxy = None
+        self._unsubscribe_watcher()
 
     def item_registered_handler(self, full_service_service):
         """print(
