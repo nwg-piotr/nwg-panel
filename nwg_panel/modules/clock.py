@@ -24,6 +24,9 @@ class Clock(Gtk.EventBox):
         self.cal = None
         self.note_box = None
         self.popup = None
+        # kept on the main loop by the popup's signals, read by the calendar reload thread instead of
+        # popup.is_visible(): no GTK call from a background thread
+        self.popup_visible = False
         self.note_entry = None
         self.icons_path = icons_path
 
@@ -183,6 +186,9 @@ class Clock(Gtk.EventBox):
         self.popup = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         self.popup.set_property("name", self.settings["calendar-css-name"])
         self.popup.connect("key-release-event", self.handle_keyboard)
+        self.popup.connect("show", self.on_popup_visibility, True)
+        self.popup.connect("hide", self.on_popup_visibility, False)
+        self.popup.connect("destroy", self.on_popup_visibility, False)
         GtkLayerShell.init_for_window(self.popup)
         GtkLayerShell.set_layer(self.popup, GtkLayerShell.Layer.TOP)
         GtkLayerShell.set_keyboard_mode(self.popup, GtkLayerShell.KeyboardMode.ON_DEMAND)
@@ -319,8 +325,12 @@ class Clock(Gtk.EventBox):
         c = load_json(self.path)
         self.calendar = c
 
+    def on_popup_visibility(self, widget, visible):
+        self.popup_visible = visible
+
     def reload_calendar(self):
-        if not self.popup or not self.popup.is_visible():
+        # background thread: don't reload what the open popup is editing
+        if not self.popup_visible:
             self.load_calendar()
 
     def handle_keyboard(self, win, event):
