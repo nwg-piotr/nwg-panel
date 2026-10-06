@@ -6,7 +6,6 @@ i3 = None
 
 outputs = {}
 mon_desc2output_name = {}  # {'Samsung Electric Company SyncMaster 0x4B493234': 'HDMI-A-1', (...)}
-outputs_num = 0
 windows_list = []
 h_taskbars_list = []
 h_workspaces_list = []

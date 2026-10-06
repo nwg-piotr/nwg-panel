@@ -162,8 +162,69 @@ def rt_sig_handler(sig, frame):
                 win.show()
 
 
+_restart_source = 0
+# set once the new instance is spawned: this one lives on until it gets SIGINT from it, and a display event
+# meanwhile must not spawn yet another one
+_restarting = False
+
+
 def restart():
+    global _restart_source, _restarting
+    _restart_source = 0
+    _restarting = True
     subprocess.Popen(restart_cmd, shell=True)
+    return False
+
+
+def schedule_restart(reason):
+    """
+    Restart the panel once `restart-delay` ms after the last display event. Events come in bursts
+    (a dock delivers several outputs, a mode change fires geometry + scale), so a pending restart is
+    rescheduled instead of spawning one new instance per event. Call from the main thread.
+    """
+    global _restart_source
+    if _restarting or not common_settings.get("restart-on-display", True):
+        return False
+    delay = common_settings.get("restart-delay", 500)
+    if _restart_source:
+        GLib.source_remove(_restart_source)
+    print("{}; restart in {} ms.".format(reason, delay))
+    _restart_source = GLib.timeout_add(delay, restart, priority=GLib.PRIORITY_HIGH)
+    return False
+
+
+def _monitor_geometry(monitor):
+    # the panel's width/height derive from these; a position change alone does not need a restart
+    g = monitor.get_geometry()
+    return g.width, g.height, monitor.get_scale_factor()
+
+
+def _on_monitor_changed(monitor, _pspec, last):
+    # fires for mode, transform and scale changes (#421), and for position changes we ignore
+    geometry = _monitor_geometry(monitor)
+    if geometry != last["geometry"]:
+        last["geometry"] = geometry
+        schedule_restart("Monitor '{}' geometry changed".format(monitor.get_model() or ""))
+
+
+def watch_display():
+    """
+    Restart on output hot-plug and geometry changes through GDK, whatever the compositor (#284, #388, #421).
+    The compositor-specific watchers only covered some cases: hypr_watcher is not started without a
+    Hyprland module, and the sway handler used to react to an increase of outputs only.
+    """
+    display = Gdk.Display.get_default()
+    if not display:
+        return False
+    display.connect("monitor-added", lambda d, m: schedule_restart("Monitor added"))
+    display.connect("monitor-removed", lambda d, m: schedule_restart("Monitor removed"))
+    for i in range(display.get_n_monitors()):
+        monitor = display.get_monitor(i)
+        if monitor:
+            last = {"geometry": _monitor_geometry(monitor)}
+            monitor.connect("notify::geometry", _on_monitor_changed, last)
+            monitor.connect("notify::scale-factor", _on_monitor_changed, last)
+    return False
 
 
 # Hyprland events that change what taskbars / workspaces display
@@ -184,7 +245,6 @@ HYPR_REFRESH_RETRIES = 3
 
 _hypr_refresh_src = 0
 _hypr_refresh_fast = False
-_restart_src = 0
 
 
 def _hypr_do_refresh(attempt=0):
@@ -226,23 +286,6 @@ def _hypr_schedule_refresh(fast):
     _hypr_refresh_fast = fast
     _hypr_refresh_src = GLib.timeout_add(HYPR_REFRESH_DELAY_MS if fast else HYPR_TITLE_REFRESH_DELAY_MS,
                                          _hypr_do_refresh)
-    return False
-
-
-def _schedule_restart():
-    """Runs on the GTK main loop. Several monitor events in a row restart the panel once."""
-    global _restart_src
-
-    def do_restart():
-        global _restart_src
-        _restart_src = 0
-        restart()
-        return False
-
-    if _restart_src:
-        GLib.source_remove(_restart_src)
-    _restart_src = GLib.timeout_add(common_settings.get("restart-delay", 500), do_restart,
-                                    priority=GLib.PRIORITY_HIGH)
     return False
 
 
@@ -301,7 +344,7 @@ def hypr_watcher():
         # UTF-8 character), so only complete lines are decoded.
         *lines, pending = (pending + datagram).split(b"\n")
 
-        refresh, fast, submap, layout, restart_needed = False, False, None, False, False
+        refresh, fast, submap, layout, restart_needed = False, False, None, False, None
         for raw in lines:
             line = raw.decode("utf-8", errors="replace")
             event_name, _, data = line.partition(">>")
@@ -317,14 +360,12 @@ def hypr_watcher():
                 submap = data  # the last one wins
             elif event_name == "activelayout":
                 layout = True
-            if event_name in ("monitoradded", "monitorremoved") and common_settings.get("restart-on-display"):
-                restart_needed = True
-                print("Received event '{}'; restart in {} ms.".format(event_name,
-                                                                      common_settings.get("restart-delay", 500)))
+            if event_name in ("monitoradded", "monitorremoved"):
+                restart_needed = event_name
 
         # Everything below is handled on the GTK main loop.
         if restart_needed:
-            GLib.idle_add(_schedule_restart, priority=GLib.PRIORITY_HIGH)
+            GLib.idle_add(schedule_restart, "Received event '{}'".format(restart_needed), priority=GLib.PRIORITY_HIGH)
         if refresh and (common.h_taskbars_list or common.h_workspaces_list):
             GLib.idle_add(_hypr_schedule_refresh, fast)
         if submap is not None:
@@ -400,16 +441,8 @@ def niri_watcher():
                 print("niri_watcher: failed to decode JSON:", e)
 
 def on_i3ipc_event(i3conn, event):
-    if common_settings["restart-on-display"]:
-        num = num_active_outputs(i3conn.get_outputs())
-        if num > common.outputs_num:
-            print("Number of outputs increased ({}); restart in {} ms.".format(
-                num, common_settings["restart-delay"]))
-            GLib.timeout_add(common_settings["restart-delay"],
-                             restart,
-                             priority=GLib.PRIORITY_HIGH)
-        common.outputs_num = num
-
+    # output changes are handled by watch_display (GDK sees sway's outputs come, go, and change mode, scale
+    # or transform): no get_outputs() round-trip on every window/workspace event
     GLib.idle_add(hide_controls_popup, priority=GLib.PRIORITY_HIGH)
 
 
@@ -1149,11 +1182,8 @@ def main():
             else:
                 window.show_all()
 
-    if sway:
-        common.outputs_num = num_active_outputs(common.i3.get_outputs())
-    else:
+    if not sway:
         common.outputs, common.mon_desc2output_name = list_outputs(sway=sway, silent=True)
-        common.outputs_num = len(common.outputs)
 
     if sway:
         # Notice: Don't use Event.OUTPUT, it's not supported on old sway releases.
@@ -1186,6 +1216,9 @@ def main():
 
     if tray_available and len(common.tray_list) > 0:
         sni_system_tray.init_tray(common.tray_list)
+
+    # once the windows are mapped and the initial monitor geometry is settled
+    GLib.idle_add(watch_display)
 
     Gtk.main()
 
