@@ -277,12 +277,17 @@ class StatusNotifierItem(object):
             changed = unpack_properties(parameters.get_child_value(1))
             names = list(changed)
             self.properties.update(changed)
-            for name in parameters.get_child_value(2).unpack():
-                self.properties.pop(name, None)
             if "ToolTip" in names:
                 self.tooltip_version += 1
                 self.tooltip_fetched_version = self.tooltip_version
             self._notify(names)
+            # Invalidated: changed, value not sent. Read again, as for NewIcon & co. (the old value is
+            # kept meanwhile; one no longer exposed is dropped when the answer says so).
+            invalidated = [name for name in parameters.get_child_value(2).unpack() if name in PROPERTIES]
+            if "ToolTip" in invalidated:
+                invalidated.remove("ToolTip")
+                self.tooltip_version += 1  # read lazily, as for NewToolTip
+            self._schedule_fetch(invalidated)
         elif member == "NewToolTip":
             self.tooltip_version += 1
         elif member in ("NewStatus", "NewIconThemePath"):
@@ -292,9 +297,14 @@ class StatusNotifierItem(object):
                 self.properties[name] = parameters.unpack()[0]
                 self._notify([name])
         elif member in SIGNAL_PROPERTIES:
-            self._pending_properties.update(SIGNAL_PROPERTIES[member])
-            if not self._pending_source:
-                self._pending_source = GLib.timeout_add(REFRESH_DELAY_MS, self._fetch_pending)
+            self._schedule_fetch(SIGNAL_PROPERTIES[member])
+
+    def _schedule_fetch(self, names):
+        if not names:
+            return
+        self._pending_properties.update(names)
+        if not self._pending_source:
+            self._pending_source = GLib.timeout_add(REFRESH_DELAY_MS, self._fetch_pending)
 
     def _fetch_pending(self):
         self._pending_source = 0
