@@ -11,7 +11,6 @@ License: MIT
 
 import json
 import os
-import socket
 import sys
 from enum import Enum
 
@@ -22,8 +21,9 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
 # tools.hyprctl() reads the reply until EOF: the local copy did a single recv(20480), which truncated
-# `j/clients` with many windows and made the JSON unparsable
-from nwg_panel.tools import get_config_dir, load_json, save_json, check_key, eprint, hyprctl
+# `j/clients` with many windows and made the JSON unparsable; tools.niri_ipc() is the same reader as the
+# local copy was, and returns None instead of raising on a socket error
+from nwg_panel.tools import get_config_dir, load_json, save_json, check_key, eprint, hyprctl, niri_ipc
 from nwg_panel.mango_ipc import get_mango_ipc
 
 swaysock = os.getenv('SWAYSOCK')
@@ -45,35 +45,6 @@ sort_order = SortOrder.PID
 
 # We need to get_allocated_width of each one inside a function later
 btn_pid, btn_ppid, btn_owner, btn_cpu, btn_mem, btn_name = None, None, None, None, None, None,
-
-
-def niri_ipc(cmd, is_json=False):
-    niri_sock = os.getenv("NIRI_SOCKET")
-    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    client.connect(niri_sock)
-    if not is_json:
-        client.send(f'"{cmd}"\n'.encode("utf-8"))
-    else:
-        client.send(f'{cmd}\n'.encode("utf-8"))
-
-    data = b""
-    while True:
-        chunk = client.recv(4096)
-        if not chunk:
-            break
-        data += chunk
-        if data.endswith(b'\n'):  # end of the reply: niri keeps the connection open, EOF never comes
-            break
-    buffer = data.decode('utf-8', errors='replace')
-    try:
-        reply = json.loads(buffer)
-        key = next(iter(reply))
-        return reply[key]
-
-    except json.JSONDecodeError as e:
-        print("Failed to decode JSON:", e)
-        print("Buffer:", buffer)
-        return None
 
 
 if not swaysock and not his and not niri_sock and not mis:
