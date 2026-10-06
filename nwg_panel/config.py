@@ -161,6 +161,7 @@ SKELETON_PANEL: dict = {
         "show-name": True,
         "name-length": 40,
         "show-empty": True,
+        "show-active-empty": False,
         "mark-content": True,
         "show-names": True,
         "mark-floating": True,
@@ -2769,6 +2770,7 @@ class EditorWrapper(object):
             "show-name": True,
             "name-length": 40,
             "show-empty": True,
+            "show-active-empty": False,
             "mark-content": True,
             "show-names": True,
             "mark-floating": True,
@@ -2790,6 +2792,7 @@ class EditorWrapper(object):
         builder.get_object("lbl-icon-size").set_text("{}:".format(voc["icon-size"]))
         builder.get_object("lbl-window-name-length-limit").set_text("{}:".format(voc["window-name-length-limit"]))
         builder.get_object("show-empty").set_label("{}".format(voc["show-empty-ws"]))
+        builder.get_object("show-active-empty").set_label("{}".format(voc["show-active-empty-ws"]))
         builder.get_object("mark-content").set_label("{}".format(voc["mark-non-empty-ws"]))
         builder.get_object("show-workspaces").set_label("{}".format(voc["show-workspaces"]))
         builder.get_object("show-names").set_label("{}".format(voc["show-ws-names"]))
@@ -2833,6 +2836,9 @@ class EditorWrapper(object):
         self.ws_show_empty = builder.get_object("show-empty")
         self.ws_show_empty.set_active(settings["show-empty"])
 
+        self.ws_show_active_empty = builder.get_object("show-active-empty")
+        self.ws_show_active_empty.set_active(settings["show-active-empty"])
+
         self.ws_mark_content = builder.get_object("mark-content")
         self.ws_mark_content.set_active(settings["mark-content"])
 
@@ -2867,6 +2873,7 @@ class EditorWrapper(object):
         settings["show-name"] = self.ws_show_name.get_active()
         settings["name-length"] = int(self.ws_name_length.get_value())
         settings["show-empty"] = self.ws_show_empty.get_active()
+        settings["show-active-empty"] = self.ws_show_active_empty.get_active()
         settings["mark-content"] = self.ws_mark_content.get_active()
         settings["show-names"] = self.ws_show_names.get_active()
         settings["show-workspaces"] = self.ws_show_workspaces.get_active()

@@ -37,7 +37,7 @@ class HyprlandWorkspaces(Gtk.Box):
             "show-name": True,
             "name-length": 40,
             "show-empty": True,
-            "show-active-empty": True,
+            "show-active-empty": False,
             "mark-content": True,
             "show-names": True,
             "mark-floating": True,
@@ -218,7 +218,7 @@ class HyprlandWorkspaces(Gtk.Box):
                 c.destroy()
 
             for num in self.ws_nums:
-                # the active workspace is shown even when empty (#410), unless show-active-empty is false
+                # with show-active-empty, the active workspace is shown even when empty (#410)
                 if num in occupied_workspaces or self.settings["show-empty"] \
                         or (self.settings["show-active-empty"] and num == active_ws["id"]):
                     occ = num in occupied_workspaces

@@ -238,6 +238,7 @@
   "set-0-to-disable": "Set 0 to disable",
   "settings": "Settings",
   "show": "Show",
+  "show-active-empty-ws": "Show the active workspace even if empty",
   "show-cloudiness": "Show cloudiness",
   "show-cover": "Show cover",
   "show-default": "Show 'default' mode",
