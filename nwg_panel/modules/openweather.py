@@ -69,6 +69,12 @@ def on_button_press(window, event):
 REQUEST_TIMEOUT = (5, 15)
 
 
+def esc(value):
+    """API values go into Pango markup: numbers render as before, a tampered response cannot
+    inject tags or links."""
+    return GLib.markup_escape_text(str(value))
+
+
 def safe_icon_code(code):
     # "10d", "04n"... anything else must not be turned into a file path
     return isinstance(code, str) and code.isalnum() and len(code) <= 4
@@ -457,25 +463,25 @@ class OpenWeather(Gtk.EventBox):
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         lbl = Gtk.Label()
         lbl.set_property("justify", Gtk.Justification.CENTER)
-        feels_like = "{}: {}°".format(self.lang["feels-like"], self.weather["main"]["feels_like"]) if "feels_like" in \
+        feels_like = "{}: {}°".format(self.lang["feels-like"], esc(self.weather["main"]["feels_like"])) if "feels_like" in \
                                                                                                       self.weather[
                                                                                                           "main"] else ""
-        humidity = "   {}: {}%".format(self.lang["humidity"], self.weather["main"]["humidity"]) if "humidity" in \
+        humidity = "   {}: {}%".format(self.lang["humidity"], esc(self.weather["main"]["humidity"])) if "humidity" in \
                                                                                                    self.weather[
                                                                                                        "main"] else ""
         wind_speed, wind_dir, wind_gust = "", "", ""
         if "wind" in self.weather:
             if "speed" in self.weather["wind"]:
-                wind_speed = "   {}: {} m/s".format(self.lang["wind"], self.weather["wind"]["speed"])
+                wind_speed = "   {}: {} m/s".format(self.lang["wind"], esc(self.weather["wind"]["speed"]))
             if "deg" in self.weather["wind"]:
                 wind_dir = " {}".format((direction(self.weather["wind"]["deg"])))
             if "gust" in self.weather["wind"]:
-                wind_gust = " ({} {} m/s)".format(self.lang["gust"], self.weather["wind"]["gust"])
-        pressure = " {}: {} hPa".format(self.lang["pressure"], self.weather["main"]["pressure"]) if "pressure" in \
+                wind_gust = " ({} {} m/s)".format(self.lang["gust"], esc(self.weather["wind"]["gust"]))
+        pressure = " {}: {} hPa".format(self.lang["pressure"], esc(self.weather["main"]["pressure"])) if "pressure" in \
                                                                                                     self.weather[
                                                                                                         "main"] else ""
         clouds = "   {}: {}%".format(self.lang["cloudiness"],
-                                     self.weather["clouds"]["all"]) if "clouds" in self.weather and "all" in \
+                                     esc(self.weather["clouds"]["all"])) if "clouds" in self.weather and "all" in \
                                                                        self.weather["clouds"] else ""
         visibility = "   {}: {} km".format(self.lang["visibility"], int(
             self.weather["visibility"] / 1000)) if "visibility" in self.weather else ""
@@ -625,7 +631,7 @@ class OpenWeather(Gtk.EventBox):
                     box.pack_start(img, False, False, 0)
                     lbl = Gtk.Label()
                     lbl.set_markup('<span font_size="{}">{}%</span>'.format(self.settings["popup-text-size"],
-                                                                            data["main"]["humidity"]))
+                                                                            esc(data["main"]["humidity"])))
                     box.pack_start(lbl, False, False, 0)
                     grid.attach(box, 5, i, 1, 1)
 
@@ -634,9 +640,9 @@ class OpenWeather(Gtk.EventBox):
                     box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                     img = self.svg2img("wind.svg")
                     box.pack_start(img, False, False, 0)
-                    wind_speed = "{} m/s".format(data["wind"]["speed"]) if "speed" in data["wind"] and data["wind"][
+                    wind_speed = "{} m/s".format(esc(data["wind"]["speed"])) if "speed" in data["wind"] and data["wind"][
                         "speed"] else ""
-                    wind_gust = " ({})".format(data["wind"]["gust"]) if "gust" in data["wind"] and data["wind"][
+                    wind_gust = " ({})".format(esc(data["wind"]["gust"])) if "gust" in data["wind"] and data["wind"][
                         "gust"] else ""
                     wind_dir = " {}".format(direction(data["wind"]["deg"])) if "deg" in data["wind"] and data["wind"][
                         "deg"] else ""
@@ -654,7 +660,7 @@ class OpenWeather(Gtk.EventBox):
                     box.pack_start(img, False, False, 0)
                     lbl = Gtk.Label()
                     lbl.set_markup('<span font_size="{}">{} hPa</span>'.format(self.settings["popup-text-size"],
-                                                                               data["main"]["pressure"]))
+                                                                               esc(data["main"]["pressure"])))
                     box.pack_start(lbl, False, False, 0)
                     grid.attach(box, 7, i, 1, 1)
 
@@ -666,7 +672,7 @@ class OpenWeather(Gtk.EventBox):
                         box.pack_start(img, False, False, 0)
                         lbl = Gtk.Label()
                         lbl.set_markup('<span font_size="{}">{}%</span>'.format(self.settings["popup-text-size"],
-                                                                                data["clouds"]["all"]))
+                                                                                esc(data["clouds"]["all"])))
                         box.pack_start(lbl, False, False, 0)
                         grid.attach(box, 8, i, 1, 1)
 
