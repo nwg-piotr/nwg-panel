@@ -242,10 +242,15 @@ class PopupWindow(Gtk.Window):
     def refresh(self, *args):
         if self.get_visible():
             if not self.value_changed:
-                self.bri_scale.set_value(self.parent.bri_value)
+                # a poll must not fire the handler: set_bri would write the value back, on_value_changed
+                # would flag a user move and the scale would stop following (ddcutil)
+                with self.bri_scale.handler_block(self.bri_scale_handler):
+                    self.bri_scale.set_value(self.parent.bri_value)
             self.update_icon()
 
         else:
+            # a move never applied (closed before the button release) is dropped with the real value
+            self.value_changed = False
             with self.bri_scale.handler_block(self.bri_scale_handler):
                 self.bri_scale.set_value(self.parent.bri_value)
 
