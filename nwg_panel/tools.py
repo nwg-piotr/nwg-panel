@@ -35,6 +35,9 @@ icon_pixbuf_cache = OrderedDict()
 icon_pixbuf_cache_limit = 50
 icon_theme_watched = False
 
+# seconds; a hung upowerd must not block the battery polling thread
+UPOWER_TIMEOUT = 5
+
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -721,22 +724,31 @@ def get_battery():
             success = True
 
     if not success and nwg_panel.common.commands["upower"]:
-        # a timeout, so that a hung upower can't block the polling thread; a failure still propagates to the
-        # caller, which keeps the last known value instead of showing 0 %
-        lines = subprocess.check_output(
-            "LANG=en_US upower -i $(upower -e | grep devices/DisplayDevice) | grep --color=never -E "
-            "'state|to[[:space:]]full|to[[:space:]]empty|percentage'",
-            shell=True, timeout=5).decode("utf-8", errors="replace").strip().splitlines()
+        # no shell: on timeout subprocess kills the process it started, a hung upowerd must not leave an
+        # `upower | grep` pipeline behind on every poll; a failure propagates to the caller, which keeps the
+        # last known value instead of showing 0 %
+        env = dict(os.environ, LANG="en_US")
+        devices = subprocess.check_output(["upower", "-e"], env=env, timeout=UPOWER_TIMEOUT).decode(
+            "utf-8", errors="replace").split()
+        display = [d for d in devices if "devices/DisplayDevice" in d]
+        if not display:
+            raise RuntimeError("upower: no DisplayDevice")
+        lines = subprocess.check_output(["upower", "-i", display[0]], env=env, timeout=UPOWER_TIMEOUT).decode(
+            "utf-8", errors="replace").splitlines()
+        found = False
         for line in lines:
             if "state:" in line:
                 charging = line.split(":")[1].strip() == "charging"
             elif "time to" in line:
                 time = line.split(":")[1].strip()
             elif "percentage:" in line:
+                found = True
                 try:
                     percent = round(float(line.split(":")[1].strip()[:-1]))
                 except:
                     pass
+        if not found:
+            raise RuntimeError("upower: no percentage for {}".format(display[0]))
 
     return percent, time, charging
 
