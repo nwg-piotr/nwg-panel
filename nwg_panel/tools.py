@@ -428,7 +428,7 @@ def get_volume():
         try:
             output = cmd2string("pamixer --get-volume")
             if output:
-                vol = int(cmd2string("pamixer --get-volume"))
+                vol = int(output)
         except Exception as e:
             eprint(e)
 
@@ -600,6 +600,15 @@ def set_volume(percent, balance=0):
         eprint("Couldn't set volume, no 'pamixer' or 'pactl' found")
 
 
+brightness_max_cache = {}
+
+# ddcutil: one `getvcp` is a DDC/CI transaction over I2C (hundreds of ms, logs on some monitors, #379), and the
+# value only changes through us or the monitor's own buttons. Reads are cached per device for DDCUTIL_CACHE_S
+# and refreshed right away by set_brightness().
+DDCUTIL_CACHE_S = 30
+ddcutil_cache = {}  # device -> (monotonic time, value)
+
+
 def get_brightness(device="", controller=""):
     brightness = 0
     if nwg_panel.common.commands["light"] and controller == "light":
@@ -607,19 +616,30 @@ def get_brightness(device="", controller=""):
         output = cmd2string(cmd)
         brightness = int(round(float(output), 0))
     elif nwg_panel.common.commands["brightnessctl"] and controller == "brightnessctl":
-        cmd = "brightnessctl m -d {}".format(device) if device else "brightnessctl m"
-        output = cmd2string(cmd)
-        max_bri = int(output)
+        # the maximum never changes: read it once per device instead of at every poll
+        max_bri = brightness_max_cache.get(device)
+        if max_bri is None:
+            cmd = "brightnessctl m -d {}".format(device) if device else "brightnessctl m"
+            max_bri = int(cmd2string(cmd))
+            brightness_max_cache[device] = max_bri
 
         cmd = "brightnessctl g -d {}".format(device) if device else "brightnessctl g"
         output = cmd2string(cmd)
         b = int(output) * 100 / max_bri
         brightness = int(round(float(b), 0))
     elif nwg_panel.common.commands["ddcutil"] and controller == "ddcutil":
+        cached = ddcutil_cache.get(device)
+        if cached and time.monotonic() - cached[0] < DDCUTIL_CACHE_S:
+            return cached[1]
         cmd = "ddcutil getvcp 10 --bus={}".format(device) if device else "ddcutil getvcp 10"
         output = cmd2string(cmd)
         b = int(output.split("current value =")[1].split(",")[0])
         brightness = int(round(float(b), 0))
+        latest = ddcutil_cache.get(device)
+        if latest is not cached:
+            # set_brightness() ran while we were reading: what it set is newer than what we read
+            return latest[1]
+        ddcutil_cache[device] = (time.monotonic(), brightness)
     else:
         raise ValueError("Couldn't get brightness, is 'light' or 'brightnessctl' or 'ddcutil' installed?")
 
@@ -644,6 +664,7 @@ def set_brightness(percent, device="", controller=""):
                              stdout=subprocess.DEVNULL,
                              stderr=subprocess.STDOUT)
     elif nwg_panel.common.commands["ddcutil"] and controller == "ddcutil":
+        ddcutil_cache[device] = (time.monotonic(), percent)  # what we just set is what a poll would read
         if device:
             subprocess.Popen("ddcutil setvcp 10 {} --bus={}".format(percent, device).split())
         else:
