@@ -61,14 +61,26 @@ def local_dir():
     return local_dir
 
 
+def config_dir_path():
+    """The nwg-panel config dir path, None when neither XDG_CONFIG_HOME nor HOME is set. Creates nothing."""
+    config_home = os.getenv("XDG_CONFIG_HOME")
+    if not config_home:
+        home = os.getenv("HOME")
+        if not home:
+            return None
+        config_home = os.path.join(home, ".config")
+    return os.path.join(config_home, "nwg-panel")
+
+
 def get_config_dir():
     """
     Determine config dir path, create if not found, then create sub-dirs
     :return: config dir path
     """
-    xdg_config_home = os.getenv('XDG_CONFIG_HOME')
-    config_home = xdg_config_home if xdg_config_home else os.path.join(os.getenv("HOME"), ".config")
-    config_dir = os.path.join(config_home, "nwg-panel")
+    config_dir = config_dir_path()
+    if config_dir is None:
+        # as before: the panel can't run without a config dir
+        raise TypeError("neither XDG_CONFIG_HOME nor HOME is set")
     if not os.path.isdir(config_dir):
         print("Creating '{}'".format(config_dir))
         os.makedirs(config_dir, exist_ok=True)
@@ -150,15 +162,11 @@ def fsync_dir(path):
 
 def in_config_dir(path):
     """True if path (as given, a link is not resolved) is in the nwg-panel config directory.
-    Same location as get_config_dir(), without its side effects (creating directories) and
-    without failing when neither XDG_CONFIG_HOME nor HOME is set (False then)."""
-    config_home = os.getenv("XDG_CONFIG_HOME")
-    if not config_home:
-        home = os.getenv("HOME")
-        if not home:
-            return False
-        config_home = os.path.join(home, ".config")
-    config_dir = os.path.abspath(os.path.join(config_home, "nwg-panel"))
+    Not get_config_dir(): no directories created, no error when there is no config dir (False then)."""
+    config_dir = config_dir_path()
+    if config_dir is None:
+        return False
+    config_dir = os.path.abspath(config_dir)
     return os.path.commonpath([os.path.abspath(path), config_dir]) == config_dir
 
 
