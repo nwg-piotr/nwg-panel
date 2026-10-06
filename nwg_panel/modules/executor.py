@@ -4,16 +4,20 @@ import os
 import subprocess
 import signal
 import threading
+import time
 
 import gi
 from gi.repository import GLib
 
-from nwg_panel.tools import check_key, update_image, create_background_task, cmd_through_compositor
+from nwg_panel.tools import check_key, update_image, create_background_task, cmd_through_compositor, eprint
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk, Gdk, GdkPixbuf, Pango
+
+# seconds a timed out script gets to clean up after SIGTERM, before its process group gets SIGKILL
+KILL_GRACE = 2
 
 
 class Executor(Gtk.EventBox):
@@ -32,12 +36,14 @@ class Executor(Gtk.EventBox):
         self.tooltip_state = None  # dynamic tooltip last set: (markup, image path, image mtime)
         self.loop_started = False
         self.run_lock = threading.Lock()
+        self.rerun_pending = False  # a refresh requested while the script was running
         self.tooltip_image_path = None
         self.tooltip_image_key = None
         self.tooltip_box = None
 
         check_key(settings, "script", "")
         check_key(settings, "interval", 0)
+        # "timeout" (optional): seconds after which a running script is terminated, see script_timeout()
         check_key(settings, "root-css-name", "root-executor")
         check_key(settings, "css-name", "")
         check_key(settings, "icon-placement", "left")
@@ -223,15 +229,68 @@ class Executor(Gtk.EventBox):
         tooltip.set_custom(self.tooltip_box)
         return True
 
+    def run_script(self):
+        """
+        Runs the script and returns its output; raises like subprocess.check_output() did.
+        The script is started in its own session, i.e. as the leader of its own process group: when it times out,
+        the commands it started (curl, ping...) are terminated with it instead of staying around as orphans.
+        """
+        timeout = script_timeout(self.settings)
+        proc = subprocess.Popen(self.settings["script"].split(), stdout=subprocess.PIPE, start_new_session=True)
+        try:
+            output = proc.communicate(timeout=timeout)[0]
+        except subprocess.TimeoutExpired as e:
+            self.kill_script(proc)
+            e.timeout = timeout  # communicate() may report what was left of it instead
+            raise
+        finally:
+            proc.stdout.close()
+        if proc.returncode:
+            raise subprocess.CalledProcessError(proc.returncode, proc.args, output=output)
+        return output
+
+    def kill_script(self, proc):
+        # SIGTERM, up to KILL_GRACE s to clean up, SIGKILL to what is left of the group. The script is only reaped
+        # afterwards: until then its PID, which is also the ID of its process group, can't be given to another
+        # process. Hence the poll with WNOWAIT, which sees the script exit without reaping it.
+        try:
+            os.killpg(proc.pid, signal.SIGTERM)
+            deadline = time.monotonic() + KILL_GRACE
+            while time.monotonic() < deadline:
+                try:
+                    if os.waitid(os.P_PID, proc.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT) is not None:
+                        break
+                except ChildProcessError:
+                    break  # already reaped elsewhere: still SIGKILL the group, a child may have survived
+                time.sleep(0.05)
+            # also when the script is gone: a child of it may have survived SIGTERM
+            os.killpg(proc.pid, signal.SIGKILL)
+        except OSError as e:
+            eprint("Executor '{}': {}".format(self.name, e))
+        try:
+            proc.wait(timeout=2)
+        except subprocess.TimeoutExpired:
+            # not ours to kill (sudo), or in uninterruptible sleep (dead network mount): don't wait for it
+            eprint("Executor '{}': could not kill the script (PID {})".format(self.name, proc.pid))
+
     def get_output(self):
         if "script" in self.settings and self.settings["script"]:
-            # serialize runs: a signal-triggered refresh must not overlap the periodic one
-            with self.run_lock:
+            # Serialize runs: a signal-triggered refresh must not overlap the periodic one. The request is noted
+            # before the lock is tried, so whoever holds the lock runs the script once more for it: requests that
+            # arrive while the script runs are merged into one rerun, and no thread waits behind the lock.
+            self.rerun_pending = True
+            while self.rerun_pending and self.run_lock.acquire(blocking=False):
+                self.rerun_pending = False
                 try:
-                    output = subprocess.check_output(self.settings["script"].split()).decode("utf-8").splitlines()
+                    # a script that never returns used to hold the lock (and a thread) forever
+                    output = self.run_script().decode("utf-8", errors="replace").splitlines()
                     GLib.idle_add(self.update_widget, output)
+                except subprocess.TimeoutExpired as e:
+                    eprint("Executor '{}': script timed out after {:g} s".format(self.name, e.timeout))
                 except Exception as e:
                     print(e)
+                finally:
+                    self.run_lock.release()
 
     def refresh(self):
         # The periodic loop is started once; later calls (RT signal) run the script once.
@@ -279,3 +338,25 @@ class Executor(Gtk.EventBox):
 
         print(f"Executing: {cmd}")
         subprocess.Popen('{}'.format(cmd), shell=True)
+
+
+def to_number(value, default):
+    try:
+        return float(value)
+    except (TypeError, ValueError, OverflowError):
+        return default
+
+
+def script_timeout(settings):
+    """
+    Seconds after which a running script is considered stuck and terminated: the "timeout" setting, by default
+    max(interval, 300), and none with "interval": 0 (a one-shot or signal-driven script may legitimately run long).
+    None = never. The config file may have been edited by hand: a value that is not a number ("5 min", null) is
+    treated as missing.
+    """
+    timeout = to_number(settings.get("timeout"), None)
+    if timeout is None:
+        interval = to_number(settings.get("interval"), 0)
+        timeout = max(300, interval) if interval > 0 else 0
+    # 0 = no timeout. There can't be one longer than poll() is able to wait either: 2**31 ms, 24 days.
+    return timeout if 0 < timeout < 2 ** 31 // 1000 else None

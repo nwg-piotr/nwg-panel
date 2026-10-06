@@ -341,46 +341,80 @@ _niri_refresh_queued = False
 
 def _do_niri_refresh(event_name):
     global _niri_refresh_queued
-
-    # get Niri state once for all Taskbar and Workspaces instances
-    outputs, workspaces, windows, focused_window = niri_get_all()
-
-    for item in common.niri_taskbars_list:
-        item.refresh(outputs, workspaces, windows, focused_window)
-
-    for item in common.niri_workspaces_list:
-        item.refresh(outputs, workspaces, windows, focused_window)
-
-    if event_name == "KeyboardLayoutSwitched":
-        for item in common.keyboard_layouts_list:
-            item.refresh()
-
+    # reset first: an exception below used to leave the flag set, and no refresh ever ran again
     _niri_refresh_queued = False
+
+    try:
+        # get Niri state once for all Taskbar and Workspaces instances
+        outputs, workspaces, windows, focused_window = niri_get_all()
+
+        for item in common.niri_taskbars_list:
+            item.refresh(outputs, workspaces, windows, focused_window)
+
+        for item in common.niri_workspaces_list:
+            item.refresh(outputs, workspaces, windows, focused_window)
+
+        if event_name == "KeyboardLayoutSwitched":
+            for item in common.keyboard_layouts_list:
+                item.refresh()
+    except Exception as e:
+        eprint(f"niri refresh failed: {e}")
+
     return False  # False removes function from the idle_add queue
 
 
 def niri_watcher():
     import socket
+    import time
     global _niri_refresh_queued
 
-    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    client.connect(niri_sock)
-    client.sendall(b"\"EventStream\"\n")
-
-    buffer = ""
+    # Seconds to wait before the next connection attempt: 0 as long as the stream delivers events, then 1, 2, 4...
+    # up to 60. Losing the stream and getting it back are logged once each, not on every attempt.
+    delay = 0
     while True:
-        chunk = client.recv(1024).decode('utf-8', errors='replace')
-        if not chunk:
-            break
-        buffer += chunk
-        while "\n" in buffer:
-            line, buffer = buffer.split("\n", 1)
-            line = line.strip()
-            if not line:
-                continue
+        try:
+            client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            client.connect(niri_sock)
+            client.sendall(b"\"EventStream\"\n")
+        except OSError as e:
+            if not delay:
+                eprint(f"niri_watcher: can't connect to {niri_sock} ({e}), will keep trying")
+            delay = min(delay * 2, 60) if delay else 1
+            time.sleep(delay)
+            continue
+
+        # bytes, not str: a 1024-byte chunk may end in the middle of a multi-byte character
+        buffer = b""
+        while True:
             try:
-                message = json.loads(line)
-                event_name = next(iter(message))
+                chunk = client.recv(4096)
+            except OSError as e:
+                if not delay:
+                    eprint(f"niri_watcher: socket read error ({e})")
+                chunk = b""
+            if not chunk:
+                break
+            buffer += chunk
+            while b"\n" in buffer:
+                raw, buffer = buffer.split(b"\n", 1)
+                line = raw.decode("utf-8", errors="replace").strip()
+                if not line:
+                    continue
+                try:
+                    message = json.loads(line)
+                    event_name = next(iter(message))
+                except (json.JSONDecodeError, StopIteration) as e:
+                    print("niri_watcher: failed to decode JSON:", e)
+                    continue
+
+                if delay and event_name not in ["Ok", "Err"]:
+                    # 1st event (not just the reply to our request) after a reconnection: the stream works again.
+                    # Events may have been lost while disconnected: refresh once.
+                    eprint("niri_watcher: event stream is back")
+                    delay = 0
+                    if not _niri_refresh_queued:
+                        _niri_refresh_queued = True
+                        GLib.idle_add(_do_niri_refresh, "reconnect")
 
                 # Filter meaningless events
                 if event_name in ["WindowFocusChanged",
@@ -396,8 +430,15 @@ def niri_watcher():
                         _niri_refresh_queued = True
                         GLib.idle_add(_do_niri_refresh, event_name)
 
-            except json.JSONDecodeError as e:
-                print("niri_watcher: failed to decode JSON:", e)
+        # niri closed the event stream (restart, too slow reader): the thread used to end here for good
+        try:
+            client.close()
+        except OSError:
+            pass
+        if not delay:
+            eprint("niri_watcher: event stream closed, reconnecting")
+        delay = min(delay * 2, 60) if delay else 1
+        time.sleep(delay)
 
 def on_i3ipc_event(i3conn, event):
     if common_settings["restart-on-display"]:
