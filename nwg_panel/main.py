@@ -13,6 +13,15 @@ import signal
 import sys
 import threading
 
+# Until main() installs its handlers, SIGUSR1/SIGUSR2 (nwg-dwl-interface) and RT signals (executors, user scripts)
+# take their default action and terminate a starting panel: while it imports, and while it waits up to 3 s for
+# the old instance to exit. A no-op handler rather than SIG_IGN, which the commands we spawn would inherit.
+for _sig in (signal.SIGUSR1, signal.SIGUSR2, *range(signal.SIGRTMIN, signal.SIGRTMAX + 1)):
+    try:
+        signal.signal(_sig, lambda *_: None)
+    except (OSError, ValueError):
+        pass
+
 import gi
 
 from nwg_panel.__about__ import __version__
