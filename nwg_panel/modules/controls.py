@@ -23,6 +23,8 @@ BRIGHTNESS_MAX_FAILURES = 3
 BRIGHTNESS_RETRY_S = 60
 # per-app sliders: `pactl list sink-inputs` every Nth popup refresh (refresh: every 500 ms)
 SINK_INPUTS_EVERY = 4
+# seconds `pactl subscribe` must stay connected before the volume is taken as event-driven
+SUBSCRIBE_CHECK_S = 0.5
 
 bat_critical_last_check = 0
 
@@ -130,10 +132,15 @@ class Controls(Gtk.EventBox):
         while True:
             try:
                 proc = popen_watcher(["pactl", "subscribe"], env=env)
-                self.volume_watching = True
-                # the poller skips the volume from now on: read it once here, or the widget would
-                # show nothing until the first volume event
-                GLib.idle_add(self.update_volume, get_volume())
+                try:
+                    # without a server `pactl subscribe` exits at once: no volume read (2 more pactl) then
+                    # on every resubscribe, the poller keeps the volume
+                    proc.wait(timeout=SUBSCRIBE_CHECK_S)
+                except subprocess.TimeoutExpired:
+                    self.volume_watching = True
+                    # the poller skips the volume from now on: read it once here, or the widget would
+                    # show nothing until the first volume event
+                    GLib.idle_add(self.update_volume, get_volume())
                 for line in proc.stdout:
                     if ("on sink" in line or "on server" in line) and not self.volume_read_pending:
                         # dragging a slider or starting a stream sends dozens of events: read the
