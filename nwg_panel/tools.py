@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import errno
 import os
 import sys
 import json
@@ -61,14 +62,26 @@ def local_dir():
     return local_dir
 
 
+def config_dir_path():
+    """The nwg-panel config dir path, None when neither XDG_CONFIG_HOME nor HOME is set. Creates nothing."""
+    config_home = os.getenv("XDG_CONFIG_HOME")
+    if not config_home:
+        home = os.getenv("HOME")
+        if not home:
+            return None
+        config_home = os.path.join(home, ".config")
+    return os.path.join(config_home, "nwg-panel")
+
+
 def get_config_dir():
     """
     Determine config dir path, create if not found, then create sub-dirs
     :return: config dir path
     """
-    xdg_config_home = os.getenv('XDG_CONFIG_HOME')
-    config_home = xdg_config_home if xdg_config_home else os.path.join(os.getenv("HOME"), ".config")
-    config_dir = os.path.join(config_home, "nwg-panel")
+    config_dir = config_dir_path()
+    if config_dir is None:
+        # as before: the panel can't run without a config dir
+        raise TypeError("neither XDG_CONFIG_HOME nor HOME is set")
     if not os.path.isdir(config_dir):
         print("Creating '{}'".format(config_dir))
         os.makedirs(config_dir, exist_ok=True)
@@ -135,13 +148,117 @@ def load_json(path):
         return {}
 
 
-def save_json(src_dict, path):
+def fsync_dir(path):
+    """Flush a directory entry (the rename of save_json) to disk: without it, ext4 & co. may still
+    hold the old file after a power cut. Best effort: not every file system allows it."""
     try:
-        with open(path, 'w') as f:
-            json.dump(src_dict, f, indent=2)
+        fd = os.open(path or ".", os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+    except OSError:
+        pass
+
+
+def in_config_dir(path):
+    """True if path (as given, a link is not resolved) is in the nwg-panel config directory.
+    Not get_config_dir(): no directories created, no error when there is no config dir (False then)."""
+    config_dir = config_dir_path()
+    if config_dir is None:
+        return False
+    config_dir = os.path.abspath(config_dir)
+    return os.path.commonpath([os.path.abspath(path), config_dir]) == config_dir
+
+
+def save_json(src_dict, path):
+    """Write atomically: a temporary file in the same directory, flushed to disk, then renamed
+    over the target. A crash, a power cut or a full disk (SD cards...) while writing used to
+    leave a truncated or empty file: the panel configs, common settings or the calendar then
+    loaded as {} and the next save made the loss permanent."""
+    target = path
+    try:
+        # A config kept in a dotfiles repository (stow, a hand-made link...): write the file the
+        # link points to, renaming over the link would turn it into a regular file. Our own links
+        # and root's (`sudo ln -s`, provisioning) only: some state files live in /tmp, and a link
+        # planted there by another user must not be followed (the rule of the kernel's
+        # fs.protected_symlinks, which lets root's links through as well).
+        if os.path.islink(path) and os.lstat(path).st_uid in (os.getuid(), 0):
+            target = os.path.realpath(path)
+    except OSError:
+        pass
+    tmp = None
+    try:
+        data = json.dumps(src_dict, indent=2)
+        try:
+            st = os.stat(target)
+            if st.st_uid != os.getuid() or not os.access(target, os.W_OK):
+                # Renaming over a file needs no permission on the file and puts one of ours in
+                # its place: a file that is write-protected or somebody else's is written in
+                # place as before, or not at all (below).
+                raise PermissionError(errno.EACCES, os.strerror(errno.EACCES), target)
+            mode = stat.S_IMODE(st.st_mode)  # an existing file keeps its mode
+            if in_config_dir(path):
+                # ...but a config created before files were made 0600 loses group/other access:
+                # it may hold API keys
+                mode &= ~0o077
+        except FileNotFoundError:
+            # A new one is created 0600 and stays so: the configs hold API keys (openweather
+            # `appid`, Wallhaven `apikey`...) and used to be created world-readable through the
+            # default umask.
+            mode = None
+        # Hidden and unique: two threads may save the same file at the same time. O_EXCL never
+        # writes to a name that is taken, or through a link. The new copy of an existing file is
+        # 0600 until it gets that file's mode.
+        name = os.path.join(os.path.dirname(target),
+                            ".{}.{}.tmp".format(os.path.basename(target), os.urandom(4).hex()))
+        fd = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        tmp = name
+        with os.fdopen(fd, 'w') as f:
+            f.write(data)
+            f.flush()
+            if mode is not None:
+                os.fchmod(fd, mode)
+            os.fsync(fd)
+        os.replace(tmp, target)
+        fsync_dir(os.path.dirname(target))
         return "ok"
     except Exception as e:
+        if tmp:
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
+        if isinstance(e, OSError) and e.errno in (errno.EACCES, errno.EPERM, errno.EROFS, errno.EBUSY):
+            # No file can be created or renamed there (read-only or foreign directory, file that
+            # is a bind mount), which says nothing about the file itself, or the file is not ours
+            # to replace: write in place, as before (but not through a link we chose not to
+            # follow).
+            try:
+                flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_NOFOLLOW
+                with os.fdopen(os.open(target, flags, 0o600), 'w') as f:
+                    f.write(data)
+                return "ok"
+            except Exception as e_in_place:
+                e = e_in_place
+        eprint("Error saving json to {}: {}".format(path, e))
         return e
+
+
+def load_json_strict(path, quiet=False):
+    """Like load_json(), but None when the file exists and cannot be read or parsed, so that
+    callers can tell "empty" from "unreadable" and avoid saving over a file they never read.
+    An empty file (what an interrupted non-atomic save leaves behind) holds nothing to lose: {}."""
+    try:
+        with open(path, 'r') as f:
+            content = f.read()
+        return json.loads(content) if content.strip() else {}
+    except FileNotFoundError:
+        return {}
+    except Exception as e:
+        if not quiet:
+            eprint("Error loading json {}: {}".format(path, e))
+        return None
 
 
 def save_string(string, file):
@@ -819,6 +936,8 @@ def list_configs(config_dir):
     entries.sort()
     for entry in entries:
         path = os.path.join(config_dir, entry)
+        if entry.startswith(".") and entry.endswith(".tmp"):
+            continue  # left behind by a save_json() that was killed
         if os.path.isfile(path) and path not in exclusions and not path.endswith(".css"):
             try:
                 with open(path, 'r') as f:
