@@ -342,6 +342,58 @@ def on_i3ipc_event(i3conn, event):
     GLib.idle_add(hide_controls_popup, priority=GLib.PRIORITY_HIGH)
 
 
+# relative paths GTK resolves: `@import "x"`, `@import url("x")`, `url("x")` (GTK3 needs the quotes)
+CSS_RELATIVE_PATH = re.compile(rb"""(@import\s+|url\(\s*)(["'])((?:\\.|(?!\2)[^\\\n])*)\2""", re.I)
+CSS_URI_SCHEME = re.compile(rb"[A-Za-z][A-Za-z0-9+.-]*:")
+# Controls background window (invisible): style missing from the css file
+CSS_BCG_WINDOW = b"window#bcg-window { background-color: rgba(0, 0, 0, 0.2); }"
+
+
+def _css_blank_comments(css):
+    # same length, so that offsets stay valid: a `;`, `}` or `@` inside a comment is not mistaken for syntax
+    return re.sub(rb"/\*.*?\*/", lambda m: b" " * len(m.group()), css, flags=re.S)
+
+
+def _css_absolute_paths(css, base_dir):
+    """
+    load_from_data() resolves relative @import / url() against the CWD, load_from_path() against the file:
+    make them absolute (relative to `base_dir`) so that the text loads like the file.
+    """
+    plain = _css_blank_comments(css)
+    # the directory goes into a CSS string: escape what would end it
+    prefix = re.sub(rb"""([\\"'])""", rb"\\\1", os.fsencode(os.path.abspath(base_dir))) + b"/"
+    for m in reversed(list(CSS_RELATIVE_PATH.finditer(plain))):
+        path = m.group(3)
+        if path.startswith(b"/") or CSS_URI_SCHEME.match(path):
+            continue
+        css = css[:m.start(3)] + prefix + css[m.start(3):]
+    return css
+
+
+def load_css(screen, style_path):
+    """
+    Load the panel stylesheet. load_from_path() first: GTK resolves relative @import and url() against the
+    style file. Only if it fails (GTK3 then drops the whole sheet), the text is loaded by load_css_tolerant().
+    The bcg-window rule goes to a provider of its own (added later: it wins ties) so the file is loaded as is.
+    """
+    provider = Gtk.CssProvider()
+    Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+    try:
+        provider.load_from_path(style_path)
+    except GLib.Error:
+        try:
+            with open(style_path, "rb") as f:
+                css = f.read()
+        except OSError as e:
+            eprint(e)
+        else:
+            load_css_tolerant(provider, _css_absolute_paths(css, os.path.dirname(style_path)), style_path)
+
+    bcg_provider = Gtk.CssProvider()
+    bcg_provider.load_from_data(CSS_BCG_WINDOW)
+    Gtk.StyleContext.add_provider_for_screen(screen, bcg_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+
 def load_css_tolerant(provider, css, path, max_passes=20):
     """
     GTK3 drops the WHOLE stylesheet when a single declaration fails to parse (e.g. `width:` on a widget):
@@ -836,20 +888,7 @@ def main():
 
     panels = load_json(config_file)
 
-    screen = Gdk.Screen.get_default()
-    provider = Gtk.CssProvider()
-    style_context = Gtk.StyleContext()
-    style_context.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-    style_path = os.path.join(common.config_dir, args.style)
-    try:
-        with open(style_path, "rb") as f:
-            css = f.read()
-    except OSError as e:
-        eprint(e)
-        css = b""
-    # Controls background window (invisible): add style missing from the css file
-    css += b"\nwindow#bcg-window { background-color: rgba(0, 0, 0, 0.2); }\n"
-    load_css_tolerant(provider, css, style_path)
+    load_css(Gdk.Screen.get_default(), os.path.join(common.config_dir, args.style))
 
     # Mirror bars to all outputs #48 (if panel["output"] == "All")
     to_remove = []
