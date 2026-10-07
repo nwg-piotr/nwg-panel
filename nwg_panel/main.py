@@ -13,6 +13,15 @@ import signal
 import sys
 import threading
 
+# Until main() installs its handlers, SIGUSR1/SIGUSR2 (nwg-dwl-interface) and RT signals (executors, user scripts)
+# take their default action and terminate a starting panel: while it imports, and while it waits up to 3 s for
+# the old instance to exit. A no-op handler rather than SIG_IGN, which the commands we spawn would inherit.
+for _sig in (signal.SIGUSR1, signal.SIGUSR2, *range(signal.SIGRTMIN, signal.SIGRTMAX + 1)):
+    try:
+        signal.signal(_sig, lambda *_: None)
+    except (OSError, ValueError):
+        pass
+
 import gi
 
 from nwg_panel.__about__ import __version__
@@ -65,6 +74,7 @@ from nwg_panel.modules.menu_start import MenuStart
 dir_name = os.path.dirname(__file__)
 
 from nwg_panel import common
+from nwg_panel.dwl_interface import is_panel_cmdline
 
 tray_available = False
 try:
@@ -133,22 +143,29 @@ def load_vocabulary():
                     voc[key] = loc[key]
 
 
-def signal_handler(sig, frame):
-    global sig_dwl
-    desc = {2: "SIGINT", 15: "SIGTERM", 10: "SIGUSR1"}
-    if sig == 2 or sig == 15:
-        print("Terminated with {}".format(desc[sig]))
+def signal_handler(sig):
+    """Runs on the GTK main loop (GLib.unix_signal_add), never inside a raw signal context."""
+    if sig == sig_dwl:  # tested first: with `-sigdwl 1`, SIGHUP refreshes dwl-tags instead of terminating us
+        refresh_dwl()
+    elif sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+        print("Terminated with {}".format(signal.Signals(sig).name))
         if tray_available:
             sni_system_tray.deinit_tray()
-        Gtk.main_quit()
-    elif sig == sig_dwl:
-        refresh_dwl()
-    else:
-        return
+        # quit from an idle callback: with PyGObject >= 3.50, Gtk.main_quit() called directly from a
+        # GLib signal source does not stop Gtk.main()
+        GLib.idle_add(Gtk.main_quit)
+    return True  # keep the handler installed
 
 
 def rt_sig_handler(sig, frame):
+    # Python runs this between two bytecodes of the main thread; do the GTK work on the main loop.
+    GLib.idle_add(handle_rt_signal, sig)
+
+
+def handle_rt_signal(sig):
     print("{} RT signal received".format(sig))
+    if sig == sig_dwl:  # -sigdwl may be a real-time signal
+        refresh_dwl()
     for executor in common.executors_list:
         if executor.use_sigrt and executor.sigrt == sig:
             eprint("Refreshing {} on signal {}".format(executor.name, sig))
@@ -160,6 +177,7 @@ def rt_sig_handler(sig, frame):
                 win.hide()
             else:
                 win.show()
+    return False
 
 
 def restart():
@@ -689,21 +707,30 @@ def main():
 
     args = parser.parse_args()
 
+    # Checked before we kill the running instance: a signal that can't be caught, that must keep terminating the
+    # panel, or that reports a fault (with a Python handler the faulting instruction is run again, for ever).
+    if args.sigdwl not in signal.valid_signals() - {signal.SIGKILL, signal.SIGSTOP, signal.SIGINT, signal.SIGTERM,
+                                                    signal.SIGSEGV, signal.SIGBUS, signal.SIGFPE, signal.SIGILL}:
+        parser.error("-sigdwl: {} is not a signal that can be used to refresh dwl-tags".format(args.sigdwl))
+
     # Kill running instances, if any
     own_pid = os.getpid()
     running_instances = []
 
-    for proc in psutil.process_iter(['pid', 'name']):
+    own_uid = os.getuid()
+    for proc in psutil.process_iter(['pid', 'name', 'uids']):
         name = proc.info['name']
-        if name and "nwg-panel" in name and "-con" not in name:
+        uids = proc.info['uids']
+        # only our own instances: other users' panels (multi-seat, fast user switching) are not ours to kill
+        if name and "nwg-panel" in name and "-con" not in name and uids and uids.real == own_uid:
             pid = proc.info['pid']
             if pid != own_pid:
                 running_instances.append(pid)
                 print(f"Running instance found, PID {pid}, sending SIGINT")
                 try:
                     os.kill(pid, signal.SIGINT)
-                except ProcessLookupError:
-                    continue  # Process already dead
+                except (ProcessLookupError, PermissionError):
+                    continue  # already dead, or not ours
 
     # Wait for clean shutdown (max 3 seconds)
     max_wait = 3.0
@@ -731,10 +758,12 @@ def main():
     if os.path.isfile(pid_file):
         try:
             pid = int(load_text_file(pid_file))
-            if psutil.pid_exists(pid):
+            # the PID may have been reused since: only kill an nwg-panel of ours, never ourselves
+            p = psutil.Process(pid)
+            if pid != own_pid and is_panel_cmdline(p.cmdline()) and p.uids().real == own_uid:
                 print(f"Unnamed instance found via PID file, killing PID {pid}")
                 os.kill(pid, signal.SIGKILL)
-        except:
+        except Exception:
             pass
 
     # Warn if KDE's background daemon is running
@@ -778,18 +807,23 @@ def main():
     global sig_dwl
     sig_dwl = args.sigdwl
 
-    catchable_sigs = set(signal.Signals) - {signal.SIGKILL, signal.SIGSTOP, signal.SIGCHLD}
-    for sig in catchable_sigs:
-        try:
-            signal.signal(sig, signal_handler)
-        except Exception as exc:
-            eprint("{} subscription error: {}".format(sig, exc))
+    # Only the signals we use. Catching everything (SIGSEGV, SIGBUS, SIGFPE, SIGILL included) turned
+    # a crash in a C library into an endless loop at 100% CPU instead of a clean exit, and made
+    # SIGHUP/SIGQUIT do nothing. SIGUSR1/SIGUSR2 keep being ignored unless used for dwl.
+    glib_sigs = (signal.SIGINT, signal.SIGTERM, signal.SIGHUP, signal.SIGUSR1, signal.SIGUSR2)
+    for sig in glib_sigs:
+        GLib.unix_signal_add(GLib.PRIORITY_HIGH, sig, signal_handler, sig)
 
     for sig in range(signal.SIGRTMIN, signal.SIGRTMAX + 1):
         try:
             signal.signal(sig, rt_sig_handler)
         except Exception as exc:
             eprint("{} subscription error: {}".format(sig, exc))
+
+    if sig_dwl not in glib_sigs and sig_dwl < signal.SIGRTMIN:
+        # GLib.unix_signal_add() takes no other signal than the ones above and SIGWINCH: it just warns and installs
+        # nothing, so the 1st dwl update would terminate the panel. Same deferred handling as for RT signals.
+        signal.signal(sig_dwl, lambda sig, frame: GLib.idle_add(refresh_dwl))
 
     check_commands()
     print("Dependencies check:", common.commands)
