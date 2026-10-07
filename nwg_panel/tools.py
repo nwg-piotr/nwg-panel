@@ -304,6 +304,15 @@ def list_outputs(sway=False, silent=False):
     return outputs_dict, mon_desc2output_name
 
 
+def voc_format(voc, key, default, *args):
+    """Translated text with placeholders: falls back to the English default when the
+    translation is missing or its template doesn't fit the arguments."""
+    try:
+        return voc.get(key, default).format(*args)
+    except (IndexError, KeyError, ValueError, AttributeError, TypeError):
+        return default.format(*args)
+
+
 def check_key(dictionary, key, default_value):
     """
     Adds a key w/ default value if missing from the dictionary

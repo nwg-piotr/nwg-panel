@@ -18,7 +18,7 @@ from gi.repository import Gtk, Gdk, GtkLayerShell
 
 
 class Clock(Gtk.EventBox):
-    def __init__(self, settings, icons_path=""):
+    def __init__(self, settings, icons_path="", voc=None):
         self.reminder_img_updated = False
         self.path = ""
         self.cal = None
@@ -26,6 +26,7 @@ class Clock(Gtk.EventBox):
         self.popup = None
         self.note_entry = None
         self.icons_path = icons_path
+        self.voc = voc or {}
 
         self.settings = settings
         Gtk.EventBox.__init__(self)
@@ -221,7 +222,7 @@ class Clock(Gtk.EventBox):
         img = Gtk.Image()
         btn.set_image(img)
         update_image(img, "gtk-close", self.settings["calendar-icon-size"], self.icons_path)
-        btn.set_tooltip_text("Cancel & close")
+        btn.set_tooltip_text(self.voc.get("cancel-and-close", "Cancel & close"))
         btn.connect("clicked", self.cancel_close_popup)
         btn.set_always_show_image(True)
         self.note_box.pack_start(btn, False, False, 0)
@@ -231,7 +232,7 @@ class Clock(Gtk.EventBox):
         img = Gtk.Image()
         btn.set_image(img)
         update_image(img, "object-select", self.settings["calendar-icon-size"], self.icons_path)
-        btn.set_tooltip_text("Save & close")
+        btn.set_tooltip_text(self.voc.get("save-and-close", "Save & close"))
         btn.connect("clicked", self.apply_close_popup)
         btn.set_always_show_image(True)
         self.note_box.pack_start(btn, False, False, 0)

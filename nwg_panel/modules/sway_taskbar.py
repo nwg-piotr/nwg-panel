@@ -5,14 +5,15 @@ from gi.repository import Gtk, Gdk, GLib
 from i3ipc import Event
 
 from nwg_panel.tools import check_key, get_icon_name, update_image, load_autotiling, get_config_dir, temp_dir, \
-    save_json, update_image, update_image_fallback_desktop
+    save_json, update_image_fallback_desktop, voc_format
 import nwg_panel.common
 
 
 class SwayTaskbar(Gtk.Box):
-    def __init__(self, settings, i3, position, display_name="", icons_path=""):
+    def __init__(self, settings, i3, position, display_name="", icons_path="", voc=None):
         self.position = position
         self.icons_path = icons_path
+        self.voc = voc or {}
         check_key(settings, "workspaces-spacing", 0)
         check_key(settings, "image-size", 16)
         check_key(settings, "workspace-menu", [1, 2, 3, 4, 5, 6, 7, 8])
@@ -84,7 +85,7 @@ class SwayTaskbar(Gtk.Box):
                         for con in desc.descendants():
                             if con.name or con.app_id:
                                 win_box = WindowBox(self.tree, con, self.settings, self.position, self.icons_path,
-                                                    self.cache_file, floating=con in desc.floating_nodes)
+                                                    self.cache_file, floating=con in desc.floating_nodes, voc=self.voc)
                                 if all_workspaces:
                                     self.ws_box.pack_start(win_box, False, False, self.settings["task-padding"])
                                 else:
@@ -130,7 +131,7 @@ class WorkspaceBox(Gtk.Box):
 
 
 class WindowBox(Gtk.EventBox):
-    def __init__(self, tree, con, settings, position, icons_path, cache_file, floating=False):
+    def __init__(self, tree, con, settings, position, icons_path, cache_file, floating=False, voc=None):
         self.position = position
         self.settings = settings
         Gtk.EventBox.__init__(self)
@@ -141,6 +142,7 @@ class WindowBox(Gtk.EventBox):
         self.con = con
         self.pid = con.pid
         self.icons_path = icons_path
+        self.voc = voc or {}
         self.tree = tree
         self.cache_file = cache_file
 
@@ -251,7 +253,7 @@ class WindowBox(Gtk.EventBox):
                 item = Gtk.MenuItem()
                 item.add(hbox)
                 item.connect("activate", self.move_to_workspace, i)
-                item.set_tooltip_text("move to workspace number {}".format(i))
+                item.set_tooltip_text(voc_format(self.voc, "move-to-workspace", "Move to workspace {}", i))
                 menu.append(item)
 
         # Move to scratchpad
@@ -265,7 +267,7 @@ class WindowBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.move_scratchpad)
-        item.set_tooltip_text('move scratchpad ("minimize")')
+        item.set_tooltip_text(self.voc.get("to-scratchpad", "To scratchpad"))
         menu.append(item)
 
         item = Gtk.SeparatorMenuItem()
@@ -282,7 +284,7 @@ class WindowBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.floating_toggle)
-        item.set_tooltip_text("floating toggle")
+        item.set_tooltip_text(self.voc.get("toggle-floating", "Toggle floating"))
         menu.append(item)
 
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
@@ -292,7 +294,7 @@ class WindowBox(Gtk.EventBox):
         item = Gtk.MenuItem()
         item.add(hbox)
         item.connect("activate", self.kill)
-        item.set_tooltip_text("kill")
+        item.set_tooltip_text(self.voc.get("close-window", "Close window"))
         menu.append(item)
 
         return menu
