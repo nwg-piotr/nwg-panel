@@ -200,6 +200,10 @@ class Playerctl(Gtk.EventBox):
             cover_url = metadata["mpris:artUrl"]
         except:  # used to be on KeyError, but actual error is 'mpris:artUrl' for some reason (playerctl bug?)
             cover_url = ""
+        if not isinstance(cover_url, str):
+            # MPRIS says a string, but any D-Bus peer may own a player name. init_player() comes here too,
+            # also while the panel builds the module: urlparse() raising would stop the panel.
+            cover_url = ""
 
         if cover_url != self.old_cover_url:
             self.old_cover_url = cover_url
@@ -291,7 +295,10 @@ class Playerctl(Gtk.EventBox):
         return False
 
     def update_cover_image(self, cover_url):
-        url = urlparse(cover_url)
+        try:
+            url = urlparse(cover_url)
+        except ValueError:  # e.g. "http://[x", an invalid IPv6 host
+            url = urlparse("")
         path = unquote(url.path)
 
         if url.scheme in ("http", "https"):
@@ -312,6 +319,8 @@ class Playerctl(Gtk.EventBox):
             except Exception as e:
                 eprint("Error creating pixbuf: {}".format(e))
                 path = ""
+        else:
+            path = ""  # no cover or a scheme not loaded here (data:, bare path): not the previous cover
 
         if not path:
             update_image(self.cover_img, "music", self.settings["cover-size"], self.icons_path)
