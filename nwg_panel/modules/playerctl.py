@@ -111,9 +111,9 @@ class Playerctl(Gtk.EventBox):
         self.player_handler_ids.append(
             player.connect('playback-status', self.on_playback_status))
 
-        # Download current metadata, handling the case where it is missing
-        metadata = player.props.metadata
-        self.on_metadata(player, metadata if metadata is not None else {})
+        # Manually set the initial state
+        # self.on_metadata(player, player.props.metadata)
+        self.on_metadata(player, [])
 
     def deinit_player(self):
         if self.player:
