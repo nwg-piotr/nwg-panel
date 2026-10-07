@@ -27,21 +27,26 @@ class Menu(object):
         self.event_box.add_events(Gdk.EventMask.SCROLL_MASK | Gdk.EventMask.SMOOTH_SCROLL_MASK)
         self.event_box.connect("scroll-event", self.scroll_event_handler)
 
-        self.menu_observer = DBusObserver(
-            message_bus=self.session_bus,
-            service_name=self.service_name
-        )
-        self.menu_observer.service_available.connect(
-            self.menu_available_handler
-        )
-        self.menu_observer.service_unavailable.connect(
-            self.menu_unavailable_handler
-        )
-        self.menu_observer.connect_once_available()
+        # "Menu" is optional: without it, clicks go to Activate / ContextMenu
+        self.menu_observer = None
+        if self.object_path:
+            self.menu_observer = DBusObserver(
+                message_bus=self.session_bus,
+                service_name=self.service_name
+            )
+            self.menu_observer.service_available.connect(
+                self.menu_available_handler
+            )
+            self.menu_observer.connect_once_available()
 
-    def __del__(self):
-        self.menu_observer.disconnect()
-        self.session_bus.disconnect()
+    def destroy(self):
+        """Explicit cleanup: __del__ never ran, the GLib name watch kept the whole chain alive."""
+        if self.menu_observer is not None:
+            self.menu_observer.disconnect()
+            self.menu_observer = None
+        if self.menu_widget is not None:
+            self.menu_widget.destroy()
+            self.menu_widget = None
 
     def menu_available_handler(self, _observer):
         """print(
@@ -52,14 +57,11 @@ class Menu(object):
                 self.object_path
             )
         )"""
-        self.menu_widget = DbusmenuGtk3.Menu().new(
+        self.menu_widget = DbusmenuGtk3.Menu.new(
             dbus_name=self.service_name,
             dbus_object=self.object_path
         )
         self.menu_widget.show()
-
-    def menu_unavailable_handler(self, _observer):
-        self.event_box.disconnect_by_func(self.button_press_event_handler)
 
     def button_press_event_handler(self, _w, event: Gdk.EventButton):
         if (event.button == 1 and self.item.item_is_menu) or event.button == 3:
@@ -91,16 +93,22 @@ class Menu(object):
         elif event.direction == Gdk.ScrollDirection.SMOOTH:
             self.distance_scrolled_x += event.delta_x
             self.distance_scrolled_y += event.delta_y
+            threshold = self.settings["smooth-scrolling-threshold"]
 
-            if self.distance_scrolled_x > self.settings["smooth-scrolling-threshold"]:
-                dx = max((self.distance_scrolled_x, 1.0))
-            elif self.distance_scrolled_x < self.settings["smooth-scrolling-threshold"]:
-                dx = min((self.distance_scrolled_x, -1.0))
+            # one step each time the accumulated distance crosses the threshold, either way
+            if self.distance_scrolled_x > threshold:
+                dx = 1
+            elif self.distance_scrolled_x < -threshold:
+                dx = -1
+            if dx:
+                self.distance_scrolled_x = 0
 
-            if self.distance_scrolled_y > self.settings["smooth-scrolling-threshold"]:
-                dy = max((self.distance_scrolled_y, 1.0))
-            elif self.distance_scrolled_y > self.settings["smooth-scrolling-threshold"]:
-                dy = min((self.distance_scrolled_y, -1.0))
+            if self.distance_scrolled_y > threshold:
+                dy = 1
+            elif self.distance_scrolled_y < -threshold:
+                dy = -1
+            if dy:
+                self.distance_scrolled_y = 0
 
         if dx != 0:
             self.item.scroll(dx, "horizontal")

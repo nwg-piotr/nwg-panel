@@ -1,31 +1,117 @@
-from gi.repository import Gdk
+from gi.repository import Gdk, Gio, GLib
 
 from dasbus.connection import SessionMessageBus
-from dasbus.specification import DBusSpecificationParser
 from dasbus.client.observer import DBusObserver
-from dasbus.client.proxy import disconnect_proxy
-from dasbus.error import DBusError
 
-from nwg_panel.tools import load_resource
+from nwg_panel.tools import eprint
 
-PROPERTIES = [
-    "Id",
-    "Category",
-    "Title",
-    "Status",
-    "WindowId",
-    "IconName",
-    "IconPixmap",
-    "OverlayIconName",
-    "OverlayIconPixmap",
-    "AttentionIconName",
-    "AttentionIconPixmap",
-    "AttentionMovieName",
-    "ToolTip",
-    "IconThemePath",
-    "ItemIsMenu",
-    "Menu"
-]
+# Properties read from an item, with their D-Bus types ("|": either of them). Every item is another
+# application's object: a value of any other type is dropped where it arrives, so that the tray can
+# rely on these.
+PROPERTIES = {
+    "Id": "s",
+    "Category": "s",
+    "Title": "s",
+    "Status": "s",
+    "WindowId": "i|u",  # int32 in KDE's interface, uint32 in the freedesktop.org specification
+    "IconName": "s",
+    "IconPixmap": "a(iiay)",
+    "OverlayIconName": "s",
+    "OverlayIconPixmap": "a(iiay)",
+    "AttentionIconName": "s",
+    "AttentionIconPixmap": "a(iiay)",
+    "AttentionMovieName": "s",
+    "ToolTip": "(sa(iiay)ss)",
+    "IconThemePath": "s",
+    "ItemIsMenu": "b",
+    "Menu": "o"
+}
+
+SNI_INTERFACES = ["org.kde.StatusNotifierItem", "org.freedesktop.StatusNotifierItem"]
+
+# Every call to an item is asynchronous: an application that registered a tray icon and is busy (or
+# frozen) does not block the panel, so nothing is gained by giving up early. -1: GDBus default, 25 s.
+DBUS_TIMEOUT_MS = -1
+
+# A read that got no answer says nothing about the item: what is known of it is kept, and the read is
+# done again, a few times on a timer, then whenever the item emits a signal, and once a minute for an
+# item that does not (it is still registered: it may have been busy for longer, and answer by now).
+RETRY_DELAY_MS = 2000
+MAX_RETRIES = 3
+SLOW_RETRY_DELAY_S = 60
+NO_ANSWER = object()
+
+# Errors that are no answer from the item: its application is busy, frozen or gone, or the bus could
+# not carry the call. Any other error reply comes from the application and means "no such interface /
+# property here". There is no single name for that: InvalidArgs (GDBus), UnknownInterface /
+# UnknownProperty (Qt, sd-bus), Failed (Chromium / Electron),
+# org.freedesktop.DBus.Properties.Error.PropertyNotFound (Go's godbus)...
+NO_ANSWER_ERRORS = (
+    "org.freedesktop.DBus.Error.NoReply",
+    "org.freedesktop.DBus.Error.Timeout",
+    "org.freedesktop.DBus.Error.TimedOut",
+    "org.freedesktop.DBus.Error.ServiceUnknown",
+    "org.freedesktop.DBus.Error.NameHasNoOwner",
+    "org.freedesktop.DBus.Error.Disconnected",
+    "org.freedesktop.DBus.Error.LimitsExceeded",
+    "org.freedesktop.DBus.Error.NoMemory",
+)
+
+# NewIcon & co. can come in bursts (animated icons): properties are re-read once per burst.
+REFRESH_DELAY_MS = 50
+
+# Signals that only say "something changed": the new value has to be read.
+SIGNAL_PROPERTIES = {
+    "NewTitle": ["Title"],
+    "NewIcon": ["IconName", "IconPixmap", "IconThemePath"],
+    "NewAttentionIcon": ["AttentionIconName", "AttentionIconPixmap"],
+    "NewOverlayIcon": ["OverlayIconName", "OverlayIconPixmap"],
+}
+
+
+def is_answer(error):
+    return Gio.DBusError.is_remote_error(error) and Gio.DBusError.get_remote_error(error) not in NO_ANSWER_ERRORS
+
+
+def unpack_pixmaps(variant):
+    """a(iiay) -> [(width, height, bytes)]. Variant.unpack() would make one Python int per byte, which
+    froze the panel for half a second per 256x256 image: the sizes are read first, and the data is
+    taken as bytes, only if it is as long as they say."""
+    pixmaps = []
+    for i in range(variant.n_children()):
+        pixmap = variant.get_child_value(i)
+        width, height = pixmap.get_child_value(0).get_int32(), pixmap.get_child_value(1).get_int32()
+        data = pixmap.get_child_value(2)
+        if width > 0 and height > 0 and data.n_children() >= width * height * 4:
+            pixmaps.append((width, height, data.get_data_as_bytes().get_data()))
+    return pixmaps
+
+
+def unpack_property(name, variant):
+    """Value of a property read from an item, None if it is not of the expected type."""
+    signature = variant.get_type_string()
+    if signature not in PROPERTIES[name].split("|"):
+        return None
+    if signature == "a(iiay)":
+        return unpack_pixmaps(variant)
+    if name == "ToolTip":
+        # (icon name, icon pixmaps, title, description)
+        return (variant.get_child_value(0).get_string(), unpack_pixmaps(variant.get_child_value(1)),
+                variant.get_child_value(2).get_string(), variant.get_child_value(3).get_string())
+    return variant.unpack()
+
+
+def unpack_properties(variant):
+    """a{sv} -> {name: value}, without the properties we don't read or can't use."""
+    properties = {}
+    for i in range(variant.n_children()):
+        entry = variant.get_child_value(i)
+        name = entry.get_child_value(0).get_string()
+        if name in PROPERTIES:
+            value = unpack_property(name, entry.get_child_value(1).get_variant())
+            if value is not None:
+                properties[name] = value
+    return properties
 
 
 class StatusNotifierItem(object):
@@ -34,15 +120,36 @@ class StatusNotifierItem(object):
         self.object_path = object_path
         self.on_loaded_callback = None
         self.on_updated_callback = None
-        self.session_bus = SessionMessageBus()
-        self.properties = {
-            "ItemIsMenu": True
-        }
-        self.item_proxy = None
-        self.tooltip_stale = False
+        self.connection = SessionMessageBus().connection
+        self.interface = SNI_INTERFACES[0]
+        self.properties = {}
+        self.loaded = False
+        self.alive = True
+
+        # Tooltips are fetched lazily, when about to be shown (some items re-emit NewToolTip every
+        # second, e.g. qBittorrent with its transfer speeds). Versions let several trays (one per
+        # output) each notice that the tooltip they display is out of date.
+        self.tooltip_version = 0
+        self.tooltip_fetched_version = 0
+        self.tooltip_fetching = False
+        self.on_tooltip_fetched = {}
+
+        # Decoded IconPixmap, shared by all trays: (pixmaps, icon size, pixbuf)
+        self.pixmap_cache = None
+        # Item-specific icon theme for IconThemePath (never added to the global theme)
+        self.icon_theme = None
+        self.icon_theme_path = None
+
+        self._signal_id = 0
+        self._pending_properties = set()
+        self._pending_source = 0
+        self._loading = False
+        self._signal_while_loading = False
+        self._retries = 0
+        self._slow_retry_source = 0
 
         self.item_observer = DBusObserver(
-            message_bus=self.session_bus,
+            message_bus=SessionMessageBus(),
             service_name=self.service_name
         )
         self.item_observer.service_available.connect(
@@ -53,95 +160,226 @@ class StatusNotifierItem(object):
         )
         self.item_observer.connect_once_available()
 
-    def __del__(self):
-        if self.item_proxy is not None:
-            disconnect_proxy(self.item_proxy)
+    def destroy(self):
+        """Release everything held for this item: D-Bus subscriptions, name watch, timers."""
+        self.alive = False
+        if self._signal_id:
+            self.connection.signal_unsubscribe(self._signal_id)
+            self._signal_id = 0
+        if self._pending_source:
+            GLib.source_remove(self._pending_source)
+            self._pending_source = 0
+        if self._slow_retry_source:
+            GLib.source_remove(self._slow_retry_source)
+            self._slow_retry_source = 0
         self.item_observer.disconnect()
-        self.session_bus.disconnect()
+        self.on_loaded_callback = None
+        self.on_updated_callback = None
+        self.on_tooltip_fetched = {}
+
+    # --- loading -------------------------------------------------------------------------------
 
     def item_available_handler(self, _observer):
-        self.item_proxy = self.session_bus.get_proxy(self.service_name, self.object_path)
+        if not self.alive or self._signal_id:
+            return
+        # One subscription for every signal of the item: no introspection, no proxy.
+        self._signal_id = self.connection.signal_subscribe(
+            self.service_name, None, None, self.object_path, None,
+            Gio.DBusSignalFlags.NONE, self._on_signal)
+        self._load()
+
+    def _load(self):
+        self._pending_source = 0
+        self._loading = True
+        self._signal_while_loading = False
+        self._get_all(0)
+        return False
+
+    def _get_all(self, interface_index):
+        interface = SNI_INTERFACES[interface_index]
+        self.connection.call(
+            self.service_name, self.object_path, "org.freedesktop.DBus.Properties", "GetAll",
+            GLib.Variant("(s)", (interface,)), GLib.VariantType("(a{sv})"),
+            Gio.DBusCallFlags.NONE, DBUS_TIMEOUT_MS, None, self._on_get_all, interface_index)
+
+    def _on_get_all(self, connection, result, interface_index):
+        if not self.alive:
+            return
         try:
-            spec = self.item_proxy._handler.specification
-            if spec is not None:
-                if not any("StatusNotifierItem" in ifname for ifname in spec.interfaces):
-                    DBusSpecificationParser._parse_xml(spec, load_resource(__package__,"org.kde.StatusNotifierItem.xml"))
-        except:
-            pass
-        if hasattr(self.item_proxy, "PropertiesChanged"):
-            self.item_proxy.PropertiesChanged.connect(
-                lambda _if, changed, invalid: self.change_handler(list(changed), invalid)
-            )
-        if hasattr(self.item_proxy, 'NewTitle'):
-            self.item_proxy.NewTitle.connect(
-                lambda: self.change_handler(["Title"])
-            )
-        if hasattr(self.item_proxy, 'NewToolTip'):
-            self.item_proxy.NewToolTip.connect(self.tooltip_changed_handler)
-        if hasattr(self.item_proxy, 'NewIcon'):
-            self.item_proxy.NewIcon.connect(
-                lambda: self.change_handler(["IconName", "IconPixmap", "IconThemePath"])
-            )
-        if hasattr(self.item_proxy, 'NewAttentionIcon'):
-            self.item_proxy.NewAttentionIcon.connect(
-                lambda: self.change_handler(["AttentionIconName", "AttentionIconPixmap"])
-            )
-        if hasattr(self.item_proxy, "NewIconThemePath"):
-            self.item_proxy.NewIconThemePath.connect(
-                lambda _icon_theme_path: self.change_handler(["IconThemePath"])
-            )
-        if hasattr(self.item_proxy, "NewStatus"):
-            self.item_proxy.NewStatus.connect(
-                lambda _status: self.change_handler(["Status"])
-            )
-        for name in PROPERTIES:
-            try:
-                self.properties[name] = getattr(self.item_proxy, name)
-            except (AttributeError, DBusError):
-                # remote StatusNotifierItem object does not support all SNI properties
-                pass
+            properties = unpack_properties(connection.call_finish(result).get_child_value(0))
+            answered, reason = True, "it has none"
+        except GLib.Error as e:
+            properties = {}
+            answered, reason = is_answer(e), e.message
+        if not properties:
+            if answered and interface_index + 1 < len(SNI_INTERFACES):
+                self._get_all(interface_index + 1)
+                return
+            # Nothing is concluded from a read that failed: the item is not shown (an icon with no
+            # properties would be blank, and deaf to clicks) until one succeeds.
+            if not self._retries:
+                eprint(f"Tray: can't read properties of {self.service_name}{self.object_path}: {reason}")
+            self._loading = False
+            self._retry_later(self._load)
+            if self._signal_while_loading and not self._pending_source:
+                # no retry is left to bring what the item announced during this read: one more for it
+                self._load()
+            return
+        self._loading = False
+        self._retries = 0
+        self.interface = SNI_INTERFACES[interface_index]
+        self.properties.update(properties)
+        self.loaded = True
         if self.on_loaded_callback is not None:
             self.on_loaded_callback(self)
 
+    def _retry_later(self, function):
+        if self._pending_source:
+            return
+        if self._retries < MAX_RETRIES:
+            self._retries += 1
+            self._pending_source = GLib.timeout_add(RETRY_DELAY_MS, function)
+        elif not self._slow_retry_source:
+            self._slow_retry_source = GLib.timeout_add_seconds(SLOW_RETRY_DELAY_S, self._retry_slowly)
+
+    def _retry_slowly(self):
+        self._slow_retry_source = 0
+        # only what no signal has made us read in the meantime
+        if not self._loading and not self._pending_source:
+            if not self.loaded:
+                self._load()
+            elif self._pending_properties:
+                self._fetch_pending()
+        return False
+
     def item_unavailable_handler(self, _observer):
-        disconnect_proxy(self.item_proxy)
-        self.item_proxy = None
+        # The host removes the item (StatusNotifierItemUnregistered) and calls destroy()
+        pass
 
-    def change_handler(self, changed_properties: list[str], invalid_properties: list[str] = None):
-        if invalid_properties is None:
-            invalid_properties = []
-        actual_changed_properties = []
-        if len(changed_properties) > 0:
-            for name in changed_properties:
-                try:
-                    self.properties[name] = getattr(self.item_proxy, name)
-                    actual_changed_properties.append(name)
-                except (AttributeError, DBusError):
-                    pass
-        if len(invalid_properties) > 0:
-            for name in invalid_properties:
-                if name in self.properties:
-                    self.properties.pop(name)
-        if len(actual_changed_properties) > 0:
-            if self.on_updated_callback is not None:
-                self.on_updated_callback(self, actual_changed_properties)
+    # --- changes -------------------------------------------------------------------------------
 
-    def tooltip_changed_handler(self):
-        # Some items re-emit NewToolTip every second or so (e.g. qBittorrent: transfer speeds).
-        # Fetching the property over D-Bus each time is wasted work: just mark it stale,
-        # it is read when the tooltip is about to be shown (see refresh_tooltip).
-        self.tooltip_stale = True
+    def _on_signal(self, _connection, _sender, _path, interface, member, parameters):
+        if not self.alive:
+            return
+        if not self.loaded:
+            # Not read yet. If the application had not answered and we gave up, it is back: ask again.
+            # What this signal announces will be in the reply, if there is one.
+            if self._loading:
+                self._signal_while_loading = True
+            elif not self._pending_source:
+                self._load()
+            return
+        if member == "PropertiesChanged" and interface == "org.freedesktop.DBus.Properties":
+            if parameters.get_type_string() != "(sa{sv}as)" \
+                    or parameters.get_child_value(0).get_string() not in SNI_INTERFACES:
+                return
+            # the new values come with the signal: no need to read them again
+            changed = unpack_properties(parameters.get_child_value(1))
+            names = list(changed)
+            self.properties.update(changed)
+            if "ToolTip" in names:
+                self.tooltip_version += 1
+                self.tooltip_fetched_version = self.tooltip_version
+            self._notify(names)
+            # Invalidated: changed, value not sent. Read again, as for NewIcon & co. (the old value is
+            # kept meanwhile; one no longer exposed is dropped when the answer says so).
+            invalidated = [name for name in parameters.get_child_value(2).unpack() if name in PROPERTIES]
+            if "ToolTip" in invalidated:
+                invalidated.remove("ToolTip")
+                self.tooltip_version += 1  # read lazily, as for NewToolTip
+            self._schedule_fetch(invalidated)
+        elif member == "NewToolTip":
+            self.tooltip_version += 1
+        elif member in ("NewStatus", "NewIconThemePath"):
+            # the new value comes with the signal; anything but one string is ignored
+            if parameters.get_type_string() == "(s)":
+                name = member[len("New"):]
+                self.properties[name] = parameters.unpack()[0]
+                self._notify([name])
+        elif member in SIGNAL_PROPERTIES:
+            self._schedule_fetch(SIGNAL_PROPERTIES[member])
 
-    def refresh_tooltip(self):
-        """Fetch the tooltip if it changed since last read. Returns True if it was refreshed."""
-        if not self.tooltip_stale or self.item_proxy is None:
-            return False
-        self.tooltip_stale = False
-        try:
-            self.properties["ToolTip"] = self.item_proxy.ToolTip
-            return True
-        except (AttributeError, DBusError):
-            return False
+    def _schedule_fetch(self, names):
+        if not names:
+            return
+        self._pending_properties.update(names)
+        if not self._pending_source:
+            self._pending_source = GLib.timeout_add(REFRESH_DELAY_MS, self._fetch_pending)
+
+    def _fetch_pending(self):
+        self._pending_source = 0
+        names = sorted(self._pending_properties)
+        self._pending_properties.clear()
+        state = {"left": len(names), "changed": []}
+        for name in names:
+            self._get(name, self._on_pending_property, state)
+        return False
+
+    def _on_pending_property(self, name, value, state):
+        if value is NO_ANSWER:
+            self._pending_properties.add(name)
+            self._retry_later(self._fetch_pending)
+        elif value is not None:
+            self._retries = 0
+            self.properties[name] = value
+            state["changed"].append(name)
+        else:
+            self._retries = 0
+            # the item no longer exposes this property (e.g. icon given by name now, not pixmap)
+            if self.properties.pop(name, None) is not None:
+                state["changed"].append(name)
+        state["left"] -= 1
+        if state["left"] == 0:
+            self._notify(state["changed"])
+
+    def _get(self, name, callback, *args):
+        def on_result(connection, result, _data):
+            if not self.alive:
+                return
+            try:
+                value = unpack_property(name, connection.call_finish(result).get_child_value(0).get_variant())
+            except GLib.Error as e:
+                value = None if is_answer(e) else NO_ANSWER
+            callback(name, value, *args)
+
+        self.connection.call(
+            self.service_name, self.object_path, "org.freedesktop.DBus.Properties", "Get",
+            GLib.Variant("(ss)", (self.interface, name)), GLib.VariantType("(v)"),
+            Gio.DBusCallFlags.NONE, DBUS_TIMEOUT_MS, None, on_result, None)
+
+    def _notify(self, changed_properties):
+        if changed_properties and self.loaded and self.on_updated_callback is not None:
+            self.on_updated_callback(self, changed_properties)
+
+    # --- tooltip -------------------------------------------------------------------------------
+
+    @property
+    def tooltip_stale(self):
+        return self.tooltip_fetched_version < self.tooltip_version
+
+    def fetch_tooltip(self, image, callback):
+        """Read the tooltip asynchronously; callback() runs once it is up to date. One callback is kept
+        per image that shows it: GTK asks again on every pointer motion while the answer is awaited."""
+        self.on_tooltip_fetched[image] = callback
+        if self.tooltip_fetching:
+            return
+        self.tooltip_fetching = True
+        requested_version = self.tooltip_version
+
+        def on_tooltip(_name, value):
+            self.tooltip_fetching = False
+            callbacks, self.on_tooltip_fetched = list(self.on_tooltip_fetched.values()), {}
+            if value is NO_ANSWER:
+                return  # still stale: read again the next time it is about to be shown
+            if value is not None:
+                self.properties["ToolTip"] = value
+            self.tooltip_fetched_version = max(self.tooltip_fetched_version, requested_version)
+            for cb in callbacks:
+                cb()
+
+        self._get("ToolTip", on_tooltip)
+
+    # --- actions -------------------------------------------------------------------------------
 
     def set_on_loaded_callback(self, callback):
         self.on_loaded_callback = callback
@@ -154,16 +392,29 @@ class StatusNotifierItem(object):
         if "ItemIsMenu" in self.properties:
             return self.properties["ItemIsMenu"]
         else:
-            return False
+            # Not said (libappindicator): an item with a menu shows it on left click, as before.
+            # Without a menu the specification's default applies, false: the left click is Activate.
+            return "Menu" in self.properties
+
+    def _call(self, method, parameters):
+        def on_result(connection, result, _data):
+            try:
+                connection.call_finish(result)
+            except GLib.Error as e:
+                eprint(f"Tray: {method} on {self.service_name} failed: {e.message}")
+
+        self.connection.call(
+            self.service_name, self.object_path, self.interface, method, parameters, None,
+            Gio.DBusCallFlags.NONE, DBUS_TIMEOUT_MS, None, on_result, None)
 
     def context_menu(self, event: Gdk.EventButton):
-        self.item_proxy.ContextMenu(event.x, event.y)
+        self._call("ContextMenu", GLib.Variant("(ii)", (int(event.x), int(event.y))))
 
     def activate(self, event: Gdk.EventButton):
-        self.item_proxy.Activate(event.x, event.y)
+        self._call("Activate", GLib.Variant("(ii)", (int(event.x), int(event.y))))
 
     def secondary_action(self, event: Gdk.EventButton):
-        self.item_proxy.SecondaryAction(event.x, event.y)
+        self._call("SecondaryActivate", GLib.Variant("(ii)", (int(event.x), int(event.y))))
 
     def scroll(self, distance, direction):
-        self.item_proxy.Scroll(distance, direction)
+        self._call("Scroll", GLib.Variant("(is)", (int(distance), direction)))
