@@ -283,6 +283,8 @@
   "slider-width-tooltip": "Window width in pixels. Leave 0 for auto.",
   "small-icon-size": "Small icon size",
   "smooth-scrolling-threshold": "Smooth scrolling threshold",
+  "sort-by-category": "Sort by category",
+  "sort-by-category-tooltip": "Applications first, then communications, system services and hardware (network, volume, Bluetooth...), each group in order of appearance. Replaces 'New items on the left'.",
   "sort-monitors-by-x": "Sort monitors by x coordinate",
   "sort-outputs-by-x": "Sort outputs by x coordinate",
   "source": "Source",
