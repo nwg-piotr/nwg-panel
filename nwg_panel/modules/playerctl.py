@@ -111,17 +111,23 @@ class Playerctl(Gtk.EventBox):
         self.player_handler_ids.append(
             player.connect('playback-status', self.on_playback_status))
 
-        # Manually set the initial state
-        # self.on_metadata(player, player.props.metadata)
-        self.on_metadata(player, [])
+        # We retrieve metadata with protection against None.
+        metadata = player.props.metadata
+        if metadata is None:
+            metadata = {}
 
-    def deinit_player(self):
+        self.on_metadata(player, metadata)
+
+    def deinit_player(self, hide_widget=True):
         if self.player:
             for handler_id in self.player_handler_ids:
                 self.player.disconnect(handler_id)
         self.player = None
         self.player_handler_ids.clear()
-        self.hide()
+
+        # We don't hide the widget during scrolling to prevent losing focus
+        if hide_widget:
+            self.hide()
 
     def on_playback_status(self, player, status):
         artist = player.get_artist()
@@ -187,18 +193,41 @@ class Playerctl(Gtk.EventBox):
             update_image(self.cover_img, "music", self.settings["cover-size"], self.icons_path)
 
     def on_scroll(self, widget, event):
-        if event.direction == Gdk.ScrollDirection.UP:
+        if self.num_players <= 1:
+            return
+
+        direction = event.direction
+
+        # Wayland smooth scrolling support
+        if direction == Gdk.ScrollDirection.SMOOTH:
+            has_delta, dx, dy = event.get_scroll_deltas()
+            if has_delta:
+                if dy < 0:
+                    direction = Gdk.ScrollDirection.UP
+                elif dy > 0:
+                    direction = Gdk.ScrollDirection.DOWN
+
+        if direction == Gdk.ScrollDirection.UP:
             if self.player_idx < self.num_players - 1:
                 self.player_idx += 1
             else:
                 self.player_idx = 0
-        if event.direction == Gdk.ScrollDirection.DOWN:
+        elif direction == Gdk.ScrollDirection.DOWN:
             if self.player_idx > 0:
                 self.player_idx -= 1
             else:
                 self.player_idx = self.num_players - 1
+        else:
+            return
+
         print(f"Switched to player {self.player_idx}")
-        self.subscribe()
+
+        # Memory leak fix: Just switch the active player, don't restart PlayerManager
+        self.deinit_player(hide_widget=False)
+
+        if len(self.manager.props.players) > 0:
+            self.init_player(self.manager.props.players[self.player_idx])
+            self.num_players_lbl.set_text(f" {self.player_idx + 1}/{self.num_players} ")
 
     def build_box(self):
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
