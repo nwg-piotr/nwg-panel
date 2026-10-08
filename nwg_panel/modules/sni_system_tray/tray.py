@@ -129,11 +129,11 @@ def update_tooltip(image, item):
     image.set_has_tooltip(True)
 
 
-def update_status(event_box, item):
-    """Call after show_all(): a Passive item must stay hidden."""
+def update_status(event_box, item, show_passive=True):
     if "Status" in item.properties:
         status = item.properties["Status"].lower()
-        event_box.set_visible(status != "passive")
+        # event_box.set_visible(status != "passive")
+        event_box.set_visible(status != "passive" or show_passive) # let Appindicator3 items show up
         event_box_style = event_box.get_style_context()
         for class_name in event_box_style.list_classes():
             event_box_style.remove_class(class_name)
@@ -163,6 +163,7 @@ class Tray(Gtk.EventBox):
         check_key(settings, "smooth-scrolling-threshold", 0)
         check_key(settings, "new-left", False)
         check_key(settings, "sort-by-category", False)
+        check_key(settings, "show-passive-items", True)
 
         self.set_property("name", settings["root-css-name"])
 
@@ -212,7 +213,7 @@ class Tray(Gtk.EventBox):
             else:
                 self.box.pack_end(event_box, False, False, 6)
             event_box.show_all()
-            update_status(event_box, item)
+            update_status(event_box, item, show_passive=self.settings["show-passive-items"])
             self.box.show()
 
             # Clicks and scrolling are handled even without a dbusmenu ("Menu" is optional):
@@ -257,7 +258,7 @@ class Tray(Gtk.EventBox):
             image.set_has_tooltip(True)
 
         event_box.show_all()
-        update_status(event_box, item)
+        update_status(event_box, item, show_passive=self.settings["show-passive-items"])
 
     @staticmethod
     def on_query_tooltip(image, _x, _y, _keyboard_mode, _tooltip, item):

@@ -267,6 +267,8 @@
   "show-location-name": "Show location name",
   "show-name": "Show name",
   "show-name-on-special": "Show name on special workspace",
+  "show-passive-items": "Show passive items",
+  "show-passive-items-tooltip": "Checked to see items that don't set the Active status properly",
   "show-per-tag-window-icons": "Show per tag window icons",
   "show-per-tag-window-names": "Show per tag window names",
   "show-precipitation-probability": "Show precipitation probability",
