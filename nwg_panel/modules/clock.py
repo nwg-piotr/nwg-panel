@@ -6,7 +6,7 @@ from gi.repository import GLib
 import subprocess
 from datetime import datetime
 
-from nwg_panel.tools import (check_key, eprint, local_dir, load_json, save_json, update_image, update_gtk_entry,
+from nwg_panel.tools import (check_key, eprint, local_dir, load_json_strict, save_json, update_image, update_gtk_entry,
                              create_background_task, cmd_through_compositor)
 
 import gi
@@ -60,6 +60,7 @@ class Clock(Gtk.EventBox):
         self.reminder_img = Gtk.Image()
 
         self.calendar = {}
+        self.calendar_unreadable = False
 
         self.set_property("name", settings["root-css-name"])
         self.label.set_property("name", settings["css-name"])
@@ -281,23 +282,59 @@ class Clock(Gtk.EventBox):
                                     note = self.calendar[key_year][key_month][key_day]
                                     if note:
                                         c[key_year][key_month][key_day] = note
-        save_json(c, self.path)
+        if not self.calendar_unreadable or self.set_aside_unreadable():
+            save_json(c, self.path)
         self.popup.destroy()
+
+    def set_aside_unreadable(self):
+        """Never save over notes we could not read (truncated or corrupted file...), but do not
+        refuse to save for ever either: the new notes would be lost at the next restart. The
+        file is kept next to the calendar under another name, then we save. A name not taken yet:
+        a copy set aside earlier holds other notes."""
+        path = os.path.realpath(self.path)
+        aside = path + ".unreadable"
+        n = 0
+        while os.path.lexists(aside):
+            n += 1
+            aside = "{}.unreadable.{}".format(path, n)
+        try:
+            os.replace(path, aside)
+            eprint("Calendar: '{}' could not be read, kept as '{}'".format(self.path, aside))
+        except FileNotFoundError:
+            pass
+        except OSError as e:
+            eprint("Calendar: '{}' could not be read or renamed ({}), not saving over it".format(self.path, e))
+            return False
+        self.calendar_unreadable = False
+        return True
+
+    def read_calendar(self, path):
+        """load_json() returned {} on any error, and its "is None" test never matched: a calendar
+        that could not be read or parsed (caught half written by Syncthing or another panel,
+        corrupted...) loaded as {}, and the next note saved over all the others. Such a file now
+        leaves the notes in memory alone and is set aside, not overwritten, by the next save; the
+        error is logged once. An empty file is not covered: it is an empty calendar (see
+        load_json_strict()), also when another program has just truncated it to write it again."""
+        c = load_json_strict(path, quiet=self.calendar_unreadable)
+        if c is None:
+            self.calendar_unreadable = True
+            return False
+        self.calendar_unreadable = False
+        self.calendar = c
+        return True
 
     def load_calendar(self):
         if self.settings["calendar-path"]:
             self.path = self.settings["calendar-path"]
-            c = load_json(self.path)
-            if c is not None:
-                self.calendar = c
+            if os.path.isfile(self.path):
+                self.read_calendar(self.path)
+                return True
+            result = save_json(self.calendar, self.path)
+            if result == "ok":
+                print("Created new calendar file at '{}'".format(self.path))
                 return True
             else:
-                result = save_json(self.calendar, self.path)
-                if result == "ok":
-                    print("Created new calendar file at '{}'".format(self.path))
-                    return True
-                else:
-                    eprint("Couldn't create '{}': {}. Using default path.".format(self.path, result))
+                eprint("Couldn't create '{}': {}. Using default path.".format(self.path, result))
 
         self.path = os.path.join(local_dir(), "calendar.json")
         if not os.path.isfile(self.path):
@@ -306,8 +343,7 @@ class Clock(Gtk.EventBox):
                 print("Created new calendar file at '{}'".format(self.path))
             else:
                 eprint("Couldn't create '{}': {}. No more idea...".format(self.path, result))
-        c = load_json(self.path)
-        self.calendar = c
+        self.read_calendar(self.path)
 
     def reload_calendar(self):
         if not self.popup or not self.popup.is_visible():

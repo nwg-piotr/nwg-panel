@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import errno
 import os
 import sys
 import json
@@ -135,13 +136,100 @@ def load_json(path):
         return {}
 
 
-def save_json(src_dict, path):
+def fsync_dir(path):
+    """Flush a directory entry (the rename of save_json) to disk: without it, ext4 & co. may still
+    hold the old file after a power cut. Best effort: not every file system allows it."""
     try:
-        with open(path, 'w') as f:
-            json.dump(src_dict, f, indent=2)
+        fd = os.open(path or ".", os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+    except OSError:
+        pass
+
+
+def save_json(src_dict, path):
+    """Write atomically: a temporary file in the same directory, flushed to disk, then renamed
+    over the target. A crash, a power cut or a full disk (SD cards...) while writing used to
+    leave a truncated or empty file: the panel configs, common settings or the calendar then
+    loaded as {} and the next save made the loss permanent."""
+    target = path
+    try:
+        # A config kept in a dotfiles repository (stow, a hand-made link...): write the file the
+        # link points to, renaming over the link would turn it into a regular file. Our own links
+        # and root's (`sudo ln -s`, provisioning) only: some state files live in /tmp, and a link
+        # planted there by another user must not be followed (the rule of the kernel's
+        # fs.protected_symlinks, which lets root's links through as well).
+        if os.path.islink(path) and os.lstat(path).st_uid in (os.getuid(), 0):
+            target = os.path.realpath(path)
+    except OSError:
+        pass
+    tmp = None
+    try:
+        data = json.dumps(src_dict, indent=2)
+        try:
+            st = os.stat(target)
+            if st.st_uid != os.getuid() or not os.access(target, os.W_OK):
+                # Renaming over a file needs no permission on the file and puts one of ours in
+                # its place: a file that is write-protected or somebody else's is written in
+                # place as before, or not at all (below).
+                raise PermissionError(errno.EACCES, os.strerror(errno.EACCES), target)
+            mode = stat.S_IMODE(st.st_mode)  # an existing file keeps its mode
+        except FileNotFoundError:
+            mode = None  # a new one gets the default mode (umask, default ACL), as before
+        # Hidden and unique: two threads may save the same file at the same time. O_EXCL never
+        # writes to a name that is taken, or through a link. The new copy of an existing file is
+        # 0600 until it gets that file's mode.
+        name = os.path.join(os.path.dirname(target),
+                            ".{}.{}.tmp".format(os.path.basename(target), os.urandom(4).hex()))
+        fd = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666 if mode is None else 0o600)
+        tmp = name
+        with os.fdopen(fd, 'w') as f:
+            f.write(data)
+            f.flush()
+            if mode is not None:
+                os.fchmod(fd, mode)
+            os.fsync(fd)
+        os.replace(tmp, target)
+        fsync_dir(os.path.dirname(target))
         return "ok"
     except Exception as e:
+        if tmp:
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
+        if isinstance(e, OSError) and e.errno in (errno.EACCES, errno.EPERM, errno.EROFS, errno.EBUSY):
+            # No file can be created or renamed there (read-only or foreign directory, file that
+            # is a bind mount), which says nothing about the file itself, or the file is not ours
+            # to replace: write in place, as before (but not through a link we chose not to
+            # follow).
+            try:
+                flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_NOFOLLOW
+                with os.fdopen(os.open(target, flags, 0o666), 'w') as f:
+                    f.write(data)
+                return "ok"
+            except Exception as e_in_place:
+                e = e_in_place
+        eprint("Error saving json to {}: {}".format(path, e))
         return e
+
+
+def load_json_strict(path, quiet=False):
+    """Like load_json(), but None when the file exists and cannot be read or parsed, so that
+    callers can tell "empty" from "unreadable" and avoid saving over a file they never read.
+    An empty file (what an interrupted non-atomic save leaves behind) holds nothing to lose: {}."""
+    try:
+        with open(path, 'r') as f:
+            content = f.read()
+        return json.loads(content) if content.strip() else {}
+    except FileNotFoundError:
+        return {}
+    except Exception as e:
+        if not quiet:
+            eprint("Error loading json {}: {}".format(path, e))
+        return None
 
 
 def save_string(string, file):
@@ -834,6 +922,8 @@ def list_configs(config_dir):
     entries.sort()
     for entry in entries:
         path = os.path.join(config_dir, entry)
+        if entry.startswith(".") and entry.endswith(".tmp"):
+            continue  # left behind by a save_json() that was killed
         if os.path.isfile(path) and path not in exclusions and not path.endswith(".css"):
             try:
                 with open(path, 'r') as f:
