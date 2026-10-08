@@ -156,12 +156,13 @@ class Playerctl(Gtk.EventBox):
         self.player_handler_ids.append(
             player.connect('playback-status', self.on_playback_status))
 
-        # We retrieve metadata with protection against None.
-        metadata = player.props.metadata
-        if metadata is None:
-            metadata = {}
-
-        self.on_metadata(player, metadata)
+        # The current cover (#476). Not through player.props.metadata: when a player has no Metadata
+        # property, libplayerctl aborts the whole process (g_error); print_metadata_prop() raises.
+        try:
+            cover_url = player.print_metadata_prop("mpris:artUrl") or ""
+        except GLib.Error:
+            cover_url = ""
+        self.on_metadata(player, {"mpris:artUrl": cover_url})
 
     def deinit_player(self, hide_widget=True):
         if self.player:
@@ -201,8 +202,8 @@ class Playerctl(Gtk.EventBox):
         except:  # used to be on KeyError, but actual error is 'mpris:artUrl' for some reason (playerctl bug?)
             cover_url = ""
         if not isinstance(cover_url, str):
-            # MPRIS says a string, but any D-Bus peer may own a player name. init_player() comes here too,
-            # also while the panel builds the module: urlparse() raising would stop the panel.
+            # MPRIS says a string, but any D-Bus peer may own a player name: the 'metadata' signal
+            # passes on whatever type it sent
             cover_url = ""
 
         if cover_url != self.old_cover_url:
