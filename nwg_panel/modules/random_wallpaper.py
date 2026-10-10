@@ -3,6 +3,7 @@
 from gi.repository import Gtk, Gdk, GLib, GtkLayerShell
 
 import os
+import shlex
 import subprocess
 import random
 import requests
@@ -10,7 +11,7 @@ import threading
 
 from shutil import copyfile
 from nwg_panel.tools import update_image, local_dir, cmd_through_compositor, create_background_task, eprint, save_json, \
-    load_json
+    load_json, request_error
 
 
 def on_enter_notify_event(widget, event):
@@ -21,6 +22,9 @@ def on_enter_notify_event(widget, event):
 def on_leave_notify_event(widget, event):
     widget.unset_state_flags(Gtk.StateFlags.DROP_ACTIVE)
     widget.unset_state_flags(Gtk.StateFlags.SELECTED)
+
+
+REQUEST_TIMEOUT = (5, 30)
 
 
 class RandomWallpaper(Gtk.Button):
@@ -48,6 +52,7 @@ class RandomWallpaper(Gtk.Button):
 
         self.voc = voc
         self.src_tag = 0
+        self.menu = None
 
         Gtk.Button.__init__(self)
         self.set_always_show_image(True)
@@ -97,23 +102,26 @@ class RandomWallpaper(Gtk.Button):
             params["apikey"] = api_key
 
         # Make the API request
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=REQUEST_TIMEOUT)
 
         # Get the image URL from the response
         if response.status_code == 200:
             image_data = response.json()
             try:
                 image_url = image_data["data"][0]["path"]
-            except (IndexError, KeyError):
+            except (IndexError, KeyError, TypeError):
                 msg = self.voc["no-wallpaper-found"]
                 tags = ",".join(self.settings["tags"])
-                subprocess.Popen(f"notify-send '{msg}' {tags} -i preferences-desktop-wallpaper -t 6000",
-                                 shell=True)
+                subprocess.Popen(["notify-send", msg, tags, "-i", "preferences-desktop-wallpaper", "-t", "6000"])
+                return  # used to fall through and index data[0] again
 
+            if not isinstance(image_url, str) or not image_url.startswith("https://"):
+                eprint(f"Wallhaven: unexpected image URL {image_url!r}")
+                return
             self.image_info = image_data["data"][0]
 
             # Download the image
-            image_response = requests.get(image_url)
+            image_response = requests.get(image_url, timeout=REQUEST_TIMEOUT)
 
             if image_response.status_code == 200:
                 # Save the image locally
@@ -140,34 +148,34 @@ class RandomWallpaper(Gtk.Button):
         ext = image_path.split(".")[-1]
         if ext.upper() in ["PNG", "JPG", "JPEG", "TIF", "TIFF", "SVG", 'WEBP', 'HEIC', 'AVIF']:
             print(f"Setting '{image_path}' as wallpaper")
-            cmd = "pkill swaybg"
-            subprocess.Popen('{}'.format(cmd), shell=True)
-            print(f"Executing: {cmd}")
-            subprocess.Popen('{}'.format(cmd), shell=True)
-
-            cmd = f"swaybg -i '{image_path}' -m fill"
-
-            cmd = cmd_through_compositor(cmd)
-            print(f"Executing: {cmd}")
-            subprocess.Popen(f"{cmd}", shell=True, preexec_fn=os.setpgrp)
+            self.start_swaybg(image_path)
         else:
             eprint(f"'{image_path}' is not a valid image file")
 
     def load_apply_wallhaven_image(self):
-        self.load_wallhaven_image()
-
-        cmd = "pkill swaybg"
-        print(f"Executing: {cmd}")
-        subprocess.Popen('{}'.format(cmd), shell=True)
-
-        cmd = "swaybg -i {} -m fill".format(self.wallpaper_path)
+        # Runs in a thread: an uncaught error would be printed by the thread excepthook, and
+        # requests' messages carry the URL with the apikey query parameter.
+        try:
+            self.load_wallhaven_image()
+        except (requests.RequestException, ValueError) as e:
+            eprint("Wallhaven request failed:", request_error(e))
 
         if os.path.isfile(self.wallpaper_path):
-            cmd = cmd_through_compositor(cmd)
-            print(f"Executing: {cmd}")
-            subprocess.Popen('{}'.format(cmd), shell=True)
+            self.start_swaybg(self.wallpaper_path)
         else:
             eprint(f"'{self.wallpaper_path}' image not found")
+
+    @staticmethod
+    def start_swaybg(image_path):
+        # The file name goes through the compositor's `exec` (sh -c): a wallpaper named
+        # `$(cmd).png` in a synced/downloaded folder used to run cmd. shlex.quote() makes it inert.
+        # pkill runs synchronously first: launched asynchronously (twice), it could kill the new
+        # swaybg instead of the old one.
+        subprocess.run(["pkill", "-x", "swaybg"], check=False)
+        cmd = cmd_through_compositor("swaybg -i {} -m fill".format(shlex.quote(image_path)))
+        print(f"Executing: {cmd}")
+        # not preexec_fn=os.setpgrp: this is also reached from the wallhaven thread
+        subprocess.Popen(cmd, shell=True, start_new_session=True)
 
     def apply_wallpaper(self, widget):
         if self.settings["source"] == "local":
@@ -182,7 +190,9 @@ class RandomWallpaper(Gtk.Button):
         return True
 
     def display_menu(self, button):
-        menu = Gtk.Menu()
+        if self.menu is not None:
+            self.menu.destroy()  # one Gtk.Menu was created per click and never destroyed
+        self.menu = menu = Gtk.Menu()
         menu.set_reserve_toggle_size(False)
 
         item = Gtk.MenuItem.new_with_label(self.voc["refresh"])
@@ -231,7 +241,8 @@ class RandomWallpaper(Gtk.Button):
     def apply_and_reset_timer(self, btn):
         self.apply_wallpaper(None)
         if self.settings["interval"] > 0:
-            GLib.Source.remove(self.src_tag)
+            if self.src_tag:
+                GLib.Source.remove(self.src_tag)
             self.src_tag = GLib.timeout_add_seconds(self.settings["interval"] * 60, self.apply_wallpaper, None)
 
     def display_image_info_window(self, item):
@@ -239,12 +250,15 @@ class RandomWallpaper(Gtk.Button):
 
     def save_wallpaper(self, item):
         info = load_json(self.wallpaper_info_path)
-        output_file_name = f"wallhaven-{info['id']}.jpg"
+        wallpaper_id = str(info.get("id", ""))
+        if not wallpaper_id.isalnum():
+            wallpaper_id = "image"
+        output_file_name = f"wallhaven-{wallpaper_id}.jpg"
         save_path = self.settings["save-path"] if self.settings["save-path"] else os.getenv("HOME")
         try:
             msg = f"{self.voc['saved-to']} {save_path}"
             copyfile(self.wallpaper_path, os.path.join(save_path, output_file_name))
-            subprocess.Popen(f"notify-send '{output_file_name}' '{msg}' -i preferences-desktop-wallpaper", shell=True)
+            subprocess.Popen(["notify-send", output_file_name, msg, "-i", "preferences-desktop-wallpaper"])
         except Exception as e:
             eprint(f"Failed saving: {os.path.join(save_path, output_file_name)}: {e}")
 
@@ -277,9 +291,10 @@ class ImageInfoWindow(Gtk.Window):
                 for k in value:
                     l += f"\n\t{str(value[k])}"
                 value = l
-            if key == "url" or key == "short_url" or key == "path":
+            value = GLib.markup_escape_text(str(value))
+            if key in ("url", "short_url", "path") and value.startswith("https://"):
                 value = f"<a href='{value}'>{value}</a>"
-            line = f"<b>{key}</b>: {value}"
+            line = f"<b>{GLib.markup_escape_text(str(key))}</b>: {value}"
             lines += f"{line}\n"
 
         lbl = Gtk.Label()

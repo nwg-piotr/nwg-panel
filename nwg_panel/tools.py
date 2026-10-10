@@ -2,7 +2,9 @@
 
 import errno
 import os
+import shlex
 import sys
+import tempfile
 import json
 import subprocess
 import stat
@@ -42,6 +44,13 @@ def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 
+def request_error(e):
+    """requests' ConnectionError messages embed the full URL, API key included: keep them out of
+    the journal."""
+    import requests  # lazily: python-requests is optional for the panel itself
+    return type(e).__name__ if isinstance(e, requests.RequestException) else str(e)
+
+
 def temp_dir():
     if os.getenv("TMPDIR"):
         return os.getenv("TMPDIR")
@@ -51,6 +60,48 @@ def temp_dir():
         return os.getenv("TMP")
 
     return "/tmp"
+
+
+# runtime_dir()'s last resort, created once: the PID file and the scratchpad info writer and reader
+# must agree on the directory, and a new one per call was leaked each time
+_runtime_fallback = None
+
+
+def runtime_dir():
+    """Per-user, private directory for the panel's state files (PID file, scratchpad info,
+    weather caches). They used to live under fixed names in the shared /tmp: another local user
+    could pre-create them (the panel then read his content and could not overwrite it)."""
+    global _runtime_fallback
+    xdg = os.getenv("XDG_RUNTIME_DIR")
+    if xdg and os.path.isdir(xdg):
+        return xdg
+    if _runtime_fallback:
+        return _runtime_fallback
+    cache = get_cache_dir()
+    candidates = [os.path.join(temp_dir(), "nwg-panel-{}".format(os.getuid()))]
+    if cache:
+        candidates.append(os.path.join(cache, "nwg-panel-runtime"))
+    for path in candidates:
+        try:
+            os.makedirs(path, mode=0o700, exist_ok=True)
+            if os.lstat(path).st_uid != os.getuid() or os.path.islink(path):
+                raise OSError("not ours")
+            return path
+        except OSError as e:
+            eprint("runtime_dir: can't use {}: {}".format(path, e))
+    # last resort (no XDG_RUNTIME_DIR, /tmp entry hijacked, no HOME): a fresh directory, stable for
+    # this process only (deliberately not across restarts)
+    _runtime_fallback = tempfile.mkdtemp(prefix="nwg-panel-")
+    return _runtime_fallback
+
+
+def owned_by_us(path):
+    """True if path is a regular file that belongs to the current user (not a symlink)."""
+    try:
+        st = os.lstat(path)
+    except OSError:
+        return False
+    return stat.S_ISREG(st.st_mode) and st.st_uid == os.getuid()
 
 
 def local_dir():
@@ -1240,6 +1291,8 @@ def h_modules_get_all_checked():
 
 
 def cmd_through_compositor(cmd):
+    """Wrap `cmd` so that the compositor launches it. Callers quote untrusted parts of `cmd`
+    (shlex.quote): on every compositor, `cmd` itself is still parsed by a shell."""
     cs_file = os.path.join(get_config_dir(), "common-settings.json")
     common_settings = load_json(cs_file)
 
@@ -1248,23 +1301,66 @@ def cmd_through_compositor(cmd):
         return cmd
 
     if "run-through-compositor" not in common_settings or common_settings["run-through-compositor"]:
-        cmd = cmd.replace("\"", "\\\"")
+        # The result runs through `sh -c`, then the compositor runs `cmd` (sway, Hyprland: through
+        # its own `sh -c`). Each layer gets its own quoting: shlex.quote() for the outer shell (it
+        # used to see the command inside double quotes, where `$(…)` and backticks are still
+        # expanded), and for sway one double-quoted word for its command parser, which splits
+        # unquoted commands on `,` and `;`. A command that a parser can't carry unchanged is
+        # returned as it is: the panel then runs it itself.
+        if "\n" in cmd:
+            return cmd  # no compositor parser copes with a newline: run it directly
         if os.getenv("SWAYSOCK"):
-            if os.getenv("XDG_SESSION_DESKTOP") and "miracle-wm" in os.getenv("XDG_SESSION_DESKTOP"):
-                cmd = f'miraclemsg exec "{cmd}"'
+            if "miracle-wm" in (os.getenv("XDG_SESSION_DESKTOP") or ""):
+                # miracle-wm: "…" literal without any escape, then Mir's launcher splits the words
+                # (blanks, quotes, `\` as escape) and starts them without a shell. It gets one
+                # here, like on sway: otherwise nothing expands `$VAR` in the command any more.
+                if '"' in cmd:
+                    return cmd
+                arg = 'sh -c "{}"'.format(re.sub(r"([\\' \t\n\r\f\v])", r"\\\1", cmd))
+                cmd = f'miraclemsg exec {shlex.quote(arg)}'
             else:
-                cmd = f'swaymsg exec "{cmd}"'
+                arg = _sway_quoted(cmd)
+                if arg is None:
+                    return cmd
+                cmd = f'swaymsg exec {shlex.quote(arg)}'
         elif os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
+            # hyprctl reads an argument that starts with `-` as one of its options, and picks the
+            # request type by substring over all its arguments before it gets to `dispatch`: with
+            # `/--batch` in a path, the rest is cut at every `;` into requests of their own. The
+            # names on the last line only raise the number of blanks it wants in the request.
+            if cmd.startswith("-") or re.search(r"/(--batch|instances|hyprpaper|hyprsunset)", cmd) or (
+                    cmd.count(" ") < 2 and re.search(r"/(switchxkblayout|setprop|notify|output)", cmd)):
+                return cmd
             # check if we are on lua dispatchers (Hyprland >= v0.55.0 with lua config)
             res = hyprctl("dispatch hl.dsp.no_op")  # do nothing
             if res == "ok":
-                cmd = f"hyprctl dispatch 'hl.dsp.exec_cmd(\"{cmd}\")'"
+                cmd = f"hyprctl dispatch {shlex.quote('hl.dsp.exec_cmd(' + _lua_quoted(cmd) + ')')}"
             else:
-                cmd = f'hyprctl dispatch exec "{cmd}"'
+                cmd = f"hyprctl dispatch exec {shlex.quote(cmd)}"
         elif os.getenv("NIRI_SOCKET"):
             cmd = f'niri msg action spawn -- {cmd}'
 
     return cmd
+
+
+def _sway_quoted(cmd):
+    """`cmd` as one double-quoted word for sway's `exec`, or None if sway's command parser can't
+    carry it unchanged. sway replaces its own $variables in that word, removes the unescaped
+    quotes from it and gives the rest to `sh -c`. It knows no escape for a quote: a backslash
+    stays in the text, and the quote after it stays too."""
+    # An odd number of backslashes before a `"`, or at the end, would escape one of the quotes
+    # added here (split_args() and strip_quotes() in sway's common/stringop.c).
+    if re.search(r'(?<!\\)(?:\\\\)*\\("|$)', cmd):
+        return None
+    # a `"` inside is written as a single-quoted `"` between two double-quoted parts
+    arg = '"' + cmd.replace('"', '"\'"\'"') + '"'
+    # `$$` is sway's spelling of a literal `$`; a `\$` it leaves alone
+    return re.sub(r'(?<!(?<!\\)\\)\$', "$$", arg)
+
+
+def _lua_quoted(cmd):
+    """`cmd` as a Lua string literal (Hyprland lua dispatchers)."""
+    return '"' + cmd.replace("\\", "\\\\").replace('"', '\\"').replace("\r", "\\r") + '"'
 
 
 def load_resource(package, resource_name):

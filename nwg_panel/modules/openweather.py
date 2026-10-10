@@ -15,8 +15,8 @@ except ModuleNotFoundError:
     print("You need to install python-requests package", file=sys.stderr)
     sys.exit(1)
 
-from nwg_panel.tools import (check_key, eprint, load_json, save_json, temp_dir, file_age, hms, update_image,
-                             get_config_dir, create_background_task, cmd_through_compositor)
+from nwg_panel.tools import (check_key, eprint, load_json, save_json, runtime_dir, owned_by_us, file_age, hms, update_image,
+                             get_config_dir, create_background_task, cmd_through_compositor, request_error)
 
 config_dir = get_config_dir()
 dir_name = os.path.dirname(__file__)
@@ -64,6 +64,20 @@ def direction(deg):
 def on_button_press(window, event):
     window.close()
     window.destroy()
+
+
+REQUEST_TIMEOUT = (5, 15)
+
+
+def esc(value):
+    """API values go into Pango markup: numbers render as before, a tampered response cannot
+    inject tags or links."""
+    return GLib.markup_escape_text(str(value))
+
+
+def safe_icon_code(code):
+    # "10d", "04n"... anything else must not be turned into a file path
+    return isinstance(code, str) and code.isalnum() and len(code) <= 4
 
 
 class OpenWeather(Gtk.EventBox):
@@ -155,7 +169,8 @@ class OpenWeather(Gtk.EventBox):
 
         data_home = os.getenv('XDG_DATA_HOME') if os.getenv('XDG_DATA_HOME') else os.path.join(os.getenv("HOME"),
                                                                                                ".local/share")
-        tmp_dir = temp_dir()
+        # per-user private dir: in the shared /tmp another local user could plant "fresh" JSON
+        tmp_dir = runtime_dir()
         self.weather_file = "{}-{}".format(os.path.join(tmp_dir, "nwg-openweather-weather"), settings["module-id"])
         self.forecast_file = "{}-{}".format(os.path.join(tmp_dir, "nwg-openweather-forecast"), settings["module-id"])
         self.alerts_file = "{}-{}".format(os.path.join(tmp_dir, "nwg-weatherbit-alerts"), settings["module-id"])
@@ -249,14 +264,14 @@ class OpenWeather(Gtk.EventBox):
         if not os.path.isfile(self.weather_file) or int(file_age(self.weather_file) > self.settings["interval"] - 1):
             print(hms(), "Requesting weather data")
             try:
-                r = requests.get(self.weather_request)
+                r = requests.get(self.weather_request, timeout=REQUEST_TIMEOUT)
                 self.weather = json.loads(r.text)
                 if self.weather["cod"] in ["200", 200]:
                     save_json(self.weather, self.weather_file)
             except Exception as e:
                 self.weather = None
-                eprint(e)
-        elif not self.weather:
+                eprint("Weather request failed:", request_error(e))
+        elif not self.weather and owned_by_us(self.weather_file):
             print(hms(), "Loading weather data from file")
             self.weather = load_json(self.weather_file)
 
@@ -264,14 +279,14 @@ class OpenWeather(Gtk.EventBox):
         if not os.path.isfile(self.forecast_file) or int(file_age(self.forecast_file) > self.settings["interval"] - 1):
             print(hms(), "Requesting forecast data")
             try:
-                r = requests.get(self.forecast_request)
+                r = requests.get(self.forecast_request, timeout=REQUEST_TIMEOUT)
                 self.forecast = json.loads(r.text)
                 if self.forecast["cod"] in ["200", 200]:
                     save_json(self.forecast, self.forecast_file)
             except Exception as e:
                 self.forecast = None
-                eprint(e)
-        elif not self.forecast:
+                eprint("Forecast request failed:", request_error(e))
+        elif not self.forecast and owned_by_us(self.forecast_file):
             print(hms(), "Loading forecast data from file")
             self.forecast = load_json(self.forecast_file)
 
@@ -279,20 +294,20 @@ class OpenWeather(Gtk.EventBox):
         if not os.path.isfile(self.alerts_file) or int(file_age(self.alerts_file) > self.settings["interval"] - 1):
             print(hms(), "Requesting alerts data")
             try:
-                r = requests.get(self.alerts_request)
+                r = requests.get(self.alerts_request, timeout=REQUEST_TIMEOUT)
                 self.alerts_json = json.loads(r.text)
                 if "alerts" in self.alerts_json:
                     save_json(self.alerts_json, self.alerts_file)
             except Exception as e:
                 self.alerts_json = None
-                eprint(e)
-        elif not self.alerts_json and os.path.isfile(self.alerts_file):
+                eprint("Alerts request failed:", request_error(e))
+        elif not self.alerts_json and owned_by_us(self.alerts_file):
             print(hms(), "Loading alerts data from file")
             self.alerts_json = load_json(self.alerts_file)
 
     def update_widget(self):
         if self.weather and self.weather["cod"] and self.weather["cod"] in [200, "200"]:
-            if "icon" in self.weather["weather"][0]:
+            if "icon" in self.weather["weather"][0] and safe_icon_code(self.weather["weather"][0]["icon"]):
                 new_path = os.path.join(self.weather_icons, "ow-{}.svg".format(self.weather["weather"][0]["icon"]))
                 if self.icon_path != new_path:
                     try:
@@ -393,7 +408,7 @@ class OpenWeather(Gtk.EventBox):
         # CURRENT WEATHER
         # row 0: Big icon
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 6)
-        if "icon" in self.weather["weather"][0]:
+        if "icon" in self.weather["weather"][0] and safe_icon_code(self.weather["weather"][0]["icon"]):
             icon_path = os.path.join(self.weather_icons, "ow-{}.svg".format(self.weather["weather"][0]["icon"]))
             img = Gtk.Image()
             update_image(img, icon_path, self.settings["popup-header-icon-size"])
@@ -423,7 +438,7 @@ class OpenWeather(Gtk.EventBox):
                                                                        "country"] else ""
         hbox.set_tooltip_text("{}, {}".format(self.settings["lat"], self.settings["long"]))
         lbl = Gtk.Label()
-        lbl.set_markup('<span size="x-large">{}{}</span>'.format(loc_label, country))
+        lbl.set_markup('<span size="x-large">{}{}</span>'.format(GLib.markup_escape_text(str(loc_label)), GLib.markup_escape_text(country)))
         hbox.pack_start(lbl, True, True, 0)
         vbox.pack_start(hbox, False, False, 0)
 
@@ -448,25 +463,25 @@ class OpenWeather(Gtk.EventBox):
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         lbl = Gtk.Label()
         lbl.set_property("justify", Gtk.Justification.CENTER)
-        feels_like = "{}: {}°".format(self.lang["feels-like"], self.weather["main"]["feels_like"]) if "feels_like" in \
+        feels_like = "{}: {}°".format(self.lang["feels-like"], esc(self.weather["main"]["feels_like"])) if "feels_like" in \
                                                                                                       self.weather[
                                                                                                           "main"] else ""
-        humidity = "   {}: {}%".format(self.lang["humidity"], self.weather["main"]["humidity"]) if "humidity" in \
+        humidity = "   {}: {}%".format(self.lang["humidity"], esc(self.weather["main"]["humidity"])) if "humidity" in \
                                                                                                    self.weather[
                                                                                                        "main"] else ""
         wind_speed, wind_dir, wind_gust = "", "", ""
         if "wind" in self.weather:
             if "speed" in self.weather["wind"]:
-                wind_speed = "   {}: {} m/s".format(self.lang["wind"], self.weather["wind"]["speed"])
+                wind_speed = "   {}: {} m/s".format(self.lang["wind"], esc(self.weather["wind"]["speed"]))
             if "deg" in self.weather["wind"]:
                 wind_dir = " {}".format((direction(self.weather["wind"]["deg"])))
             if "gust" in self.weather["wind"]:
-                wind_gust = " ({} {} m/s)".format(self.lang["gust"], self.weather["wind"]["gust"])
-        pressure = " {}: {} hPa".format(self.lang["pressure"], self.weather["main"]["pressure"]) if "pressure" in \
+                wind_gust = " ({} {} m/s)".format(self.lang["gust"], esc(self.weather["wind"]["gust"]))
+        pressure = " {}: {} hPa".format(self.lang["pressure"], esc(self.weather["main"]["pressure"])) if "pressure" in \
                                                                                                     self.weather[
                                                                                                         "main"] else ""
         clouds = "   {}: {}%".format(self.lang["cloudiness"],
-                                     self.weather["clouds"]["all"]) if "clouds" in self.weather and "all" in \
+                                     esc(self.weather["clouds"]["all"])) if "clouds" in self.weather and "all" in \
                                                                        self.weather["clouds"] else ""
         visibility = "   {}: {} km".format(self.lang["visibility"], int(
             self.weather["visibility"] / 1000)) if "visibility" in self.weather else ""
@@ -527,8 +542,10 @@ class OpenWeather(Gtk.EventBox):
                             #     for r in alert["regions"]:
                             #         regions += "{} ".format(r)
                             #     regions += "]"
-                            description = "<b>{}: {} - {}</b>\n\n{}\n".format(alert["title"], effective, expires,
-                                                                              alert["description"].splitlines()[0])
+                            description = "<b>{}: {} - {}</b>\n\n{}\n".format(
+                                GLib.markup_escape_text(str(alert["title"])),
+                                GLib.markup_escape_text(str(effective)), GLib.markup_escape_text(str(expires)),
+                                GLib.markup_escape_text(str(alert["description"]).splitlines()[0]))
                             # Omit repeating alerts
                             if description not in descriptions:
                                 descriptions.append(description)
@@ -538,10 +555,11 @@ class OpenWeather(Gtk.EventBox):
                 # Use just the 1st alerts "title", add unlabeled alerts count
                 if len(descriptions) > 1:
                     lbl.set_markup(
-                        '<span bgcolor="#cc0000"> {} (+{}) </span>'.format(self.alerts_json["alerts"][0]["title"],
-                                                                           len(descriptions) - 1))
+                        '<span bgcolor="#cc0000"> {} (+{}) </span>'.format(
+                            GLib.markup_escape_text(str(self.alerts_json["alerts"][0]["title"])), len(descriptions) - 1))
                 else:
-                    lbl.set_markup('<span bgcolor="#cc0000"> {} </span>'.format(self.alerts_json["alerts"][0]["title"]))
+                    lbl.set_markup('<span bgcolor="#cc0000"> {} </span>'.format(
+                        GLib.markup_escape_text(str(self.alerts_json["alerts"][0]["title"]))))
 
                 w_label.set_markup("\n\n".join(descriptions))
 
@@ -587,7 +605,7 @@ class OpenWeather(Gtk.EventBox):
 
                 # Icon
                 if "weather" in data and data["weather"][0]:
-                    if "icon" in data["weather"][0]:
+                    if "icon" in data["weather"][0] and safe_icon_code(data["weather"][0]["icon"]):
                         img = self.svg2img("ow-{}.svg".format(data["weather"][0]["icon"]), weather=True)
                         img.set_property("margin-start", 6)
                         img.set_property("margin-end", 2)
@@ -613,7 +631,7 @@ class OpenWeather(Gtk.EventBox):
                     box.pack_start(img, False, False, 0)
                     lbl = Gtk.Label()
                     lbl.set_markup('<span font_size="{}">{}%</span>'.format(self.settings["popup-text-size"],
-                                                                            data["main"]["humidity"]))
+                                                                            esc(data["main"]["humidity"])))
                     box.pack_start(lbl, False, False, 0)
                     grid.attach(box, 5, i, 1, 1)
 
@@ -622,9 +640,9 @@ class OpenWeather(Gtk.EventBox):
                     box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
                     img = self.svg2img("wind.svg")
                     box.pack_start(img, False, False, 0)
-                    wind_speed = "{} m/s".format(data["wind"]["speed"]) if "speed" in data["wind"] and data["wind"][
+                    wind_speed = "{} m/s".format(esc(data["wind"]["speed"])) if "speed" in data["wind"] and data["wind"][
                         "speed"] else ""
-                    wind_gust = " ({})".format(data["wind"]["gust"]) if "gust" in data["wind"] and data["wind"][
+                    wind_gust = " ({})".format(esc(data["wind"]["gust"])) if "gust" in data["wind"] and data["wind"][
                         "gust"] else ""
                     wind_dir = " {}".format(direction(data["wind"]["deg"])) if "deg" in data["wind"] and data["wind"][
                         "deg"] else ""
@@ -642,7 +660,7 @@ class OpenWeather(Gtk.EventBox):
                     box.pack_start(img, False, False, 0)
                     lbl = Gtk.Label()
                     lbl.set_markup('<span font_size="{}">{} hPa</span>'.format(self.settings["popup-text-size"],
-                                                                               data["main"]["pressure"]))
+                                                                               esc(data["main"]["pressure"])))
                     box.pack_start(lbl, False, False, 0)
                     grid.attach(box, 7, i, 1, 1)
 
@@ -654,7 +672,7 @@ class OpenWeather(Gtk.EventBox):
                         box.pack_start(img, False, False, 0)
                         lbl = Gtk.Label()
                         lbl.set_markup('<span font_size="{}">{}%</span>'.format(self.settings["popup-text-size"],
-                                                                                data["clouds"]["all"]))
+                                                                                esc(data["clouds"]["all"])))
                         box.pack_start(lbl, False, False, 0)
                         grid.attach(box, 8, i, 1, 1)
 

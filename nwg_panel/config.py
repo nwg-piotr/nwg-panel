@@ -13,7 +13,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
 from nwg_panel.tools import get_config_dir, local_dir, load_json, save_json, load_string, list_outputs, check_key, \
-    list_configs, update_gtk_entry, is_command, check_commands, cmd2string, eprint, temp_dir, load_shell_data, hyprctl
+    list_configs, update_gtk_entry, is_command, check_commands, cmd2string, eprint, runtime_dir, load_shell_data, hyprctl
 
 from nwg_panel import common
 
@@ -1386,7 +1386,7 @@ class EditorWrapper(object):
             save_json(self.config, self.file)
 
         if self.delete_weather_data:
-            tmp_dir = temp_dir()
+            tmp_dir = runtime_dir()
             for item in ["nwg-openweather-weather", "nwg-openweather-forecast", "nwg-weatherbit-alerts"]:
                 f = "{}-{}".format(os.path.join(tmp_dir, item), self.panel["openweather"]["module-id"])
                 if os.path.exists(f):

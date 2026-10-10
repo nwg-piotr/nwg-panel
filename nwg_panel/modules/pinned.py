@@ -116,11 +116,17 @@ class Pinned(Gtk.EventBox):
 
         counter = 0
         for desktop_id in self.desktop_ids:
+            # the cache is shared with nwg-drawer/nwg-dock: a desktop id is a file name, never a path
+            if not desktop_id or "/" in desktop_id or desktop_id in (".", ".."):
+                continue
             for desktop_dir in self.desktop_dirs:
                 desktop_file = os.path.join(desktop_dir, desktop_id)
 
                 if os.path.exists(desktop_file):
-                    icon_name, exec, name = parse_desktop_file(desktop_file, lang=self.lang)
+                    parsed = parse_desktop_file(desktop_file, lang=self.lang)
+                    if not parsed:
+                        continue  # unreadable file: the tuple used to be unpacked from None
+                    icon_name, exec, name = parsed
                     if icon_name and exec:
                         image = Gtk.Image()
                         update_image(image, icon_name, self.settings["icon-size"], self.icons_path)

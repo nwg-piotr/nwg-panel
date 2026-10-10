@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 from enum import Enum
+import glob
 import os.path
+import socket
+import tempfile
 import threading
+import time
 from urllib.parse import unquote, urlparse
 
 import gi
@@ -15,8 +19,29 @@ import requests
 from nwg_panel.tools import check_key, eprint, local_dir, update_image
 
 
+# remote album covers larger than this are ignored
+COVER_MAX_BYTES = 5 * 1024 * 1024
+# whole remote cover download, in seconds: the requests read timeout only bounds each read, so a
+# server sending a byte now and then would keep the thread (and connection) alive for hours
+COVER_DEADLINE = 20
+# (connect, read) timeouts of the cover request; the read one also bounds each wait for the headers
+COVER_TIMEOUT = (5, 15)
+# http -> https and CDN hops are common for covers
+COVER_MAX_REDIRECTS = 3
+
+
+def _cut_connection(sock, expired):
+    # watchdog (Timer thread): shutting the socket down wakes the read blocked in the download thread
+    expired.set()
+    try:
+        sock.shutdown(socket.SHUT_RDWR)
+    except OSError:
+        pass
+
+
 class Playerctl(Gtk.EventBox):
     PlayerOps = Enum('PlayerOps', ['PLAY_PAUSE', 'NEXT', 'PREVIOUS'])
+    stale_covers_removed = False
 
     def __init__(self, settings, voc, icons_path=""):
         self.settings = settings
@@ -38,6 +63,12 @@ class Playerctl(Gtk.EventBox):
 
         self.old_cover_url = ""
         self.old_media_info = ""
+        # One cover download at a time per panel: the deadline above is only enforced once the headers
+        # are in, so a server sending its headers a byte at a time is only bounded by this, and skipping
+        # tracks can't pile up threads and sockets. A cover asked for meanwhile waits here; only the
+        # latest one is kept.
+        self.cover_downloading = False
+        self.cover_pending = ""
 
         self.player = None
         self.player_handler_ids = []
@@ -46,6 +77,13 @@ class Playerctl(Gtk.EventBox):
         self.player_idx = 0
         self.add_events(Gdk.EventMask.SCROLL_MASK)
         self.connect('scroll-event', self.on_scroll)
+
+        # cover downloads that a previous run did not get to rename to cover.jpg. Once per process:
+        # with one panel per output, another panel's module may already be downloading its cover.
+        if not Playerctl.stale_covers_removed:
+            Playerctl.stale_covers_removed = True
+            for path in glob.glob(os.path.join(glob.escape(local_dir()), "cover-*")):
+                self.remove_cover_file(path)
 
         self.build_box()
         self.subscribe()
@@ -58,7 +96,10 @@ class Playerctl(Gtk.EventBox):
         self.connect("realize", hide_self)
 
     def subscribe(self):
-        # Must associate manager with self to increase its reference count
+        # One PlayerManager for the whole life of the module. It used to be recreated here, and
+        # subscribe() was called from the manager's own handlers (name-appeared, player-vanished)
+        # and on every scroll: the old manager lost its last reference while libplayerctl was
+        # still emitting its signal -> use-after-free, panel spinning at 100% CPU (#233).
         self.manager = Ctl.PlayerManager()
         self.manager.connect('name-appeared', self.on_name_appeared)
         self.manager.connect('player-vanished', self.on_player_vanished)
@@ -68,16 +109,27 @@ class Playerctl(Gtk.EventBox):
         for name in reversed(self.manager.props.player_names):
             self.manage_player_by_name(self.manager, name)
 
-        self.num_players = len(self.manager.props.players)
+        self.select_player(0)
+
+    def select_player(self, idx):
+        """Show the player at idx (clamped), or hide when there is none."""
+        players = self.manager.props.players
+        self.num_players = len(players)
         if self.num_players > 1:
+            self.player_idx = idx % self.num_players
             self.num_players_lbl.set_text(f" {self.player_idx + 1}/{self.num_players} ")
             self.num_players_lbl.set_tooltip_text(
                 f"{self.voc['media-player']} {self.player_idx + 1}/{self.num_players}, {self.voc['scroll-to-switch']}")
         else:
+            self.player_idx = 0
             self.num_players_lbl.set_text("")
 
-        if len(self.manager.props.players) > 0:
-            self.init_player(self.manager.props.players[self.player_idx])
+        if self.num_players > 0 and players[self.player_idx] == self.player:
+            return  # another player vanished: this one keeps its handlers and its cover
+
+        self.deinit_player(hide_widget=self.num_players == 0)
+        if self.num_players > 0:
+            self.init_player(players[self.player_idx])
 
     @staticmethod
     def manage_player_by_name(manager, name):
@@ -85,21 +137,14 @@ class Playerctl(Gtk.EventBox):
         manager.manage_player(player)
 
     def on_name_appeared(self, manager, name):
-        self.subscribe()
-        self.deinit_player()
         self.manage_player_by_name(manager, name)
-        self.init_player(manager.props.players[self.player_idx])
+        self.select_player(0)  # the newest player comes first
 
     def on_player_vanished(self, manager, player):
-        self.subscribe()
-        # Non-active player vanished, do nothing
-        if self.player and player.props.player_name != self.player.props.player_name:
-            return
-
-        # Active player vanished, populate another one if exists
-        self.deinit_player()
-        if len(manager.props.players) > 0:
-            self.init_player(manager.props.players[self.player_idx])
+        # keep the current player if it is still there (its index may have changed), else the first one.
+        # The player itself is looked up: two instances of one player have the same player_name.
+        players = manager.props.players
+        self.select_player(players.index(self.player) if self.player in players else 0)
 
     def init_player(self, player):
         self.player = player
@@ -111,12 +156,13 @@ class Playerctl(Gtk.EventBox):
         self.player_handler_ids.append(
             player.connect('playback-status', self.on_playback_status))
 
-        # We retrieve metadata with protection against None.
-        metadata = player.props.metadata
-        if metadata is None:
-            metadata = {}
-
-        self.on_metadata(player, metadata)
+        # The current cover (#476). Not through player.props.metadata: when a player has no Metadata
+        # property, libplayerctl aborts the whole process (g_error); print_metadata_prop() raises.
+        try:
+            cover_url = player.print_metadata_prop("mpris:artUrl") or ""
+        except GLib.Error:
+            cover_url = ""
+        self.on_metadata(player, {"mpris:artUrl": cover_url})
 
     def deinit_player(self, hide_widget=True):
         if self.player:
@@ -155,6 +201,10 @@ class Playerctl(Gtk.EventBox):
             cover_url = metadata["mpris:artUrl"]
         except:  # used to be on KeyError, but actual error is 'mpris:artUrl' for some reason (playerctl bug?)
             cover_url = ""
+        if not isinstance(cover_url, str):
+            # MPRIS says a string, but any D-Bus peer may own a player name: the 'metadata' signal
+            # passes on whatever type it sent
+            cover_url = ""
 
         if cover_url != self.old_cover_url:
             self.old_cover_url = cover_url
@@ -162,24 +212,106 @@ class Playerctl(Gtk.EventBox):
 
         self.on_playback_status(player, player.props.playback_status)
 
-    def update_remote_cover(self, url):
+    def update_remote_cover(self, url, cover_url):
+        # Runs in a thread: the panel's only cover download, ended by apply_remote_cover. The URL comes
+        # from the player (e.g. a web page's MediaSession artwork through the browser): bounded
+        # download, nothing that declares itself as not an image.
+        tmp_path = ""
+        deadline = time.monotonic() + COVER_DEADLINE
+        expired = threading.Event()
+        watchdog = sock = None
         try:
-            r = requests.get(url, allow_redirects=True)
-            cover_path = os.path.join(local_dir(), "cover.jpg")
-            with open(cover_path, 'wb') as f:
-                f.write(r.content)
-            cover_path = "file://" + cover_path
+            # Redirects are followed, a few: refusing them broke http -> https covers and protected
+            # nothing, since the URL itself comes unchecked from any MPRIS peer.
+            session = requests.Session()
+            session.max_redirects = COVER_MAX_REDIRECTS
+            with session, session.get(url, stream=True, timeout=COVER_TIMEOUT) as r:
+                r.raise_for_status()
+                # A duplicate of the connection's socket: still valid if the watchdog fires late.
+                sock = socket.socket(fileno=os.dup(r.raw.fileno()))
+                timer = threading.Timer(max(0, deadline - time.monotonic()), _cut_connection, (sock, expired))
+                timer.start()
+                watchdog = timer  # only once started: join() raises on a Timer that never started
+                # No type, or a generic one, is common for covers: GdkPixbuf goes by the content.
+                content_type = r.headers.get("Content-Type", "").split(";")[0].strip().lower()
+                if content_type and not content_type.startswith("image/") and content_type not in (
+                        "application/octet-stream", "binary/octet-stream"):
+                    raise ValueError("not an image: {}".format(content_type))
+                data = bytearray()
+                for chunk in r.iter_content(65536):
+                    data += chunk
+                    if len(data) > COVER_MAX_BYTES:
+                        raise ValueError("cover larger than {} bytes".format(COVER_MAX_BYTES))
+                # a connection cut by the watchdog may look like a normal end of a body without length
+                if expired.is_set():
+                    raise ValueError("download took more than {} s".format(COVER_DEADLINE))
+            # A file of its own: another download may be running, and the main loop may be
+            # reading cover.jpg right now.
+            fd, tmp_path = tempfile.mkstemp(prefix="cover-", dir=local_dir())
+            with os.fdopen(fd, 'wb') as f:
+                f.write(data)
         except Exception as e:
             eprint("Couldn't update remote cover: {}".format(e))
-            cover_path = ""
-        GLib.idle_add(self.update_cover_image, cover_path)
+            if tmp_path:
+                self.remove_cover_file(tmp_path)  # written in part only
+                tmp_path = ""
+        finally:
+            if watchdog:
+                # The Timer may be running _cut_connection right now: wait for it, or the fd closed
+                # below could be reused by another thread and then shut down by the late callback.
+                watchdog.cancel()
+                watchdog.join()
+            if sock:
+                sock.close()
+            # always: this ends the panel's download, even on an unexpected error
+            GLib.idle_add(self.apply_remote_cover, cover_url, tmp_path)
 
-    def update_cover_image(self, url):
-        url = urlparse(url)
+    @staticmethod
+    def remove_cover_file(path):
+        try:
+            os.remove(path)
+        except OSError as e:
+            eprint("Couldn't remove {}: {}".format(path, e))
+
+    def apply_remote_cover(self, cover_url, tmp_path):
+        # Back on the main loop. The track may have changed while this cover was downloading: this
+        # one is dropped then, and the current track's cover, if asked for meanwhile, is fetched now.
+        self.cover_downloading = False
+        pending, self.cover_pending = self.cover_pending, ""
+        if cover_url != self.old_cover_url:
+            if tmp_path:
+                self.remove_cover_file(tmp_path)
+            if pending and pending == self.old_cover_url:
+                self.update_cover_image(pending)
+            return False
+        cover_path = ""
+        if tmp_path:
+            try:
+                path = os.path.join(local_dir(), "cover.jpg")
+                os.replace(tmp_path, path)
+                cover_path = "file://" + path
+            except OSError as e:
+                eprint("Couldn't update remote cover: {}".format(e))
+        self.update_cover_image(cover_path)
+        return False
+
+    def update_cover_image(self, cover_url):
+        try:
+            url = urlparse(cover_url)
+        except ValueError:  # e.g. "http://[x", an invalid IPv6 host
+            url = urlparse("")
         path = unquote(url.path)
 
-        if url.scheme.startswith("http"):
-            threading.Thread(target=self.update_remote_cover(url.geturl()), daemon=True).start()
+        if url.scheme in ("http", "https"):
+            if self.settings["show-cover"]:
+                # in a thread: the function used to be *called* here, i.e. the download ran on the
+                # GTK main loop and froze the whole panel until the server answered
+                if self.cover_downloading:
+                    self.cover_pending = cover_url
+                    return
+                threading.Thread(target=self.update_remote_cover, args=(url.geturl(), cover_url),
+                                 daemon=True).start()
+                self.cover_downloading = True
             return
 
         if url.scheme == "file" and path:
@@ -188,6 +320,8 @@ class Playerctl(Gtk.EventBox):
             except Exception as e:
                 eprint("Error creating pixbuf: {}".format(e))
                 path = ""
+        else:
+            path = ""  # no cover or a scheme not loaded here (data:, bare path): not the previous cover
 
         if not path:
             update_image(self.cover_img, "music", self.settings["cover-size"], self.icons_path)
@@ -222,12 +356,9 @@ class Playerctl(Gtk.EventBox):
 
         print(f"Switched to player {self.player_idx}")
 
-        # Memory leak fix: Just switch the active player, don't restart PlayerManager
-        self.deinit_player(hide_widget=False)
-
-        if len(self.manager.props.players) > 0:
-            self.init_player(self.manager.props.players[self.player_idx])
-            self.num_players_lbl.set_text(f" {self.player_idx + 1}/{self.num_players} ")
+        # Memory leak fix: Just switch the active player, don't restart PlayerManager.
+        # select_player() also keeps the widget shown and clamps the index if a player just vanished.
+        self.select_player(self.player_idx)
 
     def build_box(self):
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
