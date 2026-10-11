@@ -251,6 +251,7 @@
   "set-0-to-disable": "Ustaw 0 aby wyłączyć",
   "settings": "Ustawienia",
   "show": "Pokaż",
+  "show-active-empty-ws": "Pokaż aktywny obszar nawet gdy jest pusty",
   "show-cloudiness": "Pokazuj zachmurzenie",
   "show-cover": "Pokazuj okładkę",
   "show-default": "Pokazuj tryb 'default'",
