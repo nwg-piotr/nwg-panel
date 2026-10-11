@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import json
+from nwg_panel.tools import h_list_workspace_rules
 
 from gi.repository import Gtk, Gdk
 
@@ -48,11 +48,10 @@ class HyprlandTaskbar(Gtk.Box):
 
         # replace self.ws_strings with workspaces defined in workspacerules, if any
         ws_strings = []
-        o = hyprctl("j/workspacerules")
-        ws_dicts = json.loads(o)
-        if len(ws_dicts) > 0:
-            for item in json.loads(o):  # list of dicts
+        for item in h_list_workspace_rules():  # list of dicts, [] on IPC failure
+            if "workspaceString" in item:
                 ws_strings.append(item["workspaceString"])
+        if ws_strings:
             self.ws_strings = ws_strings
 
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=settings["workspaces-spacing"])

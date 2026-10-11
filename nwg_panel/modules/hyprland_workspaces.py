@@ -37,6 +37,7 @@ class HyprlandWorkspaces(Gtk.Box):
             "show-name": True,
             "name-length": 40,
             "show-empty": True,
+            "show-active-empty": False,
             "mark-content": True,
             "show-names": True,
             "mark-floating": True,
@@ -75,8 +76,9 @@ class HyprlandWorkspaces(Gtk.Box):
                 ):
                     self.ws_nums.append(ws["id"])
             self.ws_nums.sort()  # sort workspaces by id
-            self.ws_nums = self.choose_workspace_ids_around_active(self.ws_nums, self.ws_nums[
-                0])  # choose workspaces around the first workspace
+            # may be empty right after `monitoradded`: the monitor is listed, its workspace not yet (#428)
+            if self.ws_nums:
+                self.ws_nums = self.choose_workspace_ids_around_active(self.ws_nums, self.ws_nums[0])
 
         if self.settings["show-icon"]:
             self.pack_start(self.icon, False, False, 6)
@@ -135,18 +137,17 @@ class HyprlandWorkspaces(Gtk.Box):
             return False
 
     def choose_workspace_ids_around_active(self, workspace_ids, active_ws_id):
-        # choose workspaces around the active workspace
-        if len(workspace_ids) > self.settings["num-ws"]:
-            active_ws_list_id = workspace_ids.index(active_ws_id)
-            if active_ws_list_id < self.settings["num-ws"] // 2:
-                workspace_ids = workspace_ids[:self.settings["num-ws"]]
-            elif active_ws_list_id > len(workspace_ids) - self.settings["num-ws"] // 2:
-                workspace_ids = workspace_ids[-self.settings["num-ws"]:]
-            else:
-                workspace_ids = workspace_ids[
-                                active_ws_list_id - self.settings["num-ws"] // 2:active_ws_list_id + self.settings[
-                                    "num-ws"] // 2]
-        return workspace_ids
+        # choose num-ws workspaces around the active one
+        n = self.settings["num-ws"]
+        if len(workspace_ids) <= n:
+            return workspace_ids
+        if active_ws_id not in workspace_ids:
+            # active workspace unknown (monitor being added/removed, special workspace, hyprctl
+            # failure): .index() used to raise ValueError on every event and freeze the module
+            return workspace_ids[:n]
+        start = workspace_ids.index(active_ws_id) - n // 2
+        start = max(0, min(start, len(workspace_ids) - n))
+        return workspace_ids[start:start + n]  # always n items (the old slice gave n-1 for odd n)
 
     def workspace_rule_ids(self, workspaces):
         """Return rule-defined IDs that belong on this panel.
@@ -217,7 +218,9 @@ class HyprlandWorkspaces(Gtk.Box):
                 c.destroy()
 
             for num in self.ws_nums:
-                if num in occupied_workspaces or self.settings["show-empty"]:
+                # with show-active-empty, the active workspace is shown even when empty (#410)
+                if num in occupied_workspaces or self.settings["show-empty"] \
+                        or (self.settings["show-active-empty"] and num == active_ws["id"]):
                     occ = num in occupied_workspaces
                     dot = num in occupied_workspaces and self.settings["mark-content"]
                     eb, lbl = self.build_number(num, add_dot=dot, active_win_ws=active_ws["id"])
