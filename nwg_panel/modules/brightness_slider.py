@@ -58,7 +58,8 @@ class BrightnessSlider(Gtk.EventBox):
 
         if settings["angle"] != 0.0:
             self.box.set_orientation(Gtk.Orientation.VERTICAL)
-            self.bri_label.set_angle(settings["angle"])
+            if self.bri_label:  # None with "show-values": false -> AttributeError on vertical panels
+                self.bri_label.set_angle(settings["angle"])
 
         # events
         self.connect('button-release-event', self.on_button_release)
@@ -106,6 +107,9 @@ class BrightnessSlider(Gtk.EventBox):
         
         if get:
             self.popup_window.refresh()
+        else:
+            # value set with the popup slider or by scrolling: the scale is up to date, the popup icon is not
+            self.popup_window.update_icon()
     
     def on_button_release(self, w, event):
         if not self.popup_window.get_visible():
@@ -128,6 +132,9 @@ class BrightnessSlider(Gtk.EventBox):
 
         if self.popup_window.get_visible():
             self.popup_window.bri_scale.set_value(self.bri_value)
+        else:
+            # hidden: move the scale without triggering its handler, as the 500 ms timer did
+            self.popup_window.refresh()
 
         set_brightness(self.bri_value, device=self.settings["backlight-device"],
                        controller=self.settings["backlight-controller"])
@@ -171,6 +178,8 @@ class PopupWindow(Gtk.Window):
         self.set_property("name", self.settings["css-name"])
         
         self.connect("show", self.on_window_show)
+        # closed with a slider move that was never applied (ddcutil: no button release): back to the real value
+        self.connect("hide", self.refresh)
         if settings["leave-closes"]:
             self.connect("leave_notify_event", self.on_window_exit)
             self.connect("enter_notify_event", self.on_window_enter)
@@ -219,9 +228,8 @@ class PopupWindow(Gtk.Window):
         Gtk.Widget.set_size_request(self.box, settings["popup-width"], settings["popup-height"])
 
         self.build_box()
+        # no own 500 ms timer: the parent calls refresh() whenever it has a new brightness value
 
-        Gdk.threads_add_timeout(GLib.PRIORITY_LOW, 500, self.refresh)
-    
     def build_box(self):
         if self.settings["popup-icon-placement"] == "start":
             self.box.pack_start(self.bri_image, False, False, 6)
@@ -234,16 +242,24 @@ class PopupWindow(Gtk.Window):
     def refresh(self, *args):
         if self.get_visible():
             if not self.value_changed:
-                self.bri_scale.set_value(self.parent.bri_value)
-            if self.parent.bri_icon_name != self.bri_icon_name:
-                update_image(self.bri_image, self.parent.bri_icon_name, self.icon_size, self.icons_path)
-                self.bri_icon_name = self.parent.bri_icon_name
+                # a poll must not fire the handler: set_bri would write the value back, on_value_changed
+                # would flag a user move and the scale would stop following (ddcutil)
+                with self.bri_scale.handler_block(self.bri_scale_handler):
+                    self.bri_scale.set_value(self.parent.bri_value)
+            self.update_icon()
 
         else:
+            # a move never applied (closed before the button release) is dropped with the real value
+            self.value_changed = False
             with self.bri_scale.handler_block(self.bri_scale_handler):
                 self.bri_scale.set_value(self.parent.bri_value)
 
         return True
+
+    def update_icon(self):
+        if self.get_visible() and self.parent.bri_icon_name != self.bri_icon_name:
+            update_image(self.bri_image, self.parent.bri_icon_name, self.icon_size, self.icons_path)
+            self.bri_icon_name = self.parent.bri_icon_name
 
     def on_window_exit(self, w, e):
         if self.get_visible():
