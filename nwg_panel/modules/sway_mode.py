@@ -66,8 +66,9 @@ class SwayMode(Gtk.Box):
         self.set_visibility()
 
     def on_i3ipc_event(self, i3conn, event):
+        # runs on the i3ipc thread: touch GTK from the main loop only
         self.mode = event.change
-        self.set_visibility()
+        GLib.idle_add(self.set_visibility)
 
     def set_visibility(self):
         self.label.set_text(self.mode)
