@@ -167,10 +167,6 @@ def __lookup_icon_name(app_name):
         if app_name.upper() in filename:
             return icon
 
-    # GIMP returns "app_id": null and for some reason "class": "Gimp-2.10" instead of just "gimp".
-    # Until the GTK3 version is released, let's make an exception for GIMP.
-    if "GIMP" in app_name.upper():
-        return "gimp"
 
     # if all above fails, use the app_name as icon name
     return app_name
