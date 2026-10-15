@@ -1,9 +1,20 @@
 import os
 import sys
+import time
 
+# All callers run on the GTK main thread (taskbars, scratchpad); the caches below are plain dicts and
+# rely on that. A caller from another thread would need a lock around check + lookup.
 class_to_icon_cache = {}
 name_to_icon_cache = {}
 filename_to_icon_cache = {}
+result_cache = {}  # app_name -> resolved icon name, misses included (the substring scan below is per miss)
+
+# The .desktop caches are rebuilt when the mtime of an applications/ directory changes (an app installed
+# or removed there; edits in place or in sub-directories are not detected), checked at most every
+# REFRESH_CHECK_S seconds.
+REFRESH_CHECK_S = 30
+_dirs_stamp = None
+_last_stamp_check = 0.0
 
 
 def eprint(*args, **kwargs):
@@ -106,13 +117,47 @@ def __populate_caches():
                 __process_desktop_file(file_path)
 
 
+def __app_dirs_stamp():
+    stamp = []
+    for d in __get_app_dirs():
+        try:
+            stamp.append(os.stat(d).st_mtime_ns)
+        except OSError:
+            stamp.append(None)
+    return tuple(stamp)
+
+
+def __check_refresh():
+    global _dirs_stamp, _last_stamp_check
+    now = time.monotonic()
+    if _dirs_stamp is not None and now - _last_stamp_check < REFRESH_CHECK_S:
+        return
+    _last_stamp_check = now
+    stamp = __app_dirs_stamp()
+    if stamp != _dirs_stamp:
+        _dirs_stamp = stamp
+        class_to_icon_cache.clear()
+        name_to_icon_cache.clear()
+        filename_to_icon_cache.clear()
+        result_cache.clear()
+
+
 def get_icon_name(app_name):
     if not app_name:
         return ""
 
+    __check_refresh()
+    if app_name in result_cache:
+        return result_cache[app_name]
+
     if not class_to_icon_cache and not name_to_icon_cache:
         __populate_caches()
 
+    result_cache[app_name] = result = __lookup_icon_name(app_name)
+    return result
+
+
+def __lookup_icon_name(app_name):
     # Search priority: window class > app name > .desktop filename
     if app_name in class_to_icon_cache:
         return class_to_icon_cache[app_name]
