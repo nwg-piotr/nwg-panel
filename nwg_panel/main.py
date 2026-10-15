@@ -39,7 +39,7 @@ except ValueError:
                        'For example you might need to run:\n\n' +
                        'GI_TYPELIB_PATH=build/src LD_LIBRARY_PATH=build/src python3 ' + ' '.join(sys.argv))
 
-from gi.repository import GtkLayerShell, GLib
+from gi.repository import GtkLayerShell, GLib, GLibUnix
 
 try:
     import psutil
@@ -918,7 +918,7 @@ def main():
     # SIGHUP/SIGQUIT do nothing. SIGUSR1/SIGUSR2 keep being ignored unless used for dwl.
     glib_sigs = (signal.SIGINT, signal.SIGTERM, signal.SIGHUP, signal.SIGUSR1, signal.SIGUSR2)
     for sig in glib_sigs:
-        GLib.unix_signal_add(GLib.PRIORITY_HIGH, sig, signal_handler, sig)
+        GLibUnix.signal_add(GLib.PRIORITY_HIGH, sig, signal_handler, sig)
 
     for sig in range(signal.SIGRTMIN, signal.SIGRTMAX + 1):
         try:
