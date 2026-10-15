@@ -3,6 +3,8 @@ from enum import Enum
 import glob
 import os.path
 import socket
+import stat
+import struct
 import tempfile
 import threading
 import time
@@ -10,9 +12,10 @@ from urllib.parse import unquote, urlparse
 
 import gi
 
+gi.require_version('GdkPixbuf', '2.0')
 gi.require_version('Playerctl', '2.0')
 
-from gi.repository import GLib, Gtk, Gdk
+from gi.repository import GLib, Gtk, Gdk, GdkPixbuf
 from gi.repository import Playerctl as Ctl
 import requests
 
@@ -21,6 +24,20 @@ from nwg_panel.tools import check_key, eprint, local_dir, update_image
 
 # remote album covers larger than this are ignored
 COVER_MAX_BYTES = 5 * 1024 * 1024
+# covers wider or taller than this are not decoded: the byte cap doesn't bound the picture (a
+# 270 KB PNG may be 16000 x 16000 px). JPEG too: scaled while decoding, but a progressive one is
+# buffered at full size.
+COVER_MAX_SIDE = 4096
+# local cover files larger than this are ignored: GdkPixbuf may keep a whole WebP, or all of a
+# JPEG's metadata, in memory, and a sparse file makes the size free
+COVER_MAX_FILE_BYTES = 64 * 1024 * 1024
+# a PNG cover with more zTXt, iTXt or iCCP chunks than this, compressed or not, is ignored:
+# libpng inflates the compressed ones (up to 8 MB each) before GdkPixbuf even knows the size;
+# a real cover has one or two
+COVER_MAX_COMPRESSED_CHUNKS = 4
+# and one with more chunks than this, walked on the main loop to count them (at libpng's 8 KiB of
+# image data per chunk, 512 MiB)
+COVER_MAX_PNG_CHUNKS = 65536
 # whole remote cover download, in seconds: the requests read timeout only bounds each read, so a
 # server sending a byte now and then would keep the thread (and connection) alive for hours
 COVER_DEADLINE = 20
@@ -28,6 +45,45 @@ COVER_DEADLINE = 20
 COVER_TIMEOUT = (5, 15)
 # http -> https and CDN hops are common for covers
 COVER_MAX_REDIRECTS = 3
+
+
+def _cover_size(path):
+    """(width, height) of a cover file, read without decoding it. ValueError unless it is a regular
+    file (a named pipe would block on open) that starts like a PNG, a JPEG or a still WebP: covers
+    are nothing else in practice, and with the other GdkPixbuf formats the cost depends on the
+    content, not on the size in the header (an SVG is parsed in full to give it, an animated WebP
+    decodes every frame)."""
+    st = os.stat(path)
+    if not stat.S_ISREG(st.st_mode) or st.st_size > COVER_MAX_FILE_BYTES:
+        raise ValueError("not a regular file of at most {} bytes".format(COVER_MAX_FILE_BYTES))
+    with open(path, "rb") as f:
+        head = f.read(32)
+        if head.startswith(b"\x89PNG\r\n\x1a\n") and head[12:16] == b"IHDR":
+            # not GdkPixbuf.Pixbuf.get_file_info(): for a PNG it inflates the chunks counted here
+            f.seek(8)
+            compressed = 0
+            for _ in range(COVER_MAX_PNG_CHUNKS):
+                chunk = f.read(8)
+                if len(chunk) < 8:
+                    break
+                length, kind = struct.unpack(">I4s", chunk)
+                if kind in (b"zTXt", b"iTXt", b"iCCP"):
+                    compressed += 1
+                    if compressed > COVER_MAX_COMPRESSED_CHUNKS:
+                        raise ValueError("PNG with more than {} zTXt, iTXt or iCCP chunks".format(
+                            COVER_MAX_COMPRESSED_CHUNKS))
+                elif kind == b"IEND":
+                    break
+                f.seek(length + 4, os.SEEK_CUR)  # data and CRC
+            else:
+                raise ValueError("PNG of more than {} chunks".format(COVER_MAX_PNG_CHUNKS))
+            return struct.unpack(">II", head[16:24])
+    still_webp = head[:4] == b"RIFF" and head[8:12] == b"WEBP" and not (
+            head[12:16] == b"VP8X" and len(head) > 20 and head[20] & 0x02)  # animation flag
+    if head.startswith(b"\xff\xd8\xff") or still_webp:
+        _, width, height = GdkPixbuf.Pixbuf.get_file_info(path)  # reads the headers only for these
+        return width, height
+    raise ValueError("not a PNG, JPEG or still WebP picture")
 
 
 def _cut_connection(sock, expired):
@@ -316,6 +372,9 @@ class Playerctl(Gtk.EventBox):
 
         if url.scheme == "file" and path:
             try:
+                width, height = _cover_size(path)  # any player may give a file:// URL
+                if width > COVER_MAX_SIDE or height > COVER_MAX_SIDE:
+                    raise ValueError("cover of {}x{} px".format(width, height))
                 update_image(self.cover_img, path, self.settings["cover-size"], fallback=False)
             except Exception as e:
                 eprint("Error creating pixbuf: {}".format(e))
