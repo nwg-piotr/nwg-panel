@@ -87,6 +87,7 @@ except:
 # Clear orphaned SWAYSOCK variable if the socket file no longer exists on disk
 sway_sock = os.getenv("SWAYSOCK")
 if sway_sock and not os.path.exists(sway_sock):
+    eprint("Removing persistent SWAYSOCK env var")
     os.environ.pop("SWAYSOCK", None)
 
 sway = os.getenv('SWAYSOCK') is not None
