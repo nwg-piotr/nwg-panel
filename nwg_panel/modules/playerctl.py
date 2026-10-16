@@ -131,23 +131,40 @@ class Playerctl(Gtk.EventBox):
         if self.num_players > 0:
             self.init_player(players[self.player_idx])
 
-    @staticmethod
-    def manage_player_by_name(manager, name):
+    def manage_player_by_name(self, manager, name):
         player = Ctl.Player.new_from_name(name)
+        # Zapisujemy początkowy status, żeby zignorować powtarzające się echa
+        player._last_global_status = player.props.playback_status
+        player.connect('playback-status', self.on_global_playback_status)
         manager.manage_player(player)
+
+    def on_global_playback_status(self, player, status):
+        old_status = getattr(player, '_last_global_status', None)
+        player._last_global_status = status
+
+        # Przełącz z tła TYLKO jeśli status FAKTYCZNIE zmienił się na PLAYING
+        if player != self.player and status == Ctl.PlaybackStatus.PLAYING and old_status != status and player.get_title():
+            players = self.manager.props.players
+            if player in players:
+                self.select_player(players.index(player))
 
     def on_name_appeared(self, manager, name):
         self.manage_player_by_name(manager, name)
         self.select_player(0)  # the newest player comes first
 
     def on_player_vanished(self, manager, player):
-        # keep the current player if it is still there (its index may have changed), else the first one.
-        # The player itself is looked up: two instances of one player have the same player_name.
+        # Keep the current player if it is still there (its index may have changed).
+        # If the active player vanished (e.g. YT tab closed), find the most active fallback.
         players = manager.props.players
-        self.select_player(players.index(self.player) if self.player in players else 0)
+        if self.player in players:
+            self.select_player(players.index(self.player))
+        else:
+            self.select_active_player()
 
     def init_player(self, player):
         self.player = player
+        # Rejestrujemy status w momencie załadowania (np. po scrollu), żeby zablokować auto-switch
+        self._local_last_status = player.props.playback_status
         self.show()
 
         # connect signals
@@ -175,7 +192,57 @@ class Playerctl(Gtk.EventBox):
         if hide_widget:
             self.hide()
 
-    def on_playback_status(self, player, status):
+    def on_metadata(self, player, metadata):
+        try:
+            cover_url = metadata["mpris:artUrl"]
+        except:  # used to be on KeyError, but actual error is 'mpris:artUrl' for some reason (playerctl bug?)
+            cover_url = ""
+        if not isinstance(cover_url, str):
+            # MPRIS says a string, but any D-Bus peer may own a player name: the 'metadata' signal
+            # passes on whatever type it sent
+            cover_url = ""
+
+        if cover_url != self.old_cover_url:
+            self.old_cover_url = cover_url
+            self.update_cover_image(cover_url)
+
+        # Używamy nowej metody, żeby nie wywołać auto-przełączania przy scrollowaniu
+        self.update_ui(player, player.props.playback_status)
+
+        # Używamy nowej metody, żeby nie wywołać auto-przełączania przy scrollowaniu
+        self.update_ui(player, player.props.playback_status)
+
+        self.on_playback_status(player, player.props.playback_status)
+
+    def select_active_player(self):
+        """Finds the most relevant player (PLAYING -> current PAUSED -> any PAUSED -> default)."""
+        players = self.manager.props.players
+        if not players:
+            self.select_player(0)
+            return
+
+        # 1. Look for a player that is currently PLAYING
+        for idx, p in enumerate(players):
+            if p.props.playback_status == Ctl.PlaybackStatus.PLAYING and p.get_title():
+                self.select_player(idx)
+                return
+
+        # 2. If the current player is PAUSED, stay on it rather than jumping to a random other PAUSED player
+        if self.player in players and self.player.props.playback_status == Ctl.PlaybackStatus.PAUSED:
+            self.select_player(players.index(self.player))
+            return
+
+        # 3. Look for ANY PAUSED one as a fallback
+        for idx, p in enumerate(players):
+            if p.props.playback_status == Ctl.PlaybackStatus.PAUSED and p.get_title():
+                self.select_player(idx)
+                return
+
+        # 4. Fallback to index 0 if everything is stopped/dead
+        self.select_player(0)
+
+    def update_ui(self, player, status):
+        """Updates panel labels and icons without triggering auto-switch logic."""
         artist = player.get_artist()
         title = player.get_title()
         status_text = None
@@ -191,26 +258,27 @@ class Playerctl(Gtk.EventBox):
             elif status == Ctl.PlaybackStatus.STOPPED:
                 status_text = "stopped"
 
-        # Filter out empty value when building info
+        # Filter out empty values when building media info
         info = [x for x in (artist, title, status_text) if x]
         info = " - ".join(info)
         self.set_media_info(info)
 
-    def on_metadata(self, player, metadata):
-        try:
-            cover_url = metadata["mpris:artUrl"]
-        except:  # used to be on KeyError, but actual error is 'mpris:artUrl' for some reason (playerctl bug?)
-            cover_url = ""
-        if not isinstance(cover_url, str):
-            # MPRIS says a string, but any D-Bus peer may own a player name: the 'metadata' signal
-            # passes on whatever type it sent
-            cover_url = ""
 
-        if cover_url != self.old_cover_url:
-            self.old_cover_url = cover_url
-            self.update_cover_image(cover_url)
+    def on_playback_status(self, player, status):
+        old_status = getattr(self, '_local_last_status', None)
+        self._local_last_status = status
 
-        self.on_playback_status(player, player.props.playback_status)
+        # If the currently visible player stops or pauses
+        if player == self.player and status in (Ctl.PlaybackStatus.STOPPED, Ctl.PlaybackStatus.PAUSED):
+            # Perform an emergency switchover ONLY if the player has actually just stopped.
+            if old_status != status:
+                self.select_active_player()
+
+                # If the panel switched to a background playing track, abort updating the GUI
+                if self.player != player:
+                    return
+
+        self.update_ui(player, status)
 
     def update_remote_cover(self, url, cover_url):
         # Runs in a thread: the panel's only cover download, ended by apply_remote_cover. The URL comes
