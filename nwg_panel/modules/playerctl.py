@@ -133,7 +133,7 @@ class Playerctl(Gtk.EventBox):
 
     def manage_player_by_name(self, manager, name):
         player = Ctl.Player.new_from_name(name)
-        # Zapisujemy początkowy status, żeby zignorować powtarzające się echa
+        # Save initial status to ignore repeating echoes
         player._last_global_status = player.props.playback_status
         player.connect('playback-status', self.on_global_playback_status)
         manager.manage_player(player)
@@ -142,7 +142,7 @@ class Playerctl(Gtk.EventBox):
         old_status = getattr(player, '_last_global_status', None)
         player._last_global_status = status
 
-        # Przełącz z tła TYLKO jeśli status FAKTYCZNIE zmienił się na PLAYING
+        # Switch from the background ONLY if the status has ACTUALLY changed to PLAYING
         if player != self.player and status == Ctl.PlaybackStatus.PLAYING and old_status != status and player.get_title():
             players = self.manager.props.players
             if player in players:
@@ -163,7 +163,7 @@ class Playerctl(Gtk.EventBox):
 
     def init_player(self, player):
         self.player = player
-        # Rejestrujemy status w momencie załadowania (np. po scrollu), żeby zablokować auto-switch
+        #Record the status at the moment of loading (e.g., after scrolling) in order to prevent an auto-switch.
         self._local_last_status = player.props.playback_status
         self.show()
 
@@ -206,10 +206,7 @@ class Playerctl(Gtk.EventBox):
             self.old_cover_url = cover_url
             self.update_cover_image(cover_url)
 
-        # Używamy nowej metody, żeby nie wywołać auto-przełączania przy scrollowaniu
-        self.update_ui(player, player.props.playback_status)
-
-        # Używamy nowej metody, żeby nie wywołać auto-przełączania przy scrollowaniu
+        # Use a new method to avoid triggering auto-switching while scrolling.
         self.update_ui(player, player.props.playback_status)
 
         self.on_playback_status(player, player.props.playback_status)
