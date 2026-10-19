@@ -24,6 +24,7 @@ class Clock(Gtk.EventBox):
         self.cal = None
         self.note_box = None
         self.popup = None
+        self.popup_bcg = None
         # kept on the main loop by the popup's signals, read by the calendar reload thread instead of
         # popup.is_visible(): no GTK call from a background thread
         self.popup_visible = False
@@ -192,8 +193,21 @@ class Clock(Gtk.EventBox):
         self.popup.connect("hide", self.on_popup_visibility, False)
         self.popup.connect("destroy", self.on_popup_visibility, False)
         GtkLayerShell.init_for_window(self.popup)
-        GtkLayerShell.set_layer(self.popup, GtkLayerShell.Layer.TOP)
+        GtkLayerShell.set_layer(self.popup, GtkLayerShell.Layer.OVERLAY)
         GtkLayerShell.set_keyboard_mode(self.popup, GtkLayerShell.KeyboardMode.ON_DEMAND)
+
+        self.popup_bcg = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
+        self.popup_bcg.set_app_paintable(True)
+        rgba_visual = self.popup_bcg.get_screen().get_rgba_visual()
+        if rgba_visual:
+            self.popup_bcg.set_visual(rgba_visual)
+        GtkLayerShell.init_for_window(self.popup_bcg)
+        GtkLayerShell.set_layer(self.popup_bcg, GtkLayerShell.Layer.TOP)
+        GtkLayerShell.set_namespace(self.popup_bcg, "nwg-panel-calendar-background")
+        for edge in (GtkLayerShell.Edge.TOP, GtkLayerShell.Edge.BOTTOM,
+                     GtkLayerShell.Edge.LEFT, GtkLayerShell.Edge.RIGHT):
+            GtkLayerShell.set_anchor(self.popup_bcg, edge, True)
+        self.popup_bcg.connect("button-release-event", self.on_popup_background_click)
 
         if self.settings["calendar-placement"] in ["top-left", "top", "top-right"]:
             GtkLayerShell.set_anchor(self.popup, GtkLayerShell.Edge.TOP, 1)
@@ -222,6 +236,7 @@ class Clock(Gtk.EventBox):
         vbox.pack_start(self.cal, False, False, 0)
 
         self.popup.show_all()
+        self.popup_bcg.show()
         self.mark_days()
 
         self.note_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
@@ -364,6 +379,14 @@ class Clock(Gtk.EventBox):
 
     def on_popup_visibility(self, widget, visible):
         self.popup_visible = visible
+        if not visible and self.popup_bcg:
+            self.popup_bcg.hide()
+
+    def on_popup_background_click(self, widget, event):
+        if self.popup:
+            self.popup.destroy()
+        widget.hide()
+        return True
 
     def reload_calendar(self):
         # background thread: don't reload what the open popup is editing
