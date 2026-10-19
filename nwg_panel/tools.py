@@ -921,6 +921,9 @@ def get_battery():
             raise RuntimeError("upower: no DisplayDevice")
         lines = subprocess.check_output(["upower", "-i", display[0]], env=env, timeout=UPOWER_TIMEOUT).decode(
             "utf-8", errors="replace").splitlines()
+        if any(line.partition(":")[0].strip().lower() == "power supply" and
+               line.partition(":")[2].strip().lower() == "no" for line in lines):
+            return None
         found = False
         for line in lines:
             if "state:" in line:
@@ -935,6 +938,10 @@ def get_battery():
                     pass
         if not found:
             raise RuntimeError("upower: no percentage for {}".format(display[0]))
+        success = True
+
+    if not success:
+        return None
 
     return percent, time, charging
 
