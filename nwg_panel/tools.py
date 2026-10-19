@@ -117,14 +117,26 @@ def local_dir():
     return local_dir
 
 
+def config_dir_path():
+    """The nwg-panel config dir path, None when neither XDG_CONFIG_HOME nor HOME is set. Creates nothing."""
+    config_home = os.getenv("XDG_CONFIG_HOME")
+    if not config_home:
+        home = os.getenv("HOME")
+        if not home:
+            return None
+        config_home = os.path.join(home, ".config")
+    return os.path.join(config_home, "nwg-panel")
+
+
 def get_config_dir():
     """
     Determine config dir path, create if not found, then create sub-dirs
     :return: config dir path
     """
-    xdg_config_home = os.getenv('XDG_CONFIG_HOME')
-    config_home = xdg_config_home if xdg_config_home else os.path.join(os.getenv("HOME"), ".config")
-    config_dir = os.path.join(config_home, "nwg-panel")
+    config_dir = config_dir_path()
+    if config_dir is None:
+        # as before: the panel can't run without a config dir
+        raise TypeError("neither XDG_CONFIG_HOME nor HOME is set")
     if not os.path.isdir(config_dir):
         print("Creating '{}'".format(config_dir))
         os.makedirs(config_dir, exist_ok=True)
@@ -204,6 +216,16 @@ def fsync_dir(path):
         pass
 
 
+def in_config_dir(path):
+    """True if path (as given, a link is not resolved) is in the nwg-panel config directory.
+    Not get_config_dir(): no directories created, no error when there is no config dir (False then)."""
+    config_dir = config_dir_path()
+    if config_dir is None:
+        return False
+    config_dir = os.path.abspath(config_dir)
+    return os.path.commonpath([os.path.abspath(path), config_dir]) == config_dir
+
+
 def save_json(src_dict, path):
     """Write atomically: a temporary file in the same directory, flushed to disk, then renamed
     over the target. A crash, a power cut or a full disk (SD cards...) while writing used to
@@ -231,14 +253,21 @@ def save_json(src_dict, path):
                 # place as before, or not at all (below).
                 raise PermissionError(errno.EACCES, os.strerror(errno.EACCES), target)
             mode = stat.S_IMODE(st.st_mode)  # an existing file keeps its mode
+            if in_config_dir(path):
+                # ...but a config created before files were made 0600 loses group/other access:
+                # it may hold API keys
+                mode &= ~0o077
         except FileNotFoundError:
-            mode = None  # a new one gets the default mode (umask, default ACL), as before
+            # A new one is created 0600 and stays so: the configs hold API keys (openweather
+            # `appid`, Wallhaven `apikey`...) and used to be created world-readable through the
+            # default umask.
+            mode = None
         # Hidden and unique: two threads may save the same file at the same time. O_EXCL never
         # writes to a name that is taken, or through a link. The new copy of an existing file is
         # 0600 until it gets that file's mode.
         name = os.path.join(os.path.dirname(target),
                             ".{}.{}.tmp".format(os.path.basename(target), os.urandom(4).hex()))
-        fd = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666 if mode is None else 0o600)
+        fd = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         tmp = name
         with os.fdopen(fd, 'w') as f:
             f.write(data)
@@ -262,7 +291,7 @@ def save_json(src_dict, path):
             # follow).
             try:
                 flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_NOFOLLOW
-                with os.fdopen(os.open(target, flags, 0o666), 'w') as f:
+                with os.fdopen(os.open(target, flags, 0o600), 'w') as f:
                     f.write(data)
                 return "ok"
             except Exception as e_in_place:
