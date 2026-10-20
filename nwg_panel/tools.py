@@ -447,7 +447,7 @@ def list_outputs(sway=False, silent=False):
                 outputs_dict[name]["scale"] = float(o["scale"])
                 outputs_dict[name]["transform"] = o["transform"]
         else:
-            print("'wlr-randr' command not found, terminating")
+            eprint("Couldn't detect displays: 'wlr-randr' command not found, terminating")
             sys.exit(1)
 
     display = Gdk.Display.get_default()
