@@ -93,7 +93,8 @@ def unpack_pixmaps(variant):
         size = width * height * 4
         if 0 < width <= MAX_PIXMAP_SIDE and 0 < height <= MAX_PIXMAP_SIDE and data.n_children() >= size:
             # the image and no more: the array can be far longer than the sizes say
-            pixmaps.append((width, height, data.get_data_as_bytes().new_from_bytes(0, size).get_data()))
+            raw_bytes = GLib.Bytes.new_from_bytes(data.get_data_as_bytes(), 0, size).get_data()
+            pixmaps.append((width, height, raw_bytes))
     return pixmaps
 
 
