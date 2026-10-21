@@ -28,11 +28,6 @@ from shutil import copyfile, which
 from collections import OrderedDict
 from datetime import datetime
 
-try:
-    import psutil
-except:
-    pass
-
 # LRU cache of icon pixbufs: (icon_name, icon_size, icons_path) -> (stamp, pixbuf)
 icon_pixbuf_cache = OrderedDict()
 icon_pixbuf_cache_limit = 50
@@ -884,66 +879,59 @@ def get_battery_sysfs(root="/sys/class/power_supply"):
 
 
 def get_battery():
-    percent, time, charging = 0, "", False
-    success = False
-
-    battery_count = len(glob.glob("/sys/class/power_supply/BAT*"))
-    if battery_count <= 1:
-        try:
-            b = psutil.sensors_battery()
-            if b:
-                percent = int(round(b.percent, 0))
-                charging = b.power_plugged
-                seconds = b.secsleft
-                if seconds != psutil.POWER_TIME_UNLIMITED and seconds != psutil.POWER_TIME_UNKNOWN:
-                    time = seconds2string(seconds)
-                else:
-                    time = ""
-                success = True
-        except:
-            pass
-    else:
-        # psutil reports the first battery only (#415): sum them up from sysfs
-        result = get_battery_sysfs()
-        if result:
-            percent, time, charging = result
-            success = True
-
-    if not success and nwg_panel.common.commands["upower"]:
+    if nwg_panel.common.commands["upower"]:
         # no shell: on timeout subprocess kills the process it started, a hung upowerd must not leave an
-        # `upower | grep` pipeline behind on every poll; a failure propagates to the caller, which keeps the
-        # last known value instead of showing 0 %
+        # `upower | grep` pipeline behind on every poll
         env = dict(os.environ, LANG="en_US")
-        devices = subprocess.check_output(["upower", "-e"], env=env, timeout=UPOWER_TIMEOUT).decode(
-            "utf-8", errors="replace").split()
-        display = [d for d in devices if "devices/DisplayDevice" in d]
-        if not display:
-            raise RuntimeError("upower: no DisplayDevice")
-        lines = subprocess.check_output(["upower", "-i", display[0]], env=env, timeout=UPOWER_TIMEOUT).decode(
-            "utf-8", errors="replace").splitlines()
-        if any(line.partition(":")[0].strip().lower() == "power supply" and
-               line.partition(":")[2].strip().lower() == "no" for line in lines):
-            return None
-        found = False
+        try:
+            devices = subprocess.check_output(["upower", "-e"], env=env, timeout=UPOWER_TIMEOUT).decode(
+                "utf-8", errors="replace").split()
+            display = [d for d in devices if "devices/DisplayDevice" in d]
+            if not display:
+                raise RuntimeError("upower: no DisplayDevice")
+            lines = subprocess.check_output(["upower", "-i", display[0]], env=env, timeout=UPOWER_TIMEOUT).decode(
+                "utf-8", errors="replace").splitlines()
+        except Exception:
+            # If UPower is unavailable, use only system battery devices from sysfs. Do not use
+            # psutil.sensors_battery(): it can select a peripheral battery (e.g. a Logitech mouse).
+            result = get_battery_sysfs()
+            if result is not None:
+                return result
+            raise
+
+        fields = {}
+        device_type = None
         for line in lines:
-            if "state:" in line:
-                charging = line.split(":")[1].strip() == "charging"
-            elif "time to" in line:
-                time = line.split(":")[1].strip()
-            elif "percentage:" in line:
-                found = True
-                try:
-                    percent = round(float(line.split(":")[1].strip()[:-1]))
-                except:
-                    pass
-        if not found:
-            raise RuntimeError("upower: no percentage for {}".format(display[0]))
-        success = True
+            key, separator, value = line.partition(":")
+            if separator:
+                fields[key.strip().lower()] = value.strip().lower()
+            elif line.strip().lower() in ("battery", "ups"):
+                device_type = line.strip().lower()
 
-    if not success:
-        return None
+        power_supply = fields.get("power supply")
+        if power_supply == "no":
+            return None
+        if power_supply == "yes" and device_type != "battery":
+            # This PR is specifically about laptop batteries; UPS and peripheral batteries are
+            # not shown as the computer's battery.
+            return None
+        if power_supply != "yes" or device_type != "battery":
+            return get_battery_sysfs()
 
-    return percent, time, charging
+        try:
+            percent = round(float(fields["percentage"].rstrip("%")))
+            charging = fields.get("state") == "charging"
+            time = fields.get("time to full" if charging else "time to empty", "")
+            return percent, time, charging
+        except (KeyError, ValueError):
+            result = get_battery_sysfs()
+            if result is not None:
+                return result
+            raise RuntimeError("upower: incomplete system battery data")
+
+    # BAT* sysfs entries represent system batteries. This also avoids treating HID batteries
+    # such as wireless mice as the computer's battery when UPower is not installed.
+    return get_battery_sysfs()
 
 
 def seconds2string(seconds):
