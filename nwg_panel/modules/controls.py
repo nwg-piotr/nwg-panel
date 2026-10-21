@@ -97,6 +97,7 @@ class Controls(Gtk.EventBox):
         self.bat_value = 0
         self.bat_time = ""
         self.bat_charging = False
+        self.bat_available = None
 
         self.pan_image = Gtk.Image()
         update_image(self.pan_image, "pan-down-symbolic", self.icon_size, self.icons_path)
@@ -221,8 +222,12 @@ class Controls(Gtk.EventBox):
     def refresh_bat_output(self):
         if "battery" in self.settings["components"]:
             try:
-                self.bat_value, self.bat_time, self.bat_charging = get_battery()
-                GLib.idle_add(self.update_battery, self.bat_value, self.bat_charging)
+                battery = get_battery()
+                if battery is None:
+                    GLib.idle_add(self.update_battery, None, None)
+                else:
+                    self.bat_value, self.bat_time, self.bat_charging = battery
+                    GLib.idle_add(self.update_battery, self.bat_value, self.bat_charging)
             except Exception as e:
                 print(e)
 
@@ -266,6 +271,21 @@ class Controls(Gtk.EventBox):
         self.vol_value, self.vol_muted = volume
 
     def update_battery(self, value, charging):
+        self.bat_available = value is not None
+        if not self.bat_available:
+            self.bat_image.hide()
+            if self.bat_label:
+                self.bat_label.hide()
+            if self.popup_window.bat_row:
+                self.popup_window.bat_row.hide()
+            return
+
+        self.bat_image.show()
+        if self.bat_label:
+            self.bat_label.show()
+        if self.popup_window.bat_row:
+            self.popup_window.bat_row.show_all()
+
         icon_name = bat_icon_name(value, charging)
 
         if icon_name != self.bat_icon_name:
@@ -358,6 +378,7 @@ class PopupWindow(Gtk.Window):
         self.vol_scale_handler = None
 
         self.per_app_sliders = []
+        self.bat_row = None
 
         self.src_tag = 0
 
@@ -535,6 +556,7 @@ class PopupWindow(Gtk.Window):
                 inner_hbox.pack_end(img, False, True, 4)
 
             event_box.add(inner_vbox)
+            self.bat_row = event_box
 
         if "readme" in settings["components"] and is_command("nwg-readme-browser"):
             event_box = Gtk.EventBox()
@@ -776,11 +798,15 @@ class PopupWindow(Gtk.Window):
             self.refresh_count += 1
 
             if "battery" in self.settings["components"]:
-                if self.parent.bat_icon_name != self.bat_icon_name:
-                    update_image(self.bat_image, self.parent.bat_icon_name, self.icon_size, self.icons_path)
-                    self.bat_icon_name = self.parent.bat_icon_name
+                if self.parent.bat_available is False:
+                    self.bat_row.hide()
+                else:
+                    self.bat_row.show()
+                    if self.parent.bat_icon_name != self.bat_icon_name:
+                        update_image(self.bat_image, self.parent.bat_icon_name, self.icon_size, self.icons_path)
+                        self.bat_icon_name = self.parent.bat_icon_name
 
-                self.bat_label.set_text("{}% {}".format(self.parent.bat_value, self.parent.bat_time))
+                    self.bat_label.set_text("{}% {}".format(self.parent.bat_value, self.parent.bat_time))
 
             if "volume" in self.settings["components"] and (commands["pamixer"] or commands["pactl"]):
                 # without handler_block, set_value() fired set_vol(): a refresh wrote the volume
