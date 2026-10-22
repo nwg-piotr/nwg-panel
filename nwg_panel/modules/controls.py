@@ -17,6 +17,7 @@ from nwg_panel.tools import (check_key, get_brightness, set_brightness, get_volu
                              is_command, cmd_through_compositor, popen_watcher)
 
 from nwg_panel.common import commands
+from nwg_panel.icons import get_icon_name
 
 # brightness polling backs off after this many consecutive failures
 BRIGHTNESS_MAX_FAILURES = 3
@@ -25,6 +26,20 @@ BRIGHTNESS_RETRY_S = 60
 SINK_INPUTS_EVERY = 4
 # seconds `pactl subscribe` must stay connected before the volume is taken as event-driven
 SUBSCRIBE_CHECK_S = 0.5
+
+
+def per_app_icon_name(props):
+    """Resolve a sink application's desktop icon when PulseAudio omits it."""
+    icon_name = props.get("application.icon_name")
+    if icon_name:
+        return icon_name
+
+    app_name = props.get("application.name")
+    resolved_icon = get_icon_name(app_name)
+    if resolved_icon and resolved_icon != app_name:
+        return resolved_icon
+    return "emblem-music-symbolic"
+
 
 bat_critical_last_check = 0
 
@@ -735,8 +750,7 @@ class PopupWindow(Gtk.Window):
             for inp in sink_inputs:
                 props = sink_inputs[inp]["Properties"] if "Properties" in sink_inputs[inp]["Properties"] else {}
                 if props:
-                    icon_name = props[
-                        "application.icon_name"] if "application.icon_name" in props else "emblem-music-symbolic"
+                    icon_name = per_app_icon_name(props)
                     vol = 0
                     if "Volume" in sink_inputs[inp]:
                         for p in sink_inputs[inp]["Volume"].split():
@@ -836,8 +850,7 @@ class PopupWindow(Gtk.Window):
                         # We have no slider for input {inp}. Let's add it.
                         props = sink_inputs[inp]["Properties"] if "Properties" in sink_inputs[inp] else {}
                         if props:
-                            icon_name = props[
-                                "application.icon_name"] if "application.icon_name" in props else "emblem-music-symbolic"
+                            icon_name = per_app_icon_name(props)
                             vol = 0
                             if "Volume" in sink_inputs[inp]:
                                 for p in sink_inputs[inp]["Volume"].split():
