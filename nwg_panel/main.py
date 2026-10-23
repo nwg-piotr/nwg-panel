@@ -40,7 +40,16 @@ except ValueError:
                        'For example you might need to run:\n\n' +
                        'GI_TYPELIB_PATH=build/src LD_LIBRARY_PATH=build/src python3 ' + ' '.join(sys.argv))
 
-from gi.repository import GtkLayerShell, GLib, GLibUnix
+from gi.repository import GtkLayerShell, GLib
+
+try:
+    gi.require_version('GLibUnix', '2.0')
+    from gi.repository import GLibUnix
+    # Only recent GLib exposes g_unix_signal_add_full() as GLibUnix.signal_add. Older GLibUnix, e.g. GLib 2.84
+    # (Debian 13), only has GLibUnix.signal_add_full, and GLib < 2.80 has no GLibUnix namespace at all.
+    unix_signal_add = getattr(GLibUnix, 'signal_add', None) or GLibUnix.signal_add_full
+except (ValueError, ImportError, AttributeError):
+    unix_signal_add = GLib.unix_signal_add
 
 try:
     import psutil
@@ -1197,7 +1206,7 @@ def main():
     # SIGHUP/SIGQUIT do nothing. SIGUSR1/SIGUSR2 keep being ignored unless used for dwl.
     glib_sigs = (signal.SIGINT, signal.SIGTERM, signal.SIGHUP, signal.SIGUSR1, signal.SIGUSR2)
     for sig in glib_sigs:
-        GLibUnix.signal_add(GLib.PRIORITY_HIGH, sig, signal_handler, sig)
+        unix_signal_add(GLib.PRIORITY_HIGH, sig, signal_handler, sig)
 
     for sig in range(signal.SIGRTMIN, signal.SIGRTMAX + 1):
         try:
