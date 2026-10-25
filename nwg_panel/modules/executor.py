@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import stat
 import subprocess
 import signal
 import threading
@@ -9,7 +10,8 @@ import time
 import gi
 from gi.repository import GLib
 
-from nwg_panel.tools import check_key, update_image, create_background_task, cmd_through_compositor, eprint
+from nwg_panel.tools import check_key, update_image, set_image_pixbuf, create_background_task, \
+    cmd_through_compositor, eprint
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -32,6 +34,7 @@ class Executor(Gtk.EventBox):
         self.label = Gtk.Label.new("")
         self.icon_path = None
         self.icon_mtime = None
+        self.icon_scale = 1  # scale factor of self.image, read by the script thread to preload images
         self.dynamic_tooltip = False
         self.tooltip_state = None  # dynamic tooltip last set: (markup, image path, image mtime)
         self.loop_started = False
@@ -92,27 +95,9 @@ class Executor(Gtk.EventBox):
         self.build_box()
         self.refresh()
 
-    def update_widget(self, output):
-        # parse output
-        label = new_path = tip = tip_image = None
-        if output:
-            output = [o.strip() for o in output]
-            if len(output) == 1:
-                if os.path.splitext(output[0])[1] in ('.svg', '.png'):
-                    new_path = output[0]
-                else:
-                    label = output[0]
-            elif len(output) == 2:
-                new_path, label = output
-            else:
-                # 3+ lines: icon path (may be empty), label, then a tooltip (Pango markup, may span several lines)
-                new_path, label = output[0], output[1]
-                tip = output[2:]
-                # optional image on top of the tooltip: 1st tooltip line = path to a .svg / .png file
-                if os.path.splitext(tip[0])[1] in ('.svg', '.png') and os.path.isfile(tip[0]):
-                    tip_image = tip[0]
-                    tip = tip[1:]
-                tip = "\n".join(tip)
+    def update_widget(self, output, preloaded=None):
+        label, new_path, tip, tip_image = parse_output(output)
+        self.icon_scale = self.image.get_scale_factor()
 
         if tip_image or (tip and tip.strip()):
             self.set_dynamic_tooltip(tip, tip_image)
@@ -129,16 +114,25 @@ class Executor(Gtk.EventBox):
         new_mtime = None
         if new_path:
             try:
-                new_mtime = os.path.getmtime(new_path)
+                st = os.stat(new_path)
+                new_mtime = st.st_mtime
+                if new_path.startswith("/") and not stat.S_ISREG(st.st_mode):
+                    # a FIFO or a device would block the GTK main loop: only regular files are loaded
+                    # (create_pixbuf() opens absolute paths only, anything else is an icon name)
+                    eprint("Failed setting image from {}: not a regular file".format(new_path))
+                    new_path = None
             except OSError:
                 pass  # icon name, not a file
         if new_path and (new_path != self.icon_path or new_mtime != self.icon_mtime):
             try:
-                update_image(self.image,
-                             new_path,
-                             self.settings["icon-size"],
-                             self.icons_path,
-                             fallback=False)
+                if preloaded and preloaded[:3] == (new_path, new_mtime, self.icon_size()):
+                    set_image_pixbuf(self.image, preloaded[3])
+                else:
+                    update_image(self.image,
+                                 new_path,
+                                 self.settings["icon-size"],
+                                 self.icons_path,
+                                 fallback=False)
                 self.icon_path = new_path
                 self.icon_mtime = new_mtime
             except:
@@ -164,6 +158,29 @@ class Executor(Gtk.EventBox):
                 self.label.hide()
 
         return False
+
+    def icon_size(self):
+        return self.settings["icon-size"] * self.icon_scale
+
+    def preload_image(self, output):
+        """
+        Runs in the script thread. A script that rewrites the image file on each run (a generated graph)
+        makes update_widget() reload it every time: decoding a large SVG takes several ms, that the GTK
+        main loop would spend blocked. Decode it here instead. Returns (path, mtime, size, pixbuf), or
+        None to let update_widget() load the image (icon names, unchanged or unreadable files).
+        """
+        path = parse_output(output)[1]
+        if not path or not path.startswith("/"):
+            return None
+        try:
+            # mtime read before decoding: a file rewritten meanwhile no longer matches in update_widget()
+            st = os.stat(path)
+            if not stat.S_ISREG(st.st_mode) or (path, st.st_mtime) == (self.icon_path, self.icon_mtime):
+                return None
+            size = self.icon_size()
+            return path, st.st_mtime, size, GdkPixbuf.Pixbuf.new_from_file_at_size(path, size, size)
+        except Exception:
+            return None  # update_widget() loads it, and reports errors, as for any image
 
     def set_dynamic_tooltip(self, markup, image):
         try:
@@ -284,7 +301,7 @@ class Executor(Gtk.EventBox):
                 try:
                     # a script that never returns used to hold the lock (and a thread) forever
                     output = self.run_script().decode("utf-8", errors="replace").splitlines()
-                    GLib.idle_add(self.update_widget, output)
+                    GLib.idle_add(self.update_widget, output, self.preload_image(output))
                 except subprocess.TimeoutExpired as e:
                     eprint("Executor '{}': script timed out after {:g} s".format(self.name, e.timeout))
                 except Exception as e:
@@ -360,3 +377,27 @@ def script_timeout(settings):
         timeout = max(300, interval) if interval > 0 else 0
     # 0 = no timeout. There can't be one longer than poll() is able to wait either: 2**31 ms, 24 days.
     return timeout if 0 < timeout < 2 ** 31 // 1000 else None
+
+
+def parse_output(output):
+    """Script output lines -> (label, image path, tooltip markup, tooltip image path), None when absent."""
+    label = new_path = tip = tip_image = None
+    if output:
+        output = [o.strip() for o in output]
+        if len(output) == 1:
+            if os.path.splitext(output[0])[1] in ('.svg', '.png'):
+                new_path = output[0]
+            else:
+                label = output[0]
+        elif len(output) == 2:
+            new_path, label = output
+        else:
+            # 3+ lines: icon path (may be empty), label, then a tooltip (Pango markup, may span several lines)
+            new_path, label = output[0], output[1]
+            tip = output[2:]
+            # optional image on top of the tooltip: 1st tooltip line = path to a .svg / .png file
+            if os.path.splitext(tip[0])[1] in ('.svg', '.png') and os.path.isfile(tip[0]):
+                tip_image = tip[0]
+                tip = tip[1:]
+            tip = "\n".join(tip)
+    return label, new_path, tip, tip_image
