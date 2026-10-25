@@ -1,6 +1,9 @@
-import typing
-import multiprocessing as mp
+import json
+import os
+import subprocess
+import sys
 import time
+import typing
 
 from gi.repository import GLib
 
@@ -33,12 +36,25 @@ def init_tray(trays: typing.List[Tray]):
     start_watcher()
 
 
+# Runs watcher.py in a new interpreter with the panel's sys.path: launchers may add the dependencies to
+# sys.path themselves (Nix wrappers...). -I: no PYTHONPATH, user site or script directory of its own.
+# Loaded from its file, not imported: importing the sni_system_tray package would load GTK and the tray.
+WATCHER_BOOTSTRAP = ("import importlib.util, json, sys; "
+                     "sys.path[:] = json.loads(sys.argv[1]); "
+                     "spec = importlib.util.spec_from_file_location('nwg_panel_sni_watcher', sys.argv[2]); "
+                     "module = importlib.util.module_from_spec(spec); "
+                     "spec.loader.exec_module(module); "
+                     "module.init(int(sys.argv[3]))")
+
+
 def start_watcher():
+    # The watcher only needs D-Bus. A multiprocessing 'spawn' child imported the whole panel and GTK
+    # again (~50 MB, plus the resource_tracker process, on a Raspberry Pi 5).
     global watcher_process, _watcher_started
     _watcher_started = time.monotonic()
-    ctx = mp.get_context('spawn')
-    watcher_process = ctx.Process(target=watcher.init, daemon=True)
-    watcher_process.start()
+    watcher_process = subprocess.Popen([sys.executable, "-I", "-c", WATCHER_BOOTSTRAP, json.dumps(sys.path),
+                                        os.path.abspath(watcher.__file__), str(os.getpid())],
+                                       stdin=subprocess.DEVNULL)
 
 
 def on_watcher_vanished():
@@ -51,7 +67,7 @@ def respawn_watcher():
     # still there (it exits by itself if it can't own the name).
     if time.monotonic() - _watcher_started > WATCHER_STABLE_S:
         _watcher_respawns = 0
-    if watcher_process is None or watcher_process.is_alive() or _watcher_respawns >= MAX_WATCHER_RESPAWNS:
+    if watcher_process is None or watcher_process.poll() is None or _watcher_respawns >= MAX_WATCHER_RESPAWNS:
         return False
     _watcher_respawns += 1
     eprint("Tray: the StatusNotifierWatcher is gone, starting a new one")
@@ -63,4 +79,9 @@ def deinit_tray():
     global watcher_process
     if watcher_process:
         watcher_process.terminate()
+        try:
+            watcher_process.wait(timeout=1)  # reap it
+        except subprocess.TimeoutExpired:
+            watcher_process.kill()
+            watcher_process.wait()
         watcher_process = None

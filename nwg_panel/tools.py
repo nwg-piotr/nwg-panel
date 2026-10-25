@@ -18,6 +18,7 @@ import gi
 
 import nwg_panel.common
 from nwg_panel.icons import get_icon_name
+from nwg_panel.process_tools import eprint, _die_with_parent
 
 gi.require_version('GdkPixbuf', '2.0')
 gi.require_version('Gtk', '3.0')
@@ -37,10 +38,6 @@ icon_theme_watched = False
 UPOWER_TIMEOUT = 5
 # power_supply types of external chargers (sysfs "type"); batteries are "Battery"
 AC_SUPPLY_TYPES = ("Mains", "USB", "USB_C", "USB_PD")
-
-
-def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
 
 
 def request_error(e):
@@ -515,15 +512,6 @@ def check_commands():
         import requests
         nwg_panel.common.commands["python-requests"] = True
     except ModuleNotFoundError:
-        pass
-
-
-def _die_with_parent():
-    # Linux: have the child receive SIGTERM when the panel dies, so a restarted panel leaves no orphan
-    try:
-        import ctypes, signal
-        ctypes.CDLL(None, use_errno=True).prctl(1, signal.SIGTERM)  # 1 = PR_SET_PDEATHSIG
-    except Exception:
         pass
 
 
