@@ -1,4 +1,3 @@
-import multiprocessing
 import os
 import typing
 
@@ -11,7 +10,7 @@ from dasbus.client.observer import DBusObserver
 from dasbus.server.interface import accepts_additional_arguments
 import dasbus.typing
 
-from nwg_panel.tools import _die_with_parent, eprint
+from nwg_panel.process_tools import _die_with_parent, eprint
 
 # items one bus connection (or one proxied connection) may register: well above what any real app does
 MAX_ITEMS_PER_SENDER = 32
@@ -269,11 +268,11 @@ def quit_if_orphan():
     return False
 
 
-def init():
+def init(parent_pid=None):
+    """parent_pid: the panel's PID, given by start_watcher(); None: the parent process."""
     global _parent_pid
     # the pid of the panel as it knows it: os.getppid() is already another one if it died meanwhile
-    parent = multiprocessing.parent_process()
-    _parent_pid = parent.pid if parent is not None else os.getppid()
+    _parent_pid = parent_pid if parent_pid is not None else os.getppid()
     # Linux: SIGTERM as soon as the panel dies, however it dies (as for the helpers of popen_watcher)
     _die_with_parent()
     if os.getppid() != _parent_pid:
