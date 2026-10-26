@@ -101,6 +101,8 @@ class HyprlandTaskbar(Gtk.Box):
         )
 
     def refresh(self, monitors, workspaces, clients, activewindow):
+        # Sort clients by their X and Y coordinates to match physical screen layout
+        clients = sorted(clients, key=lambda c: (c.get("at", [0, 0])[0], c.get("at", [0, 0])[1]))
         # Hyprland sends many events that change nothing here (title counters, window moves...):
         # rebuilding every widget for them costs ~0.3 ms per window on a Pi, plus layout and drawing
         displayed = self.displayed_state(monitors, workspaces, clients, activewindow)
