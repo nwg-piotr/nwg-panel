@@ -32,6 +32,12 @@ from datetime import datetime
 icon_pixbuf_cache = OrderedDict()
 icon_pixbuf_cache_limit = 50
 icon_theme_watched = False
+# Icon names the theme had no icon for, (icon_name, icon_size, icons_path) -> time.monotonic() of the lookup:
+# a window class without an icon used to be looked up again (4 failing theme lookups, ~2 ms) on each refresh
+icon_lookup_failed = {}
+icon_lookup_failed_limit = 256
+ICON_LOOKUP_RETRY_S = 30  # the icon may get installed: look it up again after this delay
+icon_missing_pixbufs = {}  # icon size -> pixbuf of icons_light/icon-missing.svg
 
 # seconds; a hung upowerd must not block the battery polling thread
 UPOWER_TIMEOUT = 5
@@ -1028,6 +1034,17 @@ def update_gtk_entry(entry, icon_pos, icon_name, icon_size, icons_path=""):
 
 def clear_icon_pixbuf_cache(*args):
     icon_pixbuf_cache.clear()
+    icon_lookup_failed.clear()
+    icon_missing_pixbufs.clear()
+
+
+def icon_missing_pixbuf(icon_size):
+    pixbuf = icon_missing_pixbufs.get(icon_size)
+    if pixbuf is None:
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+            os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), icon_size, icon_size)
+        icon_missing_pixbufs[icon_size] = pixbuf
+    return pixbuf
 
 
 def icon_stamp(icon_name):
@@ -1052,6 +1069,13 @@ def create_pixbuf(icon_name, icon_size, icons_path="", fallback=True):
         return cached[1]
 
     cacheable = stamp is not None
+    failed_at = icon_lookup_failed.get(key)
+    if failed_at is not None:
+        if time.monotonic() - failed_at < ICON_LOOKUP_RETRY_S:
+            if fallback:
+                return icon_missing_pixbuf(icon_size)
+            raise LookupError(f"no icon for '{icon_name}'")
+        del icon_lookup_failed[key]
     try:
         # In case a full path was given
         if icon_name.startswith("/"):
@@ -1082,10 +1106,13 @@ def create_pixbuf(icon_name, icon_size, icons_path="", fallback=True):
                 except:
                     pixbuf = icon_theme.load_icon(icon_name.lower(), icon_size, Gtk.IconLookupFlags.FORCE_SIZE)
     except Exception as e:
+        if not icon_name.startswith("/"):
+            if len(icon_lookup_failed) >= icon_lookup_failed_limit:
+                icon_lookup_failed.clear()
+            icon_lookup_failed[key] = time.monotonic()
         if fallback:
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                os.path.join(get_config_dir(), "icons_light/icon-missing.svg"), icon_size, icon_size)
-            cacheable = False  # retry the lookup next time, the icon may appear
+            pixbuf = icon_missing_pixbuf(icon_size)
+            cacheable = False  # retry the lookup later, the icon may appear
         else:
             raise e
 
