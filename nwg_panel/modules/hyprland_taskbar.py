@@ -43,6 +43,7 @@ class HyprlandTaskbar(Gtk.Box):
         self.ws_nums = None
         self.workspaces = None
         self.activewindow = None
+        self.displayed = None
         # default values, in case we find no workspaces defined in workspacerules
         self.ws_strings = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
 
@@ -58,7 +59,15 @@ class HyprlandTaskbar(Gtk.Box):
         if self.settings["angle"] != 0.0:
             self.set_orientation(Gtk.Orientation.VERTICAL)
 
+        # icons are looked up when building: rebuild on the next refresh once the icon theme changed
+        icon_theme = Gtk.IconTheme.get_default()
+        handler = icon_theme.connect("changed", self.on_icon_theme_changed)
+        self.connect("destroy", lambda *args: icon_theme.disconnect(handler))
+
         self.refresh(monitors, workspaces, clients, activewindow)
+
+    def on_icon_theme_changed(self, *args):
+        self.displayed = None
 
     def parse_monitors(self, monitors):
         self.monitors = monitors
@@ -75,7 +84,29 @@ class HyprlandTaskbar(Gtk.Box):
             self.workspaces[item["id"]] = item
         self.ws_nums.sort()
 
+    def displayed_state(self, monitors, workspaces, clients, activewindow):
+        """
+        What build_box() shows (and what the client menus use), without what changes all the time and
+        is not shown: window geometry, focus history, workspace counters, the end of titles cut at
+        name-max-len.
+        """
+        max_len = self.settings["name-max-len"]
+        not_displayed = ("at", "size", "focusHistoryID", "title")
+        return (
+            tuple((m["id"], m["name"], m["activeWorkspace"]["id"]) for m in monitors),
+            tuple((w["id"], w["name"], w["monitor"]) for w in workspaces),
+            tuple((bool(c["title"]), c["title"][:max_len],
+                   sorted((k, repr(v)) for k, v in c.items() if k not in not_displayed)) for c in clients),
+            activewindow.get("address") if activewindow else None,
+        )
+
     def refresh(self, monitors, workspaces, clients, activewindow):
+        # Hyprland sends many events that change nothing here (title counters, window moves...):
+        # rebuilding every widget for them costs ~0.3 ms per window on a Pi, plus layout and drawing
+        displayed = self.displayed_state(monitors, workspaces, clients, activewindow)
+        if displayed == self.displayed:
+            return
+        self.displayed = None  # set once built: a refresh that failed half way is not skipped next time
         self.parse_monitors(monitors)
         self.parse_workspaces(workspaces)
         # Turned off due to https://github.com/hyprwm/Hyprland/issues/2413
@@ -85,6 +116,7 @@ class HyprlandTaskbar(Gtk.Box):
         for item in self.get_children():
             item.destroy()
         self.build_box()
+        self.displayed = displayed
 
     def build_box(self):
         for ws_num in self.ws_nums:
