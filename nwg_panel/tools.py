@@ -1390,16 +1390,56 @@ def h_modules_get_all():
     return h_list_monitors(), h_list_workspaces(), h_list_clients(), h_get_activewindow(), h_get_active_workspace()
 
 
+_H_MODULES_QUERIES = (("j/monitors", list), ("j/workspaces", list), ("j/clients", list),
+                      ("j/activewindow", dict), ("j/activeworkspace", dict))
+# Set when this Hyprland does not answer [[BATCH]] with the 5 JSON replies: query them one by one
+_h_batch_unsupported = False
+
+
+def _h_split_batch(reply):
+    """Split a [[BATCH]] reply into its JSON values. Hyprland separates them with blank lines,
+    older versions glue them together: raw_decode() handles both. None if it is not 5 values."""
+    decoder = json.JSONDecoder()
+    values, idx = [], 0
+    while True:
+        while idx < len(reply) and reply[idx].isspace():
+            idx += 1
+        if idx == len(reply):
+            break
+        try:
+            value, idx = decoder.raw_decode(reply, idx)
+        except ValueError:
+            return None
+        values.append(value)
+    return values if len(values) == len(_H_MODULES_QUERIES) else None
+
+
+def _h_checked(replies):
+    if replies is None or any(not isinstance(r, t) for r, (_, t) in zip(replies, _H_MODULES_QUERIES)):
+        return None
+    return list(replies)
+
+
 def h_modules_get_all_checked():
     """
     h_modules_get_all() for refreshes: returns None when one of the replies is missing or unusable
     (hyprctl() timed out and returned "", Hyprland is restarting, the reply is cut short), so that
-    the caller keeps what it displays instead of drawing empty modules. Gives up at the first such
-    reply, as each of them may have waited for the hyprctl() timeout.
+    the caller keeps what it displays instead of drawing empty modules. The 5 queries go in a single
+    [[BATCH]] request (one round trip on the GTK main loop instead of 5); without [[BATCH]] support,
+    they are sent one by one, giving up at the first unusable reply, as each of them may have waited
+    for the hyprctl() timeout.
     """
+    global _h_batch_unsupported
+    if not _h_batch_unsupported:
+        reply = hyprctl("[[BATCH]]" + ";".join(q for q, _ in _H_MODULES_QUERIES))
+        if not reply:
+            return None
+        values = _h_split_batch(reply)
+        if values is not None:
+            return _h_checked(values)
+
     data = []
-    for query, expected in (("j/monitors", list), ("j/workspaces", list), ("j/clients", list),
-                            ("j/activewindow", dict), ("j/activeworkspace", dict)):
+    for query, expected in _H_MODULES_QUERIES:
         try:
             reply = json.loads(hyprctl(query))
         except ValueError:
@@ -1407,6 +1447,10 @@ def h_modules_get_all_checked():
         if not isinstance(reply, expected):
             return None
         data.append(reply)
+    # The batch reply was unusable, the single queries are fine: do not try the batch again
+    if not _h_batch_unsupported:
+        eprint("hyprctl: unusable [[BATCH]] reply, using single queries from now on")
+        _h_batch_unsupported = True
     return data
 
 
