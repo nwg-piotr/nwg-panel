@@ -994,10 +994,13 @@ def seconds2string(seconds):
 
 
 def update_image(image, icon_name, icon_size, icons_path="", fallback=True):
-    scale = image.get_scale_factor()
-    icon_size *= scale
-    pixbuf = create_pixbuf(icon_name, icon_size, icons_path, fallback)
-    surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf, scale, image.get_window())
+    pixbuf = create_pixbuf(icon_name, icon_size * image.get_scale_factor(), icons_path, fallback)
+    set_image_pixbuf(image, pixbuf)
+
+
+def set_image_pixbuf(image, pixbuf):
+    """Shows a pixbuf loaded at icon size * image.get_scale_factor() pixels, sharp on HiDPI outputs."""
+    surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf, image.get_scale_factor(), image.get_window())
     image.set_from_surface(surface)
 
 
