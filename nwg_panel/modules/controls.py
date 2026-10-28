@@ -112,6 +112,8 @@ class Controls(Gtk.EventBox):
         self.bat_value = 0
         self.bat_time = ""
         self.bat_charging = False
+        self.power_image = Gtk.Image()
+        update_image(self.power_image, "system-shutdown-symbolic", self.icon_size, self.icons_path)
         self.bat_available = None
 
         self.pan_image = Gtk.Image()
@@ -179,20 +181,29 @@ class Controls(Gtk.EventBox):
             box.set_orientation(Gtk.Orientation.VERTICAL)
         self.box.pack_start(box, False, False, 6)
 
-        if "brightness" in self.settings["components"]:
-            box.pack_start(self.bri_image, False, False, 4)
-            if self.bri_label:
-                box.pack_start(self.bri_label, False, False, 0)
+        legacy_order = ["brightness", "volume", "battery"]
+        bar_components = self.settings.get(
+            "bar-components",
+            [name for name in legacy_order if name in self.settings["components"]]
+        )
+        if not isinstance(bar_components, list):
+            bar_components = [name for name in legacy_order if name in self.settings["components"]]
 
-        if "volume" in self.settings["components"]:
-            box.pack_start(self.vol_image, False, False, 4)
-            if self.vol_label:
-                box.pack_start(self.vol_label, False, False, 0)
-
-        if "battery" in self.settings["components"]:
-            box.pack_start(self.bat_image, False, False, 4)
-            if self.bat_label:
-                box.pack_start(self.bat_label, False, False, 0)
+        for name in dict.fromkeys(item for item in bar_components if isinstance(item, str)):
+            if name == "brightness" and name in self.settings["components"]:
+                box.pack_start(self.bri_image, False, False, 4)
+                if self.bri_label:
+                    box.pack_start(self.bri_label, False, False, 0)
+            elif name == "volume" and name in self.settings["components"]:
+                box.pack_start(self.vol_image, False, False, 4)
+                if self.vol_label:
+                    box.pack_start(self.vol_label, False, False, 0)
+            elif name == "battery" and name in self.settings["components"]:
+                box.pack_start(self.bat_image, False, False, 4)
+                if self.bat_label:
+                    box.pack_start(self.bat_label, False, False, 0)
+            elif name == "power" and self.popup_window.menu_box:
+                box.pack_start(self.power_image, False, False, 4)
 
         box.pack_start(self.pan_image, False, False, 4)
 
