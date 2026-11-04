@@ -1513,8 +1513,9 @@ def cmd_through_compositor(cmd):
             if cmd.startswith("-") or re.search(r"/(--batch|instances|hyprpaper|hyprsunset)", cmd) or (
                     cmd.count(" ") < 2 and re.search(r"/(switchxkblayout|setprop|notify|output)", cmd)):
                 return cmd
-            # check if we are on lua dispatchers (Hyprland >= v0.55.0 with lua config)
-            res = hyprctl("dispatch hl.dsp.no_op")  # do nothing
+            # check if we are on lua dispatchers (Hyprland >= v0.55.0 with lua config); since 0.57 the
+            # hl.dsp members are factories: only `hl.dsp.no_op()` is a dispatcher
+            res = hyprctl("dispatch hl.dsp.no_op()")  # do nothing
             if res == "ok":
                 cmd = f"hyprctl dispatch {shlex.quote('hl.dsp.exec_cmd(' + _lua_quoted(cmd) + ')')}"
             else:
