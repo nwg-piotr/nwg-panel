@@ -4712,6 +4712,7 @@ class EditorWrapper(object):
         builder.get_object("hover-opens").set_label(voc["widget-hover-opens"])
         builder.get_object("leave-closes").set_label(voc["window-leave-closes"])
         builder.get_object("click-closes").set_label(voc["click-outside-closes"])
+        builder.get_object("lbl-widget-icons").set_label("{}:".format(voc["widget-icons"]))
 
         self.ctrl_root_css_name = builder.get_object("root-css-name")
         self.ctrl_root_css_name.set_text(settings["root-css-name"])

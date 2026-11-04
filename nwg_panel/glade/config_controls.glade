@@ -8,7 +8,7 @@
     <property name="label-xalign">0.5</property>
     <property name="shadow-type">out</property>
     <child>
-      <!-- n-columns=5 n-rows=19 -->
+      <!-- n-columns=5 n-rows=20 -->
       <object class="GtkGrid" id="grid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -529,7 +529,7 @@ values in the panel widget</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="lbl-bar-components">
+          <object class="GtkLabel" id="lbl-widget-icons">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -541,16 +541,29 @@ values in the panel widget</property>
           </packing>
         </child>
         <child>
-          <object class="GtkCheckButton" id="ctrl-bar-brightness">
-            <property name="label" translatable="yes">Brightness</property>
+          <object class="GtkCheckButton" id="ctrl-bar-battery">
+            <property name="label" translatable="yes">Battery</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
             <property name="draw-indicator">True</property>
           </object>
           <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">18</property>
+            <property name="left-attach">2</property>
+            <property name="top-attach">19</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="ctrl-bar-power">
+            <property name="label" translatable="yes">Power</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">3</property>
+            <property name="top-attach">19</property>
           </packing>
         </child>
         <child>
@@ -567,8 +580,8 @@ values in the panel widget</property>
           </packing>
         </child>
         <child>
-          <object class="GtkCheckButton" id="ctrl-bar-battery">
-            <property name="label" translatable="yes">Battery</property>
+          <object class="GtkCheckButton" id="ctrl-bar-brightness">
+            <property name="label" translatable="yes">Brightness</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
@@ -580,17 +593,25 @@ values in the panel widget</property>
           </packing>
         </child>
         <child>
-          <object class="GtkCheckButton" id="ctrl-bar-power">
-            <property name="label" translatable="yes">Power</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">4</property>
-            <property name="top-attach">18</property>
-          </packing>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>
