@@ -13,6 +13,15 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
+try:
+    gi.require_version('GLibUnix', '2.0')
+    from gi.repository import GLibUnix
+    # Only recent GLib exposes g_unix_signal_add_full() as GLibUnix.signal_add. Older GLibUnix, e.g. GLib 2.84
+    # (Debian 13), only has GLibUnix.signal_add_full, and GLib < 2.80 has no GLibUnix namespace at all.
+    unix_signal_add = getattr(GLibUnix, 'signal_add', None) or GLibUnix.signal_add_full
+except (ValueError, ImportError, AttributeError):
+    unix_signal_add = GLib.unix_signal_add
+
 from nwg_panel.tools import get_config_dir, local_dir, load_json, save_json, load_string, list_outputs, check_key, \
     list_configs, update_gtk_entry, is_command, check_commands, cmd2string, eprint, runtime_dir, load_shell_data, hyprctl
 
@@ -5242,12 +5251,14 @@ def main():
     # Only the signals we use: catching SIGSEGV & co. turned a native crash into a 100% CPU loop,
     # and catching SIGCHLD logged every finished subprocess.
     for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
-        GLib.unix_signal_add(GLib.PRIORITY_HIGH, sig, signal_handler, sig)
+        # GLib.unix_signal_add(GLib.PRIORITY_HIGH, sig, signal_handler, sig)
+        unix_signal_add(GLib.PRIORITY_HIGH, sig, signal_handler, sig)
 
     # SIGUSR1 / SIGUSR2 are meant for the panel (dwl refresh), but `pkill -USR1 nwg-panel` reaches us as well, and
     # their default action is to terminate. Keep ignoring them; SIG_IGN would be inherited by the commands we run.
     for sig in (signal.SIGUSR1, signal.SIGUSR2):
-        GLib.unix_signal_add(GLib.PRIORITY_HIGH, sig, lambda: True)
+        # GLib.unix_signal_add(GLib.PRIORITY_HIGH, sig, lambda: True)
+        unix_signal_add(GLib.PRIORITY_HIGH, sig, lambda: True)
 
     for sig in range(signal.SIGRTMIN, signal.SIGRTMAX + 1):
         try:
