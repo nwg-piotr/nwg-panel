@@ -8,7 +8,7 @@
     <property name="label-xalign">0.5</property>
     <property name="shadow-type">out</property>
     <child>
-      <!-- n-columns=5 n-rows=18 -->
+      <!-- n-columns=5 n-rows=19 -->
       <object class="GtkGrid" id="grid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -526,6 +526,70 @@ values in the panel widget</property>
           <packing>
             <property name="left-attach">3</property>
             <property name="top-attach">17</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="lbl-bar-components">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Bar icons:</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">18</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="ctrl-bar-brightness">
+            <property name="label" translatable="yes">Brightness</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">18</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="ctrl-bar-volume">
+            <property name="label" translatable="yes">Volume</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">18</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="ctrl-bar-battery">
+            <property name="label" translatable="yes">Battery</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">3</property>
+            <property name="top-attach">18</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="ctrl-bar-power">
+            <property name="label" translatable="yes">Power</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">4</property>
+            <property name="top-attach">18</property>
           </packing>
         </child>
         <child>

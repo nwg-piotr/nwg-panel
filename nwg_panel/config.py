@@ -4550,6 +4550,15 @@ class EditorWrapper(object):
         for key in defaults:
             check_key(settings, key, defaults[key])
 
+        legacy_bar_components = [
+            name for name in ("brightness", "volume", "battery")
+            if name in settings["components"]
+        ]
+        bar_components = settings.get("bar-components", legacy_bar_components)
+        if not isinstance(bar_components, list):
+            bar_components = legacy_bar_components
+        bar_components = set(name for name in bar_components if isinstance(name, str))
+
         builder = Gtk.Builder.new_from_file(os.path.join(dir_name, "glade/config_controls.glade"))
         frame = builder.get_object("frame")
         frame.set_label("  {}: {}  ".format(voc["controls"], voc["settings"]))
@@ -4604,6 +4613,33 @@ class EditorWrapper(object):
         self.ctrl_comp_battery.set_label(voc["battery"])
         self.ctrl_comp_battery.set_tooltip_text(voc["battery-tooltip"])
         self.ctrl_comp_battery.set_active("battery" in settings["components"])
+
+        self.ctrl_bar_brightness = builder.get_object("ctrl-bar-brightness")
+        self.ctrl_bar_volume = builder.get_object("ctrl-bar-volume")
+        self.ctrl_bar_battery = builder.get_object("ctrl-bar-battery")
+        self.ctrl_bar_power = builder.get_object("ctrl-bar-power")
+        for name, widget in (
+            ("brightness", self.ctrl_bar_brightness),
+            ("volume", self.ctrl_bar_volume),
+            ("battery", self.ctrl_bar_battery),
+            ("power", self.ctrl_bar_power),
+        ):
+            widget.set_active(name in bar_components)
+        self.ctrl_bar_brightness.set_sensitive(self.ctrl_comp_brightness.get_active())
+        self.ctrl_bar_volume.set_sensitive(self.ctrl_comp_volume.get_active())
+        self.ctrl_bar_battery.set_sensitive(self.ctrl_comp_battery.get_active())
+        self.ctrl_comp_brightness.connect(
+            "toggled", lambda button: self.ctrl_bar_brightness.set_sensitive(button.get_active())
+        )
+        self.ctrl_comp_volume.connect(
+            "toggled", lambda button: self.ctrl_bar_volume.set_sensitive(button.get_active())
+        )
+        self.ctrl_comp_battery.connect(
+            "toggled", lambda button: self.ctrl_bar_battery.set_sensitive(button.get_active())
+        )
+        menu_settings = settings.get("menu", {})
+        menu_items = menu_settings.get("items", []) if isinstance(menu_settings, dict) else []
+        self.ctrl_bar_power.set_sensitive(bool(menu_items))
 
         self.ctrl_comp_battery_low_level = builder.get_object("ctrl-battery-low-level")
         self.ctrl_comp_battery_low_level.set_tooltip_text(voc["set-0-to-disable"])
@@ -4791,6 +4827,15 @@ class EditorWrapper(object):
         else:
             if "readme" in settings["components"]:
                 settings["components"].remove("readme")
+
+        settings["bar-components"] = [
+            name for name, widget in (
+                ("brightness", self.ctrl_bar_brightness),
+                ("volume", self.ctrl_bar_volume),
+                ("battery", self.ctrl_bar_battery),
+                ("power", self.ctrl_bar_power),
+            ) if widget.get_active()
+        ]
 
         settings["commands"]["battery"] = self.ctrl_cdm_battery.get_text()
         settings["processes-label"] = self.ctrl_comp_processes_label.get_text()
