@@ -243,7 +243,7 @@ class ClientBox(Gtk.EventBox):
     def on_special(self, widget, event):
         res = hyprctl('dispatch togglespecialworkspace ')
         if res != "ok":
-            hyprctl('dispatch hl.dsp.workspace.toggle_special')
+            hyprctl('dispatch hl.dsp.workspace.toggle_special()')
 
 
     def context_menu(self, client):
