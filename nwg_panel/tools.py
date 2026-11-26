@@ -1368,12 +1368,24 @@ def get_mango_socket_path():
     return None
 
 
+def _h_with_special_ids(obj):
+    """Hyprland >= 0.57 omits "id" on special workspaces.
+    Give them the negative id older versions used, so `id > 0` keeps filtering them out."""
+    if isinstance(obj, list):
+        return [_h_with_special_ids(o) for o in obj]
+    if isinstance(obj, dict):
+        obj = {k: _h_with_special_ids(v) for k, v in obj.items()}
+        if {"address", "type", "name"} <= obj.keys() and "id" not in obj:
+            obj["id"] = -99
+    return obj
+
+
 def _h_json(query, expected_type):
     """hyprctl `query` parsed as JSON; an empty instance of `expected_type` on failure or a reply of another type
     (callers iterate over lists and index dicts: {} for a list gave them str keys)"""
     reply = hyprctl(query)
     try:
-        result = json.loads(reply)
+        result = _h_with_special_ids(json.loads(reply))
     except Exception as e:
         eprint(e)
         return expected_type()
@@ -1454,12 +1466,12 @@ def h_modules_get_all_checked():
             return None
         values = _h_split_batch(reply)
         if values is not None:
-            return _h_checked(values)
+            return _h_checked(_h_with_special_ids(values))
 
     data = []
     for query, expected in _H_MODULES_QUERIES:
         try:
-            reply = json.loads(hyprctl(query))
+            reply = _h_with_special_ids(json.loads(hyprctl(query)))
         except ValueError:
             return None
         if not isinstance(reply, expected):
